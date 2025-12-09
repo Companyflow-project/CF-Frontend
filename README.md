@@ -80,38 +80,6 @@ src/
 └── index.css                   # Global styles
 ```
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm/yarn
-- Git
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd CF-Frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create a `.env` file (optional):
-```bash
-VITE_API_BASE_URL=http://localhost:8080/api
-```
-
-4. Start the development server:
-```bash
-npm run dev
-```
-
-The application will be available at `http://localhost:5173`
-
 ## 🏗 Architecture
 
 ### Feature-Based Structure
