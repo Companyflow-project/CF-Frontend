@@ -9,175 +9,93 @@ export const ConsolePage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-[#fbfbfb] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Main Content - Cards Grid - 2 rows: 2 stretched cards on top, 3 normal cards on bottom */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-8 items-stretch">
-          {/* Row 1: Employees Card (spans 3 columns - fully stretched) */}
-          <div className="col-span-1 lg:col-span-3 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
-            <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
-              Employees
-            </h3>
-            <p className="font-normal text-[16px] leading-[23.2px] text-[#484b4b]">
-              Add people, set roles, and manage access.
-            </p>
-            <button
-              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.32)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
-              onClick={() => navigate(employeesRoutes.list)}
-            >
-              <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
-                Go to Employees →
-              </span>
-            </button>
-            <div className="flex flex-col gap-[10px] pt-px">
-              <button
-                className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between"
-                onClick={() => navigate(employeesRoutes.add)}
-              >
-                <span className="font-normal text-[15.9px] leading-[23.2px] text-[#0d0e0e]">
-                  Invite employees
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">
-                  Roles & permissions
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-            </div>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_12px_30px_rgba(14,51,38,0.08)] px-5 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-[#1a5948]">Your free trial is active.</p>
+            <p className="text-sm text-[#4b5652]">You have 21 days remaining.</p>
           </div>
-
-          {/* Row 1: Manage Handbook Card (spans 3 columns - fully stretched) */}
-          <div className="col-span-1 lg:col-span-3 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
-            <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
-              Manage Handbook
-            </h3>
-            <p className="font-normal text-[15.9px] leading-[23.2px] text-[#484b4b]">
-              Create and publish your company handbook for employees.
-            </p>
+          <div className="flex flex-wrap gap-2">
             <button
-              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
-              onClick={() => navigate(handbookRoutes.list)}
+              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-2 text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+              onClick={() => navigate(employeesRoutes.add)}
             >
-              <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
-                Open Handbook →
-              </span>
+              Invite Employees
             </button>
-            <div className="flex flex-col gap-[10px] pt-px">
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.9px] leading-[23.2px] text-[#0d0e0e]">
-                  New handbook section
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.6px] leading-[23.2px] text-[#0d0e0e]">
-                  Handbook settings
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Row 2: Contacts Card (spans 2 columns - normal size) */}
-          <div className="col-span-1 lg:col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9.1px] h-full">
-            <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
-              Contacts
-            </h3>
-            <p className="font-normal text-[16px] leading-[23.2px] text-[#484b4b]">
-              Store vendors, clients, and emergency contacts.
-            </p>
             <button
-              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
-              onClick={() => navigate(contactsRoutes.list)}
-            >
-              <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
-                Manage Contacts →
-              </span>
-            </button>
-            <div className="flex flex-col gap-[10px] pt-[0.89px]">
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.6px] leading-[23.2px] text-[#0d0e0e]">
-                  Add contact
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">+</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">
-                  Import CSV
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Row 2: Account Card (spans 2 columns - normal size) */}
-          <div className="col-span-1 lg:col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
-            <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
-              Account
-            </h3>
-            <p className="font-normal text-[16px] leading-[23.2px] text-[#484b4b]">
-              Profile, security, and billing preferences.
-            </p>
-            <button
-              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(79,140,255,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
+              className="border border-[#d0e3da] text-[#0d0e0e] rounded-[999px] px-5 py-2 text-sm bg-white"
               onClick={() => navigate(accountRoutes.account)}
             >
-              <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
-                Open Account →
-              </span>
+              Manage Billing
             </button>
-            <div className="flex flex-col gap-[10px] pt-px">
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.9px] leading-[23.2px] text-[#0d0e0e]">
-                  Profile
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.8px] leading-[23.2px] text-[#0d0e0e]">
-                  Billing
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">
-                  Security
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">⇢</span>
-              </button>
-            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <ConsoleCard
+              title="Employees"
+              description="Add people, set roles, and manage access."
+              primaryAction={{
+                label: 'Go to Employees →',
+                onClick: () => navigate(employeesRoutes.list),
+              }}
+              links={[
+                { label: 'Invite employees', onClick: () => navigate(employeesRoutes.add) },
+                { label: 'Roles & permissions' },
+              ]}
+            />
+            <ConsoleCard
+              title="Manage Handbook"
+              description="Create and publish your company handbook for employees."
+              primaryAction={{
+                label: 'Open Handbook →',
+                onClick: () => navigate(handbookRoutes.list),
+              }}
+              links={[
+                { label: 'New handbook section' },
+                { label: 'Handbook settings' },
+              ]}
+            />
           </div>
 
-          {/* Row 2: Get Started Card (spans 2 columns - normal size) */}
-          <div className="col-span-1 lg:col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9.1px] h-full">
-            <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
-              Get Started
-            </h3>
-            <p className="font-normal text-[15.8px] leading-[23.2px] text-[#484b4b]">
-              Recommended next steps to make the most of your trial.
-            </p>
-            <div className="flex flex-col gap-[10px] pt-[0.9px]">
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.8px] leading-[23.2px] text-[#0d0e0e]">
-                  Invite your team
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">1</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.9px] leading-[23.2px] text-[#0d0e0e]">
-                  Publish a handbook section
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">2</span>
-              </button>
-              <button className="bg-[rgba(209,222,218,0.12)] border border-[rgba(88,172,146,0.5)] rounded-[10px] py-[10px] px-[13px] flex items-center justify-between">
-                <span className="font-normal text-[15.5px] leading-[23.2px] text-[#0d0e0e]">
-                  Customize theme
-                </span>
-                <span className="font-normal text-[16px] leading-[23.2px] text-[#0d0e0e]">3</span>
-              </button>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <ConsoleCard
+              title="Contacts"
+              description="Store vendors, clients, and emergency contacts."
+              primaryAction={{
+                label: 'Manage Contacts →',
+                onClick: () => navigate(contactsRoutes.list),
+              }}
+              links={[
+                { label: 'Add contact', trailing: '+' },
+                { label: 'Import CSV', trailing: '⇢' },
+              ]}
+            />
+            <ConsoleCard
+              title="Account"
+              description="Profile, security, and billing preferences."
+              primaryAction={{
+                label: 'Open Account →',
+                onClick: () => navigate(accountRoutes.account),
+              }}
+              links={[
+                { label: 'Profile' },
+                { label: 'Billing' },
+                { label: 'Security' },
+              ]}
+            />
+            <ConsoleCard
+              title="Get Started"
+              description="Recommended next steps to make the most of your trial."
+              hidePrimaryAction
+              links={[
+                { label: 'Invite your team', trailing: '1' },
+                { label: 'Publish a handbook section', trailing: '2' },
+                { label: 'Customize theme', trailing: '3' },
+              ]}
+            />
           </div>
         </div>
       </div>
@@ -185,3 +103,47 @@ export const ConsolePage: React.FC = () => {
   );
 };
 
+interface ConsoleCardProps {
+  title: string;
+  description: string;
+  primaryAction?: { label: string; onClick?: () => void };
+  links: { label: string; trailing?: string; onClick?: () => void }[];
+  hidePrimaryAction?: boolean;
+}
+
+const ConsoleCard: React.FC<ConsoleCardProps> = ({
+  title,
+  description,
+  primaryAction,
+  links,
+  hidePrimaryAction,
+}) => {
+  return (
+    <div className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-5 flex flex-col gap-4">
+      <div>
+        <h3 className="text-lg font-bold text-[#0d0e0e]">{title}</h3>
+        <p className="text-sm text-[#4b5652]">{description}</p>
+      </div>
+      {!hidePrimaryAction && primaryAction && (
+        <button
+          className="inline-flex items-center justify-center bg-[#e1f3ec] border border-[#2f946f] text-[#1a5948] rounded-[999px] px-5 py-3 text-sm font-semibold w-full sm:w-auto"
+          onClick={primaryAction.onClick}
+        >
+          {primaryAction.label}
+        </button>
+      )}
+      <div className="flex flex-col gap-2">
+        {links.map((link) => (
+          <button
+            key={link.label}
+            onClick={link.onClick}
+            className="flex items-center justify-between px-4 py-3 rounded-[12px] border border-[#cce3da] bg-white text-sm text-[#0d0e0e]"
+          >
+            <span>{link.label}</span>
+            <span className="text-base text-[#0d0e0e]">{link.trailing ?? '⇢'}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};

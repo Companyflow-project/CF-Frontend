@@ -36,10 +36,18 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     return status;
   };
 
+  const statusClasses: Record<string, string> = {
+    READY: 'bg-[#e3f3ec] text-[#1a5948] border-[#b7d9c9]',
+    NOT_READY: 'bg-[#fff4e2] text-[#a45c00] border-[#f0cb8b]',
+    OPTED_OUT: 'bg-[#ffeceb] text-[#c0382c] border-[#f7b2ac]',
+  };
+
   return (
-    <Badge variant={getVariant()} className={cn(className)}>
+    <Badge
+      variant={getVariant()}
+      className={cn(statusClasses[status] ?? '', className)}
+    >
       {getStatusLabel()}
     </Badge>
   );
 };
-

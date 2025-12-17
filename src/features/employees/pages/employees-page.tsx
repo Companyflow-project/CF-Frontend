@@ -85,7 +85,7 @@ export const EmployeesPage: React.FC = () => {
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
           >
-            User manual
+            User Manual
           </Button>
         </div>
       </div>

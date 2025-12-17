@@ -1,4 +1,5 @@
 import { Contact } from '@/types/models';
+import { contactsMock } from './mock-data';
 
 export const contactsApi = {
   async listContacts(_params?: {
@@ -9,16 +10,39 @@ export const contactsApi = {
     // TODO: Replace with real API call
     // const response = await axiosClient.get('/contacts', { params });
     // return response.data;
-    
-    return [];
+
+    // basic mock data with simple client-side filtering to mimic backend behaviour
+    const params = _params ?? {};
+    let data = [...contactsMock];
+
+    if (params.search) {
+      const query = params.search.toLowerCase();
+      data = data.filter((contact) => {
+        const name = contact.name.toLowerCase();
+        const email = contact.email.toLowerCase();
+        const telephone = (contact.telephone ?? '').toLowerCase();
+        return (
+          name.includes(query) ||
+          email.includes(query) ||
+          telephone.includes(query)
+        );
+      });
+    }
+
+    if (params.sort === 'name') {
+      data.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return data;
   },
 
   async getContact(_id: string): Promise<Contact | null> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/contacts/${id}`);
     // return response.data;
-    
-    return null;
+
+    const contact = contactsMock.find((c) => c.id === _id);
+    return contact ?? null;
   },
 
   async createContact(_payload: Partial<Contact>): Promise<Contact> {
@@ -47,4 +71,3 @@ export const contactsApi = {
     throw new Error('Not implemented yet');
   },
 };
-

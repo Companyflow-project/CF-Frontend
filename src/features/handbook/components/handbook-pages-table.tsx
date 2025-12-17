@@ -1,12 +1,4 @@
 import React, { useState } from 'react';
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -37,79 +29,68 @@ export const HandbookPagesTable: React.FC<HandbookPagesTableProps> = ({
     setSelectedPages(newSelected);
   };
 
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <Table className="min-w-[700px]">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead className="min-w-[200px]">Title</TableHead>
-              <TableHead className="min-w-[100px]">Status</TableHead>
-              <TableHead className="min-w-[150px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pages.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4}>
-                  <EmptyState />
-                </TableCell>
-              </TableRow>
-            ) : (
-              pages.map((page) => (
-                <TableRow key={page.id}>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <Checkbox
-                        checked={selectedPages.has(page.id)}
-                        onChange={() => handleSelect(page.id)}
-                        className="h-4 w-4 rounded border-2 border-[#1a5948] text-[#1a5948] focus:ring-[#1a5948]"
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm text-[#0d0e0e] break-words">{page.title}</span>
-                      <Badge variant="outline" className="border-gray-300 text-gray-600 text-xs whitespace-nowrap">
-                        Premade
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={page.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {onEdit && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onEdit(page.id)}
-                          className="border-[#adcfc5] text-[#0d0e0e] hover:bg-[#f0f7f5] whitespace-nowrap"
-                        >
-                          Edit
-                        </Button>
-                      )}
-                      {onPreview && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onPreview(page.id)}
-                          className="border-[#adcfc5] text-[#0d0e0e] hover:bg-[#f0f7f5] whitespace-nowrap"
-                        >
-                          Sneak peek
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+  if (pages.length === 0) {
+    return (
+      <div className="border border-[#d6e8e1] rounded-[16px] bg-white p-6">
+        <EmptyState />
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {pages.map((page) => (
+        <div
+          key={page.id}
+          className="flex flex-col gap-3 rounded-[18px] border border-[#d6e8e1] bg-[#f4fbf8] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-3">
+            <Checkbox
+              checked={selectedPages.has(page.id)}
+              onChange={() => handleSelect(page.id)}
+              className="h-4 w-4 rounded border-2 border-[#1a5948] text-[#1a5948] focus:ring-[#1a5948] mt-1"
+            />
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[15px] font-semibold text-[#0d0e0e]">{page.title}</span>
+                <Badge className="bg-[#e3f3ec] text-[#1a5948] border border-[#c2e2d4] text-[11px] uppercase tracking-wide">
+                  Premade
+                </Badge>
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-xs text-[#6b7475]">
+                <span className="h-2 w-2 rounded-full bg-[#1a5948]" />
+                Visible to all employees
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge
+              status={page.status}
+              className="rounded-[999px] px-4 py-1 text-xs font-semibold"
+            />
+            {onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(page.id)}
+                className="border-[#cce3da] text-[#0d0e0e] rounded-[999px] px-4"
+              >
+                Edit
+              </Button>
+            )}
+            {onPreview && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onPreview(page.id)}
+                className="border-[#cce3da] text-[#0d0e0e] rounded-[999px] px-4"
+              >
+                Sneak peek
+              </Button>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
-

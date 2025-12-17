@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/common/status-badge';
 import { EmptyState } from '@/components/common/empty-state';
 import { Edit, Trash2 } from 'lucide-react';
 import { Contact } from '@/types/models';
@@ -31,9 +30,9 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
   const someSelected = selectedIds.length > 0 && selectedIds.length < contacts.length;
 
   return (
-    <Table className="min-w-[720px]">
-      <TableHeader>
-        <TableRow>
+    <Table className="min-w-[860px] text-[13px]">
+      <TableHeader className="bg-[#f5fbf8]">
+        <TableRow className="border-b border-[#dbe8e1]">
           <TableHead className="w-12">
             <Checkbox
               checked={allSelected}
@@ -43,17 +42,18 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
                   el.indeterminate = someSelected;
                 }
               }}
+              className="rounded-[4px] border-[#3d997d] h-4 w-4"
             />
           </TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Telephone</TableHead>
-          <TableHead>Function</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Name</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Email</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Telephone</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Function</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Status</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="[&_tr:last:border-b]">
         {contacts.length === 0 ? (
           <TableRow>
             <TableCell colSpan={7}>
@@ -62,26 +62,59 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
           </TableRow>
         ) : (
           contacts.map((contact) => (
-            <TableRow key={contact.id}>
+            <TableRow key={contact.id} className="border-b border-[#ebf3ef] hover:bg-[#f6fbf9]">
               <TableCell>
                 <Checkbox
                   checked={selectedIds.includes(contact.id)}
                   onChange={() => onSelect(contact.id)}
+                  className="rounded-[4px] border-[#3d997d] h-4 w-4"
                 />
               </TableCell>
-              <TableCell>{contact.name}</TableCell>
-              <TableCell>{contact.email}</TableCell>
-              <TableCell>{contact.telephone || '-'}</TableCell>
-              <TableCell>{contact.functionTitle || '-'}</TableCell>
               <TableCell>
-                <StatusBadge status={contact.status} />
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-[#111827]">{contact.name}</span>
+                  <span className="text-xs text-[#7b8a85]">
+                    {contact.isEmployeeContact ? 'Employee' : 'External'}
+                  </span>
+                </div>
               </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+              <TableCell className="text-[#111b18]">{contact.email}</TableCell>
+              <TableCell className={contact.telephone ? 'text-[#111b18]' : 'text-[#9fa4a4] text-xs'}>
+                {contact.telephone || 'Not available'}
+              </TableCell>
+              <TableCell className="text-[#111b18]">
+                {contact.functionTitle || '-'}
+              </TableCell>
+              <TableCell className="text-[#111b18]">
+                <div className="space-y-1 text-xs text-[#0d0e0e]">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${
+                        contact.isPublic ? 'bg-[#2f946f]' : 'bg-[#a15c00]'
+                      }`}
+                    />
+                    <span>{contact.isPublic ? 'Public' : 'Private'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#1a5948]" />
+                    <span>{contact.isEmployeeContact ? 'Existing contact' : 'External contact'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`h-2.5 w-2.5 rounded-full ${
+                        contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'
+                      }`}
+                    />
+                    <span>{contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="inline-flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]">
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]">
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -93,4 +126,3 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
     </Table>
   );
 };
-
