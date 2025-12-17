@@ -17,7 +17,7 @@ export const HandbookTabs: React.FC<HandbookTabsProps> = ({
 }) => {
   return (
     <Tabs value={activeSection} onValueChange={onSectionChange}>
-      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="overflow-x-auto">
         <TabsList className="w-full sm:w-auto min-w-max">
           {sections.map((section) => (
             <TabsTrigger key={section.id} value={section.id} className="whitespace-nowrap">
