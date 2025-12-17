@@ -267,7 +267,7 @@ export const HandbookPage: React.FC = () => {
                         console.log('Preview page', id);
                       }}
                     />
-                    <div className="mt-4 flex justify-end">
+                    <div className="mt-4 flex flex-wrap justify-end gap-2">
                       <Button
                         variant="outline"
                         className="border-[#adcfc5] text-[#0d0e0e] hover:bg-[#f0f7f5] bg-[#1a5948] hover:bg-[#1a5948]/90 text-white border-[#1a5948]"

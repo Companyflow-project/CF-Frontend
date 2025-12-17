@@ -31,7 +31,7 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
   const someSelected = selectedIds.length > 0 && selectedIds.length < contacts.length;
 
   return (
-    <Table>
+    <Table className="min-w-[720px]">
       <TableHeader>
         <TableRow>
           <TableHead className="w-12">

@@ -30,7 +30,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   const someSelected = selectedIds.length > 0 && selectedIds.length < employees.length;
 
   return (
-    <Table>
+    <Table className="min-w-[720px]">
       <TableHeader>
         <TableRow>
           <TableHead className="w-12">

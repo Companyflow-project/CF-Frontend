@@ -40,7 +40,7 @@ export const HandbookPagesTable: React.FC<HandbookPagesTableProps> = ({
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-12"></TableHead>

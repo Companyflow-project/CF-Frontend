@@ -10,11 +10,11 @@ export const ConsolePage: React.FC = () => {
 
   return (
     <div className="bg-[#fbfbfb] min-h-screen">
-      <div className="max-w-[1200px] mx-auto px-5 py-0 pt-[96.19px]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Main Content - Cards Grid - 2 rows: 2 stretched cards on top, 3 normal cards on bottom */}
-        <div className="grid grid-cols-6 gap-6 mb-8 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-8 items-stretch">
           {/* Row 1: Employees Card (spans 3 columns - fully stretched) */}
-          <div className="col-span-3 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
+          <div className="col-span-1 lg:col-span-3 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
             <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
               Employees
             </h3>
@@ -22,7 +22,7 @@ export const ConsolePage: React.FC = () => {
               Add people, set roles, and manage access.
             </p>
             <button
-              className="w-1/2 bg-[rgba(173,207,197,0.32)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
+              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.32)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
               onClick={() => navigate(employeesRoutes.list)}
             >
               <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
@@ -49,7 +49,7 @@ export const ConsolePage: React.FC = () => {
           </div>
 
           {/* Row 1: Manage Handbook Card (spans 3 columns - fully stretched) */}
-          <div className="col-span-3 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
+          <div className="col-span-1 lg:col-span-3 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
             <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
               Manage Handbook
             </h3>
@@ -57,7 +57,7 @@ export const ConsolePage: React.FC = () => {
               Create and publish your company handbook for employees.
             </p>
             <button
-              className="w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
+              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
               onClick={() => navigate(handbookRoutes.list)}
             >
               <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
@@ -81,7 +81,7 @@ export const ConsolePage: React.FC = () => {
           </div>
 
           {/* Row 2: Contacts Card (spans 2 columns - normal size) */}
-          <div className="col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9.1px] h-full">
+          <div className="col-span-1 lg:col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9.1px] h-full">
             <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
               Contacts
             </h3>
@@ -89,7 +89,7 @@ export const ConsolePage: React.FC = () => {
               Store vendors, clients, and emergency contacts.
             </p>
             <button
-              className="w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
+              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(26,89,72,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
               onClick={() => navigate(contactsRoutes.list)}
             >
               <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
@@ -113,7 +113,7 @@ export const ConsolePage: React.FC = () => {
           </div>
 
           {/* Row 2: Account Card (spans 2 columns - normal size) */}
-          <div className="col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
+          <div className="col-span-1 lg:col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9px] h-full">
             <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
               Account
             </h3>
@@ -121,7 +121,7 @@ export const ConsolePage: React.FC = () => {
               Profile, security, and billing preferences.
             </p>
             <button
-              className="w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(79,140,255,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
+              className="w-full sm:w-1/2 bg-[rgba(173,207,197,0.35)] border border-[rgba(79,140,255,0.35)] rounded-[10px] py-[13px] px-[13px] flex items-center justify-center"
               onClick={() => navigate(accountRoutes.account)}
             >
               <span className="font-bold text-[16px] leading-[23.2px] text-[#1a5948] whitespace-nowrap">
@@ -151,7 +151,7 @@ export const ConsolePage: React.FC = () => {
           </div>
 
           {/* Row 2: Get Started Card (spans 2 columns - normal size) */}
-          <div className="col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9.1px] h-full">
+          <div className="col-span-1 lg:col-span-2 bg-white border border-[rgba(255,255,255,0.06)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] pt-[18px] pb-[19px] px-[19px] flex flex-col gap-[9.1px] h-full">
             <h3 className="font-bold text-[16px] leading-[23.2px] text-[#0d0e0e] tracking-[0.2px]">
               Get Started
             </h3>

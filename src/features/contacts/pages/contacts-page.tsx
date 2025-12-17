@@ -147,12 +147,12 @@ export const ContactsPage: React.FC = () => {
       />
       <HelpBanner />
       <div className="space-y-4 mb-6">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4">
           <Input
             placeholder="Search contacts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="max-w-sm"
+            className="w-full sm:max-w-sm"
           />
           <div className="flex items-center gap-2">
             <Switch
@@ -171,8 +171,8 @@ export const ContactsPage: React.FC = () => {
             <Label htmlFor="public-only">Public only</Label>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Select>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <Select className="w-full sm:w-auto sm:min-w-[160px]">
             <option>Sort by</option>
             <option>Name</option>
             <option>Email</option>
@@ -199,9 +199,9 @@ export const ContactsPage: React.FC = () => {
         />
       </div>
       {selectedIds.length > 0 && (
-        <div className="mt-4 flex items-center justify-between p-4 bg-gray-50 rounded">
+        <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-gray-50 rounded">
           <span className="text-sm">{selectedIds.length} selected</span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
             <Button variant="outline" size="sm">
               <Eye className="h-4 w-4 mr-2" />
               Set selected to public
