@@ -6,14 +6,21 @@ import { Menu } from 'lucide-react';
 interface PageShellProps {
   children: React.ReactNode;
   sidebar?: React.ReactNode;
+  fullWidth?: boolean;
 }
 
-export const PageShell: React.FC<PageShellProps> = ({ children, sidebar }) => {
+export const PageShell: React.FC<PageShellProps> = ({ children, sidebar, fullWidth }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div
+        className={
+          fullWidth
+            ? 'w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'
+            : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'
+        }
+      >
         {sidebar && (
           <div className="mb-4 flex justify-end lg:hidden">
             <Button

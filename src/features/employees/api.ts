@@ -4,6 +4,7 @@ import {
   EmployeePageViewStat,
   EmployeeMessageLog,
 } from '@/types/models';
+import { employeesMock } from './mock-data';
 
 export const employeesApi = {
   async listEmployees(_params?: {
@@ -14,16 +15,39 @@ export const employeesApi = {
     // TODO: Replace with real API call
     // const response = await axiosClient.get('/employees', { params });
     // return response.data;
-    
-    return [];
+
+    // basic mock data with simple client-side filtering to mimic backend behaviour
+    const params = _params ?? {};
+    let data = [...employeesMock];
+
+    if (params.search) {
+      const query = params.search.toLowerCase();
+      data = data.filter((employee) => {
+        const name = employee.name.toLowerCase();
+        const email = employee.email.toLowerCase();
+        const telephone = (employee.telephone ?? '').toLowerCase();
+        return (
+          name.includes(query) ||
+          email.includes(query) ||
+          telephone.includes(query)
+        );
+      });
+    }
+
+    if (params.sort === 'name') {
+      data.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return data;
   },
 
   async getEmployee(_id: string): Promise<Employee | null> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/employees/${id}`);
     // return response.data;
-    
-    return null;
+
+    const employee = employeesMock.find((emp) => emp.id === _id);
+    return employee ?? null;
   },
 
   async createEmployee(_payload: Partial<Employee>): Promise<Employee> {
