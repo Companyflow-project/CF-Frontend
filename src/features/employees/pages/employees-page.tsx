@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { HelpBanner } from '@/components/common/help-banner';
-import { SidebarCard } from '@/components/common/sidebar-card';
 import { EmployeesTable } from '../components/employees-table';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -13,7 +13,7 @@ import { Select } from '@/components/ui/select';
 import { useEmployees } from '../hooks';
 import { employeesRoutes } from '../routes';
 import { Employee } from '@/types/models';
-import { Send, Eye, EyeOff, Power, Trash2 } from 'lucide-react';
+import { Send, Eye, EyeOff, Power, Trash2, ArrowRight } from 'lucide-react';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,26 +36,68 @@ export const EmployeesPage: React.FC = () => {
   return (
     <PageShell
       sidebar={
-        <>
-          <SidebarCard title="License usage">
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Used</span>
-                <span>0 / 10</span>
+        <div className="space-y-4">
+          {/* License usage card */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">License usage</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-0">
+              <div className="flex justify-between items-center py-3">
+                <span className="text-sm text-[#0d0e0e]">Licenses in subscription</span>
+                <span className="text-sm font-medium text-[#0d0e0e]">0</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: '0%' }} />
+              <div className="border-t border-dashed border-[#adcfc5]"></div>
+              <div className="flex justify-between items-center py-3">
+                <span className="text-sm text-[#0d0e0e]">Licenses used</span>
+                <span className="text-sm font-medium text-[#0d0e0e]">0</span>
               </div>
-            </div>
-          </SidebarCard>
-          <SidebarCard title="Shortcuts">
-            <div className="space-y-1 text-sm">
-              <button className="text-left hover:underline">Add employee</button>
-              <button className="text-left hover:underline">Import CSV</button>
-              <button className="text-left hover:underline">Export data</button>
-            </div>
-          </SidebarCard>
-        </>
+              <div className="border-t border-dashed border-[#adcfc5]"></div>
+              <div className="flex justify-between items-center py-3">
+                <span className="text-sm text-[#0d0e0e]">Licenses left</span>
+                <span className="text-sm font-medium text-[#0d0e0e]">0</span>
+              </div>
+              <div className="border-t border-dashed border-[#adcfc5]"></div>
+              <div className="flex justify-between items-center py-3">
+                <span className="text-sm text-[#0d0e0e]">SMS messages used</span>
+                <span className="text-sm font-medium text-[#0d0e0e]">0</span>
+              </div>
+            </CardContent>
+            <CardFooter className="flex gap-2 pt-4">
+              <Button variant="outline" className="flex-1 border-[#adcfc5] text-[#0d0e0e] hover:bg-[#f0f7f5]">
+                More licenses
+              </Button>
+              <Button variant="outline" className="flex-1 border-[#adcfc5] text-[#0d0e0e] hover:bg-[#f0f7f5]">
+                Manage SMS
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Shortcuts card */}
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">Shortcuts</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <button className="w-full flex items-center justify-between p-3 rounded-lg border border-[#adcfc5] text-left hover:bg-[#f0f7f5] transition-colors">
+                <span className="text-sm text-[#0d0e0e]">Company settings</span>
+                <ArrowRight className="h-4 w-4 text-[#0d0e0e]" />
+              </button>
+              <button className="w-full flex items-center justify-between p-3 rounded-lg border border-[#adcfc5] text-left hover:bg-[#f0f7f5] transition-colors">
+                <span className="text-sm text-[#0d0e0e]">Employment types</span>
+                <ArrowRight className="h-4 w-4 text-[#0d0e0e]" />
+              </button>
+              <button className="w-full flex items-center justify-between p-3 rounded-lg border border-[#adcfc5] text-left hover:bg-[#f0f7f5] transition-colors">
+                <span className="text-sm text-[#0d0e0e]">Departments</span>
+                <ArrowRight className="h-4 w-4 text-[#0d0e0e]" />
+              </button>
+              <button className="w-full flex items-center justify-between p-3 rounded-lg border border-[#adcfc5] text-left hover:bg-[#f0f7f5] transition-colors">
+                <span className="text-sm text-[#0d0e0e]">Import CSV</span>
+                <ArrowRight className="h-4 w-4 text-[#0d0e0e]" />
+              </button>
+            </CardContent>
+          </Card>
+        </div>
       }
     >
       <PageHeader

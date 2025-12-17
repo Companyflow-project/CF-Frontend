@@ -11,29 +11,6 @@ export const ConsolePage: React.FC = () => {
   return (
     <div className="bg-[#fbfbfb] min-h-screen">
       <div className="max-w-[1200px] mx-auto px-5 py-0 pt-[96.19px]">
-        {/* Trial Status Banner */}
-        <div className="bg-white border border-[rgba(22,163,74,0.35)] rounded-[14px] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] px-[17px] py-[15px] mb-4 flex items-center justify-between gap-[14px]">
-          <div className="flex-1">
-            <p className="font-bold text-[16px] leading-[23.2px] text-green-600">
-              ✅ Your free trial is active.{' '}
-              <span className="font-normal text-[#0d0e0e]">
-                You have 21 days remaining.
-              </span>
-            </p>
-          </div>
-          <div className="flex gap-[10px]">
-            <button
-              className="bg-gradient-to-b from-[#1a5948] to-[#44a083] text-white font-bold text-[16px] leading-[23.2px] px-[14px] py-[9px] rounded-[12px] underline"
-              onClick={() => navigate(employeesRoutes.add)}
-            >
-              Invite Employees
-            </button>
-            <button className="bg-transparent border border-[#adcfc5] text-[#1a5948] font-bold text-[16px] leading-[23.2px] px-[15px] py-[10px] rounded-[12px] underline">
-              Manage Billing
-            </button>
-          </div>
-        </div>
-
         {/* Main Content - Cards Grid - 2 rows: 2 stretched cards on top, 3 normal cards on bottom */}
         <div className="grid grid-cols-6 gap-6 mb-8 items-stretch">
           {/* Row 1: Employees Card (spans 3 columns - fully stretched) */}

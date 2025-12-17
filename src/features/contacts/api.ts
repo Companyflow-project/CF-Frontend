@@ -1,8 +1,7 @@
 import { Contact } from '@/types/models';
-import { axiosClient } from '@/lib/axios-client';
 
 export const contactsApi = {
-  async listContacts(params?: {
+  async listContacts(_params?: {
     search?: string;
     sort?: string;
     page?: number;
@@ -14,7 +13,7 @@ export const contactsApi = {
     return [];
   },
 
-  async getContact(id: string): Promise<Contact | null> {
+  async getContact(_id: string): Promise<Contact | null> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/contacts/${id}`);
     // return response.data;
@@ -22,7 +21,7 @@ export const contactsApi = {
     return null;
   },
 
-  async createContact(payload: Partial<Contact>): Promise<Contact> {
+  async createContact(_payload: Partial<Contact>): Promise<Contact> {
     // TODO: Replace with real API call
     // const response = await axiosClient.post('/contacts', payload);
     // return response.data;
@@ -31,8 +30,8 @@ export const contactsApi = {
   },
 
   async updateContact(
-    id: string,
-    payload: Partial<Contact>
+    _id: string,
+    _payload: Partial<Contact>
   ): Promise<Contact> {
     // TODO: Replace with real API call
     // const response = await axiosClient.put(`/contacts/${id}`, payload);
@@ -41,7 +40,7 @@ export const contactsApi = {
     throw new Error('Not implemented yet');
   },
 
-  async deleteContact(id: string): Promise<void> {
+  async deleteContact(_id: string): Promise<void> {
     // TODO: Replace with real API call
     // await axiosClient.delete(`/contacts/${id}`);
     

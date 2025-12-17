@@ -1,5 +1,4 @@
 import { User } from '@/types/models';
-import { axiosClient } from '@/lib/axios-client';
 
 export interface LoginPayload {
   email: string;

@@ -2,7 +2,6 @@ import {
   HandbookSection,
   HandbookPage,
 } from '@/types/models';
-import { axiosClient } from '@/lib/axios-client';
 
 export const handbookApi = {
   async listSections(): Promise<HandbookSection[]> {
@@ -13,7 +12,7 @@ export const handbookApi = {
     return [];
   },
 
-  async getSection(id: string): Promise<HandbookSection | null> {
+  async getSection(_id: string): Promise<HandbookSection | null> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/handbook/sections/${id}`);
     // return response.data;
@@ -21,7 +20,7 @@ export const handbookApi = {
     return null;
   },
 
-  async createSection(payload: Partial<HandbookSection>): Promise<HandbookSection> {
+  async createSection(_payload: Partial<HandbookSection>): Promise<HandbookSection> {
     // TODO: Replace with real API call
     // const response = await axiosClient.post('/handbook/sections', payload);
     // return response.data;
@@ -30,8 +29,8 @@ export const handbookApi = {
   },
 
   async updateSection(
-    id: string,
-    payload: Partial<HandbookSection>
+    _id: string,
+    _payload: Partial<HandbookSection>
   ): Promise<HandbookSection> {
     // TODO: Replace with real API call
     // const response = await axiosClient.put(`/handbook/sections/${id}`, payload);
@@ -40,7 +39,7 @@ export const handbookApi = {
     throw new Error('Not implemented yet');
   },
 
-  async listPages(sectionId?: string): Promise<HandbookPage[]> {
+  async listPages(_sectionId?: string): Promise<HandbookPage[]> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get('/handbook/pages', { params: { sectionId } });
     // return response.data;
@@ -48,7 +47,7 @@ export const handbookApi = {
     return [];
   },
 
-  async getPage(id: string): Promise<HandbookPage | null> {
+  async getPage(_id: string): Promise<HandbookPage | null> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/handbook/pages/${id}`);
     // return response.data;
@@ -56,7 +55,7 @@ export const handbookApi = {
     return null;
   },
 
-  async createPage(payload: Partial<HandbookPage>): Promise<HandbookPage> {
+  async createPage(_payload: Partial<HandbookPage>): Promise<HandbookPage> {
     // TODO: Replace with real API call
     // const response = await axiosClient.post('/handbook/pages', payload);
     // return response.data;
@@ -65,8 +64,8 @@ export const handbookApi = {
   },
 
   async updatePage(
-    id: string,
-    payload: Partial<HandbookPage>
+    _id: string,
+    _payload: Partial<HandbookPage>
   ): Promise<HandbookPage> {
     // TODO: Replace with real API call
     // const response = await axiosClient.put(`/handbook/pages/${id}`, payload);

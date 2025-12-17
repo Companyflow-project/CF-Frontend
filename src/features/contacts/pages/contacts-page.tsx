@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { HelpBanner } from '@/components/common/help-banner';
-import { SidebarCard } from '@/components/common/sidebar-card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ContactsTable } from '../components/contacts-table';
 import { AddExistingEmployeeModal } from '../components/add-existing-employee-modal';
 import { AddExternalContactModal } from '../components/add-external-contact-modal';
@@ -26,6 +26,19 @@ export const ContactsPage: React.FC = () => {
   const employeeContacts = contacts.filter((c) => c.isEmployeeContact);
   const externalContacts = contacts.filter((c) => c.isExternalContact);
 
+  // Calculate visibility stats
+  const visibilityStats = useMemo(() => {
+    const publicProfiles = contacts.filter((c) => c.isPublic).length;
+    const inactive = contacts.filter((c) => c.status === 'INACTIVE').length;
+    return {
+      publicProfiles,
+      inactive,
+      employee: employeeContacts.length,
+      external: externalContacts.length,
+      total: contacts.length,
+    };
+  }, [contacts, employeeContacts.length, externalContacts.length]);
+
   const handleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
@@ -39,36 +52,78 @@ export const ContactsPage: React.FC = () => {
   return (
     <PageShell
       sidebar={
-        <>
-          <SidebarCard title="Visibility">
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Public profiles</span>
-                <span>0</span>
+        <div className="space-y-3 w-full">
+          {/* Visibility card */}
+          <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] w-full">
+            <CardContent className="p-[15px] space-y-[8px]">
+              <div className="flex items-start justify-between pb-[2px] pt-px">
+                <h3 className="text-[14px] font-bold text-[#0d0e0e]">Visibility</h3>
+                <p className="text-[12px] italic text-[#5d6262] text-right">{visibilityStats.total} contacts listed</p>
               </div>
-              <div className="flex justify-between">
-                <span>Inactive</span>
-                <span>0</span>
+              <div className="space-y-0">
+                <div className="flex justify-between items-center py-[9px] pb-[11px] border-b border-dashed border-[rgba(88,172,146,0.5)]">
+                  <span className="text-[13.8px] text-[#0d0e0e]">Public profiles</span>
+                  <span className="text-[14px] font-bold text-[#0d0e0e] text-center">{visibilityStats.publicProfiles}</span>
+                </div>
+                <div className="flex justify-between items-center py-[9px] pb-[11px] border-b border-dashed border-[rgba(88,172,146,0.5)]">
+                  <span className="text-[14px] text-[#0d0e0e]">Inactive contacts</span>
+                  <span className="text-[14px] font-bold text-[#0d0e0e] text-center">{visibilityStats.inactive}</span>
+                </div>
+                <div className="flex justify-between items-center py-[9px] pb-[11px] border-b border-dashed border-[rgba(88,172,146,0.5)]">
+                  <span className="text-[13.8px] text-[#0d0e0e]">Employee contacts</span>
+                  <span className="text-[14px] font-bold text-[#0d0e0e] text-center">{visibilityStats.employee}</span>
+                </div>
+                <div className="flex justify-between items-center py-[9px] pb-[11px] border-b border-dashed border-[rgba(88,172,146,0.5)]">
+                  <span className="text-[14px] text-[#0d0e0e]">External contacts</span>
+                  <span className="text-[14px] font-bold text-[#0d0e0e] text-center">{visibilityStats.external}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Employee</span>
-                <span>{employeeContacts.length}</span>
+              <div className="flex gap-[8px] justify-end pt-[2px]">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white border border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[15px] py-[11px] h-auto text-[13.3px]"
+                >
+                  Set all to private
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-white border border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[15px] py-[11px] h-auto text-[13.3px]"
+                >
+                  Set all to public
+                </Button>
               </div>
-              <div className="flex justify-between">
-                <span>External</span>
-                <span>{externalContacts.length}</span>
+            </CardContent>
+          </Card>
+
+          {/* Help Guides card */}
+          <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0px_12px_30px_0px_rgba(15,23,42,0.08)] w-full">
+            <CardContent className="p-[15px] space-y-[8px]">
+              <div className="pb-[2px] pt-px">
+                <h3 className="text-[14px] font-bold text-[#0d0e0e]">Help Guides</h3>
               </div>
-            </div>
-          </SidebarCard>
-          <SidebarCard title="Help Guides">
-            <div className="space-y-1 text-sm">
-              <button className="text-left hover:underline">How to add contacts</button>
-              <button className="text-left hover:underline">Import contacts</button>
-              <button className="text-left hover:underline">Export contacts</button>
-              <button className="text-left hover:underline">Contact permissions</button>
-            </div>
-          </SidebarCard>
-        </>
+              <div className="flex flex-col gap-[8px]">
+                <button className="bg-white border border-[rgba(88,172,146,0.5)] rounded-[10px] px-[13px] py-[7px] flex items-center justify-between hover:bg-[#f0f7f5] transition-colors">
+                  <span className="text-[13.3px] text-[#0d0e0e]">How to add contacts</span>
+                  <span className="text-[16px] text-[#1d1f1f]">⇢</span>
+                </button>
+                <button className="bg-white border border-[rgba(88,172,146,0.5)] rounded-[10px] px-[13px] py-[7px] flex items-center justify-between hover:bg-[#f0f7f5] transition-colors">
+                  <span className="text-[13.3px] text-[#0d0e0e]">How to edit employee profiles</span>
+                  <span className="text-[16px] text-[#1d1f1f]">⇢</span>
+                </button>
+                <button className="bg-white border border-[rgba(88,172,146,0.5)] rounded-[10px] px-[13px] py-[7px] flex items-center justify-between hover:bg-[#f0f7f5] transition-colors">
+                  <span className="text-[13.3px] text-[#0d0e0e]">How to add relatives information</span>
+                  <span className="text-[16px] text-[#1d1f1f]">⇢</span>
+                </button>
+                <button className="bg-white border border-[rgba(88,172,146,0.5)] rounded-[10px] px-[13px] py-[7px] flex items-center justify-between hover:bg-[#f0f7f5] transition-colors">
+                  <span className="text-[13.3px] text-[#0d0e0e]">How to import contacts</span>
+                  <span className="text-[16px] text-[#1d1f1f]">⇢</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       }
     >
       <PageHeader

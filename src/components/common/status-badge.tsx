@@ -29,9 +29,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     return 'outline';
   };
 
+  const getStatusLabel = (): string => {
+    if (status === 'READY') return 'Ready';
+    if (status === 'NOT_READY') return 'Not ready';
+    if (status === 'OPTED_OUT') return 'Opted out';
+    return status;
+  };
+
   return (
     <Badge variant={getVariant()} className={cn(className)}>
-      {status}
+      {getStatusLabel()}
     </Badge>
   );
 };

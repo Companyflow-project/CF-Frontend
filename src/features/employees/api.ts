@@ -4,10 +4,9 @@ import {
   EmployeePageViewStat,
   EmployeeMessageLog,
 } from '@/types/models';
-import { axiosClient } from '@/lib/axios-client';
 
 export const employeesApi = {
-  async listEmployees(params?: {
+  async listEmployees(_params?: {
     search?: string;
     sort?: string;
     page?: number;
@@ -19,7 +18,7 @@ export const employeesApi = {
     return [];
   },
 
-  async getEmployee(id: string): Promise<Employee | null> {
+  async getEmployee(_id: string): Promise<Employee | null> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/employees/${id}`);
     // return response.data;
@@ -27,7 +26,7 @@ export const employeesApi = {
     return null;
   },
 
-  async createEmployee(payload: Partial<Employee>): Promise<Employee> {
+  async createEmployee(_payload: Partial<Employee>): Promise<Employee> {
     // TODO: Replace with real API call
     // const response = await axiosClient.post('/employees', payload);
     // return response.data;
@@ -36,8 +35,8 @@ export const employeesApi = {
   },
 
   async updateEmployee(
-    id: string,
-    payload: Partial<Employee>
+    _id: string,
+    _payload: Partial<Employee>
   ): Promise<Employee> {
     // TODO: Replace with real API call
     // const response = await axiosClient.put(`/employees/${id}`, payload);
@@ -46,14 +45,14 @@ export const employeesApi = {
     throw new Error('Not implemented yet');
   },
 
-  async deleteEmployee(id: string): Promise<void> {
+  async deleteEmployee(_id: string): Promise<void> {
     // TODO: Replace with real API call
     // await axiosClient.delete(`/employees/${id}`);
     
     throw new Error('Not implemented yet');
   },
 
-  async listEmployeeStats(params?: {
+  async listEmployeeStats(_params?: {
     employeeId?: string;
   }): Promise<EmployeeSummaryStat[]> {
     // TODO: Replace with real API call
@@ -64,7 +63,7 @@ export const employeesApi = {
   },
 
   async listEmployeePageViewStats(
-    employeeId: string
+    _employeeId: string
   ): Promise<EmployeePageViewStat[]> {
     // TODO: Replace with real API call
     // const response = await axiosClient.get(`/employees/${employeeId}/page-views`);
@@ -73,7 +72,7 @@ export const employeesApi = {
     return [];
   },
 
-  async listEmployeeMessageLogs(params?: {
+  async listEmployeeMessageLogs(_params?: {
     employeeId?: string;
     page?: number;
   }): Promise<EmployeeMessageLog[]> {
