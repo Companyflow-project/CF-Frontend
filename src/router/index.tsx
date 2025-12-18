@@ -42,7 +42,7 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 export const AppRouter: React.FC = () => {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route
           path={authRoutes.login}
