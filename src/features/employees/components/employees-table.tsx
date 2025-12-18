@@ -52,11 +52,17 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
             </div>
           </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Email</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Telephone</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[220px]">
+            Telephone
+          </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Employment</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Recent visits</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[200px] whitespace-nowrap">
+            Recent visits
+          </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Messages</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide text-center">
+            Actions
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="[&_tr]:last:border-b">
@@ -92,13 +98,19 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                   </div>
                 </TableCell>
                 <TableCell className="text-[#111b18]">{employee.email}</TableCell>
-                <TableCell className={phone ? 'text-[#111b18]' : 'text-[#9fa4a4] text-xs'}>
+                <TableCell
+                  className={
+                    phone
+                      ? 'text-[#111b18] w-[220px] whitespace-nowrap'
+                      : 'text-[#9fa4a4] text-xs w-[220px]'
+                  }
+                >
                   {phone || 'Not available'}
                 </TableCell>
                 <TableCell className="text-[#111b18]">
                   {employee.employmentTitle || employee.employmentType || '-'}
                 </TableCell>
-                <TableCell className="text-[#111b18]">
+                <TableCell className="text-[#111b18] w-[200px] whitespace-nowrap">
                   {employee.recentVisitAt || 'Never'}
                 </TableCell>
                 <TableCell className="text-[#111b18]">

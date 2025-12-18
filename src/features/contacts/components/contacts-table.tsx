@@ -47,9 +47,11 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
           </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Name</TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Email</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Telephone</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[220px]">
+            Telephone
+          </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Function</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Status</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[220px]">Status</TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -73,13 +75,14 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
               <TableCell>
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-[#111827]">{contact.name}</span>
-                  <span className="text-xs text-[#7b8a85]">
-                    {contact.isEmployeeContact ? 'Employee' : 'External'}
-                  </span>
                 </div>
               </TableCell>
               <TableCell className="text-[#111b18]">{contact.email}</TableCell>
-              <TableCell className={contact.telephone ? 'text-[#111b18]' : 'text-[#9fa4a4] text-xs'}>
+              <TableCell
+                className={
+                  contact.telephone ? 'text-[#111b18] w-[220px] whitespace-nowrap' : 'text-[#9fa4a4] text-xs'
+                }
+              >
                 {contact.telephone || 'Not available'}
               </TableCell>
               <TableCell className="text-[#111b18]">
