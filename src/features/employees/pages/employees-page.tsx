@@ -68,8 +68,8 @@ export const EmployeesPage: React.FC = () => {
       {/* help banner */}
       <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="text-sm sm:text-base text-[#0d0e0e] max-w-3xl">
-            <p className="mb-1">
+          <div className="text-sm text-[#0d0e0e] max-w-3xl">
+            <p className="text-sm mb-1">
               <span className="font-bold">Help.</span>{' '}
               Create, edit, and remove employees. Send a message with a handbook link, and re-send
               when needed. Choose which profiles are{' '}

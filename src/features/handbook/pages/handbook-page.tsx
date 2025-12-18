@@ -77,7 +77,7 @@ export const HandbookPage: React.FC = () => {
       {/* help banner */}
       <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-sm sm:text-base text-[#0d0e0e] max-w-3xl">
+          <p className="text-sm text-[#0d0e0e] max-w-3xl">
             <span className="font-bold">Help.</span>{' '}
             Select the pages to include, write or edit their content, and mark a page{' '}
             <span className="italic">Ready</span> when it matches exactly what you want. Only pages
