@@ -100,7 +100,7 @@ export const HandbookPage: React.FC = () => {
         <div>
           <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)]">
             {/* search / filters header strip */}
-            <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4  cfpx-4 py-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+            <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4 px-4 py-4 flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
               <div className="relative w-full md:flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
                 <Input
