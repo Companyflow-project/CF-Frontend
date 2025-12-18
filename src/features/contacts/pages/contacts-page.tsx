@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useContacts } from '../hooks';
-import { Upload, Download, Menu, Filter } from 'lucide-react';
+import { Menu, Filter } from 'lucide-react';
 
 export const ContactsPage: React.FC = () => {
   const [search, setSearch] = useState('');

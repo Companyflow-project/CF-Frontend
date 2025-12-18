@@ -64,6 +64,7 @@ export interface Contact {
   isEmployeeContact?: boolean;
   isExternalContact?: boolean;
   status: "ACTIVE" | "INACTIVE";
+  createdAt?: string;
 }
 
 export interface EmployeePageViewStat {
