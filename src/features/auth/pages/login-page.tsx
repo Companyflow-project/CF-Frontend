@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '../hooks';
 import { authRoutes } from '../routes';
+import loginLogoUrl from '/assets/Login-Logo.svg';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +29,7 @@ export const LoginPage: React.FC = () => {
         {/* Logo */}
         <div className="flex items-center justify-center">
           <img
-            src="/assets/Login-Logo.svg"
+            src={loginLogoUrl}
             alt="CompanyFlow"
             className="h-auto w-[188px]"
           />

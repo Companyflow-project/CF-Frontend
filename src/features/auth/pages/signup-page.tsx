@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '../hooks';
 import { authApi } from '../api';
 import { authRoutes } from '../routes';
+import loginLogoUrl from '/assets/Login-Logo.svg';
 
 export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -39,7 +40,7 @@ export const SignupPage: React.FC = () => {
         {/* Logo */}
         <div className="flex items-center justify-center">
           <img
-            src="/assets/Login-Logo.svg"
+            src={loginLogoUrl}
             alt="CompanyFlow"
             className="h-auto w-[188px]"
           />

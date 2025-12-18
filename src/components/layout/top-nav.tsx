@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/hooks';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import logoUrl from '/assets/Logo.svg';
 
 export const TopNav: React.FC = () => {
   const location = useLocation();
@@ -31,9 +32,9 @@ export const TopNav: React.FC = () => {
     <nav className="bg-black text-white px-4 sm:px-6 lg:px-8 py-4">
       <div className="relative flex items-center justify-between max-w-7xl mx-auto">
         <Link to="/" className="flex items-center">
-          <img 
-            src="/assets/Logo.svg" 
-            alt="CompanyFlow" 
+          <img
+            src={logoUrl}
+            alt="CompanyFlow"
             className="h-6 w-auto"
           />
         </Link>

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/features/auth/hooks';
 import { authApi } from '@/features/auth/api';
+import loginLogoUrl from '/assets/Login-Logo.svg';
 
 export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -38,7 +39,7 @@ export const SignupPage: React.FC = () => {
         {/* Logo */}
         <div className="h-[100px] flex items-center justify-center">
           <img
-            src="/assets/Login-Logo.svg"
+            src={loginLogoUrl}
             alt="CompanyFlow"
             className="h-auto w-[188px]"
           />

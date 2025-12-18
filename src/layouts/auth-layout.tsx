@@ -1,4 +1,6 @@
 import React from 'react';
+import signupBackgroundUrl from '/assets/Sign-Up-Asset2.png';
+import signupShapeUrl from '/assets/Sign-Up-Asset1.png';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -23,7 +25,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         {/* Diagram/Asset 2 - Covers the whole right side as background */}
         <div className="absolute inset-0 pointer-events-none">
           <img
-            src="/assets/Sign-Up-Asset2.png"
+            src={signupBackgroundUrl}
             alt="Features Diagram"
             className="w-full h-full object-cover"
           />
@@ -33,7 +35,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="absolute right-20 top-1/2 -translate-y-1/2 pointer-events-none z-0">
           <div className="w-[700px] h-[800px]">
             <img
-              src="/assets/Sign-Up-Asset1.png"
+              src={signupShapeUrl}
               alt="Background"
               className="w-full h-full object-contain"
             />
