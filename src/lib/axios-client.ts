@@ -1,7 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import type { ApiErrorResponse } from './api-types';
 
-// Prefer Vite-style env, but also support NEXT_PUBLIC_API_BASE_URL for compatibility
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.NEXT_PUBLIC_API_BASE_URL ||
