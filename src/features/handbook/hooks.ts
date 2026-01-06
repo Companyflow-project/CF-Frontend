@@ -11,11 +11,14 @@ export const useHandbookSections = () => {
     const fetchSections = async () => {
       try {
         setLoading(true);
-        const result = await handbookApi.listSections();
-        setData(result);
         setError(null);
+        const result = await handbookApi.listSections();
+        console.log('Handbook sections fetched:', result);
+        setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch sections'));
+        console.error('Error fetching handbook sections:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch sections';
+        setError(new Error(errorMessage));
         setData([]);
       } finally {
         setLoading(false);
@@ -35,13 +38,22 @@ export const useHandbookPages = (sectionId?: string) => {
 
   useEffect(() => {
     const fetchPages = async () => {
+      if (!sectionId) {
+        setData([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const result = await handbookApi.listPages(sectionId);
-        setData(result);
         setError(null);
+        const result = await handbookApi.listPages(sectionId);
+        console.log('Handbook pages fetched for section:', sectionId, result);
+        setData(result);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch pages'));
+        console.error('Error fetching handbook pages:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch pages';
+        setError(new Error(errorMessage));
         setData([]);
       } finally {
         setLoading(false);

@@ -1,3 +1,4 @@
+import { axiosClient } from '@/lib/axios-client';
 import { User } from '@/types/models';
 
 export interface LoginPayload {
@@ -13,48 +14,45 @@ export interface RegisterPayload {
   password: string;
 }
 
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
 export const authApi = {
   async login(payload: LoginPayload): Promise<User> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.post('/auth/login', payload);
-    // return response.data;
-    
-    // Temporary mock response
-    return {
-      id: 'temp',
-      email: payload.email,
-      name: 'Admin',
-      role: 'ADMIN',
-      createdAt: new Date().toISOString(),
-    };
+    const response = await axiosClient.post<LoginResponse>('/auth/login', payload);
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response.data.user;
   },
 
   async register(payload: RegisterPayload): Promise<User> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.post('/auth/register', payload);
-    // return response.data;
-    
-    // Temporary mock response
-    return {
-      id: 'temp',
-      email: payload.email,
-      name: payload.name,
-      role: 'ADMIN',
-      createdAt: new Date().toISOString(),
-    };
+    const response = await axiosClient.post<LoginResponse>('/auth/register', payload);
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response.data.user;
   },
 
   async me(): Promise<User | null> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.get('/auth/me');
-    // return response.data;
-    
-    return null;
+    try {
+      const response = await axiosClient.get<User>('/auth/me');
+      return response.data;
+    } catch (error) {
+      return null;
+    }
   },
 
   async logout(): Promise<void> {
-    // TODO: Replace with real API call
-    // await axiosClient.post('/auth/logout');
+    try {
+      await axiosClient.post('/auth/logout');
+    } finally {
+      localStorage.removeItem('token');
+    }
   },
 };
 

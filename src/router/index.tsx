@@ -15,11 +15,15 @@ import { HandbookPage } from '@/features/handbook/pages/handbook-page';
 import { EditThemePage } from '@/features/handbook/pages/edit-theme-page';
 import { ContactsPage } from '@/features/contacts/pages/contacts-page';
 import { AccountPage } from '@/features/account/pages/account-page';
+import { CompaniesPage } from '@/features/companies/pages/companies-page';
+import { CompanyDetailPage } from '@/features/companies/pages/company-detail-page';
+import { HandbookViewerPage } from '@/features/handbook/pages/handbook-viewer-page';
 import { authRoutes } from '@/features/auth/routes';
 import { employeesRoutes } from '@/features/employees/routes';
 import { handbookRoutes } from '@/features/handbook/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
+import { companiesRoutes } from '@/features/companies/routes';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // temporary: auth disabled so demo can run without login
@@ -152,6 +156,36 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <AccountPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={companiesRoutes.list}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <CompaniesPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={companiesRoutes.detail}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <CompanyDetailPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/handbooks/:handbookId/viewer"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookViewerPage />
               </AppLayout>
             </RequireAuth>
           }

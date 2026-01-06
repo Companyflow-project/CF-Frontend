@@ -19,8 +19,8 @@ export const HandbookPage: React.FC = () => {
   const [publishModalOpen, setPublishModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-  const { data: sections } = useHandbookSections();
-  const { data: pages } = useHandbookPages(activeSection || undefined);
+  const { data: sections, loading: sectionsLoading, error: sectionsError } = useHandbookSections();
+  const { data: pages, loading: pagesLoading, error: pagesError } = useHandbookPages(activeSection || undefined);
 
   const filteredPages = pages.filter((page) => {
     if (statusFilter && page.status !== statusFilter) return false;
@@ -158,7 +158,13 @@ export const HandbookPage: React.FC = () => {
             </div>
 
             <CardContent className="pt-6">
-              {sections.length > 0 ? (
+              {sectionsLoading ? (
+                <div className="text-center py-12 text-gray-500">Loading handbook sections...</div>
+              ) : sectionsError ? (
+                <div className="text-center py-12 text-red-500">
+                  Error loading sections: {sectionsError.message}
+                </div>
+              ) : sections.length > 0 ? (
                 <HandbookTabs
                   sections={sections}
                   activeSection={activeSection || sections[0]?.id || ''}

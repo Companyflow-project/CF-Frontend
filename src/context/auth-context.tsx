@@ -42,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     await authApi.logout();
     setUser(null);
+    // Token is already removed in authApi.logout()
   };
 
   return (

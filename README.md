@@ -172,8 +172,10 @@ All API functions are located in feature modules under `api.ts`. They use the sh
 Create a `.env` file in the root directory:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080/api
+VITE_API_BASE_URL=http://localhost:3001/api
 ```
+
+**Note**: The default backend URL is `http://localhost:3001/api` (matching the OpenAPI spec). The backend is currently read-only, so write operations (create, update, delete) will throw errors.
 
 ## 📜 Scripts
 

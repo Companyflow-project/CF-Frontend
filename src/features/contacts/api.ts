@@ -1,73 +1,49 @@
+import { axiosClient } from '@/lib/axios-client';
+import { transformContact } from '@/lib/api-transformers';
 import { Contact } from '@/types/models';
-import { contactsMock } from './mock-data';
 
 export const contactsApi = {
-  async listContacts(_params?: {
+  async listContacts(params?: {
+    companyId?: string;
     search?: string;
     sort?: string;
     page?: number;
+    limit?: number;
   }): Promise<Contact[]> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.get('/contacts', { params });
-    // return response.data;
+    const queryParams: Record<string, string> = {};
+    if (params?.companyId) queryParams.companyId = params.companyId;
+    if (params?.page) queryParams.page = String(params.page);
+    if (params?.limit) queryParams.limit = String(params.limit);
 
-    // basic mock data with simple client-side filtering to mimic backend behaviour
-    const params = _params ?? {};
-    let data = [...contactsMock];
-
-    if (params.search) {
-      const query = params.search.toLowerCase();
-      data = data.filter((contact) => {
-        const name = contact.name.toLowerCase();
-        const email = contact.email.toLowerCase();
-        const telephone = (contact.telephone ?? '').toLowerCase();
-        return (
-          name.includes(query) ||
-          email.includes(query) ||
-          telephone.includes(query)
-        );
-      });
-    }
-
-    if (params.sort === 'name') {
-      data.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    return data;
+    const response = await axiosClient.get<unknown>('/contacts', { params: queryParams });
+    const contacts = Array.isArray(response.data) ? response.data : [];
+    return contacts.map((contact: unknown) => transformContact(contact as Parameters<typeof transformContact>[0]));
   },
 
-  async getContact(_id: string): Promise<Contact | null> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.get(`/contacts/${id}`);
-    // return response.data;
-
-    const contact = contactsMock.find((c) => c.id === _id);
-    return contact ?? null;
+  async getContact(id: string): Promise<Contact | null> {
+    try {
+      const response = await axiosClient.get<unknown>(`/contacts/${id}`);
+      return transformContact(response.data as Parameters<typeof transformContact>[0]);
+    } catch (error) {
+      return null;
+    }
   },
 
   async createContact(_payload: Partial<Contact>): Promise<Contact> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.post('/contacts', payload);
-    // return response.data;
-    
-    throw new Error('Not implemented yet');
+    // Backend is read-only, this would need to be implemented if write operations are added
+    throw new Error('Create contact not supported by read-only API');
   },
 
   async updateContact(
     _id: string,
     _payload: Partial<Contact>
   ): Promise<Contact> {
-    // TODO: Replace with real API call
-    // const response = await axiosClient.put(`/contacts/${id}`, payload);
-    // return response.data;
-    
-    throw new Error('Not implemented yet');
+    // Backend is read-only, this would need to be implemented if write operations are added
+    throw new Error('Update contact not supported by read-only API');
   },
 
   async deleteContact(_id: string): Promise<void> {
-    // TODO: Replace with real API call
-    // await axiosClient.delete(`/contacts/${id}`);
-    
-    throw new Error('Not implemented yet');
+    // Backend is read-only, this would need to be implemented if write operations are added
+    throw new Error('Delete contact not supported by read-only API');
   },
 };

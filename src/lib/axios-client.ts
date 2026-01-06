@@ -1,6 +1,11 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import type { ApiErrorResponse } from './api-types';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api';
+// Prefer Vite-style env, but also support NEXT_PUBLIC_API_BASE_URL for compatibility
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.NEXT_PUBLIC_API_BASE_URL ||
+  'http://localhost:3001/api';
 
 export const axiosClient = axios.create({
   baseURL,
@@ -9,26 +14,20 @@ export const axiosClient = axios.create({
   },
 });
 
-// Request interceptor - add auth token when available
-axiosClient.interceptors.request.use(
-  (config) => {
-    // TODO: Get token from storage and add to headers
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
-    return config;
+// Response interceptor - handle errors (don't unwrap, let API client handle it)
+axiosClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    // Return response as-is, API client will handle the structure
+    return response;
   },
   (error) => {
-    return Promise.reject(error);
-  }
-);
+    // Handle API error responses
+    if (error.response?.data?.error) {
+      const apiError = error.response.data as ApiErrorResponse;
+      (error as Error & { apiError?: ApiErrorResponse['error'] }).apiError = apiError.error;
+    }
 
-// Response interceptor - handle errors
-axiosClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // TODO: Handle 401/403 errors and redirect to login
+    // Do not perform auth redirects here; auth will be handled separately when implemented
     return Promise.reject(error);
   }
 );

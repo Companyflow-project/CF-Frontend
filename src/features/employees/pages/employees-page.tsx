@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
@@ -7,10 +7,25 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useEmployees } from '../hooks';
+import { useEmployees as useEmployeesApi } from '@/lib/api-hooks';
 import { employeesRoutes } from '../routes';
 import { Employee } from '@/types/models';
+import type { Employee as ApiEmployee } from '@/lib/api-types';
 import { Search, ArrowUpDown, ArrowDownWideNarrow } from 'lucide-react';
+
+// Transform API employee to model employee
+const transformEmployee = (apiEmployee: ApiEmployee): Employee => {
+  return {
+    id: String(apiEmployee.id),
+    accountId: apiEmployee.companyId || '',
+    name: apiEmployee.name,
+    email: apiEmployee.email,
+    employmentTitle: apiEmployee.position || undefined,
+    status: 'ACTIVE' as const, // API doesn't provide status, default to ACTIVE
+    createdAt: new Date(apiEmployee.createdAt * 1000).toISOString(),
+    isPublic: false, // API doesn't provide this, default to false
+  };
+};
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,13 +33,40 @@ export const EmployeesPage: React.FC = () => {
   const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const { data: employees } = useEmployees({ search, sort: 'name' });
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
-  const filteredEmployees = employees.filter((employee) => {
-    if (!showInactive && employee.status === 'INACTIVE') return false;
-    if (publicOnly && !employee.isPublic) return false;
-    return true;
-  });
+  const { data: apiEmployees, loading, error, meta } = useEmployeesApi({ page, limit });
+
+  // Transform API employees to model employees
+  const employees = useMemo(() => {
+    if (!apiEmployees) return [];
+    return apiEmployees.map(transformEmployee);
+  }, [apiEmployees]);
+
+  // Client-side filtering (since API doesn't support search yet)
+  const filteredEmployees = useMemo(() => {
+    let filtered = employees;
+
+    if (search) {
+      const query = search.toLowerCase();
+      filtered = filtered.filter(
+        (emp) =>
+          emp.name.toLowerCase().includes(query) ||
+          emp.email.toLowerCase().includes(query)
+      );
+    }
+
+    if (!showInactive) {
+      filtered = filtered.filter((emp) => emp.status !== 'INACTIVE');
+    }
+
+    if (publicOnly) {
+      filtered = filtered.filter((emp) => emp.isPublic);
+    }
+
+    return filtered;
+  }, [employees, search, showInactive, publicOnly]);
 
   const handleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -33,10 +75,32 @@ export const EmployeesPage: React.FC = () => {
   };
 
   const handleSelectAll = (selected: boolean) => {
-    setSelectedIds(selected ? filteredEmployees.map((emp: Employee) => emp.id) : []);
+    setSelectedIds(selected ? filteredEmployees.map((emp) => emp.id) : []);
   };
 
   const hasSelection = selectedIds.length > 0;
+
+  if (loading) {
+    return (
+      <PageShell>
+        <PageHeader title="Manage Employees" />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-gray-500">Loading employees...</div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageShell>
+        <PageHeader title="Manage Employees" />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-red-500">Error: {error.message}</div>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>
@@ -200,6 +264,27 @@ export const EmployeesPage: React.FC = () => {
                   onSelectAll={handleSelectAll}
                 />
               </div>
+              {meta && meta.total && meta.total > limit && (
+                <div className="flex items-center justify-center gap-2 pt-4 border-t">
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-4 py-2">
+                    Page {page} of {Math.ceil(meta.total / limit)}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(Math.ceil(meta.total! / limit), p + 1))}
+                    disabled={page >= Math.ceil(meta.total / limit)}
+                    className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -211,7 +296,7 @@ export const EmployeesPage: React.FC = () => {
               if (hasSelection) {
                 setSelectedIds([]);
                 } else {
-                  setSelectedIds(filteredEmployees.map((emp: Employee) => emp.id));
+                  setSelectedIds(filteredEmployees.map((emp) => emp.id));
                 }
               }}
             >
