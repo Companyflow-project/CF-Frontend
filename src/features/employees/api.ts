@@ -82,9 +82,8 @@ export const employeesApi = {
     throw new Error('Update employee not supported by read-only API');
   },
 
-  async deleteEmployee(_id: string): Promise<void> {
-    // Backend is read-only, this would need to be implemented if write operations are added
-    throw new Error('Delete employee not supported by read-only API');
+  async deleteEmployee(id: string): Promise<void> {
+    await axiosClient.delete(`/employees/${id}`);
   },
 
   async listEmployeeStats(_params?: {

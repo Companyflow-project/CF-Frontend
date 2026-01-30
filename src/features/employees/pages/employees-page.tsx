@@ -10,7 +10,16 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useCompanies, useEmployeesAll } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
-import { Search, ArrowUpDown, ArrowDownWideNarrow } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { employeesApi } from '../api';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,7 +28,18 @@ export const EmployeesPage: React.FC = () => {
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+
   const itemsPerPage = 10;
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    employeeId: string | null;
+    employeeName: string;
+  }>({
+    isOpen: false,
+    employeeId: null,
+    employeeName: '',
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data: companies } = useCompanies();
   const companyId = companies?.length ? companies[0].id : undefined;
@@ -78,6 +98,32 @@ export const EmployeesPage: React.FC = () => {
 
   const handleSelectAll = (selected: boolean) => {
     setSelectedIds(selected ? paginatedEmployees.map((emp) => emp.id) : []);
+  };
+
+  const handleDeleteRequest = (id: string, name: string) => {
+    setDeleteDialog({
+      isOpen: true,
+      employeeId: id,
+      employeeName: name,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteDialog.employeeId) return;
+
+    setIsDeleting(true);
+    try {
+      await employeesApi.deleteEmployee(deleteDialog.employeeId);
+      setDeleteDialog({ isOpen: false, employeeId: null, employeeName: '' });
+      // Refresh the list
+      refetch();
+    } catch (err) {
+      console.error('Failed to delete employee:', err);
+      // Ideally show a toast here, but for now we'll just log it
+      alert('Failed to delete employee');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const hasSelection = selectedIds.length > 0;
@@ -278,6 +324,7 @@ export const EmployeesPage: React.FC = () => {
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
+                  onDelete={handleDeleteRequest}
                   emptyStateTitle="No employees"
                   emptyStateDescription="Try refetching or add your first employee."
                 />
@@ -447,6 +494,42 @@ export const EmployeesPage: React.FC = () => {
           </Card>
         </div>
       </div>
+      <Dialog
+        open={deleteDialog.isOpen}
+        onOpenChange={(isOpen) =>
+          setDeleteDialog((prev) => ({ ...prev, isOpen }))
+        }
+      >
+        <DialogContent>
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-amber-600 mb-2">
+              <AlertTriangle className="h-5 w-5" />
+              <DialogTitle className="text-amber-600">Delete Employee</DialogTitle>
+            </div>
+            <DialogDescription className="py-4">
+              Are you sure you want to delete <strong>{deleteDialog.employeeName}</strong>? This action cannot be undone.
+              The employee will be moved to the trash and their access will be revoked.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialog({ isOpen: false, employeeId: null, employeeName: '' })}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 };

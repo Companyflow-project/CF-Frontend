@@ -18,6 +18,7 @@ interface EmployeesTableProps {
   selectedIds: string[];
   onSelect: (id: string) => void;
   onSelectAll: (selected: boolean) => void;
+  onDelete: (id: string, name: string) => void;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
 }
@@ -27,6 +28,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   selectedIds,
   onSelect,
   onSelectAll,
+  onDelete,
   emptyStateTitle = 'No data yet.',
   emptyStateDescription,
 }) => {
@@ -156,6 +158,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       size="icon"
                       className="h-8 w-8 rounded-full bg-[#ffecef] text-[#d5384b] shrink-0"
                       aria-label="Delete"
+                      onClick={() => onDelete(employee.id, employee.name)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
