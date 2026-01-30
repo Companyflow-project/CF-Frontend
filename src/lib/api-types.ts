@@ -17,8 +17,8 @@ export interface ApiErrorResponse {
 }
 
 export interface PaginationMeta {
-  page?: number;
-  limit?: number;
+  page?: number | null;
+  limit?: number | null;
   total?: number;
   offset?: number;
 }
@@ -81,6 +81,7 @@ export interface Employee {
   departmentId: number | null;
   createdAt: number;
   updatedAt: number;
+  lastLoginAt?: number | null;
 }
 
 // Page types (for content)
@@ -122,3 +123,47 @@ export interface EmployeesParams extends PaginationParams {
   companyId?: string;
 }
 
+
+export interface HandbookAuthor {
+  uid: number;
+  name?: string;
+}
+
+export interface HandbookContent {
+  type: 'body' | 'pages' | 'file' | 'unknown';
+  bodyHtml?: string | null;
+  bodyText?: string | null;
+  bodyFormat?: string | null;
+}
+
+export interface HandbookHierarchyChild {
+  nid: number;
+  title: string;
+  changed: number;
+  status: number;
+}
+
+export interface HandbookHierarchy {
+  parentNid?: number | null;
+  children?: HandbookHierarchyChild[];
+}
+
+export interface HandbookAttachment {
+  id?: string;
+  filename?: string;
+  mimeType?: string;
+  url?: string;
+}
+
+export interface HandbookDetail {
+  nid: string;
+  title: string;
+  status: number;
+  created: number;
+  changed: number;
+  author?: HandbookAuthor;
+  content: HandbookContent;
+  hierarchy?: HandbookHierarchy;
+  attachments?: HandbookAttachment[];
+  raw?: Record<string, unknown>;
+}

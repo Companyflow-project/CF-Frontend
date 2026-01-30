@@ -13,6 +13,29 @@ import { Employee } from '@/types/models';
 import type { Employee as ApiEmployee } from '@/lib/api-types';
 import { Search, ArrowUpDown, ArrowDownWideNarrow } from 'lucide-react';
 
+// Helper to format relative time
+const formatRelativeTime = (timestamp: number | null | undefined): string => {
+  if (!timestamp) return 'Never';
+
+  const now = Date.now();
+  // Ensure we're dealing with milliseconds if the timestamp seems small (seconds)
+  // Drupal usually returns seconds (10 digits vs 13 digits)
+  const timeMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+  const diff = now - timeMs;
+
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const month = 30 * day;
+
+  if (diff < minute) return 'Just now';
+  if (diff < hour) return `${Math.floor(diff / minute)} mins ago`;
+  if (diff < day) return `${Math.floor(diff / hour)} hours ago`;
+  if (diff < month) return `${Math.floor(diff / day)} days ago`;
+
+  return new Date(timeMs).toLocaleDateString();
+};
+
 // Transform API employee to model employee
 const transformEmployee = (apiEmployee: ApiEmployee): Employee => {
   return {
@@ -24,6 +47,7 @@ const transformEmployee = (apiEmployee: ApiEmployee): Employee => {
     status: 'ACTIVE' as const, // API doesn't provide status, default to ACTIVE
     createdAt: new Date(apiEmployee.createdAt * 1000).toISOString(),
     isPublic: false, // API doesn't provide this, default to false
+    recentVisitAt: formatRelativeTime(apiEmployee.lastLoginAt),
   };
 };
 
@@ -33,10 +57,11 @@ export const EmployeesPage: React.FC = () => {
   const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
-  const limit = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const { data: apiEmployees, loading, error, meta } = useEmployeesApi({ page, limit });
+  // Fetch all employees without pagination params
+  const { data: apiEmployees, loading, error } = useEmployeesApi();
 
   // Transform API employees to model employees
   const employees = useMemo(() => {
@@ -44,7 +69,7 @@ export const EmployeesPage: React.FC = () => {
     return apiEmployees.map(transformEmployee);
   }, [apiEmployees]);
 
-  // Client-side filtering (since API doesn't support search yet)
+  // Client-side filtering
   const filteredEmployees = useMemo(() => {
     let filtered = employees;
 
@@ -52,8 +77,8 @@ export const EmployeesPage: React.FC = () => {
       const query = search.toLowerCase();
       filtered = filtered.filter(
         (emp) =>
-          emp.name.toLowerCase().includes(query) ||
-          emp.email.toLowerCase().includes(query)
+          (emp.name || '').toLowerCase().includes(query) ||
+          (emp.email || '').toLowerCase().includes(query)
       );
     }
 
@@ -68,6 +93,19 @@ export const EmployeesPage: React.FC = () => {
     return filtered;
   }, [employees, search, showInactive, publicOnly]);
 
+  // Client-side pagination
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredEmployees.slice(startIndex, endIndex);
+  }, [filteredEmployees, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search, showInactive, publicOnly]);
+
   const handleSelect = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
@@ -75,7 +113,7 @@ export const EmployeesPage: React.FC = () => {
   };
 
   const handleSelectAll = (selected: boolean) => {
-    setSelectedIds(selected ? filteredEmployees.map((emp) => emp.id) : []);
+    setSelectedIds(selected ? paginatedEmployees.map((emp) => emp.id) : []);
   };
 
   const hasSelection = selectedIds.length > 0;
@@ -154,10 +192,10 @@ export const EmployeesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 lg:items-start">
-        <div className="space-y-4">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 overflow-hidden">
+        <div className="flex flex-col overflow-hidden">
           {/* employee tools + table card */}
-          <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)]">
+          <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] flex-1 flex flex-col overflow-hidden">
             <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
               <div className="relative w-full lg:max-w-sm">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
@@ -171,11 +209,10 @@ export const EmployeesPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                 <button
                   type="button"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${
-                    showInactive
-                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
-                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${showInactive
+                    ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                    : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                    }`}
                   onClick={() => setShowInactive((v) => !v)}
                 >
                   <Checkbox
@@ -190,11 +227,10 @@ export const EmployeesPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${
-                    publicOnly
-                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
-                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${publicOnly
+                    ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                    : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                    }`}
                   onClick={() => setPublicOnly((v) => !v)}
                 >
                   <Checkbox
@@ -210,7 +246,7 @@ export const EmployeesPage: React.FC = () => {
               </div>
             </div>
 
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 flex-1 flex flex-col overflow-hidden">
               <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1]">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
@@ -256,106 +292,114 @@ export const EmployeesPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+
+              <div className="flex-1 overflow-y-auto min-h-0">
                 <EmployeesTable
-                  employees={filteredEmployees}
+                  employees={paginatedEmployees}
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
                 />
               </div>
-              {meta && meta.total && meta.total > limit && (
-                <div className="flex items-center justify-center gap-2 pt-4 border-t">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-                  <span className="px-4 py-2">
-                    Page {page} of {Math.ceil(meta.total / limit)}
-                  </span>
-                  <button
-                    onClick={() => setPage((p) => Math.min(Math.ceil(meta.total! / limit), p + 1))}
-                    disabled={page >= Math.ceil(meta.total / limit)}
-                    className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
+              {filteredEmployees.length > itemsPerPage && (
+                <div className="flex items-center justify-between pt-6 mt-4 border-t border-[#d5e7e1] px-2">
+                  <div className="text-sm text-[#6b7475]">
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="border-[#c8d8d3] text-[#0d0e0e] rounded-[10px] px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </Button>
+                    <span className="px-4 py-2 text-sm text-[#0d0e0e] font-medium">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="border-[#c8d8d3] text-[#0d0e0e] rounded-[10px] px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* bulk actions bar */}
-          <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-          <div
-            className="flex items-center gap-2 cursor-pointer h-10"
-            onClick={() => {
-              if (hasSelection) {
-                setSelectedIds([]);
+          <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div
+              className="flex items-center gap-3 cursor-pointer h-10"
+              onClick={() => {
+                if (hasSelection) {
+                  setSelectedIds([]);
                 } else {
                   setSelectedIds(filteredEmployees.map((emp) => emp.id));
                 }
               }}
             >
               <div
-                className={`h-3 w-3 rounded-[4px] border ${
-                  hasSelection ? 'bg-[#1a5948] border-[#1a5948]' : 'bg-transparent border-[#cfd6d4]'
-                }`}
+                className={`h-4 w-4 rounded-[4px] border ${hasSelection ? 'bg-[#1a5948] border-[#1a5948]' : 'bg-transparent border-[#cfd6d4]'
+                  }`}
               />
-            <span
-              className={`text-sm whitespace-nowrap ${
-                hasSelection ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
-              }`}
-            >
-              {selectedIds.length} selected
-            </span>
-          </div>
+              <span
+                className={`text-sm whitespace-nowrap ${hasSelection ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
+                  }`}
+              >
+                {selectedIds.length} selected
+              </span>
+            </div>
             <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasSelection}
-              className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-            >
-              Send message
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasSelection}
-              className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-            >
-              Set selected public
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasSelection}
-              className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-            >
-              Set selected private
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasSelection}
-              className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-            >
-              Deactivate
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!hasSelection}
-              className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-            >
-              Delete
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasSelection}
+                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
+              >
+                Send message
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasSelection}
+                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
+              >
+                Set selected public
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasSelection}
+                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
+              >
+                Set selected private
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasSelection}
+                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
+              >
+                Deactivate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasSelection}
+                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
+              >
+                Delete
+              </Button>
+            </div>
           </div>
-        </div>
         </div>
 
         <div className="space-y-4">

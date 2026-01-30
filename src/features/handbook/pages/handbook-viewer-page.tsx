@@ -24,17 +24,13 @@ export const HandbookViewerPage: React.FC = () => {
     selectedPageId ? { pageId: selectedPageId, langcode } : null
   );
 
-  // Debug logging to help diagnose issues
+  // Debug logging
   React.useEffect(() => {
-    console.log('Handbook Viewer Debug:', {
-      handbookId,
-      pages,
-      pagesIsArray: Array.isArray(pages),
-      pagesLength: pages?.length,
-      pagesLoading,
-      pagesError: pagesError?.message,
-    });
-  }, [handbookId, pages, pagesLoading, pagesError]);
+    console.log('Selected Page ID:', selectedPageId);
+    console.log('Page Content:', pageContent);
+    console.log('Content Loading:', contentLoading);
+    console.log('Content Error:', contentError);
+  }, [selectedPageId, pageContent, contentLoading, contentError]);
 
   if (!handbookId) {
     return (
@@ -114,7 +110,6 @@ export const HandbookViewerPage: React.FC = () => {
   };
 
   // Build tree from pages - handle null/undefined
-  // The pages should already be an array from the hook
   const pagesArray = Array.isArray(pages) ? pages : [];
   const treePages = pagesArray.length > 0 ? buildTree(pagesArray) : [];
 
@@ -129,11 +124,10 @@ export const HandbookViewerPage: React.FC = () => {
       <div key={node.nid} className="mb-1">
         <button
           onClick={() => setSelectedPageId(String(node.nid))}
-          className={`w-full text-left p-2 rounded hover:bg-gray-100 transition-colors ${
-            selectedPageId === String(node.nid) 
-              ? 'bg-gray-200 font-semibold border-l-2 border-blue-500' 
-              : 'border-l-2 border-transparent'
-          }`}
+          className={`w-full text-left p-2 rounded hover:bg-gray-100 transition-colors ${selectedPageId === String(node.nid)
+            ? 'bg-gray-200 font-semibold border-l-2 border-blue-500'
+            : 'border-l-2 border-transparent'
+            }`}
           style={{ paddingLeft: `${depth * 1.5 + 0.5}rem` }}
         >
           <div className="font-medium text-sm">{node.title}</div>
@@ -165,10 +159,6 @@ export const HandbookViewerPage: React.FC = () => {
             {pagesArray.length === 0 ? (
               <div className="text-sm text-gray-500 py-4 text-center">
                 No pages found
-                {pages === null && <div className="text-xs mt-2">Data is null</div>}
-                {pages !== null && !Array.isArray(pages) && (
-                  <div className="text-xs mt-2">Data is not an array: {typeof pages}</div>
-                )}
               </div>
             ) : (
               renderTree(treePages)

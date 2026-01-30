@@ -1,5 +1,5 @@
 import { axiosClient } from '@/lib/axios-client';
-import type { ApiResponse, Handbook as BackendHandbook, HandbookPage as BackendHandbookPage } from '@/lib/api-types';
+import type { ApiResponse, Handbook as BackendHandbook, HandbookPage as BackendHandbookPage, HandbookDetail } from '@/lib/api-types';
 import { HandbookSection, HandbookPage } from '@/types/models';
 
 // Transform backend handbook page to frontend handbook page
@@ -24,7 +24,7 @@ export const handbookApi = {
     if (params?.page) queryParams.page = String(params.page);
     if (params?.limit) queryParams.limit = String(params.limit);
 
-    const response = await axiosClient.get<ApiResponse<BackendHandbook[]>>('/handbooks', { params: queryParams });
+    const response = await axiosClient.get<ApiResponse<any[]>>('/handbooks', { params: queryParams });
     // axios returns AxiosResponse, so response.data is the ApiResponse object
     // response.data.data is the actual array
     const apiResponse = response.data;
@@ -33,15 +33,27 @@ export const handbookApi = {
       return [];
     }
     const handbooks = Array.isArray(apiResponse.data) ? apiResponse.data : [];
-    
-    // Transform handbooks to sections (using handbook as section)
-    return handbooks.map((handbook: BackendHandbook, index: number) => {
+
+    // Deduplicate by nid (keep the first occurrence)
+    const seenNids = new Set<string>();
+    const uniqueHandbooks = handbooks.filter((handbook: any) => {
+      const nid = String(handbook.nid || handbook.id || '');
+      if (seenNids.has(nid)) {
+        return false;
+      }
+      seenNids.add(nid);
+      return true;
+    });
+
+    // Transform handbooks to sections
+    // The API now returns objects with nid, title, etc (HandbookDetail-like structure)
+    return uniqueHandbooks.map((handbook: any, index: number) => {
       return {
-        id: handbook.id,
-        title: handbook.title,
-        slug: handbook.title.toLowerCase().replace(/\s+/g, '-'),
+        id: String(handbook.nid || handbook.id || ''),
+        title: handbook.title || 'Untitled',
+        slug: (handbook.title || 'untitled').toLowerCase().replace(/\s+/g, '-'),
         order: index,
-        accountId: handbook.companyId,
+        accountId: String(handbook.companyId || ''),
       };
     });
   },
@@ -59,6 +71,16 @@ export const handbookApi = {
         accountId: handbook.companyId,
       };
     } catch (error) {
+      return null;
+    }
+  },
+
+  async getHandbook(id: string): Promise<HandbookDetail | null> {
+    try {
+      const response = await axiosClient.get<ApiResponse<HandbookDetail>>(`/handbooks/${id}`);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching handbook:', error);
       return null;
     }
   },

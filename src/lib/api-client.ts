@@ -113,6 +113,7 @@ export const apiClient = {
    */
   async getEmployees(params?: EmployeesParams): Promise<ApiResponse<Employee[]>> {
     const queryParams: Record<string, string> = {};
+    console.log('getEmployees params:', params);
     if (params?.page) queryParams.page = String(params.page);
     if (params?.limit) queryParams.limit = String(params.limit);
     if (params?.companyId) queryParams.companyId = params.companyId;

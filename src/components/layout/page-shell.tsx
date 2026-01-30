@@ -13,12 +13,12 @@ export const PageShell: React.FC<PageShellProps> = ({ children, sidebar, fullWid
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 h-screen flex flex-col overflow-hidden">
       <div
         className={
           fullWidth
-            ? 'w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'
-            : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8'
+            ? 'w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 overflow-auto'
+            : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 overflow-auto w-full'
         }
       >
         {sidebar && (
@@ -34,8 +34,8 @@ export const PageShell: React.FC<PageShellProps> = ({ children, sidebar, fullWid
             </Button>
           </div>
         )}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <div className="flex-1 min-w-0">{children}</div>
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full">
+          <div className="flex-1 min-w-0 flex flex-col">{children}</div>
           {sidebar && (
             <div className="w-full lg:w-80 flex-shrink-0 hidden lg:block">
               <div className="sticky top-6">{sidebar}</div>
@@ -56,4 +56,5 @@ export const PageShell: React.FC<PageShellProps> = ({ children, sidebar, fullWid
     </div>
   );
 };
+
 
