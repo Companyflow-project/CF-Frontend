@@ -8,7 +8,7 @@ import logoUrl from '/assets/Logo.svg';
 
 export const TopNav: React.FC = () => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -75,8 +75,19 @@ export const TopNav: React.FC = () => {
             </Button>
           </div>
           {user && (
-            <div className="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-sm font-medium text-white">
-              {getInitials(user.name)}
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-sm font-medium text-white">
+                {getInitials(user.name)}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-white/20 bg-transparent text-white hover:bg-white/10 text-sm"
+                onClick={() => logout()}
+              >
+                Log ud
+              </Button>
             </div>
           )}
         </div>

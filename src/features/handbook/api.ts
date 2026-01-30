@@ -19,10 +19,11 @@ export const handbookApi = {
     page?: number;
     limit?: number;
   }): Promise<HandbookSection[]> {
-    const queryParams: Record<string, string> = {};
+    const queryParams: Record<string, string> = {
+      page: String(params?.page ?? 1),
+      limit: String(params?.limit ?? 20),
+    };
     if (params?.companyId) queryParams.companyId = params.companyId;
-    if (params?.page) queryParams.page = String(params.page);
-    if (params?.limit) queryParams.limit = String(params.limit);
 
     const response = await axiosClient.get<ApiResponse<any[]>>('/handbooks', { params: queryParams });
     // axios returns AxiosResponse, so response.data is the ApiResponse object
@@ -109,10 +110,11 @@ export const handbookApi = {
       return [];
     }
 
-    const queryParams: Record<string, string> = {};
-    if (params?.page) queryParams.page = String(params.page);
-    if (params?.limit) queryParams.limit = String(params.limit);
-    if (params?.langcode) queryParams.langcode = params.langcode;
+    const queryParams: Record<string, string> = {
+      page: String(params?.page ?? 1),
+      limit: String(params?.limit ?? 20),
+      langcode: params?.langcode ?? 'da',
+    };
 
     const response = await axiosClient.get<ApiResponse<BackendHandbookPage[]>>(`/handbooks/${sectionId}/pages`, { params: queryParams });
     // axios returns AxiosResponse, so response.data is the ApiResponse object

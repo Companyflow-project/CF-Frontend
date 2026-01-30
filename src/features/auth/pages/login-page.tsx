@@ -10,16 +10,22 @@ import loginLogoUrl from '/assets/Login-Logo.svg';
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSubmitting(true);
     try {
       await login(email, password);
       navigate('/');
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -72,11 +78,17 @@ export const LoginPage: React.FC = () => {
 
           {/* Button Section */}
           <div className="flex flex-col gap-6 mt-6">
+            {error && (
+              <p className="text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            )}
             <Button
               type="submit"
-              className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto"
+              disabled={submitting}
+              className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-50"
             >
-              Log ind
+              {submitting ? 'Logger ind…' : 'Log ind'}
             </Button>
 
             {/* Signup Link */}

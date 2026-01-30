@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  setUserFromRegister: (user: User) => void;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -39,10 +40,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(userData);
   };
 
+  const setUserFromRegister = (user: User) => {
+    setUser(user);
+  };
+
   const logout = async () => {
     await authApi.logout();
     setUser(null);
-    // Token is already removed in authApi.logout()
   };
 
   return (
@@ -51,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         user,
         isAuthenticated: !!user,
         login,
+        setUserFromRegister,
         logout,
         loading,
       }}

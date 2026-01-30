@@ -71,17 +71,24 @@ export interface HandbookPage {
   hasChildren?: number;
 }
 
-// Employee types (actual API response structure)
+// Employee types (OpenAPI spec: uid, name, mail, status, created, changed)
 export interface Employee {
-  id: number;
+  uid: number;
   name: string;
-  email: string;
-  position: string | null;
-  companyId: string;
-  departmentId: number | null;
-  createdAt: number;
-  updatedAt: number;
-  lastLoginAt?: number | null;
+  mail: string | null;
+  status: number;
+  created: number;
+  changed: number;
+}
+
+// User types (OpenAPI spec)
+export interface User {
+  uid: number;
+  name: string;
+  mail: string | null;
+  status: number;
+  created: number;
+  changed: number;
 }
 
 // Page types (for content)
@@ -121,6 +128,49 @@ export interface PageContentParams {
 
 export interface EmployeesParams extends PaginationParams {
   companyId?: string;
+}
+
+export interface DepartmentsParams extends PaginationParams {
+  companyId?: string;
+}
+
+export interface ContactsListParams extends PaginationParams {
+  companyId?: string;
+}
+
+export interface HandbooksListParams extends PaginationParams {
+  companyId?: string;
+}
+
+export interface LimitOffsetParams {
+  limit?: number;
+  offset?: number;
+}
+
+/** Department (shape from API; full schema not in OpenAPI) */
+export interface Department {
+  id: string;
+  [key: string]: unknown;
+}
+
+/** Health response data */
+export interface HealthData {
+  status: string;
+  version: string;
+  env: string;
+}
+
+/** Auth login response data */
+export interface AuthLoginData {
+  user: { uid: number; name: string; email: string };
+  token: string;
+}
+
+/** Auth me response data */
+export interface AuthMeData {
+  uid: number;
+  name: string;
+  email: string;
 }
 
 

@@ -295,6 +295,38 @@ export const useEmployees = (params?: EmployeesParams): UseApiState<Employee[]> 
 };
 
 /**
+ * Hook for fetching all employees (all pages; use when backend caps limit per request).
+ */
+export const useEmployeesAll = (params?: { companyId?: string }): UseApiState<Employee[]> => {
+  const [data, setData] = useState<Employee[] | null>(null);
+  const [meta, setMeta] = useState<ApiResponse<Employee[]>['meta']>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.getEmployeesAll(params);
+      setData(response.data);
+      setMeta(response.meta);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch employees'));
+      setData(null);
+      setMeta(undefined);
+    } finally {
+      setLoading(false);
+    }
+  }, [params?.companyId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, meta, loading, error, refetch: fetchData };
+};
+
+/**
  * Hook for fetching a single employee
  */
 export const useEmployee = (id: string | null): UseApiState<Employee> => {

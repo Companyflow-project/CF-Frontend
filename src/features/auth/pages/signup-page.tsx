@@ -16,21 +16,27 @@ export const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const { setUserFromRegister } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (!termsAccepted) {
-      alert('Du skal acceptere vilkårene');
+      setError('Du skal acceptere vilkårene');
       return;
     }
+    setSubmitting(true);
     try {
-      await authApi.register({ name, companyName, cvr, email, password });
-      await login(email, password);
+      const user = await authApi.register({ name, companyName, cvr, email, password });
+      setUserFromRegister(user);
       navigate('/');
-    } catch (error) {
-      console.error('Signup failed:', error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -128,12 +134,18 @@ export const SignupPage: React.FC = () => {
 
           {/* Button and Terms Section */}
           <div className="flex flex-col gap-6 mt-6">
+            {error && (
+              <p className="text-sm text-red-600" role="alert">
+                {error}
+              </p>
+            )}
             <div className="flex flex-col gap-3">
               <Button
                 type="submit"
-                className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto"
+                disabled={submitting}
+                className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-50"
               >
-                Prov gratis
+                {submitting ? 'Opretter…' : 'Prov gratis'}
               </Button>
               <div className="flex items-center justify-center gap-2">
                 <Checkbox

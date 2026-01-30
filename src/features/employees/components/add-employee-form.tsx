@@ -1,173 +1,301 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
 import { Upload } from 'lucide-react';
 
-export const AddEmployeeForm: React.FC = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    mobileNumber: '',
-    alternateNumber: '',
-    emergencyName: '',
-    emergencyMobile: '',
-    employmentType: 'none',
-    status: true,
-    sendEmail: 'no',
-  });
+export interface EmployeeFormData {
+  name: string;
+  email: string;
+  mobileNumber: string;
+  alternateNumber: string;
+  makeContactPublic: boolean;
+  emergencyName: string;
+  emergencyMobile: string;
+  makeEmergencyPublic: boolean;
+  employmentType: string;
+  status: boolean;
+  isSeniorEmployee: boolean;
+  isBusinessAdmin: boolean;
+  sendEmail: string;
+  photoFile: File | null;
+}
+
+interface AddEmployeeFormProps {
+  formData: EmployeeFormData;
+  onChange: (data: EmployeeFormData) => void;
+  errors?: Partial<Record<keyof EmployeeFormData, string>>;
+}
+
+export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors }) => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onChange({ ...formData, photoFile: file });
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {/* Employee Contact Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Employee contact information</CardTitle>
+          <CardTitle className="text-lg font-semibold">Employee contact information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center flex-col cursor-pointer hover:bg-gray-50">
-              <Upload className="h-6 w-6 text-gray-400 mb-1" />
-              <span className="text-xs text-gray-400">Upload</span>
+        <CardContent className="space-y-6">
+          <div className="flex gap-8">
+            {/* Photo Upload */}
+            <div className="flex flex-col items-center">
+              <label
+                htmlFor="photo-upload"
+                className="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center flex-col cursor-pointer hover:bg-gray-50 transition-colors"
+              >
+                <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-500">Click to upload photo</span>
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept=".jpg,.jpeg,.png"
+                className="hidden"
+                onChange={handlePhotoUpload}
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Only upload .jpg, .jpeg, .png
+              </p>
             </div>
+
+            {/* Contact Fields */}
             <div className="flex-1 space-y-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    value={formData.name}
+                    onChange={(e) => onChange({ ...formData, name: e.target.value })}
+                    className="mt-1"
+                  />
+                  {errors?.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+                </div>
+
+                <div className="col-span-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="jd@sample.com"
+                    value={formData.email}
+                    onChange={(e) => onChange({ ...formData, email: e.target.value })}
+                    className="mt-1"
+                  />
+                  {errors?.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
+                </div>
+
+                <div className="col-span-2">
+                  <Label htmlFor="mobileNumber" className="text-sm font-medium">
+                    Mobile number <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="mobileNumber"
+                    type="tel"
+                    placeholder="+45 71143360"
+                    value={formData.mobileNumber}
+                    onChange={(e) => onChange({ ...formData, mobileNumber: e.target.value })}
+                    className="mt-1"
+                  />
+                  {errors?.mobileNumber && <p className="text-xs text-red-600 mt-1">{errors.mobileNumber}</p>}
+                </div>
+
+                <div className="col-span-2">
+                  <Label htmlFor="alternateNumber" className="text-sm font-medium">
+                    Alternate number
+                  </Label>
+                  <Input
+                    id="alternateNumber"
+                    type="tel"
+                    placeholder="+45 71143360"
+                    value={formData.alternateNumber}
+                    onChange={(e) => onChange({ ...formData, alternateNumber: e.target.value })}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    SMS messages will be attempted to be sent to this number if Mobile number is not filled in.
+                  </p>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+
+              <div className="flex items-start space-x-2 pt-2">
+                <Checkbox
+                  id="public-info"
+                  checked={formData.makeContactPublic}
+                  onChange={(e) =>
+                    onChange({ ...formData, makeContactPublic: e.target.checked })
+                  }
                 />
+                <Label htmlFor="public-info" className="text-sm font-normal cursor-pointer">
+                  Make information public. Once public, their information will be visible in the infolist.
+                </Label>
               </div>
             </div>
-          </div>
-          <div>
-            <Label htmlFor="mobileNumber">Mobile number</Label>
-            <Input
-              id="mobileNumber"
-              value={formData.mobileNumber}
-              onChange={(e) =>
-                setFormData({ ...formData, mobileNumber: e.target.value })
-              }
-            />
-          </div>
-          <div>
-            <Label htmlFor="alternateNumber">Alternate number</Label>
-            <Input
-              id="alternateNumber"
-              value={formData.alternateNumber}
-              onChange={(e) =>
-                setFormData({ ...formData, alternateNumber: e.target.value })
-              }
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="public-info" />
-            <Label htmlFor="public-info">Make information public</Label>
           </div>
         </CardContent>
       </Card>
 
+      {/* Emergency Contact Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Emergency contact information</CardTitle>
+          <CardTitle className="text-lg font-semibold">Emergency contact information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="emergencyName">Name</Label>
+            <Label htmlFor="emergencyName" className="text-sm font-medium">
+              Name
+            </Label>
             <Input
               id="emergencyName"
+              placeholder="John Doe"
               value={formData.emergencyName}
-              onChange={(e) =>
-                setFormData({ ...formData, emergencyName: e.target.value })
-              }
+              onChange={(e) => onChange({ ...formData, emergencyName: e.target.value })}
+              className="mt-1"
             />
+            <p className="text-xs text-gray-500 mt-1 italic">
+              Name of the person who we will contact in case of emergency.
+            </p>
           </div>
+
           <div>
-            <Label htmlFor="emergencyMobile">Mobile number</Label>
+            <Label htmlFor="emergencyMobile" className="text-sm font-medium">
+              Mobile number
+            </Label>
             <Input
               id="emergencyMobile"
+              type="tel"
+              placeholder="+45 71143360"
               value={formData.emergencyMobile}
+              onChange={(e) => onChange({ ...formData, emergencyMobile: e.target.value })}
+              className="mt-1"
+            />
+            <p className="text-xs text-gray-500 mt-1 italic">
+              The number will be used to contact your relative in case of emergency.
+            </p>
+          </div>
+
+          <div className="flex items-start space-x-2 pt-2">
+            <Checkbox
+              id="public-emergency"
+              checked={formData.makeEmergencyPublic}
               onChange={(e) =>
-                setFormData({ ...formData, emergencyMobile: e.target.value })
+                onChange({ ...formData, makeEmergencyPublic: e.target.checked })
               }
             />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="public-emergency" />
-            <Label htmlFor="public-emergency">Make information public</Label>
+            <Label htmlFor="public-emergency" className="text-sm font-normal cursor-pointer">
+              Make information public. <span className="text-red-600 font-semibold">REMEMBER</span> to seek your relative's permission to make their contact details public. Once public, their information will be visible in the infolist.
+            </Label>
           </div>
         </CardContent>
       </Card>
 
+      {/* Employment Type, Permissions & Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle>Employment type, permissions & notifications</CardTitle>
+          <CardTitle className="text-lg font-semibold">Employment type, permissions & notifications</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
+          {/* Employment Type */}
           <div>
-            <Label>Employment type</Label>
+            <Label className="text-sm font-medium">
+              Employment type <span className="text-red-500">*</span>
+            </Label>
             <RadioGroup
               value={formData.employmentType}
-              onValueChange={(value) =>
-                setFormData({ ...formData, employmentType: value })
-              }
+              onValueChange={(value) => onChange({ ...formData, employmentType: value })}
+              className="mt-2"
             >
-              <RadioGroupItem value="none">No employment type</RadioGroupItem>
+              <RadioGroupItem value="none" id="employment-none">
+                No employment type
+              </RadioGroupItem>
             </RadioGroup>
           </div>
-            <div className="flex items-center justify-between">
-            <Label>Status</Label>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.checked })
-                }
-              />
-              <span className="text-sm">Active</span>
+
+          {/* Status */}
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <Label className="text-sm font-medium">Status</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium text-green-700">ACTIVE</span>
+              </div>
+              <span className="text-xs text-gray-600">
+                Untick to block access, but keep the employee in the list without the license counting.
+              </span>
             </div>
           </div>
+
+          {/* Permissions */}
           <div>
-            <Label>Permissions</Label>
-            <div className="space-y-2 mt-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="senior" />
-                <Label htmlFor="senior">Senior employee</Label>
+            <Label className="text-sm font-medium mb-3 block">Permissions</Label>
+            <div className="space-y-3">
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="senior"
+                  checked={formData.isSeniorEmployee}
+                  onChange={(e) =>
+                    onChange({ ...formData, isSeniorEmployee: e.target.checked })
+                  }
+                />
+                <Label htmlFor="senior" className="text-sm font-normal cursor-pointer">
+                  Senior employee. Allow the employee to view the management handbook.
+                </Label>
               </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="admin" />
-                <Label htmlFor="admin">Business administrator</Label>
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="admin"
+                  checked={formData.isBusinessAdmin}
+                  onChange={(e) =>
+                    onChange({ ...formData, isBusinessAdmin: e.target.checked })
+                  }
+                />
+                <Label htmlFor="admin" className="text-sm font-normal cursor-pointer">
+                  Business administrator. Allow the employee to edit and change the handbook.
+                </Label>
               </div>
             </div>
           </div>
+
+          {/* Send Email to Employee */}
           <div>
-            <Label>Send email to employee</Label>
+            <Label className="text-sm font-medium mb-2 block">Send email to employee</Label>
             <RadioGroup
               value={formData.sendEmail}
-              onValueChange={(value) =>
-                setFormData({ ...formData, sendEmail: value })
-              }
+              onValueChange={(value) => onChange({ ...formData, sendEmail: value })}
+              className="space-y-2"
             >
-              <RadioGroupItem value="no">No</RadioGroupItem>
-              <RadioGroupItem value="standard">Standard</RadioGroupItem>
-              <RadioGroupItem value="customized">Customized</RadioGroupItem>
+              <RadioGroupItem value="no" id="email-no">
+                No
+              </RadioGroupItem>
+              <RadioGroupItem value="standard" id="email-standard">
+                Standard
+              </RadioGroupItem>
+              <RadioGroupItem value="customized" id="email-customized">
+                Customized
+              </RadioGroupItem>
             </RadioGroup>
+            <p className="text-xs text-gray-500 mt-2 italic">
+              Send a message with a link to the handbook.
+            </p>
           </div>
         </CardContent>
       </Card>
     </div>
   );
 };
-

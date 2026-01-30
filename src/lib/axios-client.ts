@@ -3,14 +3,22 @@ import type { ApiErrorResponse } from './api-types';
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.NEXT_PUBLIC_API_BASE_URL ||
-  'http://localhost:3001/api';
+  import.meta.env.NEXT_PUBLIC_API_BASE_URL
 
 export const axiosClient = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// Request interceptor - attach Bearer token when present
+axiosClient.interceptors.request.use((config) => {
+  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // Response interceptor - handle errors (don't unwrap, let API client handle it)

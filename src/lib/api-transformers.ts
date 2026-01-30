@@ -5,15 +5,20 @@ import {
   EmployeeStatus,
 } from '@/types/models';
 
-// Backend Employee model (from OpenAPI spec)
-interface BackendEmployee {
-  uid: number;
+/** Backend employee: actual API uses id/email/companyId; spec uses uid/mail/created */
+export type BackendEmployeeLike = {
+  uid?: number;
+  id?: number;
   name: string;
-  mail: string | null;
-  status: number;
-  created: number;
-  changed: number;
-}
+  mail?: string | null;
+  email?: string | null;
+  status?: number;
+  created?: number;
+  createdAt?: string;
+  companyId?: string;
+  position?: string | null;
+  [key: string]: unknown;
+};
 
 // Backend Contact model (from OpenAPI spec)
 interface BackendContact {
@@ -40,9 +45,15 @@ interface BackendHandbookPage {
   hasChildren: number;
 }
 
-// Convert Unix timestamp to ISO string
-const timestampToISO = (timestamp: number): string => {
-  return new Date(timestamp * 1000).toISOString();
+// Convert Unix timestamp (seconds or ms) to ISO string; safe for null/undefined/invalid
+const timestampToISO = (timestamp: number | null | undefined): string => {
+  if (timestamp == null || typeof timestamp !== 'number' || Number.isNaN(timestamp)) {
+    return '';
+  }
+  const ms = timestamp < 1e12 ? timestamp * 1000 : timestamp;
+  const date = new Date(ms);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString();
 };
 
 // Convert status number to EmployeeStatus
@@ -50,15 +61,21 @@ const statusToEmployeeStatus = (status: number): EmployeeStatus => {
   return status === 1 ? 'ACTIVE' : 'INACTIVE';
 };
 
-// Transform backend employee to frontend employee
-export const transformEmployee = (backend: BackendEmployee): Employee => {
+// Transform backend employee to frontend employee (handles both uid/mail and id/email shapes)
+export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
+  const id = backend.id != null ? String(backend.id) : backend.uid != null ? String(backend.uid) : '';
+  const email = backend.email ?? backend.mail ?? '';
+  const createdAt =
+    typeof backend.createdAt === 'string'
+      ? backend.createdAt
+      : timestampToISO(backend.created);
   return {
-    id: String(backend.uid),
-    accountId: '', // Not available in backend response, may need to be set from context
-    name: backend.name,
-    email: backend.mail || '',
-    status: statusToEmployeeStatus(backend.status),
-    createdAt: timestampToISO(backend.created),
+    id,
+    accountId: backend.companyId ?? '',
+    name: backend.name ?? '',
+    email: String(email ?? ''),
+    status: backend.status != null ? statusToEmployeeStatus(backend.status) : 'ACTIVE',
+    createdAt: createdAt || '',
   };
 };
 

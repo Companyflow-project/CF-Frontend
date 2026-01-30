@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppLayout } from '@/layouts/app-layout';
 import { AuthLayout } from '@/layouts/auth-layout';
 import { ConsolePage } from '@/pages/console/console-page';
@@ -19,6 +19,7 @@ import { CompaniesPage } from '@/features/companies/pages/companies-page';
 import { CompanyDetailPage } from '@/features/companies/pages/company-detail-page';
 import { HandbookViewerPage } from '@/features/handbook/pages/handbook-viewer-page';
 import { authRoutes } from '@/features/auth/routes';
+import { useAuth } from '@/context/auth-context';
 import { employeesRoutes } from '@/features/employees/routes';
 import { handbookRoutes } from '@/features/handbook/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
@@ -26,7 +27,25 @@ import { accountRoutes } from '@/features/account/routes';
 import { companiesRoutes } from '@/features/companies/routes';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // temporary: auth disabled so demo can run without login
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-[#373b3b]">Loading…</span>
+      </div>
+    );
+  }
+  if (!isAuthenticated) {
+    return <Navigate to={authRoutes.login} state={{ from: location }} replace />;
+  }
+  return <>{children}</>;
+};
+
+const RedirectIfAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return null;
+  if (isAuthenticated) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
@@ -37,17 +56,21 @@ export const AppRouter: React.FC = () => {
         <Route
           path={authRoutes.login}
           element={
-            <AuthLayout>
-              <LoginPage />
-            </AuthLayout>
+            <RedirectIfAuth>
+              <AuthLayout>
+                <LoginPage />
+              </AuthLayout>
+            </RedirectIfAuth>
           }
         />
         <Route
           path={authRoutes.signup}
           element={
-            <AuthLayout>
-              <SignupPage />
-            </AuthLayout>
+            <RedirectIfAuth>
+              <AuthLayout>
+                <SignupPage />
+              </AuthLayout>
+            </RedirectIfAuth>
           }
         />
         <Route

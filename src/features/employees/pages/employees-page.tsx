@@ -7,49 +7,10 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useEmployees as useEmployeesApi } from '@/lib/api-hooks';
+import { useCompanies, useEmployeesAll } from '@/lib/api-hooks';
+import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
-import { Employee } from '@/types/models';
-import type { Employee as ApiEmployee } from '@/lib/api-types';
 import { Search, ArrowUpDown, ArrowDownWideNarrow } from 'lucide-react';
-
-// Helper to format relative time
-const formatRelativeTime = (timestamp: number | null | undefined): string => {
-  if (!timestamp) return 'Never';
-
-  const now = Date.now();
-  // Ensure we're dealing with milliseconds if the timestamp seems small (seconds)
-  // Drupal usually returns seconds (10 digits vs 13 digits)
-  const timeMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
-  const diff = now - timeMs;
-
-  const minute = 60 * 1000;
-  const hour = 60 * minute;
-  const day = 24 * hour;
-  const month = 30 * day;
-
-  if (diff < minute) return 'Just now';
-  if (diff < hour) return `${Math.floor(diff / minute)} mins ago`;
-  if (diff < day) return `${Math.floor(diff / hour)} hours ago`;
-  if (diff < month) return `${Math.floor(diff / day)} days ago`;
-
-  return new Date(timeMs).toLocaleDateString();
-};
-
-// Transform API employee to model employee
-const transformEmployee = (apiEmployee: ApiEmployee): Employee => {
-  return {
-    id: String(apiEmployee.id),
-    accountId: apiEmployee.companyId || '',
-    name: apiEmployee.name,
-    email: apiEmployee.email,
-    employmentTitle: apiEmployee.position || undefined,
-    status: 'ACTIVE' as const, // API doesn't provide status, default to ACTIVE
-    createdAt: new Date(apiEmployee.createdAt * 1000).toISOString(),
-    isPublic: false, // API doesn't provide this, default to false
-    recentVisitAt: formatRelativeTime(apiEmployee.lastLoginAt),
-  };
-};
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -60,13 +21,16 @@ export const EmployeesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Fetch all employees without pagination params
-  const { data: apiEmployees, loading, error } = useEmployeesApi();
+  const { data: companies } = useCompanies();
+  const companyId = companies?.length ? companies[0].id : undefined;
+  const { data: apiEmployees, loading, error, refetch } = useEmployeesAll(
+    companyId ? { companyId } : undefined
+  );
 
-  // Transform API employees to model employees
+  // Transform API employees to model employees (API shape may be id/email or uid/mail)
   const employees = useMemo(() => {
     if (!apiEmployees) return [];
-    return apiEmployees.map(transformEmployee);
+    return (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
   }, [apiEmployees]);
 
   // Client-side filtering
@@ -293,12 +257,29 @@ export const EmployeesPage: React.FC = () => {
               </div>
 
 
-              <div className="flex-1 overflow-y-auto min-h-0">
+              {!loading && !error && employees.length === 0 && (
+                <div className="flex flex-col items-center gap-3 py-6">
+                  <p className="text-sm text-[#6b7475]">
+                    No employees yet. Try refetching or add your first employee.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => refetch()}
+                    className="border-[#c8d8d3] text-[#0d0e0e] rounded-[10px]"
+                  >
+                    Refetch
+                  </Button>
+                </div>
+              )}
+              <div className="min-h-0 overflow-auto max-h-[calc(100vh-320px)]">
                 <EmployeesTable
                   employees={paginatedEmployees}
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
+                  emptyStateTitle="No employees"
+                  emptyStateDescription="Try refetching or add your first employee."
                 />
               </div>
               {filteredEmployees.length > itemsPerPage && (
