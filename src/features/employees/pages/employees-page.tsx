@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCompanies, useEmployeesAll } from '@/lib/api-hooks';
+import { useCompanies, useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
 import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
@@ -24,6 +24,7 @@ import { employeesApi } from '../api';
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -41,10 +42,26 @@ export const EmployeesPage: React.FC = () => {
   });
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Debounce search input to avoid excessive API calls
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300); // Wait 300ms after user stops typing
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const { data: companies } = useCompanies();
   const companyId = companies?.length ? companies[0].id : undefined;
-  const { data: apiEmployees, loading, error, refetch } = useEmployeesAll(
-    companyId ? { companyId } : undefined
+
+  // Use server-side search when search query exists
+  // Note: We'll make the API call even without companyId if there's a search query
+  const { data: apiEmployees, loading, error, refetch } = useEmployees(
+    {
+      ...(companyId && { companyId }),
+      search: debouncedSearch.trim() || undefined,
+      limit: debouncedSearch.trim() ? 10000 : 100,
+    }
   );
 
   // Transform API employees to model employees (API shape may be id/email or uid/mail)
@@ -53,18 +70,11 @@ export const EmployeesPage: React.FC = () => {
     return (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
   }, [apiEmployees]);
 
-  // Client-side filtering
+  // Client-side filtering (only for inactive/public filters, NOT search)
   const filteredEmployees = useMemo(() => {
     let filtered = employees;
 
-    if (search) {
-      const query = search.toLowerCase();
-      filtered = filtered.filter(
-        (emp) =>
-          (emp.name || '').toLowerCase().includes(query) ||
-          (emp.email || '').toLowerCase().includes(query)
-      );
-    }
+    // Search is now handled server-side, so we don't filter by search here
 
     if (!showInactive) {
       filtered = filtered.filter((emp) => emp.status !== 'INACTIVE');
@@ -75,7 +85,7 @@ export const EmployeesPage: React.FC = () => {
     }
 
     return filtered;
-  }, [employees, search, showInactive, publicOnly]);
+  }, [employees, showInactive, publicOnly]);
 
   // Client-side pagination
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);

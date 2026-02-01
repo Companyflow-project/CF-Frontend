@@ -103,7 +103,15 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                 </TableCell>
                 <TableCell className="min-w-0 max-w-0 w-[17%]">
                   <div className="truncate" title={employee.name}>
-                    <p className="font-semibold text-[#111827] truncate">{employee.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-[#111827] truncate">{employee.name}</p>
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${employee.status === 'ACTIVE'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                        }`}>
+                        {employee.status}
+                      </span>
+                    </div>
                     <p className="text-[11px] uppercase tracking-[0.04em] text-[#7b8a85] truncate">
                       {employee.isPublic ? 'Public profile' : 'Private profile'}
                     </p>

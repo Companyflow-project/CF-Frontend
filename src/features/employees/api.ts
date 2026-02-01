@@ -1,11 +1,18 @@
 import { axiosClient } from '@/lib/axios-client';
-import { transformEmployee } from '@/lib/api-transformers';
+import { transformEmployee, BackendEmployeeLike } from '@/lib/api-transformers';
 import {
   Employee,
   EmployeeSummaryStat,
   EmployeePageViewStat,
   EmployeeMessageLog,
 } from '@/types/models';
+
+// Helper type for standard API response
+interface ApiResponse<T> {
+  data: T;
+  meta: any;
+  error: any;
+}
 
 export const employeesApi = {
   async listEmployees(params?: {
@@ -20,15 +27,24 @@ export const employeesApi = {
     if (params?.page) queryParams.page = String(params.page);
     if (params?.limit) queryParams.limit = String(params.limit);
 
-    const response = await axiosClient.get<unknown>('/employees', { params: queryParams });
-    const employees = Array.isArray(response.data) ? response.data : [];
-    return employees.map((emp: unknown) => transformEmployee(emp as Parameters<typeof transformEmployee>[0]));
+    const response = await axiosClient.get<ApiResponse<BackendEmployeeLike[]> | BackendEmployeeLike[]>('/employees', { params: queryParams });
+
+    // Handle both wrapped { data: [...] } and plain [...] responses for backward compatibility
+    let employees: BackendEmployeeLike[] = [];
+    if (Array.isArray(response.data)) {
+      employees = response.data;
+    } else if (response.data && Array.isArray(response.data.data)) {
+      employees = response.data.data;
+    }
+
+    return employees.map((emp) => transformEmployee(emp));
   },
 
   async getEmployee(id: string): Promise<Employee | null> {
     try {
-      const response = await axiosClient.get<unknown>(`/employees/${id}`);
-      return transformEmployee(response.data as Parameters<typeof transformEmployee>[0]);
+      const response = await axiosClient.get<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>(`/employees/${id}`);
+      const data = 'data' in response.data ? (response.data as ApiResponse<BackendEmployeeLike>).data : (response.data as BackendEmployeeLike);
+      return transformEmployee(data);
     } catch (error) {
       return null;
     }
@@ -69,9 +85,12 @@ export const employeesApi = {
       ...(payload.sendEmailType && { sendEmailType: payload.sendEmailType }),
     };
 
-    const response = await axiosClient.post<unknown>('/employees', requestBody);
+    const response = await axiosClient.post<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>('/employees', requestBody);
 
-    return transformEmployee(response.data as Parameters<typeof transformEmployee>[0]);
+    // Check if response is wrapped in { data: ... }
+    const data = 'data' in response.data ? (response.data as ApiResponse<BackendEmployeeLike>).data : (response.data as BackendEmployeeLike);
+
+    return transformEmployee(data);
   },
 
   async updateEmployee(

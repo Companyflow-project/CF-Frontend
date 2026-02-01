@@ -285,7 +285,7 @@ export const useEmployees = (params?: EmployeesParams): UseApiState<Employee[]> 
     } finally {
       setLoading(false);
     }
-  }, [params?.companyId, params?.page, params?.limit]);
+  }, [params?.companyId, params?.page, params?.limit, params?.search]);
 
   useEffect(() => {
     fetchData();

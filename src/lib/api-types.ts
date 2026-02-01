@@ -128,6 +128,7 @@ export interface PageContentParams {
 
 export interface EmployeesParams extends PaginationParams {
   companyId?: string;
+  search?: string;
 }
 
 export interface DepartmentsParams extends PaginationParams {

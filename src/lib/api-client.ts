@@ -126,7 +126,7 @@ export const apiClient = {
 
   /**
    * Get paginated list of employees
-   * GET /api/employees?page&limit&companyId
+   * GET /api/employees?page&limit&companyId&search
    */
   async getEmployees(params?: EmployeesParams): Promise<ApiResponse<Employee[]>> {
     const queryParams: Record<string, string> = {
@@ -134,6 +134,7 @@ export const apiClient = {
       limit: String(params?.limit ?? DEFAULT_LIMIT),
     };
     if (params?.companyId) queryParams.companyId = params.companyId;
+    if (params?.search) queryParams.search = params.search;
 
     const response = await axiosClient.get<ApiResponse<Employee[]>>('/employees', {
       params: queryParams,

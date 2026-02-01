@@ -5,18 +5,22 @@ import {
   EmployeeStatus,
 } from '@/types/models';
 
-/** Backend employee: actual API uses id/email/companyId; spec uses uid/mail/created */
+// Backend employee: actual API uses id/email/companyId; spec uses uid/mail/created
 export type BackendEmployeeLike = {
   uid?: number;
-  id?: number;
+  id?: number | string;
   name: string;
   mail?: string | null;
   email?: string | null;
-  status?: number;
+  status?: number | string; // Can be number (0/1) or string ('ACTIVE'/'INACTIVE')
   created?: number;
-  createdAt?: string;
+  createdAt?: string; // string date or timestamp
   companyId?: string;
   position?: string | null;
+  mobileNumber?: string | null;
+  employmentType?: string | null;
+  recentVisits?: string | null;
+  messageCount?: number;
   [key: string]: unknown;
 };
 
@@ -69,13 +73,27 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
     typeof backend.createdAt === 'string'
       ? backend.createdAt
       : timestampToISO(backend.created);
+
+  // Handle status which allows for 'ACTIVE'/'INACTIVE' string or 0/1 number
+  let status: EmployeeStatus = 'ACTIVE';
+  if (typeof backend.status === 'string') {
+    status = backend.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE';
+  } else if (typeof backend.status === 'number') {
+    status = statusToEmployeeStatus(backend.status);
+  }
+
   return {
     id,
     accountId: backend.companyId ?? '',
     name: backend.name ?? '',
     email: String(email ?? ''),
-    status: backend.status != null ? statusToEmployeeStatus(backend.status) : 'ACTIVE',
+    mobileNumber: backend.mobileNumber ?? undefined,
+    employmentType: backend.employmentType ?? undefined,
+    recentVisitAt: backend.recentVisits ?? undefined,
+    messagesCount: backend.messageCount ?? 0,
+    status,
     createdAt: createdAt || '',
+    isPublic: true, // Defaulting to true as not explicitly provided in new payload, adjust if needed
   };
 };
 
