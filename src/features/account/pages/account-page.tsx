@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { accountRoutes } from '../routes';
+import { AddEmploymentTypeDialog } from '@/features/employment-types/pages';
 
 interface ActionItem {
   type: 'button-green' | 'button-blue' | 'list-item';
@@ -71,6 +72,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ title, description, actions }
 
 export const AccountPage: React.FC = () => {
   const navigate = useNavigate();
+  const [isAddEmploymentTypeDialogOpen, setIsAddEmploymentTypeDialogOpen] = useState(false);
 
   const cards: AccountCardProps[] = [
     {
@@ -102,8 +104,8 @@ export const AccountPage: React.FC = () => {
       title: 'Employment Types',
       description: 'Add and manage employment types here.',
       actions: [
-        { type: 'button-blue', label: 'Add Employment Type' },
-        { type: 'list-item', label: 'View employment types' },
+        { type: 'button-blue', label: 'Add Employment Type', onClick: () => setIsAddEmploymentTypeDialogOpen(true) },
+        { type: 'list-item', label: 'View employment types', onClick: () => navigate(accountRoutes.employmentTypes) },
       ],
     },
     {
@@ -136,6 +138,12 @@ export const AccountPage: React.FC = () => {
           />
         ))}
       </div>
+
+      {/* Add Employment Type Dialog */}
+      <AddEmploymentTypeDialog
+        open={isAddEmploymentTypeDialogOpen}
+        onOpenChange={setIsAddEmploymentTypeDialogOpen}
+      />
     </PageShell>
   );
 };

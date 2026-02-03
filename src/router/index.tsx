@@ -19,6 +19,7 @@ import { EditCompanyProfilePage } from '@/features/account/pages/edit-company-pr
 import { AddDepartmentPage } from '@/features/account/pages/add-department-page';
 import { ViewDepartmentsPage } from '@/features/account/pages/view-departments-page';
 import { EditDepartmentPage } from '@/features/account/pages/edit-department-page';
+import { ViewEmploymentTypesPage, AssignEmploymentTypePage } from '@/features/employment-types/pages';
 import { CompaniesPage } from '@/features/companies/pages/companies-page';
 import { CompanyDetailPage } from '@/features/companies/pages/company-detail-page';
 import { HandbookViewerPage } from '@/features/handbook/pages/handbook-viewer-page';
@@ -223,6 +224,36 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <EditDepartmentPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={accountRoutes.employmentTypes}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <ViewEmploymentTypesPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/account/employment-types/:id/assign"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <AssignEmploymentTypePage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/employees/assign-employment-type"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <AssignEmploymentTypePage />
               </AppLayout>
             </RequireAuth>
           }

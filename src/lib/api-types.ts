@@ -73,12 +73,20 @@ export interface HandbookPage {
 
 // Employee types (OpenAPI spec: uid, name, mail, status, created, changed)
 export interface Employee {
-  uid: number;
+  id: string;
+  accountId: string;
   name: string;
-  mail: string | null;
-  status: number;
-  created: number;
-  changed: number;
+  email: string;
+  mobileNumber?: string;
+  alternateNumber?: string;
+  telephone?: string;
+  employmentType?: string;
+  employmentTitle?: string;
+  recentVisitAt?: string | null;
+  messagesCount?: number;
+  isPublic?: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
 }
 
 // User types (OpenAPI spec)
