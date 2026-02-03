@@ -1,78 +1,139 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { accountRoutes } from '../routes';
 
-export const AccountPage: React.FC = () => {
+interface ActionItem {
+  type: 'button-green' | 'button-blue' | 'list-item';
+  label: string;
+  onClick?: () => void;
+}
+
+interface AccountCardProps {
+  title: string;
+  description: string;
+  actions: ActionItem[];
+}
+
+const AccountCard: React.FC<AccountCardProps> = ({ title, description, actions }) => {
   return (
-    <PageShell>
-      <PageHeader
-        title="Account"
-        actions={
-          <div className="flex flex-wrap gap-2">
-            <Button className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]">
-              Manage billing
-            </Button>
-            <Button
-              variant="outline"
-              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
-            >
-              Export invoices
-            </Button>
-          </div>
-        }
-      />
-      <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <p className="text-sm text-[#0d0e0e]">
-            <span className="font-bold">Reminder.</span> Keep your account details, plan
-            preferences, and security settings up to date. Use the cards below to update profile
-            information, manage billing, and control security.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-4 py-2 h-auto whitespace-nowrap"
-          >
-            Settings guide
-          </Button>
-        </div>
+    <Card className="bg-white border text-card-foreground shadow-sm rounded-xl p-6 flex flex-col gap-4 h-full">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-semibold text-lg leading-none tracking-tight text-[#0d0e0e]">{title}</h3>
+        <p className="text-sm text-gray-500">{description}</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {[
-          {
-            title: 'Profile',
-            description: 'Manage personal information, email, and notification settings.',
-          },
-          {
-            title: 'Billing',
-            description: 'Review invoices, update payment method, and download receipts.',
-          },
-          {
-            title: 'Security',
-            description: 'Update password, configure MFA, and manage sessions.',
-          },
-        ].map((card) => (
-          <Card
-            key={card.title}
-            className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_12px_30px_rgba(15,23,42,0.08)] flex flex-col"
-          >
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-[#0d0e0e]">{card.title}</CardTitle>
-              <CardDescription className="text-sm text-[#4b5652]">{card.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="mt-auto">
+      <div className="flex flex-col gap-3 mt-auto pt-2">
+        {actions.map((action, index) => {
+          if (action.type === 'button-green') {
+            return (
               <Button
-                variant="outline"
-                className="w-full rounded-[999px] text-sm flex items-center justify-center gap-2"
+                key={index}
+                className="w-fit bg-[#e2f0e9] hover:bg-[#d4e8dd] text-[#1a5948] font-medium text-sm px-4 py-2 h-auto rounded-md shadow-sm justify-between gap-2"
+                onClick={action.onClick}
               >
-                Open
+                {action.label}
                 <ArrowRight className="h-4 w-4" />
               </Button>
-            </CardContent>
-          </Card>
+            );
+          }
+          if (action.type === 'button-blue') {
+            return (
+              <Button
+                key={index}
+                className="w-fit bg-[#e0eff5] hover:bg-[#d0e5ee] text-[#2b5c70] font-medium text-sm px-4 py-2 h-auto rounded-md shadow-sm justify-between gap-2"
+                onClick={action.onClick}
+              >
+                {action.label}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            );
+          }
+          // list-item
+          return (
+            <div
+              key={index}
+              className="group flex items-center justify-between p-3 bg-[#f9fafb] border border-gray-100 rounded-lg hover:bg-gray-50 hover:border-gray-200 transition-colors cursor-pointer"
+              onClick={action.onClick}
+            >
+              <span className="text-sm font-medium text-gray-700">{action.label}</span>
+              <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+};
+
+export const AccountPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const cards: AccountCardProps[] = [
+    {
+      title: 'Company Profile',
+      description: 'Update your company information here.',
+      actions: [
+        { type: 'button-green', label: 'Edit Company Profile', onClick: () => navigate(accountRoutes.editCompanyProfile) },
+        { type: 'list-item', label: 'Update SMS sender name', onClick: () => navigate(accountRoutes.editCompanyProfile) },
+      ],
+    },
+    {
+      title: 'Subcriptions',
+      description: 'Update your subscription here.',
+      actions: [
+        { type: 'button-green', label: 'Update Subscription' },
+        { type: 'list-item', label: 'View subscription' },
+        { type: 'list-item', label: 'Add more licenses' },
+      ],
+    },
+    {
+      title: 'Department',
+      description: 'Add and manage departments here.',
+      actions: [
+        { type: 'button-blue', label: 'Add Department', onClick: () => navigate(accountRoutes.addDepartment) },
+        { type: 'list-item', label: 'View departments', onClick: () => navigate(accountRoutes.departments) },
+      ],
+    },
+    {
+      title: 'Employment Types',
+      description: 'Add and manage employment types here.',
+      actions: [
+        { type: 'button-blue', label: 'Add Employment Type' },
+        { type: 'list-item', label: 'View employment types' },
+      ],
+    },
+    {
+      title: 'Appearance',
+      description: 'Update the look and feel of your handbook.',
+      actions: [
+        { type: 'list-item', label: 'Add pictures' },
+        { type: 'list-item', label: 'Select colors' },
+      ],
+    },
+    {
+      title: 'Others',
+      description: 'Recommended next steps to make the most of your trial.',
+      actions: [
+        { type: 'list-item', label: 'Setup whistleblower system' },
+      ],
+    },
+  ];
+
+  return (
+    <PageShell>
+      <PageHeader title="Account" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {cards.map((card, index) => (
+          <AccountCard
+            key={index}
+            title={card.title}
+            description={card.description}
+            actions={card.actions}
+          />
         ))}
       </div>
     </PageShell>

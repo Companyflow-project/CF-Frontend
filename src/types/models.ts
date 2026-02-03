@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "MANAGER" | "EMPLOYEE";
+export type Role = "ADMIN" | "MANAGER" | "EMPLOYEE" | "company_admin";
 
 export interface User {
   id: string;
@@ -6,6 +6,7 @@ export interface User {
   name: string;
   role: Role;
   createdAt: string;
+  companyId?: string;
 }
 
 export interface Account {
@@ -88,5 +89,16 @@ export interface EmployeeMessageLog {
   employeeName: string;
   employeeEmail: string;
   messagePreview: string;
+}
+
+export interface CompanyProfile {
+  id: number;
+  businessName: string;
+  cvrNumber: string;
+  street: string;
+  town: string;
+  zipCode: string;
+  mobile: string;
+  logoUrl: string | null;
 }
 

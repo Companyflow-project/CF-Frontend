@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from './api-client';
+import { useAuth } from '@/context/auth-context';
 import type {
   ApiResponse,
   Company,
@@ -265,17 +266,29 @@ export const usePageContent = (
 /**
  * Hook for fetching employees list
  */
+/**
+ * Hook for fetching employees list
+ */
 export const useEmployees = (params?: EmployeesParams): UseApiState<Employee[]> => {
+  const { user } = useAuth();
   const [data, setData] = useState<Employee[] | null>(null);
   const [meta, setMeta] = useState<ApiResponse<Employee[]>['meta']>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
+    const targetCompanyId = params?.companyId || (user?.companyId ? String(user.companyId) : undefined);
+
+    if (!targetCompanyId) {
+      setLoading(false);
+      setData([]); // Return empty list if no company ID
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.getEmployees(params);
+      const response = await apiClient.getEmployees({ ...params, companyId: targetCompanyId });
       setData(response.data);
       setMeta(response.meta);
     } catch (err) {
@@ -285,7 +298,7 @@ export const useEmployees = (params?: EmployeesParams): UseApiState<Employee[]> 
     } finally {
       setLoading(false);
     }
-  }, [params?.companyId, params?.page, params?.limit, params?.search]);
+  }, [params?.companyId, params?.page, params?.limit, params?.search, user?.companyId]);
 
   useEffect(() => {
     fetchData();
@@ -298,16 +311,25 @@ export const useEmployees = (params?: EmployeesParams): UseApiState<Employee[]> 
  * Hook for fetching all employees (all pages; use when backend caps limit per request).
  */
 export const useEmployeesAll = (params?: { companyId?: string }): UseApiState<Employee[]> => {
+  const { user } = useAuth();
   const [data, setData] = useState<Employee[] | null>(null);
   const [meta, setMeta] = useState<ApiResponse<Employee[]>['meta']>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchData = useCallback(async () => {
+    const targetCompanyId = params?.companyId || (user?.companyId ? String(user.companyId) : undefined);
+
+    if (!targetCompanyId) {
+      setLoading(false);
+      setData([]);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.getEmployeesAll(params);
+      const response = await apiClient.getEmployeesAll({ ...params, companyId: targetCompanyId });
       setData(response.data);
       setMeta(response.meta);
     } catch (err) {
@@ -317,7 +339,7 @@ export const useEmployeesAll = (params?: { companyId?: string }): UseApiState<Em
     } finally {
       setLoading(false);
     }
-  }, [params?.companyId]);
+  }, [params?.companyId, user?.companyId]);
 
   useEffect(() => {
     fetchData();

@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCompanies, useEmployees } from '@/lib/api-hooks';
+import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
 import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
@@ -51,14 +51,10 @@ export const EmployeesPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data: companies } = useCompanies();
-  const companyId = companies?.length ? companies[0].id : undefined;
-
   // Use server-side search when search query exists
-  // Note: We'll make the API call even without companyId if there's a search query
+  // The hook now handles companyId from auth context automatically
   const { data: apiEmployees, loading, error, refetch } = useEmployees(
     {
-      ...(companyId && { companyId }),
       search: debouncedSearch.trim() || undefined,
       limit: debouncedSearch.trim() ? 10000 : 100,
     }

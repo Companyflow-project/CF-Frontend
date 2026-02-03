@@ -6,14 +6,42 @@ function getErrorMessage(err: unknown): string {
   return res?.error?.message ?? res?.message ?? (err instanceof Error ? err.message : 'Request failed');
 }
 
-function toUser(raw: { uid?: number; id?: string; name: string; email?: string }): User {
+const AUTH_COMPANY_KEY = 'auth_user_company';
+
+function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number }): User {
+  const id = raw.id ?? String(raw.uid ?? '');
+  const companyId = raw.companyId != null ? String(raw.companyId) : undefined;
   return {
-    id: raw.id ?? String(raw.uid ?? ''),
-    name: raw.name,
+    id,
+    name: raw.name ?? '',
     email: raw.email ?? '',
-    role: 'EMPLOYEE',
+    role: (raw.role as User['role']) ?? 'EMPLOYEE',
     createdAt: '',
+    companyId,
   };
+}
+
+function persistCompanyId(user: User): void {
+  if (user.companyId != null) {
+    try {
+      sessionStorage.setItem(AUTH_COMPANY_KEY, JSON.stringify({ userId: user.id, companyId: user.companyId }));
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function mergeStoredCompanyId(user: User): User {
+  if (user.companyId != null) return user;
+  try {
+    const stored = sessionStorage.getItem(AUTH_COMPANY_KEY);
+    if (!stored) return user;
+    const { userId, companyId } = JSON.parse(stored) as { userId?: string; companyId?: string };
+    if (userId === user.id && companyId) return { ...user, companyId };
+  } catch {
+    // ignore
+  }
+  return user;
 }
 
 export interface LoginPayload {
@@ -22,7 +50,7 @@ export interface LoginPayload {
 }
 
 export interface RegisterPayload {
-  name: string;
+  name: string; // Required - user's full name
   companyName: string;
   cvr: string;
   email: string;
@@ -44,7 +72,9 @@ export const authApi = {
       const raw = payloadData.user;
       if (token) localStorage.setItem('token', token);
       if (!raw) throw new Error('Invalid login response');
-      return toUser(raw);
+      const user = toUser(raw);
+      persistCompanyId(user);
+      return user;
     } catch (err) {
       throw new Error(getErrorMessage(err));
     }
@@ -52,12 +82,24 @@ export const authApi = {
 
   async register(payload: RegisterPayload): Promise<User> {
     try {
-      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>('/auth/register', payload);
+      // Send all required fields including name
+      const requestBody = {
+        email: payload.email,
+        password: payload.password,
+        name: payload.name || payload.email, // Fallback to email if name not provided
+        companyName: payload.companyName,
+        cvr: payload.cvr,
+      };
+      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>('/auth/register', requestBody);
       const body = response.data;
       const payloadData = body.data ?? body;
+
       if (payloadData.token) localStorage.setItem('token', payloadData.token);
       if (!payloadData.user) throw new Error('Invalid register response');
-      return toUser(payloadData.user as Parameters<typeof toUser>[0]);
+
+      const user = toUser(payloadData.user as Parameters<typeof toUser>[0]);
+      persistCompanyId(user);
+      return user;
     } catch (err) {
       throw new Error(getErrorMessage(err));
     }
@@ -68,10 +110,11 @@ export const authApi = {
       return null;
     }
     try {
-      const response = await axiosClient.get<{ data: { uid: number; name: string; email?: string } }>('/auth/me');
+      const response = await axiosClient.get<{ data: { uid: number; name: string; email?: string; role?: string; companyId?: string | number } }>('/auth/me');
       const raw = response.data?.data;
       if (!raw) return null;
-      return toUser(raw);
+      const user = toUser(raw);
+      return mergeStoredCompanyId(user);
     } catch {
       return null;
     }
@@ -83,6 +126,11 @@ export const authApi = {
       await axiosClient.post<{ data: { message: string }; error: null }>('/auth/logout');
     } finally {
       localStorage.removeItem('token');
+      try {
+        sessionStorage.removeItem(AUTH_COMPANY_KEY);
+      } catch {
+        // ignore
+      }
     }
   },
 };

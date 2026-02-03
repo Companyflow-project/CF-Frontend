@@ -15,6 +15,10 @@ import { HandbookPage } from '@/features/handbook/pages/handbook-page';
 import { EditThemePage } from '@/features/handbook/pages/edit-theme-page';
 import { ContactsPage } from '@/features/contacts/pages/contacts-page';
 import { AccountPage } from '@/features/account/pages/account-page';
+import { EditCompanyProfilePage } from '@/features/account/pages/edit-company-profile-page';
+import { AddDepartmentPage } from '@/features/account/pages/add-department-page';
+import { ViewDepartmentsPage } from '@/features/account/pages/view-departments-page';
+import { EditDepartmentPage } from '@/features/account/pages/edit-department-page';
 import { CompaniesPage } from '@/features/companies/pages/companies-page';
 import { CompanyDetailPage } from '@/features/companies/pages/company-detail-page';
 import { HandbookViewerPage } from '@/features/handbook/pages/handbook-viewer-page';
@@ -179,6 +183,46 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <AccountPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={accountRoutes.editCompanyProfile}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <EditCompanyProfilePage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={accountRoutes.departments}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <ViewDepartmentsPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={accountRoutes.addDepartment}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <AddDepartmentPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={accountRoutes.editDepartment}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <EditDepartmentPage />
               </AppLayout>
             </RequireAuth>
           }
