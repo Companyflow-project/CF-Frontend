@@ -53,4 +53,13 @@ export const employmentTypesApi = {
         const response = await axiosClient.post<AssignEmploymentTypeResponse>('/employees/assign-type', payload);
         return response.data.data;
     },
+
+    async updateEmploymentType(id: string | number, payload: Partial<CreateEmploymentTypePayload>): Promise<EmploymentType> {
+        const response = await axiosClient.put<{ data: EmploymentType; error: null }>(`/employment-types/${id}`, payload);
+        return response.data.data;
+    },
+
+    async deleteEmploymentType(id: string | number): Promise<void> {
+        await axiosClient.delete(`/employment-types/${id}`);
+    },
 };

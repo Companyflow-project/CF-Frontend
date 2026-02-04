@@ -42,3 +42,29 @@ export const useAssignEmploymentType = () => {
         },
     });
 };
+
+export const useUpdateEmploymentType = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, payload }: { id: string | number; payload: Partial<CreateEmploymentTypePayload> }) =>
+            employmentTypesApi.updateEmploymentType(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['employment-types'] });
+            queryClient.invalidateQueries({ queryKey: ['employment-type'] });
+        },
+    });
+};
+
+export const useDeleteEmploymentType = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string | number) =>
+            employmentTypesApi.deleteEmploymentType(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['employment-types'] });
+        },
+    });
+};
+

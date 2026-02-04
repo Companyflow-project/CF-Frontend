@@ -6,45 +6,103 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { ArrowLeft, Upload } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
 
-import { useDepartment } from '@/features/departments/hooks';
+import { useDepartment, useUpdateDepartment, useDeleteDepartment } from '@/features/departments/hooks';
+import type { Department } from '@/features/departments/api';
+import { useAuth } from '@/context/auth-context';
+import { useEmployees } from '@/lib/api-hooks';
+import { HelpBanner } from '@/components/ui/help-banner';
 
 export const EditDepartmentPage: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
+    const location = useLocation() as { state?: { department?: Department } };
 
-    const { data: department, isLoading } = useDepartment(id);
+    const departmentFromState = location.state?.department;
 
-    const [formData, setFormData] = useState({
+    // Only fetch from API if we don't already have the department from navigation state
+    const shouldFetch = !departmentFromState && id && id !== 'undefined';
+    const { data: departmentFromApi, isLoading } = useDepartment(shouldFetch ? id : undefined);
+    const department = (departmentFromState || departmentFromApi) ?? null;
+    const updateMutation = useUpdateDepartment();
+    const deleteMutation = useDeleteDepartment();
+
+    // Fetch employees for manager dropdown
+    const { user } = useAuth();
+    const companyId = user?.companyId ? String(user.companyId) : undefined;
+    const { data: employees } = useEmployees({ companyId });
+
+    const emptyForm = {
         departmentName: '',
         description: '',
         email: '',
         telephone: '',
         manager: '',
+        managerId: null as number | null,
         nameAndLogo: '',
-    });
+    };
+
+    const [formData, setFormData] = useState(emptyForm);
 
     useEffect(() => {
         if (department) {
             setFormData({
-                departmentName: department.name || '',
-                description: department.description || '',
-                email: department.email || '',
-                telephone: department.telephone || '',
-                manager: department.managerName || '',
-                nameAndLogo: '', // Placeholder
+                departmentName: department.name ?? '',
+                description: department.description ?? '',
+                email: department.email ?? '',
+                telephone: department.telephone ?? '',
+                manager: department.managerName ?? '',
+                managerId: department.managerId ?? null,
+                nameAndLogo: '',
             });
         }
     }, [department]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission - Backend is currently read-only for departments
-        console.log('Update not supported yet:', formData);
+
+        if (!id) {
+            toast.error('Department ID is missing');
+            return;
+        }
+
+        try {
+            await updateMutation.mutateAsync({
+                id,
+                payload: {
+                    name: formData.departmentName,
+                    description: formData.description,
+                    email: formData.email,
+                    telephone: formData.telephone,
+                    managerName: formData.manager,
+                    managerId: formData.managerId,
+                },
+            });
+
+            toast.success('Department updated successfully');
+            navigate('/account/departments');
+        } catch (error) {
+            console.error('Failed to update department:', error);
+            toast.error('Failed to update department. Please try again.');
+        }
     };
 
-    if (isLoading) {
+    if (!id && !department) {
+        return (
+            <PageShell>
+                <div className="p-8 text-center">
+                    <p className="text-red-500 mb-4">Invalid department.</p>
+                    <Button variant="outline" onClick={() => navigate('/account/departments')}>
+                        Back to departments
+                    </Button>
+                </div>
+            </PageShell>
+        );
+    }
+
+    if (isLoading && !department) {
         return <PageShell><div className="p-8 text-center bg-[#fff9f0]">Loading department...</div></PageShell>;
     }
 
@@ -52,11 +110,18 @@ export const EditDepartmentPage: React.FC = () => {
         return <PageShell><div className="p-8 text-center text-red-500">Department not found</div></PageShell>;
     }
 
-    const handleDelete = () => {
-        // Handle department deletion
+    const handleDelete = async () => {
+        if (!id) return;
+
         if (window.confirm('Are you sure you want to remove this department?')) {
-            console.log('Delete not supported yet:', id);
-            // navigate('/account/departments'); 
+            try {
+                await deleteMutation.mutateAsync(id);
+                toast.success('Department deleted successfully');
+                navigate('/account/departments');
+            } catch (error) {
+                console.error('Failed to delete department:', error);
+                toast.error('Failed to delete department. Please try again.');
+            }
         }
     };
 
@@ -86,17 +151,9 @@ export const EditDepartmentPage: React.FC = () => {
                 </div>
 
                 {/* Help Banner */}
-                <div className="mb-6 bg-[#fff9f0] rounded-lg border-l-4 border-[#f59e0b] p-4 flex items-start justify-between">
-                    <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">Help.</span> Here you can create or edit a single department. The department must have a name, but otherwise there are no requirements for what must be included.
-                    </p>
-                    <Button
-                        variant="link"
-                        className="text-[#0d0e0e] underline whitespace-nowrap"
-                    >
-                        User manual
-                    </Button>
-                </div>
+                <HelpBanner className="mb-6">
+                    Here you can edit an existing department. Update the department name, description, contact information, and assign a manager as needed.
+                </HelpBanner>
 
                 <div className="flex justify-end gap-3 mb-4">
                     <Button
@@ -191,13 +248,24 @@ export const EditDepartmentPage: React.FC = () => {
                                 </Label>
                                 <Select
                                     id="manager"
-                                    value={formData.manager}
-                                    onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
+                                    value={formData.managerId?.toString() || ''}
+                                    onChange={(e) => {
+                                        const selectedId = e.target.value;
+                                        const selectedEmployee = employees?.find(emp => String(emp.id) === selectedId);
+                                        setFormData({
+                                            ...formData,
+                                            managerId: selectedId ? parseInt(selectedId, 10) : null,
+                                            manager: selectedEmployee?.name || ''
+                                        });
+                                    }}
                                     className="mt-1"
                                 >
-                                    <option value="">None</option>
-                                    <option value="manager1">Manager 1</option>
-                                    <option value="manager2">Manager 2</option>
+                                    <option value="">Select a manager...</option>
+                                    {employees?.map(employee => (
+                                        <option key={employee.id} value={employee.id}>
+                                            {employee.name}
+                                        </option>
+                                    ))}
                                 </Select>
                             </div>
 
@@ -216,11 +284,6 @@ export const EditDepartmentPage: React.FC = () => {
                     </div>
                 </div>
             </form>
-
-            {/* Footer */}
-            <div className="mt-8 text-center text-sm text-gray-500">
-                © 2025 CompanyFlow. All rights reserved.
-            </div>
         </PageShell>
     );
 };

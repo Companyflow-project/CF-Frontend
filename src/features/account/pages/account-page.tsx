@@ -112,8 +112,7 @@ export const AccountPage: React.FC = () => {
       title: 'Appearance',
       description: 'Update the look and feel of your handbook.',
       actions: [
-        { type: 'list-item', label: 'Add pictures' },
-        { type: 'list-item', label: 'Select colors' },
+        { type: 'button-green', label: 'Edit Appearance', onClick: () => navigate(accountRoutes.appearance) },
       ],
     },
     {

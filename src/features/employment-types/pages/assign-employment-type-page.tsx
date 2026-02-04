@@ -196,10 +196,6 @@ export const AssignEmploymentTypePage: React.FC = () => {
                     {assignMutation.isPending ? 'Assigning...' : 'Assign employment type'}
                 </Button>
             </div>
-
-            <div className="mt-8 text-center text-sm text-gray-500">
-                © 2025 CompanyFlow. All rights reserved.
-            </div>
         </PageShell>
     );
 };

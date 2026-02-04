@@ -16,6 +16,7 @@ import { EditThemePage } from '@/features/handbook/pages/edit-theme-page';
 import { ContactsPage } from '@/features/contacts/pages/contacts-page';
 import { AccountPage } from '@/features/account/pages/account-page';
 import { EditCompanyProfilePage } from '@/features/account/pages/edit-company-profile-page';
+import { AppearancePage } from '@/features/account/pages/appearance-page';
 import { AddDepartmentPage } from '@/features/account/pages/add-department-page';
 import { ViewDepartmentsPage } from '@/features/account/pages/view-departments-page';
 import { EditDepartmentPage } from '@/features/account/pages/edit-department-page';
@@ -194,6 +195,16 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <EditCompanyProfilePage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={accountRoutes.appearance}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <AppearancePage />
               </AppLayout>
             </RequireAuth>
           }

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/auth-context';
 import { useCompanyProfile, useUpdateCompanyProfile } from '@/features/companies/hooks';
 import { toast } from 'sonner';
+import { HelpBanner } from '@/components/ui/help-banner';
 
 export const EditCompanyProfilePage: React.FC = () => {
     const navigate = useNavigate();
@@ -192,20 +193,9 @@ export const EditCompanyProfilePage: React.FC = () => {
                 </div>
 
                 {/* Help Banner */}
-                <div className="mb-8 bg-[#fff9f0] rounded-[12px] border border-[#fef3c7] shadow-sm p-5 relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#f59e0b]" />
-                    <div className="flex items-start justify-between gap-4">
-                        <p className="text-[15px] leading-[24px] text-[#0d0e0e] max-w-[800px]">
-                            <span className="font-bold">Help.</span> Here you can enter and edit your company's master data. This is the data that is used in the handbook. This is the same data we use when we need to contact your company. This data is also used on the invoices we send.
-                        </p>
-                        <Button
-                            variant="outline"
-                            className="bg-white border-[#e5e7eb] text-[#0d0e0e] hover:bg-gray-50 h-[36px] px-4 text-sm font-medium rounded-[8px] shadow-sm whitespace-nowrap"
-                        >
-                            User manual
-                        </Button>
-                    </div>
-                </div>
+                <HelpBanner className="mb-8">
+                    Here you can enter and edit your company's master data. This is the data that is used in the handbook. This is the same data we use when we need to contact your company. This data is also used on the invoices we send.
+                </HelpBanner>
 
                 {/* Save Button */}
                 <div className="flex justify-end mb-8">
@@ -276,6 +266,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                                     <Label className="text-[15px] font-bold text-[#0d0e0e]">Sender name</Label>
                                     <Input
                                         value="MySigrid"
+                                        readOnly
                                         className="h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e]"
                                     />
                                 </div>

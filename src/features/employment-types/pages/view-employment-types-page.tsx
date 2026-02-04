@@ -11,20 +11,43 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { ArrowLeft, Users, Pencil, Trash2 } from 'lucide-react';
-import { useEmploymentTypes } from '@/features/employment-types/hooks';
+import { useEmploymentTypes, useDeleteEmploymentType } from '@/features/employment-types/hooks';
 import { useAuth } from '@/context/auth-context';
 import { AddEmploymentTypeDialog } from './add-employment-type-page';
+import { EditEmploymentTypeDialog } from './edit-employment-type-page';
+import { HelpBanner } from '@/components/ui/help-banner';
+import { toast } from 'sonner';
 
 export const ViewEmploymentTypesPage: React.FC = () => {
     const navigate = useNavigate();
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
     const { user } = useAuth();
     const companyId = user?.companyId ? String(user.companyId) : undefined;
 
     const { data: employmentTypes, isLoading } = useEmploymentTypes(companyId);
+    const deleteMutation = useDeleteEmploymentType();
 
     const handleAssignToEmployees = (typeId: number, typeName: string) => {
         navigate(`/account/employment-types/${typeId}/assign`, { state: { typeName } });
+    };
+
+    const handleEdit = (typeId: number) => {
+        setSelectedTypeId(typeId);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleDelete = async (typeId: number, typeName: string) => {
+        if (window.confirm(`Are you sure you want to delete the employment type "${typeName}"? This action cannot be undone.`)) {
+            try {
+                await deleteMutation.mutateAsync(typeId);
+                toast.success('Employment type deleted successfully');
+            } catch (error) {
+                console.error('Failed to delete employment type:', error);
+                toast.error('Failed to delete employment type. Please try again.');
+            }
+        }
     };
 
     return (
@@ -52,17 +75,9 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                 </div>
 
                 {/* Help Banner */}
-                <div className="mb-6 bg-[#fff9f0] rounded-lg border-l-4 border-[#f59e0b] p-4 flex items-start justify-between">
-                    <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">Help.</span> Here you can view and update all available employment types.
-                    </p>
-                    <Button
-                        variant="link"
-                        className="text-[#0d0e0e] underline whitespace-nowrap"
-                    >
-                        User manual
-                    </Button>
-                </div>
+                <HelpBanner className="mb-6">
+                    Here you can view and manage all available employment types. Employment types help you categorize your employees and assign them to different groups.
+                </HelpBanner>
             </div>
 
             {/* Employment Types Table */}
@@ -89,8 +104,8 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            employmentTypes.map((type) => (
-                                <TableRow key={type.id} className="hover:bg-gray-50">
+                            employmentTypes.map((type, index) => (
+                                <TableRow key={`${type.id}-${index}`} className="hover:bg-gray-50">
                                     <TableCell className="font-medium text-[#0d0e0e]">{type.name}</TableCell>
                                     <TableCell className="text-gray-700">{type.description || '-'}</TableCell>
                                     <TableCell>
@@ -107,7 +122,7 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => navigate(`/account/employment-types/edit/${type.id}`)}
+                                                onClick={() => handleEdit(type.id)}
                                                 className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                                 title="Edit"
                                             >
@@ -116,12 +131,7 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => {
-                                                    if (window.confirm(`Delete employment type "${type.name}"?`)) {
-                                                        // TODO: Implement delete
-                                                        console.log('Delete:', type.id);
-                                                    }
-                                                }}
+                                                onClick={() => handleDelete(type.id, type.name)}
                                                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                                                 title="Delete"
                                             >
@@ -136,15 +146,17 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                 </Table>
             </div>
 
-            {/* Footer */}
-            <div className="mt-8 text-center text-sm text-gray-500">
-                © 2025 CompanyFlow. All rights reserved.
-            </div>
-
             {/* Add Employment Type Dialog */}
             <AddEmploymentTypeDialog
                 open={isAddDialogOpen}
                 onOpenChange={setIsAddDialogOpen}
+            />
+
+            {/* Edit Employment Type Dialog */}
+            <EditEmploymentTypeDialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                employmentTypeId={selectedTypeId}
             />
         </PageShell>
     );

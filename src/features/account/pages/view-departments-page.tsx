@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useDepartments } from '@/features/departments/hooks';
 import { useAuth } from '@/context/auth-context';
+import { HelpBanner } from '@/components/ui/help-banner';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
@@ -24,9 +25,9 @@ export const ViewDepartmentsPage: React.FC = () => {
     const { user } = useAuth();
     const companyId = user?.companyId ? String(user.companyId) : undefined;
 
-    const { data: departmentsData, isLoading } = useDepartments(companyId);
+    const { data: departments, isLoading } = useDepartments(companyId);
 
-    const departments = departmentsData?.data || [];
+    const departmentRows = departments || [];
 
     const getFullLogoUrl = (path: string | null) => {
         if (!path) return null;
@@ -60,17 +61,9 @@ export const ViewDepartmentsPage: React.FC = () => {
                 </div>
 
                 {/* Help Banner */}
-                <div className="mb-6 bg-[#fff9f0] rounded-lg border-l-4 border-[#f59e0b] p-4 flex items-start justify-between">
-                    <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">Help.</span> Here you can create or edit a single department. The department must have a name, but otherwise there are no requirements for what must be included.
-                    </p>
-                    <Button
-                        variant="link"
-                        className="text-[#0d0e0e] underline whitespace-nowrap"
-                    >
-                        User manual
-                    </Button>
-                </div>
+                <HelpBanner className="mb-6">
+                    Here you can view all departments in your organization. Click on a department to edit its details, or use the "Add New Department" button to create a new one.
+                </HelpBanner>
 
                 {/* Sort Controls */}
                 <div className="flex items-center gap-4 mb-4">
@@ -106,14 +99,14 @@ export const ViewDepartmentsPage: React.FC = () => {
                                     Loading departments...
                                 </TableCell>
                             </TableRow>
-                        ) : departments.length === 0 ? (
+                        ) : departmentRows.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                                     No departments found.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            departments.map((dept) => (
+                            departmentRows.map((dept) => (
                                 <TableRow key={dept.id} className="hover:bg-gray-50">
                                     <TableCell>
                                         {dept.logoUrl && (
@@ -124,23 +117,19 @@ export const ViewDepartmentsPage: React.FC = () => {
                                             />
                                         )}
                                     </TableCell>
-                                    <TableCell className="font-medium text-[#0d0e0e]">{dept.name}</TableCell>
-                                    <TableCell className="text-gray-700">
-                                        {dept.managerId ? (
-                                            <Button variant="link" className="p-0 h-auto font-normal text-blue-600" onClick={() => navigate(`/account/users/${dept.managerId}`)}>
-                                                {dept.managerName}
-                                            </Button>
-                                        ) : (
-                                            dept.managerName || '-'
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-gray-700">{dept.email || '-'}</TableCell>
-                                    <TableCell className="text-gray-700 truncate max-w-[200px]">{dept.description || '-'}</TableCell>
+                                    <TableCell className="font-medium text-[#0d0e0e] whitespace-nowrap">{dept.name}</TableCell>
+                                    <TableCell className="text-gray-700 whitespace-nowrap">{dept.managerName || '-'}</TableCell>
+                                    <TableCell className="text-gray-700 whitespace-nowrap">{dept.email || '-'}</TableCell>
+                                    <TableCell className="text-gray-700 whitespace-normal min-w-[250px]">{dept.description || '-'}</TableCell>
                                     <TableCell>
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => navigate(`/account/departments/edit/${dept.id}`)}
+                                            onClick={() =>
+                                                navigate(`/account/departments/edit/${dept.id}`, {
+                                                    state: { department: dept },
+                                                })
+                                            }
                                             className="h-8 w-8 p-0 text-[#2f946f] hover:text-[#2f946f]/80 hover:bg-[#2f946f]/10"
                                         >
                                             <Pencil className="h-4 w-4" />
@@ -151,11 +140,6 @@ export const ViewDepartmentsPage: React.FC = () => {
                         )}
                     </TableBody>
                 </Table>
-            </div>
-
-            {/* Footer */}
-            <div className="mt-8 text-center text-sm text-gray-500">
-                © 2025 CompanyFlow. All rights reserved.
             </div>
         </PageShell>
     );

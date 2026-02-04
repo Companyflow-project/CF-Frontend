@@ -1,6 +1,12 @@
 import { axiosClient } from '@/lib/axios-client';
 import { Account } from '@/types/models';
 
+
+export interface CompanyAppearance {
+  pictureType: string; // 'none' | 'small' | 'photographs'
+  colors: Record<string, string>;
+}
+
 // Backend Company model
 interface BackendCompany {
   id: string;
@@ -35,6 +41,16 @@ export const accountApi = {
   async updateAccount(_payload: Partial<Account>): Promise<Account> {
     // Backend is read-only, this would need to be implemented if write operations are added
     throw new Error('Update account not supported by read-only API');
+  },
+
+  async getCompanyAppearance(): Promise<CompanyAppearance> {
+    const response = await axiosClient.get<{ data: CompanyAppearance; error: null }>('/company/appearance');
+    return response.data.data || { pictureType: 'none', colors: {} };
+  },
+
+  async updateCompanyAppearance(payload: CompanyAppearance): Promise<{ success: boolean; message: string }> {
+    const response = await axiosClient.put<{ data: { success: boolean; message: string }; error: null }>('/company/appearance', payload);
+    return response.data.data;
   },
 };
 

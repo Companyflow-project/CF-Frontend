@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Account } from '@/types/models';
-import { accountApi } from './api';
+import { accountApi, CompanyAppearance } from './api';
 
 export const useAccount = () => {
   const [data, setData] = useState<Account | null>(null);
@@ -25,6 +26,24 @@ export const useAccount = () => {
     fetchAccount();
   }, []);
 
-  return { data, loading, error, refetch: () => {} };
+  return { data, loading, error, refetch: () => { } };
+};
+
+export const useCompanyAppearance = () => {
+  return useQuery({
+    queryKey: ['company-appearance'],
+    queryFn: () => accountApi.getCompanyAppearance(),
+  });
+};
+
+export const useUpdateCompanyAppearance = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CompanyAppearance) => accountApi.updateCompanyAppearance(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['company-appearance'] });
+    },
+  });
 };
 

@@ -7,28 +7,66 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+
+import { accountRoutes } from '@/features/account/routes';
+import { useCreateDepartment } from '@/features/departments/hooks';
+import { useAuth } from '@/context/auth-context';
+import { useEmployees } from '@/lib/api-hooks';
+import { HelpBanner } from '@/components/ui/help-banner';
 
 export const AddDepartmentPage: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const createMutation = useCreateDepartment();
+
+    // Fetch employees for manager dropdown
+    const companyId = user?.companyId ? String(user.companyId) : undefined;
+    const { data: employees } = useEmployees({ companyId });
+
     const [formData, setFormData] = useState({
         departmentName: '',
         description: '',
         email: '',
         telephone: '',
         manager: '',
+        managerId: null as number | null,
         nameAndLogo: '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission
-        console.log('Form submitted:', formData);
+
+        if (!user?.companyId) {
+            toast.error('No company linked. Please log in again.');
+            return;
+        }
+
+        try {
+            const created = await createMutation.mutateAsync({
+                name: formData.departmentName,
+                description: formData.description,
+                email: formData.email,
+                telephone: formData.telephone,
+                managerName: formData.manager,
+                managerId: formData.managerId,
+                companyId: user.companyId,
+            });
+
+            toast.success('Department created successfully');
+            navigate(accountRoutes.editDepartment.replace(':id', String(created.id)));
+        } catch (error) {
+            console.error('Failed to create department:', error);
+            toast.error('Failed to create department. Please try again.');
+        }
     };
 
     return (
         <PageShell>
+            {/* ... omitting unchanged parts ... */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-6">
+                    {/* ... header ... */}
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
@@ -51,17 +89,9 @@ export const AddDepartmentPage: React.FC = () => {
                 </div>
 
                 {/* Help Banner */}
-                <div className="mb-6 bg-[#fff9f0] rounded-lg border-l-4 border-[#f59e0b] p-4 flex items-start justify-between">
-                    <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">Help.</span> Here you can create or edit a single department. The department must have a name, but otherwise there are no requirements for what must be included.
-                    </p>
-                    <Button
-                        variant="link"
-                        className="text-[#0d0e0e] underline whitespace-nowrap"
-                    >
-                        User manual
-                    </Button>
-                </div>
+                <HelpBanner className="mb-6">
+                    Here you can create a new department. The department must have a name, but otherwise there are no requirements for what must be included.
+                </HelpBanner>
 
                 <div className="flex justify-end mb-4">
                     <Button
@@ -82,7 +112,7 @@ export const AddDepartmentPage: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Logo Upload */}
+                        {/* Logo Upload - unchanged */}
                         <div className="flex flex-col items-center justify-center">
                             <div className="w-48 h-48 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
                                 <Upload className="h-8 w-8 text-gray-400 mb-2" />
@@ -149,13 +179,24 @@ export const AddDepartmentPage: React.FC = () => {
                                 </Label>
                                 <Select
                                     id="manager"
-                                    value={formData.manager}
-                                    onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
+                                    value={formData.managerId?.toString() || ''}
+                                    onChange={(e) => {
+                                        const selectedId = e.target.value;
+                                        const selectedEmployee = employees?.find(emp => String(emp.id) === selectedId);
+                                        setFormData({
+                                            ...formData,
+                                            managerId: selectedId ? parseInt(selectedId, 10) : null,
+                                            manager: selectedEmployee?.name || ''
+                                        });
+                                    }}
                                     className="mt-1"
                                 >
-                                    <option value="">None</option>
-                                    <option value="manager1">Manager 1</option>
-                                    <option value="manager2">Manager 2</option>
+                                    <option value="">Select a manager...</option>
+                                    {employees?.map(employee => (
+                                        <option key={employee.id} value={employee.id}>
+                                            {employee.name}
+                                        </option>
+                                    ))}
                                 </Select>
                             </div>
 
@@ -174,11 +215,6 @@ export const AddDepartmentPage: React.FC = () => {
                     </div>
                 </div>
             </form>
-
-            {/* Footer */}
-            <div className="mt-8 text-center text-sm text-gray-500">
-                © 2025 CompanyFlow. All rights reserved.
-            </div>
         </PageShell>
     );
 };
