@@ -4,7 +4,6 @@ import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
 import { useCompanies } from '@/lib/api-hooks';
-import type { Company } from '@/lib/api-types';
 
 export const CompaniesPage: React.FC = () => {
   const [page, setPage] = useState(1);

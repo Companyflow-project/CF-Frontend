@@ -20,7 +20,7 @@ export const HandbookPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const { data: sections, loading: sectionsLoading, error: sectionsError } = useHandbookSections();
-  const { data: pages, loading: pagesLoading, error: pagesError } = useHandbookPages(activeSection || undefined);
+  const { data: pages } = useHandbookPages(activeSection || undefined);
 
   const filteredPages = pages.filter((page) => {
     if (statusFilter && page.status !== statusFilter) return false;

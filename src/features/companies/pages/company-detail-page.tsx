@@ -6,7 +6,6 @@ import { EmptyState } from '@/components/common/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useCompany, useCompanyContacts, useCompanyHandbooks } from '@/lib/api-hooks';
-import type { Contact, Handbook } from '@/lib/api-types';
 
 export const CompanyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
