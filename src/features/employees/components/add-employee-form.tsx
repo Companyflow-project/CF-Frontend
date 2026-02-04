@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Upload } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
+import { useEmploymentTypes } from '@/features/employment-types/hooks';
 
 export interface EmployeeFormData {
   name: string;
@@ -30,6 +32,23 @@ interface AddEmployeeFormProps {
 }
 
 export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors }) => {
+  const { user } = useAuth();
+  const companyId = user?.companyId ? String(user.companyId) : undefined;
+  const { data: employmentTypes, isLoading: employmentTypesLoading } = useEmploymentTypes(companyId);
+
+  const uniqueEmploymentTypes = React.useMemo(
+    () => {
+      if (!employmentTypes) return [];
+      const seen = new Set<number>();
+      return employmentTypes.filter((type) => {
+        if (seen.has(type.id)) return false;
+        seen.add(type.id);
+        return true;
+      });
+    },
+    [employmentTypes],
+  );
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -214,31 +233,63 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
             <Label className="text-sm font-medium">
               Employment type <span className="text-red-500">*</span>
             </Label>
-            <RadioGroup
-              value={formData.employmentType}
-              onValueChange={(value) => onChange({ ...formData, employmentType: value })}
-              className="mt-2"
-            >
-              <RadioGroupItem value="none" id="employment-none">
-                No employment type
-              </RadioGroupItem>
-            </RadioGroup>
+            <div className="mt-2 space-y-2">
+              <RadioGroup
+                value={formData.employmentType}
+                onValueChange={(value) => onChange({ ...formData, employmentType: value })}
+                className="space-y-2"
+              >
+                <RadioGroupItem value="none" id="employment-none">
+                  No employment type
+                </RadioGroupItem>
+                {companyId &&
+                  !employmentTypesLoading &&
+                  uniqueEmploymentTypes.length > 0 &&
+                  uniqueEmploymentTypes.map((type) => (
+                    <RadioGroupItem
+                      key={type.id}
+                      value={String(type.id)}
+                      id={`employment-${type.id}`}
+                    >
+                      {type.name}
+                    </RadioGroupItem>
+                  ))}
+              </RadioGroup>
+              {companyId && employmentTypesLoading && (
+                <p className="text-xs text-gray-500">Loading employment types…</p>
+              )}
+              {companyId &&
+                !employmentTypesLoading &&
+                uniqueEmploymentTypes.length === 0 && (
+                  <p className="text-xs text-gray-500">No employment types created yet.</p>
+                )}
+            </div>
           </div>
 
           {/* Status */}
-          <div className="flex items-center justify-between py-2">
-            <div>
-              <Label className="text-sm font-medium">Status</Label>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium text-green-700">ACTIVE</span>
-              </div>
-              <span className="text-xs text-gray-600">
-                Untick to block access, but keep the employee in the list without the license counting.
+          <div className="flex flex-wrap items-center gap-3 py-2">
+            <Label className="text-sm font-medium">Status</Label>
+            <button
+              type="button"
+              onClick={() => onChange({ ...formData, status: !formData.status })}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded transition-colors ${
+                formData.status
+                  ? 'bg-green-50 text-green-700'
+                  : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  formData.status ? 'bg-green-500' : 'bg-gray-400'
+                }`}
+              />
+              <span className="text-sm font-medium">
+                {formData.status ? 'ACTIVE' : 'INACTIVE'}
               </span>
-            </div>
+            </button>
+            <span className="text-xs text-gray-600">
+              Untick to block access, but keep the employee in the list without the license counting.
+            </span>
           </div>
 
           {/* Permissions */}

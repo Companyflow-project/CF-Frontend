@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
-import { PageHeader } from '@/components/common/page-header';
 import { HelpBanner } from '@/components/common/help-banner';
 import { AddEmployeeForm, EmployeeFormData } from '../components/add-employee-form';
 import { Button } from '@/components/ui/button';
@@ -108,55 +107,57 @@ export const AddEmployeePage: React.FC = () => {
 
   return (
     <PageShell>
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center gap-3">
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBack}
+              className="h-9 px-3"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+            <h1 className="text-2xl font-bold text-[#0d0e0e]">Add employee</h1>
+          </div>
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBack}
-            className="flex items-center gap-2"
+            className="bg-teal-600 hover:bg-teal-700"
+            onClick={handleSave}
+            disabled={isSubmitting}
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back
+            <Save className="h-4 w-4 mr-2" />
+            {isSubmitting ? 'Saving...' : 'Save information'}
           </Button>
-          <PageHeader title="Add employee" />
         </div>
-        <Button
-          className="sticky top-4 bg-teal-600 hover:bg-teal-700"
-          onClick={handleSave}
-          disabled={isSubmitting}
-        >
-          <Save className="h-4 w-4 mr-2" />
-          {isSubmitting ? 'Saving...' : 'Save information'}
-        </Button>
+
+        <HelpBanner
+          title="Help."
+          description="Create, edit, and remove employees. Send a message with a handbook link, and re-send when needed. Choose which profiles are Public (visible in the info list) per employee or use the bulk visibility buttons. Use work email@phones where possible so notifications arrive reliably."
+          linkText="User manual"
+          linkHref="#"
+        />
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-800 font-medium">{successMessage}</p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {generalError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800 font-medium">{generalError}</p>
+          </div>
+        )}
+
+        <AddEmployeeForm
+          formData={formData}
+          onChange={setFormData}
+          errors={errors}
+        />
       </div>
-
-      <HelpBanner
-        title="Help."
-        description="Create, edit, and remove employees. Send a message with a handbook link, and re-send when needed. Choose which profiles are Public (visible in the info list) per employee or use the bulk visibility buttons. Use work email@phones where possible so notifications arrive reliably."
-        linkText="User manual"
-        linkHref="#"
-      />
-
-      {/* Success Message */}
-      {successMessage && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800 font-medium">{successMessage}</p>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {generalError && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-800 font-medium">{generalError}</p>
-        </div>
-      )}
-
-      <AddEmployeeForm
-        formData={formData}
-        onChange={setFormData}
-        errors={errors}
-      />
     </PageShell>
   );
 };
