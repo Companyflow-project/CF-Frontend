@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <script type="text/javascript">
+      // GitHub Pages SPA routing support (works with the 404.html redirect)
+      ;(function (l) {
+        // Expect URLs like /CF-Frontend/?/path/to/page
+        if (l.search && l.search[1] === '/') {
+          var decodedPath = l.search
+            .slice(2) // drop leading "?/"
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&')
+            })
+            .join('?')
+
+          // Preserve the project base path (e.g. "/CF-Frontend")
+          var basePath = l.pathname.replace(/\/$/, '')
+
+          window.history.replaceState(
+            null,
+            null,
+            basePath + '/' + decodedPath + l.hash
+          )
+        }
+      })(window.location)
+    </script>
+    <title>CompanyFlow</title>
+    <script type="module" crossorigin src="/assets/index-C6az9EWr.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BMADqkDE.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+

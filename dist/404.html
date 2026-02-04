@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <p>Redirecting…</p>
+    <script type="text/javascript">
+      // Based on https://github.com/rafgraph/spa-github-pages
+      ;(function () {
+        var l = window.location
+
+        // For GitHub project pages, the repo name is one path segment (e.g. /CF-Frontend)
+        var segmentCount = 1
+
+        var newUrl =
+          l.protocol +
+          '//' +
+          l.hostname +
+          (l.port ? ':' + l.port : '') +
+          l.pathname
+            .split('/')
+            .slice(0, 1 + segmentCount)
+            .join('/') +
+          '/?/' +
+          l.pathname
+            .slice(1)
+            .split('/')
+            .slice(segmentCount)
+            .join('/')
+            .replace(/&/g, '~and~') +
+          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash
+
+        l.replace(newUrl)
+      })()
+    </script>
+  </body>
+</html>
+
+
