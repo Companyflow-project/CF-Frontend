@@ -1,0 +1,228 @@
+// Type definitions based on OpenAPI spec
+
+export interface ApiResponse<T> {
+  data: T;
+  meta?: PaginationMeta;
+  error: null;
+}
+
+export interface ApiErrorResponse {
+  data: null;
+  meta: null;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+}
+
+export interface PaginationMeta {
+  page?: number | null;
+  limit?: number | null;
+  total?: number;
+  offset?: number;
+}
+
+// Company types
+export interface Company {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  companyCity?: string | null;
+  companyCvr?: string | null;
+}
+
+// Contact types
+export interface Contact {
+  nid: number;
+  title: string;
+  uid: number;
+  created: number;
+  changed: number;
+  status: number;
+}
+
+// Handbook types
+export interface Handbook {
+  id: string;
+  title: string;
+  companyId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// HandbookPage types (actual API response structure)
+// Note: The API response only includes nid, title, uid, created, changed, status
+// The OpenAPI spec mentions handbookId, parentId, depth, weight, hasChildren
+// but these are not present in the actual response
+export interface HandbookPage {
+  nid: number;
+  title: string;
+  uid: number;
+  created: number;
+  changed: number;
+  status: number;
+  // These fields are in the OpenAPI spec but not in actual API responses
+  handbookId?: number;
+  parentId?: number | null;
+  depth?: number;
+  weight?: number;
+  hasChildren?: number;
+}
+
+// Employee types (OpenAPI spec: uid, name, mail, status, created, changed)
+export interface Employee {
+  id: string;
+  accountId: string;
+  name: string;
+  email: string;
+  mobileNumber?: string;
+  alternateNumber?: string;
+  telephone?: string;
+  employmentType?: string;
+  employmentTitle?: string;
+  recentVisitAt?: string | null;
+  messagesCount?: number;
+  isPublic?: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+}
+
+// User types (OpenAPI spec)
+export interface User {
+  uid: number;
+  name: string;
+  mail: string | null;
+  status: number;
+  created: number;
+  changed: number;
+}
+
+// Page types (for content)
+export interface Page {
+  nid: number;
+  title: string;
+  uid: number;
+  created: number;
+  changed: number;
+  status: number;
+  [key: string]: unknown; // Additional properties may exist
+}
+
+// Query parameters
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface CompanyContactsParams extends PaginationParams {
+  companyId: string;
+}
+
+export interface CompanyHandbooksParams extends PaginationParams {
+  companyId: string;
+}
+
+export interface HandbookPagesParams extends PaginationParams {
+  handbookId: string;
+  langcode?: string;
+}
+
+export interface PageContentParams {
+  pageId: string;
+  langcode?: string;
+}
+
+export interface EmployeesParams extends PaginationParams {
+  companyId?: string;
+  search?: string;
+}
+
+export interface DepartmentsParams extends PaginationParams {
+  companyId?: string;
+}
+
+export interface ContactsListParams extends PaginationParams {
+  companyId?: string;
+}
+
+export interface HandbooksListParams extends PaginationParams {
+  companyId?: string;
+}
+
+export interface LimitOffsetParams {
+  limit?: number;
+  offset?: number;
+}
+
+/** Department (shape from API; full schema not in OpenAPI) */
+export interface Department {
+  id: string;
+  [key: string]: unknown;
+}
+
+/** Health response data */
+export interface HealthData {
+  status: string;
+  version: string;
+  env: string;
+}
+
+/** Auth login response data */
+export interface AuthLoginData {
+  user: { uid: number; name: string; email: string };
+  token: string;
+}
+
+/** Auth me response data */
+export interface AuthMeData {
+  uid: number;
+  name: string;
+  email: string;
+}
+
+
+export interface HandbookAuthor {
+  uid: number;
+  name?: string;
+}
+
+export interface HandbookContent {
+  type: 'body' | 'pages' | 'file' | 'unknown';
+  bodyHtml?: string | null;
+  bodyText?: string | null;
+  bodyFormat?: string | null;
+}
+
+export interface HandbookHierarchyChild {
+  nid: number;
+  title: string;
+  changed: number;
+  status: number;
+}
+
+export interface HandbookHierarchy {
+  parentNid?: number | null;
+  children?: HandbookHierarchyChild[];
+}
+
+export interface HandbookAttachment {
+  id?: string;
+  filename?: string;
+  mimeType?: string;
+  url?: string;
+}
+
+export interface HandbookDetail {
+  nid: string;
+  title: string;
+  status: number;
+  created: number;
+  changed: number;
+  author?: HandbookAuthor;
+  content: HandbookContent;
+  hierarchy?: HandbookHierarchy;
+  attachments?: HandbookAttachment[];
+  raw?: Record<string, unknown>;
+}

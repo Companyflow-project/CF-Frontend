@@ -1,0 +1,389 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CF Backend API",
+    "description": "Backend API for CF project - Read-only REST API endpoints backed by Drupal MySQL database",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "description": "Response data" },
+          "meta": { "type": "object", "description": "Response metadata (pagination, etc.)" },
+          "error": { "type": "null", "description": "Error object (null on success)" }
+        },
+        "required": ["data", "error"]
+      },
+      "ApiErrorResponse": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "null" },
+          "meta": { "type": "null" },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": { "type": "string", "example": "NOT_FOUND" },
+              "message": { "type": "string", "example": "Resource not found" },
+              "details": { "description": "Additional error details" }
+            },
+            "required": ["code", "message"]
+          }
+        },
+        "required": ["data", "meta", "error"]
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "page": { "type": "number", "example": 1 },
+          "limit": { "type": "number", "example": 20 },
+          "total": { "type": "number", "example": 100 }
+        },
+        "required": ["page", "limit", "total"]
+      },
+      "Company": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "123" },
+          "name": { "type": "string", "example": "Acme Corp" },
+          "createdAt": { "type": "string", "example": "2024-01-01T00:00:00Z" },
+          "updatedAt": { "type": "string", "example": "2024-01-01T00:00:00Z" },
+          "companyCity": { "type": "string", "nullable": true, "example": "New York" },
+          "companyCvr": { "type": "string", "nullable": true, "example": "12345678" }
+        },
+        "required": ["id", "name", "createdAt", "updatedAt"]
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "nid": { "type": "number", "example": 123 },
+          "title": { "type": "string", "example": "John Doe" },
+          "uid": { "type": "number", "example": 1 },
+          "created": { "type": "number", "example": 1609459200 },
+          "changed": { "type": "number", "example": 1609459200 },
+          "status": { "type": "number", "example": 1 }
+        },
+        "required": ["nid", "title", "uid", "created", "changed", "status"]
+      },
+      "Handbook": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "123" },
+          "title": { "type": "string", "example": "Employee Handbook" },
+          "companyId": { "type": "string", "example": "456" },
+          "createdAt": { "type": "string", "example": "2024-01-01T00:00:00Z" },
+          "updatedAt": { "type": "string", "example": "2024-01-01T00:00:00Z" }
+        },
+        "required": ["id", "title", "companyId", "createdAt", "updatedAt"]
+      },
+      "HandbookPage": {
+        "type": "object",
+        "properties": {
+          "nid": { "type": "number", "example": 789 },
+          "title": { "type": "string", "example": "Introduction" },
+          "uid": { "type": "number", "example": 1 },
+          "created": { "type": "number", "example": 1609459200 },
+          "changed": { "type": "number", "example": 1609459200 },
+          "status": { "type": "number", "example": 1 },
+          "handbookId": { "type": "number", "example": 123 },
+          "parentId": { "type": "number", "nullable": true, "example": null },
+          "depth": { "type": "number", "example": 0 },
+          "weight": { "type": "number", "example": 0 },
+          "hasChildren": { "type": "number", "example": 1 }
+        },
+        "required": ["nid", "title", "uid", "created", "changed", "status", "handbookId", "depth", "weight", "hasChildren"]
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "uid": { "type": "number", "example": 1 },
+          "name": { "type": "string", "example": "John Doe" },
+          "mail": { "type": "string", "nullable": true, "example": "john@example.com" },
+          "status": { "type": "number", "example": 1 },
+          "created": { "type": "number", "example": 1609459200 },
+          "changed": { "type": "number", "example": 1609459200 }
+        },
+        "required": ["uid", "name", "status", "created", "changed"]
+      },
+      "Page": {
+        "type": "object",
+        "properties": {
+          "nid": { "type": "number", "example": 123 },
+          "title": { "type": "string", "example": "About Us" },
+          "uid": { "type": "number", "example": 1 },
+          "created": { "type": "number", "example": 1609459200 },
+          "changed": { "type": "number", "example": 1609459200 },
+          "status": { "type": "number", "example": 1 }
+        },
+        "required": ["nid", "title", "uid", "created", "changed", "status"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "uid": { "type": "number", "example": 1 },
+          "name": { "type": "string", "example": "john_doe" },
+          "mail": { "type": "string", "nullable": true, "example": "john@example.com" },
+          "status": { "type": "number", "example": 1 },
+          "created": { "type": "number", "example": 1609459200 },
+          "changed": { "type": "number", "example": 1609459200 }
+        },
+        "required": ["uid", "name", "status", "created", "changed"]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+    }
+  },
+  "paths": {
+    "/api-docs": { "get": { "responses": { "200": { "description": "Default Response" } } } },
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "description": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": { "type": "string", "example": "ok" },
+                        "version": { "type": "string", "example": "1.0.0" },
+                        "env": { "type": "string", "example": "development" }
+                      }
+                    },
+                    "error": { "type": "null" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/companies": {
+      "get": {
+        "tags": ["Companies"],
+        "description": "List all companies with pagination",
+        "parameters": [
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" }, "description": "Page number (default: 1)" },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" }, "description": "Items per page (default: 20, max: 100)" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "type": "object" } },
+                    "meta": { "type": "object", "properties": { "page": { "type": "number" }, "limit": { "type": "number" }, "total": { "type": "number" } }, "required": ["page", "limit", "total"] },
+                    "error": { "type": "null" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/companies/{id}": {
+      "get": {
+        "tags": ["Companies"],
+        "description": "Get a company by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Company ID" }],
+        "responses": {
+          "200": { "description": "Successful response", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "object" }, "error": { "type": "null" } } } } },
+          "404": { "description": "Company not found", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "null" }, "meta": { "type": "null" }, "error": { "type": "object" } }, "required": ["data", "meta", "error"] } } }
+        }
+      }
+    },
+    "/departments": {
+      "get": {
+        "tags": ["Departments"],
+        "description": "List all departments with optional company filter and pagination",
+        "parameters": [
+          { "name": "companyId", "in": "query", "required": false, "schema": { "type": "string", "example": "123" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } }
+        ],
+        "responses": { "200": { "description": "Successful response", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "type": "object" } }, "meta": { "type": "object" }, "error": { "type": "null" } } } } } }
+      }
+    },
+    "/departments/{id}": {
+      "get": {
+        "tags": ["Departments"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Successful response" }, "404": { "description": "Department not found" } }
+      }
+    },
+    "/contacts": {
+      "get": {
+        "tags": ["Contacts"],
+        "parameters": [
+          { "name": "companyId", "in": "query", "required": false, "schema": { "type": "string", "example": "123" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } }
+        ],
+        "responses": { "200": { "description": "Successful response" } }
+      }
+    },
+    "/contacts/{id}": {
+      "get": {
+        "tags": ["Contacts"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Successful response" }, "404": { "description": "Contact not found" } }
+      }
+    },
+    "/companies/{companyId}/contacts": {
+      "get": {
+        "tags": ["Contacts"],
+        "parameters": [
+          { "name": "companyId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^\\d+$" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } }
+        ],
+        "responses": { "200": { "description": "Successful response" } }
+      }
+    },
+    "/handbooks": {
+      "get": {
+        "tags": ["Handbooks"],
+        "parameters": [
+          { "name": "companyId", "in": "query", "required": false, "schema": { "type": "string", "example": "123" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } }
+        ],
+        "responses": { "200": { "description": "Successful response" } }
+      }
+    },
+    "/companies/{companyId}/handbooks": {
+      "get": {
+        "tags": ["Handbooks"],
+        "parameters": [
+          { "name": "companyId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^\\d+$" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } }
+        ],
+        "responses": { "200": { "description": "Successful response" } }
+      }
+    },
+    "/handbooks/{id}": {
+      "get": {
+        "tags": ["Handbooks"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "detail", "in": "query", "required": false, "schema": { "type": "string", "example": "false" } },
+          { "name": "langcode", "in": "query", "required": false, "schema": { "type": "string", "example": "da" } }
+        ],
+        "responses": { "200": { "description": "Successful response" }, "404": { "description": "Handbook not found" } }
+      }
+    },
+    "/handbooks/{handbookId}/pages": {
+      "get": {
+        "tags": ["Handbooks"],
+        "parameters": [
+          { "name": "handbookId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^\\d+$" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } },
+          { "name": "langcode", "in": "query", "required": false, "schema": { "type": "string", "example": "da" } }
+        ],
+        "responses": { "200": { "description": "Successful response" }, "404": { "description": "Handbook not found" } }
+      }
+    },
+    "/employees": {
+      "get": {
+        "tags": ["Employees"],
+        "parameters": [
+          { "name": "companyId", "in": "query", "required": false, "schema": { "type": "string", "example": "123" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "string", "example": "1" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } }
+        ],
+        "responses": { "200": { "description": "Successful response" } }
+      }
+    },
+    "/employees/{id}": {
+      "get": {
+        "tags": ["Employees"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Successful response" }, "404": { "description": "Employee not found" } }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "user@example.com" },
+                  "password": { "type": "string", "example": "password123" }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": { "200": { "description": "Successful login" }, "401": { "description": "Invalid credentials" } }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Current user information" }, "401": { "description": "Unauthorized" } }
+      }
+    },
+    "/pages": {
+      "get": {
+        "tags": ["Pages"],
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "string", "example": "0" } }
+        ],
+        "responses": { "200": { "description": "Successful response" }, "500": { "description": "Internal server error" } }
+      }
+    },
+    "/pages/{pageId}": {
+      "get": {
+        "tags": ["Pages"],
+        "parameters": [
+          { "name": "pageId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^\\d+$" } },
+          { "name": "langcode", "in": "query", "required": false, "schema": { "type": "string", "enum": ["da", "en"], "example": "da" } }
+        ],
+        "responses": { "200": { "description": "Successful response" }, "404": { "description": "Page not found" } }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "parameters": [
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "string", "example": "50" } },
+          { "name": "offset", "in": "query", "required": false, "schema": { "type": "string", "example": "0" } }
+        ],
+        "responses": { "200": { "description": "Successful response" }, "500": { "description": "Internal server error" } }
+      }
+    }
+  },
+  "servers": [{ "url": "http://localhost:3001/api", "description": "Development server" }],
+  "tags": [
+    { "name": "Health", "description": "Health check endpoints" },
+    { "name": "Auth", "description": "Authentication endpoints" },
+    { "name": "Companies", "description": "Company management endpoints" },
+    { "name": "Departments", "description": "Department management endpoints" },
+    { "name": "Contacts", "description": "Contact management endpoints" },
+    { "name": "Handbooks", "description": "Handbook management endpoints" },
+    { "name": "Employees", "description": "Employee management endpoints" },
+    { "name": "Pages", "description": "Page management endpoints" },
+    { "name": "Users", "description": "User management endpoints" }
+  ]
+}

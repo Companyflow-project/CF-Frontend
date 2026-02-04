@@ -1,0 +1,271 @@
+import React, { useState, useMemo } from 'react';
+import { PageShell } from '@/components/layout/page-shell';
+import { PageHeader } from '@/components/common/page-header';
+import { Card, CardContent } from '@/components/ui/card';
+import { ContactsTable } from '../components/contacts-table';
+import { AddExternalContactModal } from '../components/add-external-contact-modal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useContacts } from '../hooks';
+import { Menu, Filter } from 'lucide-react';
+
+export const ContactsPage: React.FC = () => {
+  const [search, setSearch] = useState('');
+  const [showInactive, setShowInactive] = useState(false);
+  const [publicOnly, setPublicOnly] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [addExternalModalOpen, setAddExternalModalOpen] = useState(false);
+  const { data: contacts } = useContacts({ search });
+
+  const employeeContacts = contacts.filter((c) => c.isEmployeeContact);
+  const externalContacts = contacts.filter((c) => c.isExternalContact);
+
+  // Calculate visibility stats
+  const visibilityStats = useMemo(() => {
+    const publicProfiles = contacts.filter((c) => c.isPublic).length;
+    const inactive = contacts.filter((c) => c.status === 'INACTIVE').length;
+    return {
+      publicProfiles,
+      inactive,
+      employee: employeeContacts.length,
+      external: externalContacts.length,
+      total: contacts.length,
+    };
+  }, [contacts, employeeContacts.length, externalContacts.length]);
+
+  const handleSelect = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (selected: boolean, contactList: typeof contacts) => {
+    setSelectedIds(selected ? contactList.map((c) => c.id) : []);
+  };
+
+  return (
+    <PageShell>
+      <PageHeader
+        title="Manage Contacts"
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => setAddExternalModalOpen(true)}
+              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+            >
+              Add external contact
+            </Button>
+            <Button
+              variant="outline"
+              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
+            >
+              Import CSV
+            </Button>
+            <Button
+              variant="outline"
+              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
+            >
+              Export
+            </Button>
+          </div>
+        }
+      />
+      <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <p className="text-sm text-[#0d0e0e]">
+            <span className="font-bold">Help.</span> Contacts can be employees or external contacts who
+            appear in the info list and on relevant handbook pages. Existing employees are listed
+            below—you can add them as contacts with one click or in bulk. For people who are not
+            employees, use “Add external contact”. Assign areas of responsibility so the right
+            contacts show on the right pages.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-4 py-2 h-auto whitespace-nowrap"
+          >
+            User Manual
+          </Button>
+        </div>
+      </div>
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 lg:items-start">
+        <div className="space-y-4">
+          <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)]">
+            <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4 px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+              <div className="relative w-full lg:max-w-sm">
+                <Input
+                  placeholder="Search contacts (name, email, phone)"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-4 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+                <button
+                  type="button"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${
+                    showInactive
+                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                  }`}
+                  onClick={() => setShowInactive((v) => !v)}
+                >
+                  <Checkbox
+                    checked={showInactive}
+                    onChange={(e) => setShowInactive(e.target.checked)}
+                    className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
+                  />
+                  <span className="text-xs font-medium">Show inactive</span>
+                </button>
+                <button
+                  type="button"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${
+                    publicOnly
+                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                  }`}
+                  onClick={() => setPublicOnly((v) => !v)}
+                >
+                  <Checkbox
+                    checked={publicOnly}
+                    onChange={(e) => setPublicOnly(e.target.checked)}
+                    className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
+                  />
+                  <span className="text-xs font-medium">Public only</span>
+                </button>
+              </div>
+            </div>
+            <CardContent className="pt-6 space-y-6">
+              <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1]">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                  >
+                    Name
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
+                  >
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <ContactsTable
+                contacts={contacts}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                onSelectAll={(selected) => handleSelectAll(selected, contacts)}
+              />
+            </CardContent>
+          </Card>
+          <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div
+                className={`h-3 w-3 rounded-[4px] ${
+                  selectedIds.length > 0 ? 'bg-[#1a5948]' : 'bg-[#cfd6d4]'
+                }`}
+              />
+              <span
+                className={`text-sm ${
+                  selectedIds.length > 0 ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
+                }`}
+              >
+                {selectedIds.length} selected
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+              <Button variant="outline" size="sm" className="rounded-[999px] text-sm px-5">
+                Set selected to private
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-[999px] text-sm px-5">
+                Set selected to public
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-[999px] text-sm px-5 bg-[#2f946f] text-white hover:bg-[#2f946f]/90"
+              >
+                Add selected as contacts
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+            <CardContent className="space-y-3 px-5 py-4">
+              <div className="flex items-start justify-between">
+                <h3 className="text-sm font-bold text-[#0d0e0e]">Visibility</h3>
+                <p className="text-xs text-[#6b7475]">{visibilityStats.total} contacts listed</p>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: 'Public profiles', value: visibilityStats.publicProfiles },
+                  { label: 'Inactive contacts', value: visibilityStats.inactive },
+                  { label: 'Employee contacts', value: visibilityStats.employee },
+                  { label: 'External contacts', value: visibilityStats.external },
+                ].map((item, index) => (
+                  <div key={item.label}>
+                    <div className="flex justify-between items-center py-2 text-sm text-[#0d0e0e]">
+                      <span>{item.label}</span>
+                      <span className="font-semibold">{item.value}</span>
+                    </div>
+                    {index < 3 && <div className="border-t border-dashed border-[#cbe1d8]" />}
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" className="rounded-[999px] px-4">
+                  Set all to private
+                </Button>
+                <Button variant="outline" size="sm" className="rounded-[999px] px-4">
+                  Set all to public
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+            <CardContent className="space-y-2 px-5 py-4">
+              <h3 className="text-sm font-bold text-[#0d0e0e]">Help Guides</h3>
+              <div className="space-y-2">
+                {[
+                  'How to add contacts',
+                  'How to edit employee profiles',
+                  'How to add relatives information',
+                  'How to import contacts',
+                ].map((label) => (
+                  <button
+                    key={label}
+                    className="w-full flex items-center justify-between px-4 py-3 rounded-[12px] border border-[#cce3da] bg-white text-sm text-[#0d0e0e] hover:bg-[#f0f7f5]"
+                  >
+                    <span>{label}</span>
+                    <span className="text-base text-[#0d0e0e]">⇢</span>
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      <AddExternalContactModal
+        open={addExternalModalOpen}
+        onOpenChange={setAddExternalModalOpen}
+        onConfirm={(data) => {
+          // TODO: Implement add external contact
+          console.log('Add external contact', data);
+        }}
+      />
+    </PageShell>
+  );
+};

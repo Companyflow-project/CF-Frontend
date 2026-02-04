@@ -1,0 +1,137 @@
+import { axiosClient } from '@/lib/axios-client';
+import { User } from '@/types/models';
+
+function getErrorMessage(err: unknown): string {
+  const res = (err as { response?: { data?: { error?: { message?: string }; message?: string } } })?.response?.data;
+  return res?.error?.message ?? res?.message ?? (err instanceof Error ? err.message : 'Request failed');
+}
+
+const AUTH_COMPANY_KEY = 'auth_user_company';
+
+function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number }): User {
+  const id = raw.id ?? String(raw.uid ?? '');
+  const companyId = raw.companyId != null ? String(raw.companyId) : undefined;
+  return {
+    id,
+    name: raw.name ?? '',
+    email: raw.email ?? '',
+    role: (raw.role as User['role']) ?? 'EMPLOYEE',
+    createdAt: '',
+    companyId,
+  };
+}
+
+function persistCompanyId(user: User): void {
+  if (user.companyId != null) {
+    try {
+      sessionStorage.setItem(AUTH_COMPANY_KEY, JSON.stringify({ userId: user.id, companyId: user.companyId }));
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function mergeStoredCompanyId(user: User): User {
+  if (user.companyId != null) return user;
+  try {
+    const stored = sessionStorage.getItem(AUTH_COMPANY_KEY);
+    if (!stored) return user;
+    const { userId, companyId } = JSON.parse(stored) as { userId?: string; companyId?: string };
+    if (userId === user.id && companyId) return { ...user, companyId };
+  } catch {
+    // ignore
+  }
+  return user;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  name: string; // Required - user's full name
+  companyName: string;
+  cvr: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+export const authApi = {
+  async login(payload: LoginPayload): Promise<User> {
+    try {
+      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>('/auth/login', payload);
+      const body = response.data;
+      const payloadData = body.data ?? body;
+      const token = payloadData.token;
+      const raw = payloadData.user;
+      if (token) localStorage.setItem('token', token);
+      if (!raw) throw new Error('Invalid login response');
+      const user = toUser(raw);
+      persistCompanyId(user);
+      return user;
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  async register(payload: RegisterPayload): Promise<User> {
+    try {
+      // Send all required fields including name
+      const requestBody = {
+        email: payload.email,
+        password: payload.password,
+        name: payload.name || payload.email, // Fallback to email if name not provided
+        companyName: payload.companyName,
+        cvr: payload.cvr,
+      };
+      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>('/auth/register', requestBody);
+      const body = response.data;
+      const payloadData = body.data ?? body;
+
+      if (payloadData.token) localStorage.setItem('token', payloadData.token);
+      if (!payloadData.user) throw new Error('Invalid register response');
+
+      const user = toUser(payloadData.user as Parameters<typeof toUser>[0]);
+      persistCompanyId(user);
+      return user;
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  async me(): Promise<User | null> {
+    if (!localStorage.getItem('token')) {
+      return null;
+    }
+    try {
+      const response = await axiosClient.get<{ data: { uid: number; name: string; email?: string; role?: string; companyId?: string | number } }>('/auth/me');
+      const raw = response.data?.data;
+      if (!raw) return null;
+      const user = toUser(raw);
+      return mergeStoredCompanyId(user);
+    } catch {
+      return null;
+    }
+  },
+
+  /** POST /auth/logout – requires Bearer token. Client removes token after call (JWT is stateless). */
+  async logout(): Promise<void> {
+    try {
+      await axiosClient.post<{ data: { message: string }; error: null }>('/auth/logout');
+    } finally {
+      localStorage.removeItem('token');
+      try {
+        sessionStorage.removeItem(AUTH_COMPANY_KEY);
+      } catch {
+        // ignore
+      }
+    }
+  },
+};
+
