@@ -46,7 +46,7 @@ export interface HandbookSection {
 
 export type HandbookPageStatus = "READY" | "NOT_READY" | "OPTED_OUT";
 
-export interface HandbookPage {
+export interface HandbookPageSummary {
   id: string;
   sectionId: string;
   title: string;
@@ -69,9 +69,10 @@ export interface Contact {
 }
 
 export interface EmployeePageViewStat {
-  pageId: string;
-  pageTitle: string;
+  title: string;
+  url: string;
   views: number;
+  lastViewed: string;
 }
 
 export interface EmployeeSummaryStat {
@@ -83,12 +84,108 @@ export interface EmployeeSummaryStat {
 }
 
 export interface EmployeeMessageLog {
-  id: string;
-  employeeId: string;
-  sentAt: string;
-  employeeName: string;
-  employeeEmail: string;
-  messagePreview: string;
+  id: number;
+  date: string;
+  name: string;
+  email: string;
+  message: string;
+}
+
+// Handbook types
+export interface HandbookNode {
+  id: number;
+  title: string;
+  type: 'chapter' | 'page';
+  status: 'ready' | 'opted_out' | 'not_ready';
+  badge: 'custom' | 'premade';
+  pages?: HandbookNode[];
+}
+
+export interface HandbookPageVersion {
+  title: string;
+  content: string;
+}
+
+export interface HandbookDocument {
+  id: number;
+  url: string;
+  name: string;
+  description: string | null;
+}
+
+export interface HandbookLink {
+  uri: string;
+  title: string;
+  url?: string; // from read-side
+}
+
+export interface HandbookPageDetail {
+  id: number;
+  title: string;
+  content: string;
+  internalNote: string;
+  sourceMode: 'company' | 'custom' | 'own';
+  versions: {
+    premade: string;
+    custom: string | null;
+  };
+  /**
+   * Optional array of rendered picture objects for this page.
+   * We primarily use pictures[0] when showing the "own image".
+   */
+  pictures?: Array<{
+    id: number;
+    url: string;
+    name: string;
+  }>;
+  imageId: number | null;
+  imagePlacement: string | null;
+  documents: HandbookDocument[];
+  links: HandbookLink[];
+  owners: number[];
+  /**
+   * Optional per-page settings controlling receipts, readiness and publication.
+   */
+  settings?: {
+    askForReceipt: boolean;
+    isReady: boolean;
+    includeInHandbook: boolean;
+    notifyEmployees: boolean;
+  };
+}
+
+export interface HandbookPage extends HandbookPageDetail { }
+
+export interface UpdatePagePayload {
+  /**
+   * "0" = use CompanyFlow text, "1" = use custom text
+   */
+  textMode: '0' | '1';
+  /**
+   * HTML string from the rich text editor
+   */
+  customText: string;
+  /**
+   * Internal notes, not visible to employees
+   */
+  notes: string;
+  imageId: number | null;
+  imagePlacement: string | null;
+  documents: Array<{ id: number; description: string | null }>;
+  links: Array<{ uri: string; title: string }>;
+  /**
+   * Array of user ids who own this page
+   */
+  owners: number[];
+  /**
+   * Optional per-page settings sent to the backend.
+   */
+  settings?: {
+    askForReceipt: boolean;
+    isReady: boolean;
+    includeInHandbook: boolean;
+    notifyEmployees: boolean;
+  };
 }
 
 export interface CompanyProfile {
@@ -102,3 +199,27 @@ export interface CompanyProfile {
   logoUrl: string | null;
 }
 
+// Handbook Resources
+export interface HandbookResourceLink {
+  pageId: number;
+  pageTitle: string;
+  url: string | null;
+  label: string | null;
+  bookTitle: string | null;
+}
+
+export interface HandbookResourceNote {
+  pageId: number;
+  pageTitle: string;
+  note: string | null;
+  bookTitle: string | null;
+}
+
+export interface HandbookResourceDocument {
+  pageId: number;
+  pageTitle: string;
+  filename: string | null;
+  fileUrl: string | null;
+  description: string | null;
+  bookTitle: string | null;
+}

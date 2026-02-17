@@ -19,7 +19,7 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
   return (
     <PageShell>
       <PageHeader
-        title="Employee Message Logs – All"
+        title="Employee Message Logs – All Employees"
         actions={
           <Button variant="outline" onClick={() => navigate(employeesRoutes.list)}>
             <ArrowLeft className="h-4 w-4 mr-2" />

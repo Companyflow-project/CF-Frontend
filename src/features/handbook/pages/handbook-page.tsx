@@ -30,11 +30,11 @@ export const HandbookPage: React.FC = () => {
 
   // Calculate progress stats
   const progressStats = useMemo(() => {
-    // Pages selected = all pages that are not opted out (assuming they can be selected)
-    const selected = pages.filter((p) => p.status !== 'OPTED_OUT').length;
-    const ready = pages.filter((p) => p.status === 'READY').length;
-    const notReady = pages.filter((p) => p.status === 'NOT_READY').length;
-    const optedOut = pages.filter((p) => p.status === 'OPTED_OUT').length;
+    // Cast to string to support legacy status values without strict union overlap errors
+    const selected = pages.filter((p) => String(p.status) !== 'OPTED_OUT').length;
+    const ready = pages.filter((p) => String(p.status) === 'READY').length;
+    const notReady = pages.filter((p) => String(p.status) === 'NOT_READY').length;
+    const optedOut = pages.filter((p) => String(p.status) === 'OPTED_OUT').length;
     return { selected, ready, notReady, optedOut };
   }, [pages]);
 
@@ -275,7 +275,7 @@ export const HandbookPage: React.FC = () => {
                       onClick={() => setEditingPageId(null)}
                       className="bg-white border border-[#cce3da] text-[#0d0e0e] rounded-[999px] px-4 py-2 h-auto w-full sm:w-auto"
                     >
-                      Save progress
+                      Save Changes
                     </Button>
                     <Button
                       size="sm"

@@ -10,8 +10,24 @@ import {
 // Helper type for standard API response
 interface ApiResponse<T> {
   data: T;
-  meta: any;
+  meta?: any;
   error: any;
+}
+
+interface EmployeeStatisticsData {
+  id: number;
+  name: string;
+  email: string;
+  pageViews: number;
+  messages: number;
+  lastVisit: string | null;
+}
+
+interface EmployeeMessagesMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export const employeesApi = {
@@ -48,6 +64,19 @@ export const employeesApi = {
     } catch (error) {
       return null;
     }
+  },
+
+  async getEmployeeStatistics(id: string): Promise<EmployeeStatisticsData> {
+    const response = await axiosClient.get<ApiResponse<EmployeeStatisticsData> | EmployeeStatisticsData>(
+      `/employees/${id}/statistics`
+    );
+
+    // Support both wrapped { data: {...} } and plain {...}
+    if ('data' in response.data) {
+      return (response.data as ApiResponse<EmployeeStatisticsData>).data;
+    }
+
+    return response.data as EmployeeStatisticsData;
   },
 
   async createEmployee(payload: {
@@ -113,18 +142,48 @@ export const employeesApi = {
   },
 
   async listEmployeePageViewStats(
-    _employeeId: string
+    employeeId: string
   ): Promise<EmployeePageViewStat[]> {
-    // Endpoint not in OpenAPI spec - may need to be implemented
-    return [];
+    const response = await axiosClient.get<ApiResponse<EmployeePageViewStat[]> | EmployeePageViewStat[]>(
+      `/employees/${employeeId}/page-views`
+    );
+
+    if ('data' in response.data) {
+      return (response.data as ApiResponse<EmployeePageViewStat[]>).data;
+    }
+
+    return response.data as EmployeePageViewStat[];
   },
 
-  async listEmployeeMessageLogs(_params?: {
-    employeeId?: string;
+  async listEmployeeMessageLogs(params: {
+    employeeId: string;
     page?: number;
-  }): Promise<EmployeeMessageLog[]> {
-    // Endpoint not in OpenAPI spec - may need to be implemented
-    return [];
+    limit?: number;
+  }): Promise<{ data: EmployeeMessageLog[]; meta: EmployeeMessagesMeta | undefined }> {
+    const { employeeId, page = 1, limit = 5 } = params;
+
+    const response = await axiosClient.get<
+      ApiResponse<EmployeeMessageLog[]> | EmployeeMessageLog[]
+    >(`/employees/${employeeId}/messages`, {
+      params: { page, limit },
+    });
+
+    if ('data' in response.data) {
+      const typed = response.data as ApiResponse<any>;
+      // Handle potential double nesting: { data: { data: [...] } }
+      const nestedData = typed.data && typeof typed.data === 'object' && 'data' in typed.data ? typed.data.data : typed.data;
+      const nestedMeta = typed.data && typeof typed.data === 'object' && 'meta' in typed.data ? typed.data.meta : typed.meta;
+
+      return {
+        data: (Array.isArray(nestedData) ? nestedData : []) as EmployeeMessageLog[],
+        meta: (nestedMeta || typed.meta) as EmployeeMessagesMeta | undefined,
+      };
+    }
+
+    return {
+      data: response.data as EmployeeMessageLog[],
+      meta: undefined,
+    };
   },
 };
 

@@ -11,8 +11,14 @@ import { EmployeeStatsAllPage } from '@/features/employees/pages/employee-stats-
 import { EmployeeStatsDetailPage } from '@/features/employees/pages/employee-stats-detail-page';
 import { EmployeeMessageLogsAllPage } from '@/features/employees/pages/employee-message-logs-all-page';
 import { EmployeeMessageLogsDetailPage } from '@/features/employees/pages/employee-message-logs-detail-page';
-import { HandbookPage } from '@/features/handbook/pages/handbook-page';
+
+import { ManageHandbookPage } from '@/features/handbook/pages/manage-handbook-page';
+import { HandbookPagesPage } from '@/features/handbook/pages/handbook-pages-page';
+import { HandbookPageEditPage } from '@/features/handbook/pages/handbook-page-edit-page';
 import { EditThemePage } from '@/features/handbook/pages/edit-theme-page';
+import { HandbookLinksPage } from '@/features/handbook/pages/handbook-links-page';
+import { HandbookNotesPage } from '@/features/handbook/pages/handbook-notes-page';
+import { HandbookDocumentsPage } from '@/features/handbook/pages/handbook-documents-page';
 import { ContactsPage } from '@/features/contacts/pages/contacts-page';
 import { AccountPage } from '@/features/account/pages/account-page';
 import { EditCompanyProfilePage } from '@/features/account/pages/edit-company-profile-page';
@@ -149,12 +155,43 @@ export const AppRouter: React.FC = () => {
             </RequireAuth>
           }
         />
+
         <Route
-          path={handbookRoutes.list}
+          path={handbookRoutes.manage}
           element={
             <RequireAuth>
               <AppLayout>
-                <HandbookPage />
+                <ManageHandbookPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={handbookRoutes.pages}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookPagesPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={handbookRoutes.createPage}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookPageEditPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/handbook/pages/:id/edit"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookPageEditPage />
               </AppLayout>
             </RequireAuth>
           }
@@ -165,6 +202,36 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <EditThemePage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={handbookRoutes.links}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookLinksPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={handbookRoutes.notes}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookNotesPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={handbookRoutes.documents}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookDocumentsPage />
               </AppLayout>
             </RequireAuth>
           }

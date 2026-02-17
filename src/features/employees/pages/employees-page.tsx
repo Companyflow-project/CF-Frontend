@@ -331,6 +331,8 @@ export const EmployeesPage: React.FC = () => {
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
                   onDelete={handleDeleteRequest}
+                  onStatistics={(id) => navigate(employeesRoutes.statisticsDetail(id))}
+                  onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
                   emptyStateTitle="No employees"
                   emptyStateDescription="Try refetching or add your first employee."
                 />

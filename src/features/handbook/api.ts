@@ -1,168 +1,303 @@
 import { axiosClient } from '@/lib/axios-client';
-import type { ApiResponse, Handbook as BackendHandbook, HandbookPage as BackendHandbookPage, HandbookDetail } from '@/lib/api-types';
-import { HandbookSection, HandbookPage } from '@/types/models';
+import type { HandbookNode, HandbookPageDetail, UpdatePagePayload } from '@/types/models';
 
-// Transform backend handbook page to frontend handbook page
-const transformHandbookPage = (backend: BackendHandbookPage, sectionId?: string): HandbookPage => {
-  return {
-    id: String(backend.nid),
-    sectionId: sectionId || String(backend.handbookId || ''),
-    title: backend.title,
-    status: backend.status === 1 ? 'READY' : 'NOT_READY',
-    updatedAt: new Date(backend.changed * 1000).toISOString(),
-  };
-};
+interface SaveProgressPayload {
+  pages: Array<{
+    id: number;
+    ready: boolean;
+    selected: boolean;
+  }>;
+}
+
+interface SaveProgressResponse {
+  success: boolean;
+  message?: string;
+}
+
+interface PublishHandbookResponse {
+  data: HandbookNode[];
+  message: string;
+}
+
+interface CreatePagePayload {
+  title: string;
+  parentId?: number;
+  newChapterName?: string;
+}
+
+interface CreatePageResponse {
+  id: number;
+}
+
+type BulkActionType = 'mark_ready' | 'mark_not_ready' | 'opt_out' | 'include';
+
+interface BulkActionPayload {
+  pageIds: number[];
+  action: BulkActionType;
+}
+
+interface BulkActionResponse {
+  success: boolean;
+  updatedCount: number;
+}
 
 export const handbookApi = {
-  async listSections(params?: {
-    companyId?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<HandbookSection[]> {
-    const queryParams: Record<string, string> = {
-      page: String(params?.page ?? 1),
-      limit: String(params?.limit ?? 20),
-    };
-    if (params?.companyId) queryParams.companyId = params.companyId;
-
-    const response = await axiosClient.get<ApiResponse<any[]>>('/handbooks', { params: queryParams });
-    // axios returns AxiosResponse, so response.data is the ApiResponse object
-    // response.data.data is the actual array
-    const apiResponse = response.data;
-    if (!apiResponse || !apiResponse.data) {
-      console.error('Invalid API response structure:', apiResponse);
-      return [];
-    }
-    const handbooks = Array.isArray(apiResponse.data) ? apiResponse.data : [];
-
-    // Deduplicate by nid (keep the first occurrence)
-    const seenNids = new Set<string>();
-    const uniqueHandbooks = handbooks.filter((handbook: any) => {
-      const nid = String(handbook.nid || handbook.id || '');
-      if (seenNids.has(nid)) {
-        return false;
+  /**
+   * Get handbook tree/overview
+   * GET /api/handbook?lang=en
+   * Returns a simple array (no { data } wrapper)
+   * 
+   * Errors:
+   * - 403: "Handbook not yet published" (for employees)
+   * - 403: "User not assigned to a company"
+   */
+  async getHandbookTree(lang: string = 'en'): Promise<HandbookNode[]> {
+    try {
+      const response = await axiosClient.get<HandbookNode[]>('/handbook', {
+        params: { lang },
+      });
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        const message = error.response?.data?.message || error.response?.data?.error;
+        if (message === 'Handbook not yet published') {
+          throw new Error('Your handbook is not published yet.');
+        }
+        if (message === 'User not assigned to a company') {
+          throw new Error('Your user is not linked to a company. Please contact support.');
+        }
+        throw new Error(message || 'Access denied');
       }
-      seenNids.add(nid);
-      return true;
-    });
-
-    // Transform handbooks to sections
-    // The API now returns objects with nid, title, etc (HandbookDetail-like structure)
-    return uniqueHandbooks.map((handbook: any, index: number) => {
-      return {
-        id: String(handbook.nid || handbook.id || ''),
-        title: handbook.title || 'Untitled',
-        slug: (handbook.title || 'untitled').toLowerCase().replace(/\s+/g, '-'),
-        order: index,
-        accountId: String(handbook.companyId || ''),
-      };
-    });
+      console.error('Error fetching handbook tree:', error);
+      throw error;
+    }
   },
 
-  async getSection(id: string): Promise<HandbookSection | null> {
+  /**
+   * Get page details for editing
+   * GET /api/handbook/pages/:id?lang=en
+   */
+  async getPageDetail(pageId: number, lang: string = 'en'): Promise<HandbookPageDetail | null> {
     try {
-      const response = await axiosClient.get<ApiResponse<BackendHandbook>>(`/handbooks/${id}`);
-      // response.data is ApiResponse<BackendHandbook>, so response.data.data is the handbook
-      const handbook = response.data.data;
-      return {
-        id: handbook.id,
-        title: handbook.title,
-        slug: handbook.title.toLowerCase().replace(/\s+/g, '-'),
-        order: 0,
-        accountId: handbook.companyId,
-      };
-    } catch (error) {
-      return null;
-    }
-  },
-
-  async getHandbook(id: string): Promise<HandbookDetail | null> {
-    try {
-      const response = await axiosClient.get<ApiResponse<HandbookDetail>>(`/handbooks/${id}`);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching handbook:', error);
-      return null;
-    }
-  },
-
-  async createSection(_payload: Partial<HandbookSection>): Promise<HandbookSection> {
-    // Backend is read-only, this would need to be implemented if write operations are added
-    throw new Error('Create section not supported by read-only API');
-  },
-
-  async updateSection(
-    _id: string,
-    _payload: Partial<HandbookSection>
-  ): Promise<HandbookSection> {
-    // Backend is read-only, this would need to be implemented if write operations are added
-    throw new Error('Update section not supported by read-only API');
-  },
-
-  async listPages(sectionId?: string, params?: {
-    page?: number;
-    limit?: number;
-    langcode?: string;
-  }): Promise<HandbookPage[]> {
-    // If sectionId is provided, use it as handbookId; otherwise return empty array
-    // (backend requires handbookId to list pages)
-    if (!sectionId) {
-      return [];
-    }
-
-    const queryParams: Record<string, string> = {
-      page: String(params?.page ?? 1),
-      limit: String(params?.limit ?? 20),
-      langcode: params?.langcode ?? 'da',
-    };
-
-    const response = await axiosClient.get<ApiResponse<BackendHandbookPage[]>>(`/handbooks/${sectionId}/pages`, { params: queryParams });
-    // axios returns AxiosResponse, so response.data is the ApiResponse object
-    // response.data.data is the actual array
-    const apiResponse = response.data;
-    if (!apiResponse || !apiResponse.data) {
-      console.error('Invalid API response structure for pages:', apiResponse);
-      return [];
-    }
-    const pages = Array.isArray(apiResponse.data) ? apiResponse.data : [];
-    return pages.map((page) => transformHandbookPage(page, sectionId));
-  },
-
-  async getPage(pageId: string, params?: {
-    langcode?: string;
-  }): Promise<HandbookPage | null> {
-    try {
-      const queryParams: Record<string, string> = {};
-      if (params?.langcode) queryParams.langcode = params.langcode;
-
-      const response = await axiosClient.get<ApiResponse<BackendHandbookPage>>(`/pages/${pageId}`, { params: queryParams });
-      // response.data is ApiResponse<BackendHandbookPage>, so response.data.data is the page
-      const pageData = response.data.data;
-      if (pageData && 'nid' in pageData) {
-        return transformHandbookPage(pageData);
+      const response = await axiosClient.get<HandbookPageDetail>(
+        `/handbook/pages/${pageId}`,
+        {
+          params: { lang },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error('This handbook page could not be found or was removed.');
       }
-      return null;
-    } catch (error) {
-      return null;
+      if (error.response?.status === 400) {
+        throw new Error('Invalid page ID');
+      }
+      console.error('Error fetching page detail:', error);
+      throw error;
     }
   },
 
-  async createPage(_payload: Partial<HandbookPage>): Promise<HandbookPage> {
-    // Backend is read-only, this would need to be implemented if write operations are added
-    throw new Error('Create page not supported by read-only API');
-  },
-
+  /**
+   * Update page
+   * PUT /api/handbook/pages/:id
+   * 
+   * Only admin or company_admin can call this.
+   * 
+   * Errors:
+   * - 403: "You don't have permission to edit this page"
+   */
   async updatePage(
-    _id: string,
-    _payload: Partial<HandbookPage>
-  ): Promise<HandbookPage> {
-    // Backend is read-only, this would need to be implemented if write operations are added
-    throw new Error('Update page not supported by read-only API');
+    pageId: number,
+    payload: UpdatePagePayload
+  ): Promise<{ success: boolean }> {
+    try {
+      const response = await axiosClient.put<{ success: boolean }>(
+        `/handbook/pages/${pageId}`,
+        payload
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        throw new Error("You don't have permission to update this page.");
+      }
+      console.error('Error updating page:', error);
+      throw error;
+    }
   },
 
-  async publishHandbook(): Promise<void> {
-    // Endpoint not in OpenAPI spec - may need to be implemented
-    throw new Error('Publish handbook not supported by read-only API');
+  /**
+   * Save handbook progress
+   * POST /api/handbook/save-progress
+   * 
+   * Only admin or company_admin can call this.
+   * 
+   * Errors:
+   * - 403: "Only admins can save handbook progress"
+   */
+  async saveProgress(payload: SaveProgressPayload): Promise<SaveProgressResponse> {
+    try {
+      const response = await axiosClient.post<SaveProgressResponse>(
+        '/handbook/save-progress',
+        payload
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        const message = error.response?.data?.message || error.response?.data?.error;
+        if (message === 'Only admins can save handbook progress') {
+          throw new Error("You don't have permission to edit the handbook.");
+        }
+        throw new Error(message || 'Access denied');
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Publish handbook
+   * POST /api/handbook/publish
+   * 
+   * Only admin or company_admin can call this.
+   * User must be linked to a company.
+   * 
+   * Errors:
+   * - 403: "Only admins can publish the handbook"
+   * - 403: "User not assigned to a company"
+   */
+  async publishHandbook(): Promise<PublishHandbookResponse> {
+    try {
+      const response = await axiosClient.post<PublishHandbookResponse>('/handbook/publish');
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        const message = error.response?.data?.message || error.response?.data?.error;
+        if (message === 'Only admins can publish the handbook') {
+          throw new Error("You don't have permission to publish the handbook.");
+        }
+        if (message === 'User not assigned to a company') {
+          throw new Error('Your user is not linked to a company; contact support.');
+        }
+        throw new Error(message || 'Access denied');
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Create a new handbook page
+   * POST /api/handbook/pages
+   *
+   * Only admin or company_admin can call this.
+   */
+  async createPage(payload: CreatePagePayload): Promise<CreatePageResponse> {
+    try {
+      const response = await axiosClient.post<CreatePageResponse>('/handbook/pages', payload);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        const message = error.response?.data?.message || error.response?.data?.error;
+        throw new Error(message || "You don't have permission to create handbook pages.");
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Perform a bulk action on multiple handbook pages.
+   * POST /api/handbook/bulk-action
+   */
+  async bulkAction(payload: BulkActionPayload): Promise<BulkActionResponse> {
+    try {
+      const response = await axiosClient.post<BulkActionResponse>('/handbook/bulk-action', payload);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        const message = error.response?.data?.message || error.response?.data?.error;
+        throw new Error(message || "You don't have permission to update these pages.");
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Get all links across handbook pages
+   * GET /api/handbook/resources/links
+   */
+  async getResourceLinks(): Promise<import('@/types/models').HandbookResourceLink[]> {
+    try {
+      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceLink[] }>('/handbook/resources/links');
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error fetching handbook links:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get all notes across handbook pages
+   * GET /api/handbook/resources/notes
+   */
+  async getResourceNotes(): Promise<import('@/types/models').HandbookResourceNote[]> {
+    try {
+      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceNote[] }>('/handbook/resources/notes');
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error fetching handbook notes:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get all documents across handbook pages
+   * GET /api/handbook/resources/documents
+   */
+  async getResourceDocuments(): Promise<import('@/types/models').HandbookResourceDocument[]> {
+    try {
+      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceDocument[] }>('/handbook/resources/documents');
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error fetching handbook documents:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Upload a file (image or document) for use in handbook pages.
+   * Final URL should be POST /api/files, so with our baseURL
+   * we call the relative path "/files" here.
+   *
+   * Expects a JSON response like: { fid: number, uri: string }.
+   */
+  async uploadFile(file: File): Promise<{ id: number; name: string; url?: string }> {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axiosClient.post<{ fid: number; uri?: string }>(
+        '/files',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fid = response.data?.fid;
+      if (!fid) {
+        throw new Error('Upload succeeded but no fid was returned.');
+      }
+
+      return {
+        id: fid,
+        name: file.name,
+        url: response.data.uri,
+      };
+    } catch (error: any) {
+      console.error('Error uploading handbook file:', error);
+      throw new Error(error?.message || 'Failed to upload file.');
+    }
   },
 };
 

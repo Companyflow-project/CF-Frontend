@@ -51,7 +51,7 @@ export const ConsolePage: React.FC = () => {
               description="Create and publish your company handbook for employees."
               primaryAction={{
                 label: 'Open Handbook →',
-                onClick: () => navigate(handbookRoutes.list),
+                onClick: () => navigate(handbookRoutes.pages),
               }}
               links={[
                 { label: 'New handbook section' },

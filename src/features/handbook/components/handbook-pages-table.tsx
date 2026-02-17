@@ -4,10 +4,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/common/status-badge';
 import { EmptyState } from '@/components/common/empty-state';
-import { HandbookPage } from '@/types/models';
+import { HandbookPageSummary } from '@/types/models';
 
 interface HandbookPagesTableProps {
-  pages: HandbookPage[];
+  pages: HandbookPageSummary[];
   onEdit?: (pageId: string) => void;
   onPreview?: (pageId: string) => void;
 }

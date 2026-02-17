@@ -1,103 +1,133 @@
 import { useState, useEffect } from 'react';
-import { HandbookSection, HandbookPage } from '@/types/models';
-import { HandbookDetail } from '@/lib/api-types';
+import type { HandbookNode, HandbookPageDetail } from '@/types/models';
 import { handbookApi } from './api';
 
+/**
+ * Hook to fetch the handbook tree (chapters and pages)
+ */
+export const useHandbookTree = (lang: string = 'en') => {
+  const [data, setData] = useState<HandbookNode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchTree = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await handbookApi.getHandbookTree(lang);
+        console.log('Handbook tree fetched:', result);
+        setData(result);
+      } catch (err) {
+        console.error('Error fetching handbook tree:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch handbook tree';
+        setError(new Error(errorMessage));
+        setData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTree();
+  }, [lang]);
+
+  return { data, loading, error, refetch: () => { } };
+};
+
+/**
+ * Hook to fetch a specific handbook page for editing
+ */
+export const useHandbookPage = (pageId?: number, lang: string = 'en') => {
+  const [data, setData] = useState<HandbookPageDetail | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const fetchPage = async () => {
+      if (!pageId) {
+        setData(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const result = await handbookApi.getPageDetail(pageId, lang);
+        console.log('Handbook page fetched:', result);
+        setData(result);
+      } catch (err) {
+        console.error('Error fetching handbook page:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch page';
+        setError(new Error(errorMessage));
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPage();
+  }, [pageId, lang]);
+
+  return { data, loading, error, refetch: () => { } };
+};
+
+// Legacy hooks for backward compatibility (deprecated - use useHandbookTree instead)
+/**
+ * @deprecated Use useHandbookTree instead
+ */
 export const useHandbookSections = () => {
-  const [data, setData] = useState<HandbookSection[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: tree, loading, error } = useHandbookTree();
 
-  useEffect(() => {
-    const fetchSections = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await handbookApi.listSections();
-        console.log('Handbook sections fetched:', result);
-        setData(result);
-      } catch (err) {
-        console.error('Error fetching handbook sections:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch sections';
-        setError(new Error(errorMessage));
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Convert tree to sections format for backward compatibility
+  const sections = tree
+    .filter(node => node.type === 'chapter')
+    .map((chapter, index) => ({
+      id: String(chapter.id),
+      title: chapter.title,
+      slug: chapter.title.toLowerCase().replace(/\s+/g, '-'),
+      order: index,
+      accountId: '',
+    }));
 
-    fetchSections();
-  }, []);
-
-  return { data, loading, error, refetch: () => { } };
+  return { data: sections, loading, error, refetch: () => { } };
 };
 
+/**
+ * @deprecated Use useHandbookTree and filter pages from chapters instead
+ */
 export const useHandbookPages = (sectionId?: string) => {
-  const [data, setData] = useState<HandbookPage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: tree, loading, error } = useHandbookTree();
 
-  useEffect(() => {
-    const fetchPages = async () => {
-      if (!sectionId) {
-        setData([]);
-        setLoading(false);
-        return;
-      }
+  // Find pages for the given section
+  const pages = sectionId
+    ? tree
+      .find(node => String(node.id) === sectionId)
+      ?.pages?.map(page => ({
+        id: String(page.id),
+        sectionId: sectionId,
+        title: page.title,
+        status: page.status === 'ready' ? 'READY' as const : 'NOT_READY' as const,
+        updatedAt: new Date().toISOString(),
+      })) || []
+    : [];
 
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await handbookApi.listPages(sectionId);
-        console.log('Handbook pages fetched for section:', sectionId, result);
-        setData(result);
-      } catch (err) {
-        console.error('Error fetching handbook pages:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch pages';
-        setError(new Error(errorMessage));
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPages();
-  }, [sectionId]);
-
-  return { data, loading, error, refetch: () => { } };
+  return { data: pages, loading, error, refetch: () => { } };
 };
 
+/**
+ * @deprecated No longer supported - use useHandbookPage instead
+ */
 export const useHandbook = (id?: string) => {
-  const [data, setData] = useState<HandbookDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data] = useState<any | null>(null);
+  const [loading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchHandbook = async () => {
-      if (!id) {
-        setData(null);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await handbookApi.getHandbook(id);
-        setData(result);
-      } catch (err) {
-        console.error('Error fetching handbook:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch handbook';
-        setError(new Error(errorMessage));
-        setData(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHandbook();
+    if (id) {
+      setError(new Error('useHandbook is deprecated. Use useHandbookPage instead.'));
+    }
   }, [id]);
 
   return { data, loading, error };
 };
-

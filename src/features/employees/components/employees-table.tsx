@@ -20,6 +20,8 @@ interface EmployeesTableProps {
   onSelect: (id: string) => void;
   onSelectAll: (selected: boolean) => void;
   onDelete: (id: string, name: string) => void;
+  onStatistics?: (id: string) => void;
+  onMessageLogs?: (id: string) => void;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
 }
@@ -30,6 +32,8 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   onSelect,
   onSelectAll,
   onDelete,
+  onStatistics,
+  onMessageLogs,
   emptyStateTitle = 'No data yet.',
   emptyStateDescription,
 }) => {
@@ -147,6 +151,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                           size="icon"
                           className="h-7 w-7 rounded-md bg-[#e8f0fe] text-[#2060d7] hover:bg-[#d4e4fc]"
                           aria-label="Message"
+                          onClick={() => onMessageLogs?.(employee.id)}
                         >
                           <MessageSquare className="h-3.5 w-3.5" />
                         </Button>
@@ -157,6 +162,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                           size="icon"
                           className="h-7 w-7 rounded-md bg-[#fff1e8] text-[#ee7623] hover:bg-[#ffe4d1]"
                           aria-label="Statistics"
+                          onClick={() => onStatistics?.(employee.id)}
                         >
                           <BarChart3 className="h-3.5 w-3.5" />
                         </Button>

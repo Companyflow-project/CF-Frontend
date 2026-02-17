@@ -34,6 +34,19 @@ axiosClient.interceptors.response.use(
       (error as Error & { apiError?: ApiErrorResponse['error'] }).apiError = apiError.error;
     }
 
+    // Handle 429 explicitly
+    if (error.response?.status === 429) {
+      const msg = 'Too many requests, please try again in a moment.';
+      error.message = msg;
+      // Patch response data so custom properties (used in authApi) also reflect this
+      if (error.response.data && typeof error.response.data === 'object') {
+        (error.response.data as any).message = msg;
+        if ((error.response.data as any).error && typeof (error.response.data as any).error === 'object') {
+          (error.response.data as any).error.message = msg;
+        }
+      }
+    }
+
     // Do not perform auth redirects here; auth will be handled separately when implemented
     return Promise.reject(error);
   }

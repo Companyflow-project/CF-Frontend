@@ -1,30 +1,41 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
-export interface SwitchProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface SwitchProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
 
-const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
-  ({ className, ...props }, ref) => {
+const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
+  ({ checked, onCheckedChange, disabled, className }, ref) => {
     return (
-      <label className="inline-flex items-center cursor-pointer">
-        <input
-          type="checkbox"
-          className="sr-only peer"
-          ref={ref}
-          {...props}
-        />
-        <div
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => !disabled && onCheckedChange(!checked)}
+        ref={ref}
+        className={cn(
+          'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+          checked ? 'bg-[#3d997d]' : 'bg-gray-200',
+          disabled && 'opacity-50 cursor-not-allowed',
+          className
+        )}
+      >
+        <span
           className={cn(
-            "relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary",
-            className
+            'inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm',
+            checked ? 'translate-x-[22px]' : 'translate-x-[2px]'
           )}
         />
-      </label>
-    )
+      </button>
+    );
   }
-)
-Switch.displayName = "Switch"
+);
 
-export { Switch }
+Switch.displayName = 'Switch';
 
+export { Switch };

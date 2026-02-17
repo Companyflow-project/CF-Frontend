@@ -1,4 +1,4 @@
-import { HandbookSection, HandbookPage } from '@/types/models';
+import { HandbookSection, HandbookPageSummary } from '@/types/models';
 
 // simple mock account id so we can quickly swap to a real backend later
 export const handbookMockAccountId = 'mock-account-1';
@@ -43,7 +43,7 @@ export const handbookMockSections: HandbookSection[] = [
 ];
 
 // mock pages for each section – easy to replace with api responses later
-export const handbookMockPages: HandbookPage[] = [
+export const handbookMockPages: HandbookPageSummary[] = [
   // introduction section – matches \"the personnel handbook\" examples
   {
     id: 'page-personnel-handbook',

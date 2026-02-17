@@ -43,7 +43,7 @@ export const EditThemePage: React.FC = () => {
       <PageHeader
         title="Edit Theme"
         actions={
-          <Button variant="outline" onClick={() => navigate(handbookRoutes.list)}>
+          <Button variant="outline" onClick={() => navigate(handbookRoutes.pages)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
