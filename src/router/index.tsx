@@ -15,6 +15,7 @@ import { EmployeeMessageLogsDetailPage } from '@/features/employees/pages/employ
 import { ManageHandbookPage } from '@/features/handbook/pages/manage-handbook-page';
 import { HandbookPagesPage } from '@/features/handbook/pages/handbook-pages-page';
 import { HandbookPageEditPage } from '@/features/handbook/pages/handbook-page-edit-page';
+import { PublishHandbookPage } from '@/features/handbook/pages/publish-handbook-page';
 import { EditThemePage } from '@/features/handbook/pages/edit-theme-page';
 import { HandbookLinksPage } from '@/features/handbook/pages/handbook-links-page';
 import { HandbookNotesPage } from '@/features/handbook/pages/handbook-notes-page';
@@ -172,6 +173,16 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <HandbookPagesPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/handbook/publish/:id"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <PublishHandbookPage />
               </AppLayout>
             </RequireAuth>
           }

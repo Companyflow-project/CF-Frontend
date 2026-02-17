@@ -14,9 +14,18 @@ interface SaveProgressResponse {
   message?: string;
 }
 
+type MessageType = 'standard' | 'custom' | 'none';
+
+interface PublishHandbookPayload {
+  handbookId: number;
+  messageType: MessageType;
+  channels?: Array<'email' | 'sms'>;
+  customMessage?: string;
+}
+
 interface PublishHandbookResponse {
-  data: HandbookNode[];
-  message: string;
+  success: boolean;
+  count: number;
 }
 
 interface CreatePagePayload {
@@ -157,17 +166,13 @@ export const handbookApi = {
   /**
    * Publish handbook
    * POST /api/handbook/publish
-   * 
+   *
    * Only admin or company_admin can call this.
    * User must be linked to a company.
-   * 
-   * Errors:
-   * - 403: "Only admins can publish the handbook"
-   * - 403: "User not assigned to a company"
    */
-  async publishHandbook(): Promise<PublishHandbookResponse> {
+  async publishHandbook(payload: PublishHandbookPayload): Promise<PublishHandbookResponse> {
     try {
-      const response = await axiosClient.post<PublishHandbookResponse>('/handbook/publish');
+      const response = await axiosClient.post<PublishHandbookResponse>('/handbook/publish', payload);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 403) {

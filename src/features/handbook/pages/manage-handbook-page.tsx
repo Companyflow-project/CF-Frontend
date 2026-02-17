@@ -4,7 +4,6 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
-import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 
@@ -106,10 +105,7 @@ export const ManageHandbookPage: React.FC = () => {
                     actions={[
                         {
                             label: 'Publish →',
-                            onClick: () => {
-                                // Handle publish action
-                                console.log('Publish handbook');
-                            },
+                            onClick: () => navigate(handbookRoutes.publish('main')),
                             variant: 'default',
                         },
                         {

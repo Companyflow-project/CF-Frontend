@@ -282,7 +282,7 @@ export const HandbookPage: React.FC = () => {
                       onClick={() => setPublishModalOpen(true)}
                       className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-4 py-2 h-auto w-full sm:w-auto"
                     >
-                      Publish handbook
+                      Publish Handbook
                     </Button>
                   </div>
                 </div>
@@ -317,7 +317,7 @@ export const HandbookPage: React.FC = () => {
         onOpenChange={setPublishModalOpen}
         onConfirm={() => {
           // TODO: Implement publish
-          console.log('Publish handbook');
+          console.log('Publish Handbook');
           setPublishModalOpen(false);
         }}
       />

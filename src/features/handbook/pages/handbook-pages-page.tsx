@@ -26,7 +26,6 @@ export const HandbookPagesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    const [isPublishing, setIsPublishing] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
 
@@ -160,42 +159,10 @@ export const HandbookPagesPage: React.FC = () => {
         }
     };
 
-    const handlePublishHandbook = async () => {
-        try {
-            setIsPublishing(true);
-            const response = await handbookApi.publishHandbook();
-
-            const updatedStructure = response.data;
-
-            const uniqueTree = Array.from(
-                new Map(updatedStructure.map(node => [node.id, node])).values()
-            );
-
-            setHandbookTree(uniqueTree);
-
-            const readyPageIds = new Set<number>();
-            uniqueTree.forEach(node => {
-                if (node.type === 'chapter' && node.pages) {
-                    node.pages.forEach(page => {
-                        if (page.status === 'ready') {
-                            readyPageIds.add(page.id);
-                        }
-                    });
-                }
-            });
-            setSelectedPages(readyPageIds);
-
-            if (uniqueTree.length > 0 && uniqueTree[0].type === 'chapter') {
-                setActiveChapterId(uniqueTree[0].id);
-            }
-
-            alert(response.message || 'Handbook is now live for employees');
-        } catch (err: any) {
-            console.error('Failed to publish handbook:', err);
-            alert(err.message || 'Failed to publish handbook. Please try again.');
-        } finally {
-            setIsPublishing(false);
-        }
+    const handlePublishHandbook = () => {
+        // Redirect to the dedicated publish UI instead of
+        // publishing immediately from this sidebar button.
+        navigate(handbookRoutes.publish('21'));
     };
 
     const refreshHandbookTree = async () => {
@@ -621,7 +588,7 @@ export const HandbookPagesPage: React.FC = () => {
                                         variant="outline"
                                         size="sm"
                                         onClick={handleSaveProgress}
-                                        disabled={!canEditHandbook || isSaving || isPublishing}
+                                        disabled={!canEditHandbook || isSaving || isBulkUpdating}
                                         className="flex-1 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] h-9"
                                     >
                                         {isSaving ? 'Saving...' : 'Save progress'}
@@ -629,10 +596,10 @@ export const HandbookPagesPage: React.FC = () => {
                                     <Button
                                         size="sm"
                                         onClick={handlePublishHandbook}
-                                        disabled={!canEditHandbook || isSaving || isPublishing}
+                                        disabled={!canEditHandbook || isSaving || isBulkUpdating}
                                         className="flex-1 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] h-9"
                                     >
-                                        {isPublishing ? 'Publishing...' : 'Publish handbook'}
+                                        Publish handbook
                                     </Button>
                                 </div>
                             </div>
