@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowRight } from 'lucide-react';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
+import { toast } from 'sonner';
 
 export const ManageHandbookPage: React.FC = () => {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ export const ManageHandbookPage: React.FC = () => {
 
     const handleAddPage = () => {
         if (!canEditHandbook) {
-            alert("You don't have permission to create handbook pages.");
+            toast.error("You don't have permission to create handbook pages.");
             return;
         }
 

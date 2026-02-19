@@ -19,6 +19,7 @@ import {
     Trash2,
     Loader2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { handbookApi } from '../api';
 import { useEmployees } from '@/features/employees/hooks';
 import { useAuth } from '@/context/auth-context';
@@ -109,11 +110,14 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
                         setImageName(null);
                     }
                     setDocuments(
-                        (data.documents || []).map((d) => ({
-                            id: d.id,
-                            name: d.name,
-                            description: d.description ?? null,
-                        }))
+                        (data.documents || []).map((d) => {
+                            const docId = (d as { id?: number; fid?: number }).id ?? (d as { fid?: number }).fid;
+                            return {
+                                id: typeof docId === 'number' ? docId : 0,
+                                name: d.name,
+                                description: d.description ?? null,
+                            };
+                        }).filter((d) => d.id > 0)
                     );
                     setLinks(
                         (data.links || []).map((l) => ({
@@ -184,7 +188,7 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
             setImageName(uploaded.name ?? file.name);
         } catch (err: any) {
             console.error('Failed to upload image:', err);
-            alert(err.message || 'Failed to upload image. Please try again.');
+            toast.error(err.message || 'Failed to upload image. Please try again.');
         } finally {
             setUploadingImage(false);
         }
@@ -213,7 +217,7 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
             setDocuments((prev) => [...prev, ...uploadedItems]);
         } catch (err: any) {
             console.error('Failed to upload documents:', err);
-            alert(err.message || 'Failed to upload one or more documents. Please try again.');
+            toast.error(err.message || 'Failed to upload one or more documents. Please try again.');
         } finally {
             setUploadingDocuments(false);
         }
@@ -242,10 +246,12 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
                 notes,
                 imageId,
                 imagePlacement,
-                documents: documents.map((d) => ({
-                    id: d.id,
-                    description: d.description ?? null,
-                })),
+                documents: documents
+                    .filter((d) => typeof d.id === 'number' && Number.isFinite(d.id))
+                    .map((d) => ({
+                        id: d.id,
+                        description: d.description ?? null,
+                    })),
                 links: links.map((l) => ({
                     uri: l.uri,
                     title: l.title,
@@ -261,11 +267,11 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
 
             await handbookApi.updatePage(pageId, payload);
 
-            alert('Page saved successfully!');
+            toast.success('Page saved successfully!');
             onSave?.();
         } catch (err: any) {
             console.error('Failed to save page:', err);
-            alert(err.message || 'Failed to save page. Please try again.');
+            toast.error(err.message || 'Failed to save page. Please try again.');
         } finally {
             setSaving(false);
         }

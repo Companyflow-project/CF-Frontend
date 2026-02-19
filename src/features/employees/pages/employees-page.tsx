@@ -20,6 +20,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { employeesApi } from '../api';
+import { toast } from 'sonner';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -125,8 +126,7 @@ export const EmployeesPage: React.FC = () => {
       refetch();
     } catch (err) {
       console.error('Failed to delete employee:', err);
-      // Ideally show a toast here, but for now we'll just log it
-      alert('Failed to delete employee');
+      toast.error('Failed to delete employee');
     } finally {
       setIsDeleting(false);
     }

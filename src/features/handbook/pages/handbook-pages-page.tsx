@@ -13,6 +13,7 @@ import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import type { HandbookNode } from '@/types/models';
 import { useAuth } from '@/context/auth-context';
+import { toast } from 'sonner';
 
 export const HandbookPagesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -150,10 +151,10 @@ export const HandbookPagesPage: React.FC = () => {
 
             const response = await handbookApi.saveProgress(payload);
 
-            alert(response.message || 'Progress saved successfully!');
+            toast.success(response.message || 'Progress saved successfully!');
         } catch (err: any) {
             console.error('Failed to save progress:', err);
-            alert(err.message || 'Failed to save progress. Please try again.');
+            toast.error(err.message || 'Failed to save progress. Please try again.');
         } finally {
             setIsSaving(false);
         }
@@ -207,24 +208,24 @@ export const HandbookPagesPage: React.FC = () => {
 
     const handleBulkAction = async (action: 'mark_ready' | 'mark_not_ready' | 'opt_out' | 'include') => {
         if (!canEditHandbook) {
-            alert("You don't have permission to perform bulk actions.");
+            toast.error("You don't have permission to perform bulk actions.");
             return;
         }
 
         const pageIds = Array.from(selectedPages);
         if (pageIds.length === 0) {
-            alert('Select at least one page first.');
+            toast.error('Select at least one page first.');
             return;
         }
 
         try {
             setIsBulkUpdating(true);
             const response = await handbookApi.bulkAction({ pageIds, action });
-            alert(`Updated ${response.updatedCount} pages`);
+            toast.success(`Updated ${response.updatedCount} pages`);
             await refreshHandbookTree();
         } catch (err: any) {
             console.error('Failed to perform bulk action:', err);
-            alert(err.message || 'Failed to update pages. Please try again.');
+            toast.error(err.message || 'Failed to update pages. Please try again.');
         } finally {
             setIsBulkUpdating(false);
         }
@@ -232,7 +233,7 @@ export const HandbookPagesPage: React.FC = () => {
 
     const handleAddPage = () => {
         if (!canEditHandbook) {
-            alert("You don't have permission to create handbook pages.");
+            toast.error("You don't have permission to create handbook pages.");
             return;
         }
         setIsAddPageModalOpen(true);

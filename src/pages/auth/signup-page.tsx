@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/features/auth/hooks';
 import { authApi } from '@/features/auth/api';
+import { toast } from 'sonner';
 import loginLogoUrl from '/assets/Login-Logo.svg';
 
 export const SignupPage: React.FC = () => {
@@ -21,7 +22,7 @@ export const SignupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) {
-      alert('Du skal acceptere vilkårene');
+      toast.error('Du skal acceptere vilkårene');
       return;
     }
     try {

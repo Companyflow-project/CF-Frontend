@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
+import { toast } from 'sonner';
 
 type MessageType = 'none' | 'standard' | 'custom';
 
@@ -44,13 +45,13 @@ export const PublishHandbookPage: React.FC = () => {
         customMessage: messageType === 'custom' ? customMessage || undefined : undefined,
       });
 
-      alert(
+      toast.success(
         `Published. ${response.count} employees will receive a notification.`,
       );
       navigate(handbookRoutes.manage);
     } catch (err: any) {
       console.error('Failed to publish handbook:', err);
-      alert(err?.message || 'Failed to publish handbook. Please try again.');
+      toast.error(err?.message || 'Failed to publish handbook. Please try again.');
     } finally {
       setSubmitting(false);
     }
