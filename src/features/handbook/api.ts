@@ -50,7 +50,151 @@ interface BulkActionResponse {
   updatedCount: number;
 }
 
+/** Viewer page meta: receipt requirement and tracking status (from page details response). */
+export interface HandbookViewerPageMeta {
+  field_receipt_value: number;
+  trackingStatus: {
+    viewedAt: string | number | null;
+    signedAt: string | number | null;
+  };
+  /** Optional top-level mirrors of trackingStatus (backend may return either shape). */
+  viewedAt?: string | number | null;
+  signedAt?: string | number | null;
+}
+
+/** Fixed NID for CompanyFlow template content when in CompanyFlow mode */
+export const COMPANY_FLOW_CONTENT_NID = 20134;
+
+/** Default handbook book id for print (main handbook). */
+export const DEFAULT_HANDBOOK_PRINT_BID = 21;
+
+/** Single page in handbook print response (book order). */
+export interface HandbookPrintPageItem {
+  title: string;
+  body: string;
+  /** If present, only pages with status 'ready' | 'READY' are shown in print view. */
+  status?: string;
+}
+
+function requireValidNid(nid: number): void {
+  if (
+    typeof nid !== 'number' ||
+    !Number.isFinite(nid) ||
+    nid < 0 ||
+    Math.floor(nid) !== nid
+  ) {
+    throw new Error('Invalid handbook page id');
+  }
+}
+
 export const handbookApi = {
+  /**
+   * Get handbook page body content (HTML).
+   * GET /api/handbook/content/:nid
+   * Response is plain text/HTML, not JSON. Returns empty string when no content.
+   * CompanyFlow: use COMPANY_FLOW_CONTENT_NID (20134). Custom: use current page's nid.
+   */
+  async getHandbookContent(nid: number): Promise<string> {
+    requireValidNid(nid);
+    try {
+      const response = await axiosClient.get<string>(`/handbook/content/${nid}`, {
+        responseType: 'text',
+        transformResponse: [(data) => data],
+      });
+      return typeof response.data === 'string' ? response.data : '';
+    } catch (error: any) {
+      if (error.response?.status === 404) return '';
+      console.error('Error fetching handbook content:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Save handbook page body content (Custom mode only).
+   * POST or PATCH /api/handbook/content/:nid
+   * Body: { body_value: "<html string>" }
+   */
+  async saveHandbookContent(nid: number, bodyValue: string): Promise<{ success: boolean }> {
+    requireValidNid(nid);
+    try {
+      const response = await axiosClient.patch<{ success: boolean }>(
+        `/handbook/content/${nid}`,
+        { body_value: bodyValue }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('Error saving handbook content:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get handbook pages for print/PDF (book order).
+   * GET /api/handbook/print/:bid?lang=en&readyOnly=1
+   * When readyOnly is true, backend should return only pages with status "ready".
+   * Frontend also filters to only show items with status 'ready' when status is present.
+   */
+  async getHandbookPrint(
+    bid: number,
+    lang: string = 'en',
+    readyOnly: boolean = true
+  ): Promise<HandbookPrintPageItem[]> {
+    const response = await axiosClient.get<HandbookPrintPageItem[]>(
+      `/handbook/print/${bid}`,
+      { params: { lang, ...(readyOnly && { readyOnly: 1 }) } }
+    );
+    const list = Array.isArray(response.data) ? response.data : [];
+    return list.filter((item) => {
+      if (typeof item.body !== 'string' || item.body.trim() === '') return false;
+      if (item.status == null || item.status === '') return true;
+      return String(item.status).toLowerCase() === 'ready';
+    });
+  },
+
+  /**
+   * Get viewer page details (receipt requirement + tracking status).
+   * GET /api/handbook/viewer-page/:nid (or equivalent)
+   * Used to show "Mark as Read" and last viewed/signed dates.
+   */
+  async getHandbookViewerPageMeta(nid: number): Promise<HandbookViewerPageMeta | null> {
+    requireValidNid(nid);
+    try {
+      const response = await axiosClient.get<HandbookViewerPageMeta>(
+        `/handbook/viewer-page/${nid}`
+      );
+      return response.data ?? null;
+    } catch (error: any) {
+      if (error.response?.status === 404) return null;
+      console.error('Error fetching handbook viewer page meta:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Track that the user viewed a handbook page.
+   * POST /api/handbook/track-view/:nid
+   * Call once per page open (debounced / session) to avoid excessive writes.
+   */
+  async trackHandbookView(nid: number): Promise<{ success: boolean }> {
+    requireValidNid(nid);
+    const response = await axiosClient.post<{ success: boolean }>(
+      `/handbook/track-view/${nid}`
+    );
+    return response.data;
+  },
+
+  /**
+   * Sign receipt for a handbook page (mark as read).
+   * POST /api/handbook/sign-receipt/:nid
+   */
+  async signHandbookReceipt(nid: number): Promise<{ success: boolean }> {
+    requireValidNid(nid);
+    const response = await axiosClient.post<{ success: boolean }>(
+      `/handbook/sign-receipt/${nid}`
+    );
+    return response.data;
+  },
+
   /**
    * Get handbook tree/overview
    * GET /api/handbook?lang=en

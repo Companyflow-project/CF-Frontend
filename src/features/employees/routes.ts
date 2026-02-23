@@ -1,6 +1,7 @@
 export const employeesRoutes = {
   list: '/employees',
   add: '/employees/add',
+  edit: (id: string) => `/employees/${id}/edit`,
   statistics: '/employees/statistics',
   statisticsDetail: (id: string) => `/employees/${id}/statistics`,
   messageLogs: '/employees/message-logs',

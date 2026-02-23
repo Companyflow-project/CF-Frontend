@@ -331,6 +331,7 @@ export const EmployeesPage: React.FC = () => {
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
                   onDelete={handleDeleteRequest}
+                  onEdit={(id) => navigate(employeesRoutes.edit(id))}
                   onStatistics={(id) => navigate(employeesRoutes.statisticsDetail(id))}
                   onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
                   emptyStateTitle="No employees"

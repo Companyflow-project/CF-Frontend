@@ -64,6 +64,8 @@ export interface Contact {
   isPublic?: boolean;
   isEmployeeContact?: boolean;
   isExternalContact?: boolean;
+  /** True when this row is the current user (placeholder); use "Add as contact" instead of Edit. */
+  isCurrentUser?: boolean;
   status: "ACTIVE" | "INACTIVE";
   createdAt?: string;
 }

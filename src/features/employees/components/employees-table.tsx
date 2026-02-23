@@ -20,6 +20,7 @@ interface EmployeesTableProps {
   onSelect: (id: string) => void;
   onSelectAll: (selected: boolean) => void;
   onDelete: (id: string, name: string) => void;
+  onEdit?: (id: string) => void;
   onStatistics?: (id: string) => void;
   onMessageLogs?: (id: string) => void;
   emptyStateTitle?: string;
@@ -32,6 +33,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   onSelect,
   onSelectAll,
   onDelete,
+  onEdit,
   onStatistics,
   onMessageLogs,
   emptyStateTitle = 'No data yet.',
@@ -143,6 +145,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                           size="icon"
                           className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
                           aria-label="Edit"
+                          onClick={() => onEdit?.(employee.id)}
                         >
                           <Edit className="h-3.5 w-3.5" />
                         </Button>

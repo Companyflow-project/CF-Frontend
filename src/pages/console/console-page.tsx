@@ -1,149 +1,192 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageShell } from '@/components/layout/page-shell';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Users, BookOpen, Phone, Settings, Star, Lock } from 'lucide-react';
 import { employeesRoutes } from '@/features/employees/routes';
 import { handbookRoutes } from '@/features/handbook/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
+import { useAuth } from '@/context/auth-context';
 
-export const ConsolePage: React.FC = () => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        <div className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_12px_30px_rgba(14,51,38,0.08)] px-5 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-sm font-medium text-[#1a5948]">Your free trial is active.</p>
-            <p className="text-sm text-[#4b5652]">You have 21 days remaining.</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-2 text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
-              onClick={() => navigate(employeesRoutes.add)}
-            >
-              Invite Employees
-            </button>
-            <button
-              className="border border-[#d0e3da] text-[#0d0e0e] rounded-[999px] px-5 py-2 text-sm bg-white"
-              onClick={() => navigate(accountRoutes.account)}
-            >
-              Manage Billing
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <ConsoleCard
-              title="Employees"
-              description="Add people, set roles, and manage access."
-              primaryAction={{
-                label: 'Go to Employees →',
-                onClick: () => navigate(employeesRoutes.list),
-              }}
-              links={[
-                { label: 'Invite employees', onClick: () => navigate(employeesRoutes.add) },
-                { label: 'Roles & permissions' },
-              ]}
-            />
-            <ConsoleCard
-              title="Manage Handbook"
-              description="Create and publish your company handbook for employees."
-              primaryAction={{
-                label: 'Open Handbook →',
-                onClick: () => navigate(handbookRoutes.pages),
-              }}
-              links={[
-                { label: 'New handbook section' },
-                { label: 'Handbook settings' },
-              ]}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            <ConsoleCard
-              title="Contacts"
-              description="Store vendors, clients, and emergency contacts."
-              primaryAction={{
-                label: 'Manage Contacts →',
-                onClick: () => navigate(contactsRoutes.list),
-              }}
-              links={[
-                { label: 'Add contact', trailing: '+' },
-                { label: 'Import CSV', trailing: '⇢' },
-              ]}
-            />
-            <ConsoleCard
-              title="Account"
-              description="Profile, security, and billing preferences."
-              primaryAction={{
-                label: 'Open Account →',
-                onClick: () => navigate(accountRoutes.account),
-              }}
-              links={[
-                { label: 'Profile' },
-                { label: 'Billing' },
-                { label: 'Security' },
-              ]}
-            />
-            <ConsoleCard
-              title="Get Started"
-              description="Recommended next steps to make the most of your trial."
-              hidePrimaryAction
-              links={[
-                { label: 'Invite your team', trailing: '1' },
-                { label: 'Publish a handbook section', trailing: '2' },
-                { label: 'Customize theme', trailing: '3' },
-              ]}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+interface ConsoleAction {
+  label: string;
+  onClick?: () => void;
+  variant?: 'primary' | 'outline';
+  adminOnly?: boolean;
+}
 
 interface ConsoleCardProps {
   title: string;
   description: string;
-  primaryAction?: { label: string; onClick?: () => void };
-  links: { label: string; trailing?: string; onClick?: () => void }[];
-  hidePrimaryAction?: boolean;
+  icon: React.ReactNode;
+  iconBg: string;
+  actions: ConsoleAction[];
 }
 
-const ConsoleCard: React.FC<ConsoleCardProps> = ({
+const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
   title,
   description,
-  primaryAction,
-  links,
-  hidePrimaryAction,
-}) => {
-  return (
-    <div className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-5 flex flex-col gap-4">
-      <div>
-        <h3 className="text-lg font-bold text-[#0d0e0e]">{title}</h3>
-        <p className="text-sm text-[#4b5652]">{description}</p>
+  icon,
+  iconBg,
+  actions,
+  canEdit,
+}) => (
+  <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+    <CardHeader className="pb-3">
+      <div className="flex items-center gap-3 mb-1">
+        <div className={`h-9 w-9 rounded-[10px] flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+          {icon}
+        </div>
+        <CardTitle className="text-lg font-bold text-[#0d0e0e]">{title}</CardTitle>
       </div>
-      {!hidePrimaryAction && primaryAction && (
-        <button
-          className="inline-flex items-center justify-center bg-[#e1f3ec] border border-[#2f946f] text-[#1a5948] rounded-[999px] px-5 py-3 text-sm font-semibold w-full sm:w-auto"
-          onClick={primaryAction.onClick}
-        >
-          {primaryAction.label}
-        </button>
-      )}
-      <div className="flex flex-col gap-2">
-        {links.map((link) => (
-          <button
-            key={link.label}
-            onClick={link.onClick}
-            className="flex items-center justify-between px-4 py-3 rounded-[12px] border border-[#cce3da] bg-white text-sm text-[#0d0e0e]"
+      <CardDescription className="text-sm text-[#6b7280]">{description}</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      {actions.map((action, index) => {
+        const isLocked = action.adminOnly && !canEdit;
+        return (
+          <div
+            key={index}
+            title={isLocked ? 'Only admins can perform this action' : undefined}
+            className={isLocked ? 'cursor-not-allowed' : undefined}
           >
-            <span>{link.label}</span>
-            <span className="text-base text-[#0d0e0e]">{link.trailing ?? '⇢'}</span>
-          </button>
-        ))}
+            <button
+              onClick={isLocked ? undefined : action.onClick}
+              disabled={isLocked}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${isLocked
+                  ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
+                  : action.variant === 'primary'
+                    ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
+                    : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
+                }`}
+            >
+              <span>{action.label}</span>
+              {isLocked ? (
+                <Lock className="h-3.5 w-3.5 text-[#9ca3af]" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        );
+      })}
+    </CardContent>
+  </Card>
+);
+
+export const ConsolePage: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+
+  return (
+    <PageShell>
+      {/* Trial Banner */}
+      <div className="mb-8 bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)] px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-[#1a5948]">Your free trial is active.</p>
+          <p className="text-sm text-[#6b7280] mt-0.5">You have 21 days remaining.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => navigate(employeesRoutes.add)}
+            className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-2 h-auto text-sm shadow-[0_8px_16px_rgba(23,102,79,0.3)]"
+          >
+            Invite Employees
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate(accountRoutes.account)}
+            className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-2 h-auto text-sm bg-white"
+          >
+            Manage Billing
+          </Button>
+        </div>
       </div>
-    </div>
+
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">Dashboard</h1>
+        <p className="text-sm text-[#6b7280] mt-1">Manage your company from one place.</p>
+      </div>
+
+      {/* Top row — 2 cols */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+        <ConsoleCard
+          canEdit={isAdmin}
+          title="Employees"
+          description="Add people, set roles, and manage access."
+          icon={<Users className="h-5 w-5 text-[#1a5948]" />}
+          iconBg="bg-[#d4f4e6]"
+          actions={[
+            { label: 'Go to Employees →', onClick: () => navigate(employeesRoutes.list), variant: 'primary' },
+            { label: 'Invite employees', onClick: () => navigate(employeesRoutes.add), adminOnly: true },
+            { label: 'Roles & permissions', adminOnly: true },
+          ]}
+        />
+        <ConsoleCard
+          canEdit={isAdmin}
+          title="Manage Handbook"
+          description="Create and publish your company handbook for employees."
+          icon={<BookOpen className="h-5 w-5 text-[#1a5948]" />}
+          iconBg="bg-[#d4f4e6]"
+          actions={[
+            { label: 'Open Handbook →', onClick: () => navigate(handbookRoutes.manage), variant: 'primary' },
+            { label: 'New handbook section', adminOnly: true },
+            { label: 'Handbook settings', adminOnly: true },
+          ]}
+        />
+      </div>
+
+      {/* Bottom row — 3 cols */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <ConsoleCard
+          canEdit={isAdmin}
+          title="Contacts"
+          description="Store vendors, clients, and emergency contacts."
+          icon={<Phone className="h-5 w-5 text-[#1e40af]" />}
+          iconBg="bg-[#dbeafe]"
+          actions={[
+            { label: 'Manage Contacts →', onClick: () => navigate(contactsRoutes.list), variant: 'primary' },
+            {
+              label: 'Add contact',
+              adminOnly: true,
+              onClick: () => navigate(`${contactsRoutes.list}?open=add`),
+            },
+            {
+              label: 'Import CSV',
+              adminOnly: true,
+              onClick: () => navigate(`${contactsRoutes.list}?open=import`),
+            },
+          ]}
+        />
+        <ConsoleCard
+          canEdit={isAdmin}
+          title="Account"
+          description="Profile, security, and billing preferences."
+          icon={<Settings className="h-5 w-5 text-[#7c3aed]" />}
+          iconBg="bg-[#ede9fe]"
+          actions={[
+            { label: 'Open Account →', onClick: () => navigate(accountRoutes.account), variant: 'primary' },
+            { label: 'Company profile', onClick: () => navigate(accountRoutes.editCompanyProfile) },
+            { label: 'Appearance', onClick: () => navigate(accountRoutes.appearance) },
+          ]}
+        />
+        <ConsoleCard
+          canEdit={isAdmin}
+          title="Get Started"
+          description="Recommended next steps to make the most of your trial."
+          icon={<Star className="h-5 w-5 text-[#d97706]" />}
+          iconBg="bg-[#fef3c7]"
+          actions={[
+            { label: 'Invite your team', onClick: () => navigate(employeesRoutes.add) },
+            { label: 'Publish a handbook section', onClick: () => navigate(handbookRoutes.pages) },
+            { label: 'Customize theme', onClick: () => navigate(accountRoutes.appearance) },
+          ]}
+        />
+      </div>
+    </PageShell>
   );
 };

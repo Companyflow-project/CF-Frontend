@@ -123,11 +123,46 @@ export const employeesApi = {
   },
 
   async updateEmployee(
-    _id: string,
-    _payload: Partial<Employee>
+    id: string,
+    payload: {
+      name?: string;
+      email?: string;
+      mobileNumber?: string;
+      alternateNumber?: string;
+      telephone?: string;
+      isPublic?: boolean;
+      emergencyContactName?: string;
+      emergencyContactMobile?: string;
+      emergencyContactIsPublic?: boolean;
+      employmentType?: string;
+      employmentTitle?: string;
+      status?: boolean;
+      isSeniorEmployee?: boolean;
+      isBusinessAdmin?: boolean;
+    }
   ): Promise<Employee> {
-    // Backend is read-only, this would need to be implemented if write operations are added
-    throw new Error('Update employee not supported by read-only API');
+    const requestBody: Record<string, unknown> = {};
+    if (payload.name !== undefined) requestBody.name = payload.name;
+    if (payload.email !== undefined) requestBody.email = payload.email;
+    if (payload.mobileNumber !== undefined) requestBody.mobileNumber = payload.mobileNumber;
+    if (payload.alternateNumber !== undefined) requestBody.alternateNumber = payload.alternateNumber;
+    if (payload.telephone !== undefined) requestBody.telephone = payload.telephone;
+    if (payload.isPublic !== undefined) requestBody.isPublic = payload.isPublic;
+    if (payload.emergencyContactName !== undefined) requestBody.emergencyContactName = payload.emergencyContactName;
+    if (payload.emergencyContactMobile !== undefined) requestBody.emergencyContactMobile = payload.emergencyContactMobile;
+    if (payload.emergencyContactIsPublic !== undefined) requestBody.emergencyContactIsPublic = payload.emergencyContactIsPublic;
+    if (payload.employmentType !== undefined) requestBody.employmentType = payload.employmentType;
+    if (payload.employmentTitle !== undefined) requestBody.employmentTitle = payload.employmentTitle;
+    if (payload.status !== undefined) requestBody.status = payload.status;
+    if (payload.isSeniorEmployee !== undefined) requestBody.isSeniorEmployee = payload.isSeniorEmployee;
+    if (payload.isBusinessAdmin !== undefined) requestBody.isBusinessAdmin = payload.isBusinessAdmin;
+
+    const response = await axiosClient.patch<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>(
+      `/employees/${id}`,
+      requestBody
+    );
+    const data = 'data' in response.data ? (response.data as ApiResponse<BackendEmployeeLike>).data : (response.data as BackendEmployeeLike);
+    return transformEmployee(data);
   },
 
   async deleteEmployee(id: string): Promise<void> {

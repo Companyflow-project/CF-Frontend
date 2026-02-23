@@ -16,6 +16,7 @@ interface SneakPeekModalProps {
     onEditPage: () => void;
     pageId: number;
     pageTitle: string;
+    canEdit?: boolean;
 }
 
 export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
@@ -24,6 +25,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
     onEditPage,
     pageId,
     pageTitle,
+    canEdit = false,
 }) => {
     const [loading, setLoading] = useState(true);
     const [pageDetail, setPageDetail] = useState<HandbookPageDetail | null>(null);
@@ -215,13 +217,19 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                     >
                         Close
                     </Button>
-                    <Button
-                        type="button"
-                        onClick={onEditPage}
-                        className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white"
+                    <div
+                        title={!canEdit ? 'Only admins can edit handbook pages' : undefined}
+                        className={!canEdit ? 'cursor-not-allowed' : undefined}
                     >
-                        Edit page
-                    </Button>
+                        <Button
+                            type="button"
+                            onClick={canEdit ? onEditPage : undefined}
+                            disabled={!canEdit}
+                            className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Edit page
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

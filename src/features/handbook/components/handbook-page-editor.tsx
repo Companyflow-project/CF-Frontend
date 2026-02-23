@@ -34,6 +34,7 @@ interface LinkItem {
 
 interface DocumentItem {
     id: number;
+    url?: string | null;
     name: string;
     description: string | null;
 }
@@ -92,8 +93,9 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 if (data) {
                     setPageDetail(data);
                     setHeading(data.title || '');
-                    setCustomText(data.versions?.custom || data.content || '');
                     setMode(data.sourceMode === 'own' ? 'custom' : 'company');
+                    const contentHtml = await handbookApi.getHandbookContent(pageId);
+                    setCustomText(contentHtml || data.versions?.custom || data.content || '');
                     setNotes(data.internalNote || '');
 
                     const firstPicture = data.pictures && data.pictures.length > 0 ? data.pictures[0] : undefined;
@@ -113,10 +115,11 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                             const docId = (d as { id?: number; fid?: number }).id ?? (d as { fid?: number }).fid;
                             return {
                                 id: typeof docId === 'number' ? docId : 0,
+                                url: (d as any).url ?? null,
                                 name: d.name,
                                 description: d.description ?? null,
                             };
-                        }).filter((d) => d.id > 0)
+                        })
                     );
                     setLinks(
                         (data.links || []).map((l) => ({
@@ -247,7 +250,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 imageId,
                 imagePlacement,
                 documents: documents
-                    .filter((d) => typeof d.id === 'number' && Number.isFinite(d.id))
+                    .filter((d) => typeof d.id === 'number' && d.id > 0)
                     .map((d) => ({
                         id: d.id,
                         description: d.description ?? null,
@@ -266,6 +269,10 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
             };
 
             await handbookApi.updatePage(pageId, payload);
+
+            if (mode === 'custom') {
+                await handbookApi.saveHandbookContent(pageId, customText);
+            }
 
             toast.success('Page saved successfully!');
             onSave?.();

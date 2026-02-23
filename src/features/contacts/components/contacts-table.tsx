@@ -10,7 +10,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/empty-state';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { Contact } from '@/types/models';
 
 interface ContactsTableProps {
@@ -18,6 +18,10 @@ interface ContactsTableProps {
   selectedIds: string[];
   onSelect: (id: string) => void;
   onSelectAll: (selected: boolean) => void;
+  onEdit?: (contact: Contact) => void;
+  onDelete?: (contact: Contact) => void;
+  /** For the current-user placeholder row (nid === 0 / isCurrentUser): add as contact using current user's uid */
+  onAddAsContact?: (contact: Contact) => void;
 }
 
 export const ContactsTable: React.FC<ContactsTableProps> = ({
@@ -25,6 +29,9 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
   selectedIds,
   onSelect,
   onSelectAll,
+  onEdit,
+  onDelete,
+  onAddAsContact,
 }) => {
   const allSelected = contacts.length > 0 && selectedIds.length === contacts.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < contacts.length;
@@ -114,12 +121,39 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
               </TableCell>
               <TableCell className="text-right">
                 <div className="inline-flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {contact.isCurrentUser || contact.id === '0' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
+                      onClick={() => onAddAsContact?.(contact)}
+                      aria-label="Add as contact"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Add as contact
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
+                        onClick={() => onEdit?.(contact)}
+                        aria-label="Edit contact"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
+                        onClick={() => onDelete?.(contact)}
+                        aria-label="Delete contact"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

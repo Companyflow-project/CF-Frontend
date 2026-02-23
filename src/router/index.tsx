@@ -7,6 +7,7 @@ import { LoginPage } from '@/features/auth/pages/login-page';
 import { SignupPage } from '@/features/auth/pages/signup-page';
 import { EmployeesPage } from '@/features/employees/pages/employees-page';
 import { AddEmployeePage } from '@/features/employees/pages/add-employee-page';
+import { EditEmployeePage } from '@/features/employees/pages/edit-employee-page';
 import { EmployeeStatsAllPage } from '@/features/employees/pages/employee-stats-all-page';
 import { EmployeeStatsDetailPage } from '@/features/employees/pages/employee-stats-detail-page';
 import { EmployeeMessageLogsAllPage } from '@/features/employees/pages/employee-message-logs-all-page';
@@ -20,6 +21,7 @@ import { EditThemePage } from '@/features/handbook/pages/edit-theme-page';
 import { HandbookLinksPage } from '@/features/handbook/pages/handbook-links-page';
 import { HandbookNotesPage } from '@/features/handbook/pages/handbook-notes-page';
 import { HandbookDocumentsPage } from '@/features/handbook/pages/handbook-documents-page';
+import { HandbookTableOfContentsPage } from '@/features/handbook/pages/handbook-table-of-contents-page';
 import { ContactsPage } from '@/features/contacts/pages/contacts-page';
 import { AccountPage } from '@/features/account/pages/account-page';
 import { EditCompanyProfilePage } from '@/features/account/pages/edit-company-profile-page';
@@ -30,7 +32,9 @@ import { EditDepartmentPage } from '@/features/account/pages/edit-department-pag
 import { ViewEmploymentTypesPage, AssignEmploymentTypePage } from '@/features/employment-types/pages';
 import { CompaniesPage } from '@/features/companies/pages/companies-page';
 import { CompanyDetailPage } from '@/features/companies/pages/company-detail-page';
+import { HandbookPrintPage } from '@/features/handbook/pages/handbook-print-page';
 import { HandbookViewerPage } from '@/features/handbook/pages/handbook-viewer-page';
+import { UserManualPage } from '@/features/user-manual/pages/user-manual-page';
 import { authRoutes } from '@/features/auth/routes';
 import { useAuth } from '@/context/auth-context';
 import { employeesRoutes } from '@/features/employees/routes';
@@ -38,6 +42,7 @@ import { handbookRoutes } from '@/features/handbook/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
 import { companiesRoutes } from '@/features/companies/routes';
+import { userManualRoutes } from '@/features/user-manual/routes';
 
 const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -97,6 +102,22 @@ export const AppRouter: React.FC = () => {
           }
         />
         <Route
+          path={userManualRoutes.root}
+          element={
+            <RequireAuth>
+              <UserManualPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={`${userManualRoutes.root}/:nid`}
+          element={
+            <RequireAuth>
+              <UserManualPage />
+            </RequireAuth>
+          }
+        />
+        <Route
           path={employeesRoutes.list}
           element={
             <RequireAuth>
@@ -112,6 +133,16 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <AddEmployeePage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/employees/:id/edit"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <EditEmployeePage />
               </AppLayout>
             </RequireAuth>
           }
@@ -163,6 +194,16 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <ManageHandbookPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/handbook/print-view"
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookPrintPage />
               </AppLayout>
             </RequireAuth>
           }
@@ -243,6 +284,16 @@ export const AppRouter: React.FC = () => {
             <RequireAuth>
               <AppLayout>
                 <HandbookDocumentsPage />
+              </AppLayout>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path={handbookRoutes.tableOfContents}
+          element={
+            <RequireAuth>
+              <AppLayout>
+                <HandbookTableOfContentsPage />
               </AppLayout>
             </RequireAuth>
           }

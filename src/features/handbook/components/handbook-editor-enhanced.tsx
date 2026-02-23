@@ -38,6 +38,7 @@ interface LinkItem {
 
 interface DocumentItem {
     id: number;
+    url?: string | null;
     name: string;
     description: string | null;
 }
@@ -114,10 +115,11 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
                             const docId = (d as { id?: number; fid?: number }).id ?? (d as { fid?: number }).fid;
                             return {
                                 id: typeof docId === 'number' ? docId : 0,
+                                url: (d as any).url ?? null,
                                 name: d.name,
                                 description: d.description ?? null,
                             };
-                        }).filter((d) => d.id > 0)
+                        })
                     );
                     setLinks(
                         (data.links || []).map((l) => ({
@@ -247,7 +249,7 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
                 imageId,
                 imagePlacement,
                 documents: documents
-                    .filter((d) => typeof d.id === 'number' && Number.isFinite(d.id))
+                    .filter((d) => typeof d.id === 'number' && d.id > 0)
                     .map((d) => ({
                         id: d.id,
                         description: d.description ?? null,

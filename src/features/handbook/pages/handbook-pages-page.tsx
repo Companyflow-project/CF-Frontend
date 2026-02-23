@@ -36,6 +36,9 @@ export const HandbookPagesPage: React.FC = () => {
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
 
+    // Focused (highlighted) page for Preview Handbook
+    const [focusedPageId, setFocusedPageId] = useState<number | null>(null);
+
     useEffect(() => {
         const fetchHandbookTree = async () => {
             try {
@@ -256,9 +259,22 @@ export const HandbookPagesPage: React.FC = () => {
                     <h1 className="text-2xl font-bold text-[#0d0e0e]">View All Pages</h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <Button className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-4 py-2 h-auto text-sm">
-                        Preview Handbook
-                    </Button>
+                    <div
+                        title={!focusedPageId ? 'Select a page first to preview it' : undefined}
+                        className={!focusedPageId ? 'cursor-not-allowed' : undefined}
+                    >
+                        <Button
+                            disabled={!focusedPageId}
+                            onClick={() => {
+                                const pg = filteredPages.find(p => p.id === focusedPageId)
+                                    ?? pages.find(p => p.id === focusedPageId);
+                                if (pg) openSneakPeek(pg.id, pg.title);
+                            }}
+                            className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-4 py-2 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Preview Handbook
+                        </Button>
+                    </div>
                     <Button
                         variant="outline"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
@@ -388,7 +404,10 @@ export const HandbookPagesPage: React.FC = () => {
                                         className="bg-white rounded-[8px] border border-[#e5e7eb] overflow-hidden"
                                     >
                                         {/* Page Row Header */}
-                                        <div className="flex items-center gap-4 p-4">
+                                        <div
+                                            className={`flex items-center gap-4 p-4 cursor-pointer transition-colors ${focusedPageId === page.id ? 'bg-[#f0faf6] border-l-4 border-[#3d997d]' : 'border-l-4 border-transparent hover:bg-[#fafafa]'}`}
+                                            onClick={() => setFocusedPageId(prev => prev === page.id ? null : page.id)}
+                                        >
                                             {/* Checkbox */}
                                             <div
                                                 onClick={(e) => {
@@ -449,15 +468,21 @@ export const HandbookPagesPage: React.FC = () => {
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setExpandedPageId(isExpanded ? null : page.id)}
-                                                    className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-1.5 h-auto text-sm"
+                                            <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                <div
+                                                    title={!canEditHandbook ? 'Only admins can edit handbook pages' : undefined}
+                                                    className={!canEditHandbook ? 'cursor-not-allowed' : undefined}
                                                 >
-                                                    Edit
-                                                </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => canEditHandbook && setExpandedPageId(isExpanded ? null : page.id)}
+                                                        disabled={!canEditHandbook}
+                                                        className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-1.5 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                </div>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -470,7 +495,7 @@ export const HandbookPagesPage: React.FC = () => {
                                         </div>
 
                                         {/* Expanded Editor Section */}
-                                        {isExpanded && (
+                                        {isExpanded && canEditHandbook && (
                                             <div className="border-t border-[#e5e7eb] p-6 bg-[#f9fafb]">
                                                 <HandbookPageEditor
                                                     pageId={page.id}
@@ -641,6 +666,7 @@ export const HandbookPagesPage: React.FC = () => {
                     }}
                     pageId={sneakPeekPage.id}
                     pageTitle={sneakPeekPage.title}
+                    canEdit={canEditHandbook}
                 />
             )}
 

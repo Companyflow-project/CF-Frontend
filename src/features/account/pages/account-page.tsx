@@ -1,139 +1,204 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
-import { PageHeader } from '@/components/common/page-header';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ArrowRight,
+  Lock,
+  Building2,
+  CreditCard,
+  LayoutList,
+  Briefcase,
+  Palette,
+  MoreHorizontal,
+} from 'lucide-react';
 import { accountRoutes } from '../routes';
 import { AddEmploymentTypeDialog } from '@/features/employment-types/pages';
+import { useAuth } from '@/context/auth-context';
 
-interface ActionItem {
-  type: 'button-green' | 'button-blue' | 'list-item';
+interface AccountAction {
   label: string;
   onClick?: () => void;
+  variant?: 'primary' | 'outline';
+  adminOnly?: boolean;
 }
 
 interface AccountCardProps {
   title: string;
   description: string;
-  actions: ActionItem[];
+  icon: React.ReactNode;
+  iconBg: string;
+  actions: AccountAction[];
+  canEdit: boolean;
 }
 
-const AccountCard: React.FC<AccountCardProps> = ({ title, description, actions }) => {
-  return (
-    <Card className="bg-white border text-card-foreground shadow-sm rounded-xl p-6 flex flex-col gap-4 h-full">
-      <div className="flex flex-col gap-1">
-        <h3 className="font-semibold text-lg leading-none tracking-tight text-[#0d0e0e]">{title}</h3>
-        <p className="text-sm text-gray-500">{description}</p>
+const AccountCard: React.FC<AccountCardProps> = ({ title, description, icon, iconBg, actions, canEdit }) => (
+  <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+    <CardHeader className="pb-3">
+      <div className="flex items-center gap-3 mb-1">
+        <div className={`h-9 w-9 rounded-[10px] flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+          {icon}
+        </div>
+        <CardTitle className="text-lg font-bold text-[#0d0e0e]">{title}</CardTitle>
       </div>
-      <div className="flex flex-col gap-3 mt-auto pt-2">
-        {actions.map((action, index) => {
-          if (action.type === 'button-green') {
-            return (
-              <Button
-                key={index}
-                className="w-fit bg-[#e2f0e9] hover:bg-[#d4e8dd] text-[#1a5948] font-medium text-sm px-4 py-2 h-auto rounded-md shadow-sm justify-between gap-2"
-                onClick={action.onClick}
-              >
-                {action.label}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            );
-          }
-          if (action.type === 'button-blue') {
-            return (
-              <Button
-                key={index}
-                className="w-fit bg-[#e0eff5] hover:bg-[#d0e5ee] text-[#2b5c70] font-medium text-sm px-4 py-2 h-auto rounded-md shadow-sm justify-between gap-2"
-                onClick={action.onClick}
-              >
-                {action.label}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            );
-          }
-          // list-item
-          return (
-            <div
-              key={index}
-              className="group flex items-center justify-between p-3 bg-[#f9fafb] border border-gray-100 rounded-lg hover:bg-gray-50 hover:border-gray-200 transition-colors cursor-pointer"
-              onClick={action.onClick}
+      <CardDescription className="text-sm text-[#6b7280] mt-0.5">{description}</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      {actions.map((action, index) => {
+        const isLocked = action.adminOnly && !canEdit;
+        return (
+          <div
+            key={index}
+            title={isLocked ? 'Only admins can perform this action' : undefined}
+            className={isLocked ? 'cursor-not-allowed' : undefined}
+          >
+            <button
+              onClick={isLocked ? undefined : action.onClick}
+              disabled={isLocked}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${isLocked
+                  ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
+                  : action.variant === 'primary'
+                    ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
+                    : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
+                }`}
             >
-              <span className="text-sm font-medium text-gray-700">{action.label}</span>
-              <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
-            </div>
-          );
-        })}
-      </div>
-    </Card>
-  );
-};
+              <span>{action.label}</span>
+              {isLocked ? (
+                <Lock className="h-3.5 w-3.5 text-[#9ca3af]" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        );
+      })}
+    </CardContent>
+  </Card>
+);
 
 export const AccountPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
   const [isAddEmploymentTypeDialogOpen, setIsAddEmploymentTypeDialogOpen] = useState(false);
 
-  const cards: AccountCardProps[] = [
+  const cards: Omit<AccountCardProps, 'canEdit'>[] = [
     {
       title: 'Company Profile',
-      description: 'Update your company information here.',
+      description: 'Update your company information and SMS sender name.',
+      icon: <Building2 className="h-5 w-5 text-[#1a5948]" />,
+      iconBg: 'bg-[#d4f4e6]',
       actions: [
-        { type: 'button-green', label: 'Edit Company Profile', onClick: () => navigate(accountRoutes.editCompanyProfile) },
-        { type: 'list-item', label: 'Update SMS sender name', onClick: () => navigate(accountRoutes.editCompanyProfile) },
+        {
+          label: 'Edit Company Profile →',
+          onClick: () => navigate(accountRoutes.editCompanyProfile),
+          variant: 'primary',
+          adminOnly: true,
+        },
+        {
+          label: 'Update SMS sender name',
+          onClick: () => navigate(accountRoutes.editCompanyProfile),
+          adminOnly: true,
+        },
       ],
     },
     {
-      title: 'Subcriptions',
-      description: 'Update your subscription here.',
+      title: 'Subscriptions',
+      description: 'Manage licenses and billing for your plan.',
+      icon: <CreditCard className="h-5 w-5 text-[#1e40af]" />,
+      iconBg: 'bg-[#dbeafe]',
       actions: [
-        { type: 'button-green', label: 'Update Subscription' },
-        { type: 'list-item', label: 'View subscription' },
-        { type: 'list-item', label: 'Add more licenses' },
+        {
+          label: 'Update Subscription →',
+          variant: 'primary',
+          adminOnly: true,
+        },
+        { label: 'View subscription' },
+        { label: 'Add more licenses', adminOnly: true },
       ],
     },
     {
       title: 'Department',
-      description: 'Add and manage departments here.',
+      description: 'Add and manage departments within your company.',
+      icon: <LayoutList className="h-5 w-5 text-[#7c3aed]" />,
+      iconBg: 'bg-[#ede9fe]',
       actions: [
-        { type: 'button-blue', label: 'Add Department', onClick: () => navigate(accountRoutes.addDepartment) },
-        { type: 'list-item', label: 'View departments', onClick: () => navigate(accountRoutes.departments) },
+        {
+          label: 'Add Department →',
+          onClick: () => navigate(accountRoutes.addDepartment),
+          variant: 'primary',
+          adminOnly: true,
+        },
+        {
+          label: 'View departments',
+          onClick: () => navigate(accountRoutes.departments),
+        },
       ],
     },
     {
       title: 'Employment Types',
-      description: 'Add and manage employment types here.',
+      description: 'Define and manage employment categories.',
+      icon: <Briefcase className="h-5 w-5 text-[#d97706]" />,
+      iconBg: 'bg-[#fef3c7]',
       actions: [
-        { type: 'button-blue', label: 'Add Employment Type', onClick: () => setIsAddEmploymentTypeDialogOpen(true) },
-        { type: 'list-item', label: 'View employment types', onClick: () => navigate(accountRoutes.employmentTypes) },
+        {
+          label: 'Add Employment Type →',
+          onClick: () => setIsAddEmploymentTypeDialogOpen(true),
+          variant: 'primary',
+          adminOnly: true,
+        },
+        {
+          label: 'View employment types',
+          onClick: () => navigate(accountRoutes.employmentTypes),
+        },
       ],
     },
     {
       title: 'Appearance',
       description: 'Update the look and feel of your handbook.',
+      icon: <Palette className="h-5 w-5 text-[#db2777]" />,
+      iconBg: 'bg-[#fce7f3]',
       actions: [
-        { type: 'button-green', label: 'Edit Appearance', onClick: () => navigate(accountRoutes.appearance) },
+        {
+          label: 'Edit Appearance →',
+          onClick: () => navigate(accountRoutes.appearance),
+          variant: 'primary',
+          adminOnly: true,
+        },
       ],
     },
     {
       title: 'Others',
-      description: 'Recommended next steps to make the most of your trial.',
+      description: 'Additional settings and compliance tools.',
+      icon: <MoreHorizontal className="h-5 w-5 text-[#6b7280]" />,
+      iconBg: 'bg-[#f3f4f6]',
       actions: [
-        { type: 'list-item', label: 'Setup whistleblower system' },
+        { label: 'Setup whistleblower system' },
       ],
     },
   ];
 
   return (
     <PageShell>
-      <PageHeader title="Account" />
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">Account</h1>
+          <p className="text-sm text-[#6b7280] mt-1">Manage your company profile, billing, and settings.</p>
+        </div>
+      </div>
+
+      {/* Cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, index) => (
           <AccountCard
             key={index}
             title={card.title}
             description={card.description}
+            icon={card.icon}
+            iconBg={card.iconBg}
             actions={card.actions}
+            canEdit={isAdmin}
           />
         ))}
       </div>

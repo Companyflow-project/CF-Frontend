@@ -1,18 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
-import { useHandbookPages, usePageContent } from '@/lib/api-hooks';
+import { Button } from '@/components/ui/button';
+import { useHandbookPages } from '@/lib/api-hooks';
 import type { HandbookPage } from '@/lib/api-types';
+import { handbookApi, type HandbookViewerPageMeta } from '../api';
+import { Check, Loader2 } from 'lucide-react';
 
 interface HandbookPageWithChildren extends HandbookPage {
   children: HandbookPageWithChildren[];
 }
 
+function findPageByNid(nodes: HandbookPageWithChildren[], nid: number): HandbookPageWithChildren | null {
+  for (const node of nodes) {
+    if (node.nid === nid) return node;
+    if (node.children?.length) {
+      const found = findPageByNid(node.children, nid);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export const HandbookViewerPage: React.FC = () => {
   const { handbookId } = useParams<{ handbookId: string }>();
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [contentHtml, setContentHtml] = useState<string | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState<Error | null>(null);
+  const [viewerMeta, setViewerMeta] = useState<HandbookViewerPageMeta | null>(null);
+  const [signingReceipt, setSigningReceipt] = useState(false);
+  const [signedAt, setSignedAt] = useState<string | null>(null);
+  const trackedViewNids = useRef<Set<number>>(new Set());
   const limit = 50;
   const langcode = 'da';
 
@@ -20,17 +41,83 @@ export const HandbookViewerPage: React.FC = () => {
     handbookId ? { handbookId, page: 1, limit, langcode } : null
   );
 
-  const { data: pageContent, loading: contentLoading, error: contentError } = usePageContent(
-    selectedPageId ? { pageId: selectedPageId, langcode } : null
-  );
+  const fetchContent = useCallback(async (nid: number) => {
+    setContentLoading(true);
+    setContentError(null);
+    setViewerMeta(null);
+    setSignedAt(null);
+    try {
+      const [html, meta] = await Promise.all([
+        handbookApi.getHandbookContent(nid),
+        handbookApi.getHandbookViewerPageMeta(nid).catch(() => null),
+      ]);
+      setContentHtml(html);
+      setViewerMeta(meta ?? null);
+    } catch (err) {
+      setContentError(err instanceof Error ? err : new Error('Failed to load page content'));
+      setContentHtml(null);
+    } finally {
+      setContentLoading(false);
+    }
+  }, []);
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('Selected Page ID:', selectedPageId);
-    console.log('Page Content:', pageContent);
-    console.log('Content Loading:', contentLoading);
-    console.log('Content Error:', contentError);
-  }, [selectedPageId, pageContent, contentLoading, contentError]);
+  useEffect(() => {
+    if (!selectedPageId) {
+      setContentHtml(null);
+      setContentError(null);
+      setViewerMeta(null);
+      setSignedAt(null);
+      return;
+    }
+    const nid = Number(selectedPageId);
+    if (!Number.isFinite(nid)) return;
+    fetchContent(nid);
+  }, [selectedPageId, fetchContent]);
+
+  // Track view once per page per session (avoids excessive DB writes on quick toggles)
+  useEffect(() => {
+    if (!selectedPageId || contentLoading) return;
+    const nid = Number(selectedPageId);
+    if (!Number.isFinite(nid) || trackedViewNids.current.has(nid)) return;
+    trackedViewNids.current.add(nid);
+    handbookApi.trackHandbookView(nid).catch(() => {
+      trackedViewNids.current.delete(nid);
+    });
+  }, [selectedPageId, contentLoading]);
+
+  // Build tree structure from pages (handle missing parentId/weight gracefully)
+  const buildTree = (pagesList: HandbookPage[]): HandbookPageWithChildren[] => {
+    if (pagesList.some((p) => (p as HandbookPage & { parentId?: number }).parentId !== undefined)) {
+      const pageMap = new Map<number, HandbookPageWithChildren>();
+      const roots: HandbookPageWithChildren[] = [];
+      pagesList.forEach((page) => {
+        pageMap.set(page.nid, { ...page, children: [] });
+      });
+      pagesList.forEach((page) => {
+        const pageWithChildren = pageMap.get(page.nid)!;
+        const parentId = (page as HandbookPage & { parentId?: number }).parentId ?? null;
+        if (parentId === null || !pageMap.has(parentId)) {
+          roots.push(pageWithChildren);
+        } else {
+          pageMap.get(parentId)!.children.push(pageWithChildren);
+        }
+      });
+      const sortPages = (nodes: HandbookPageWithChildren[]): HandbookPageWithChildren[] =>
+        nodes
+          .sort((a, b) => {
+            const wa = (a as HandbookPage & { weight?: number }).weight ?? 0;
+            const wb = (b as HandbookPage & { weight?: number }).weight ?? 0;
+            if (wa !== wb) return wa - wb;
+            return a.title.localeCompare(b.title);
+          })
+          .map((node) => ({ ...node, children: sortPages(node.children) }));
+      return sortPages(roots);
+    }
+    return pagesList.map((page) => ({ ...page, children: [] }));
+  };
+
+  const pagesArray = Array.isArray(pages) ? pages : [];
+  const treePages = pagesArray.length > 0 ? buildTree(pagesArray) : [];
 
   if (!handbookId) {
     return (
@@ -62,56 +149,6 @@ export const HandbookViewerPage: React.FC = () => {
       </PageShell>
     );
   }
-
-  // Build tree structure from pages (handle missing parentId/weight gracefully)
-  const buildTree = (pages: HandbookPage[]): HandbookPageWithChildren[] => {
-    // If we have parentId and weight, build a proper tree
-    if (pages.some((p) => p.parentId !== undefined)) {
-      const pageMap = new Map<number, HandbookPageWithChildren>();
-      const roots: HandbookPageWithChildren[] = [];
-
-      // Create map of all pages
-      pages.forEach((page) => {
-        pageMap.set(page.nid, { ...page, children: [] });
-      });
-
-      // Build tree
-      pages.forEach((page) => {
-        const pageWithChildren = pageMap.get(page.nid)!;
-        const parentId = page.parentId ?? null;
-        if (parentId === null || !pageMap.has(parentId)) {
-          roots.push(pageWithChildren);
-        } else {
-          const parent = pageMap.get(parentId)!;
-          parent.children.push(pageWithChildren);
-        }
-      });
-
-      // Sort by weight if available, otherwise by title
-      const sortPages = (nodes: HandbookPageWithChildren[]): HandbookPageWithChildren[] => {
-        return nodes
-          .sort((a, b) => {
-            if (a.weight !== undefined && b.weight !== undefined) {
-              return a.weight - b.weight;
-            }
-            return a.title.localeCompare(b.title);
-          })
-          .map((node) => ({
-            ...node,
-            children: sortPages(node.children),
-          }));
-      };
-
-      return sortPages(roots);
-    }
-
-    // Otherwise, just return a flat list as roots
-    return pages.map((page) => ({ ...page, children: [] }));
-  };
-
-  // Build tree from pages - handle null/undefined
-  const pagesArray = Array.isArray(pages) ? pages : [];
-  const treePages = pagesArray.length > 0 ? buildTree(pagesArray) : [];
 
   const renderTree = (nodes: HandbookPageWithChildren[], depth = 0): React.ReactNode => {
     if (!nodes || nodes.length === 0) {
@@ -176,21 +213,88 @@ export const HandbookViewerPage: React.FC = () => {
             <div className="text-center py-12 text-gray-500">Loading page content...</div>
           ) : contentError ? (
             <div className="text-center py-12 text-red-500">Error: {contentError.message}</div>
-          ) : !pageContent ? (
-            <EmptyState />
           ) : (
-            <div className="prose max-w-none">
-              <h1 className="text-2xl font-bold mb-4">{pageContent.title}</h1>
-              <div className="text-sm text-gray-500 mb-4">
-                Last updated: {new Date(pageContent.changed * 1000).toLocaleDateString()}
-              </div>
-              {/* Render page content - structure depends on backend response */}
-              <div className="border-t pt-4">
-                <pre className="whitespace-pre-wrap text-sm">
-                  {JSON.stringify(pageContent, null, 2)}
-                </pre>
-              </div>
-            </div>
+            <>
+              {selectedPageId && (() => {
+                const nid = Number(selectedPageId);
+                const selectedPage = findPageByNid(treePages, nid);
+                const effectiveSignedAt =
+                  signedAt ?? viewerMeta?.trackingStatus?.signedAt ?? viewerMeta?.signedAt ?? null;
+                const effectiveViewedAt =
+                  viewerMeta?.trackingStatus?.viewedAt ?? viewerMeta?.viewedAt ?? null;
+                const showReceiptButton =
+                  viewerMeta?.field_receipt_value === 1 && effectiveSignedAt === null;
+
+                const formatDate = (value: string | number) => {
+                  try {
+                    const date = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
+                    if (Number.isNaN(date.getTime())) return String(value);
+                    return date.toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    });
+                  } catch {
+                    return String(value);
+                  }
+                };
+
+                return (
+                  <div className="prose max-w-none">
+                    {selectedPage && (
+                      <h1 className="text-2xl font-bold mb-4">{selectedPage.title}</h1>
+                    )}
+                    {(effectiveViewedAt || effectiveSignedAt) && (
+                      <div className="text-sm text-[#6b7280] mb-4 space-y-1">
+                        {effectiveViewedAt && (
+                          <p>You last viewed this page on {formatDate(effectiveViewedAt)}</p>
+                        )}
+                        {effectiveSignedAt && (
+                          <p className="flex items-center gap-1.5 text-[#0d9488]">
+                            <Check className="h-4 w-4 shrink-0" />
+                            Signed on {formatDate(effectiveSignedAt)}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    {contentHtml === '' || contentHtml === null ? (
+                      <EmptyState />
+                    ) : (
+                      <div
+                        className="border-t pt-4 handbook-content"
+                        dangerouslySetInnerHTML={{ __html: contentHtml }}
+                      />
+                    )}
+                    {showReceiptButton && (
+                      <div className="mt-6 pt-4 border-t border-[#e5e7eb]">
+                        <Button
+                          onClick={async () => {
+                            setSigningReceipt(true);
+                            try {
+                              await handbookApi.signHandbookReceipt(nid);
+                              setSignedAt(new Date().toISOString());
+                            } finally {
+                              setSigningReceipt(false);
+                            }
+                          }}
+                          disabled={signingReceipt}
+                          className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[8px] px-4 py-2"
+                        >
+                          {signingReceipt ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin shrink-0" />
+                              Signing…
+                            </>
+                          ) : (
+                            'I have read this'
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </>
           )}
         </div>
       </div>
