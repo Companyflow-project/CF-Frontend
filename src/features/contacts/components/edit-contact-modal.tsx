@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +10,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { contactsApi, type ContactAreaItem } from '../api';
+import { contactsApi } from '../api';
+import { contactsQueries } from '../queries';
+import { useContactAreas } from '../hooks';
 import { Loader2, Pencil } from 'lucide-react';
-import type { Contact } from '@/types/models';
 
 interface EditContactModalProps {
   open: boolean;
@@ -26,72 +28,56 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
   contactId,
   onSaved,
 }) => {
-  const [contact, setContact] = useState<Contact | null>(null);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
-  const [areas, setAreas] = useState<ContactAreaItem[]>([]);
   const [selectedTids, setSelectedTids] = useState<number[]>([]);
 
+  const { data: contactData, isLoading: loading, error: fetchError } = useQuery({
+    queryKey: contactsQueries.detail(contactId ?? ''),
+    queryFn: () => contactsApi.getContact(contactId!),
+    enabled: open && !!contactId,
+    staleTime: 30_000,
+  });
+
+  const { data: areas } = useContactAreas();
+
+  // Reset form when modal closes or contactId changes
   useEffect(() => {
-    if (!open || !contactId) {
-      setContact(null);
-      setError(null);
-      setAreas([]);
+    if (!open) {
+      setName('');
+      setPhone('');
+      setEmail('');
+      setRole('');
       setSelectedTids([]);
-      return;
+      setSaveError(null);
     }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setContact(null);
-    contactsApi
-      .getContact(contactId)
-      .then(async ({ contact: c, selectedTids: tids }) => {
-        if (cancelled) return;
-        setContact(c);
-        setName(c.name ?? '');
-        setPhone(c.telephone ?? '');
-        setEmail(c.email ?? '');
-        setRole(c.functionTitle ?? '');
-        setSelectedTids(Array.isArray(tids) ? tids : []);
-        const areaList = await contactsApi.getContactAreas();
-        if (!cancelled) setAreas(areaList);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          const msg =
-            err instanceof Error
-              ? err.message
-              : err && typeof err === 'object' && 'response' in err
-                ? (err as { response?: { data?: { error?: { message?: string } } } }).response?.data
-                    ?.error?.message
-                : null;
-          setError(msg ?? 'Contact not found');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [open, contactId]);
 
-  const handleAreaToggle = (tid: number) => {
+  // Populate form fields when contact data arrives
+  useEffect(() => {
+    if (!contactData) return;
+    const { contact: c, selectedTids: tids } = contactData;
+    setName(c.name ?? '');
+    setPhone(c.telephone ?? '');
+    setEmail(c.email ?? '');
+    setRole(c.functionTitle ?? '');
+    setSelectedTids(Array.isArray(tids) ? tids : []);
+  }, [contactData]);
+
+  const handleAreaToggle = useCallback((tid: number) => {
     setSelectedTids((prev) =>
       prev.includes(tid) ? prev.filter((t) => t !== tid) : [...prev, tid],
     );
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!contactId) return;
     setSaving(true);
-    setError(null);
+    setSaveError(null);
     try {
       await contactsApi.updateContact(contactId, {
         name: name.trim(),
@@ -111,11 +97,19 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
           : err instanceof Error
             ? err.message
             : 'Failed to update contact';
-      setError(msg ?? 'Failed to update contact');
+      setSaveError(msg ?? 'Failed to update contact');
     } finally {
       setSaving(false);
     }
-  };
+  }, [contactId, name, phone, email, role, selectedTids, onSaved, onOpenChange]);
+
+  const contact = contactData?.contact ?? null;
+  const fetchErrorMsg = fetchError instanceof Error
+    ? fetchError.message
+    : fetchError
+      ? 'Contact not found'
+      : null;
+  const displayError = saveError ?? fetchErrorMsg;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -138,10 +132,13 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
               <Loader2 className="h-6 w-6 animate-spin mr-2" />
               Loading…
             </div>
-          ) : error ? (
-            <p className="text-sm text-red-600 py-2">{error}</p>
+          ) : displayError && !contact ? (
+            <p className="text-sm text-red-600 py-2">{displayError}</p>
           ) : contact ? (
             <>
+              {displayError && (
+                <p className="text-sm text-red-600">{displayError}</p>
+              )}
               <div className="space-y-1.5">
                 <Label htmlFor="edit-name" className="text-sm font-semibold text-[#0d0e0e]">Name</Label>
                 <Input

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
@@ -22,6 +22,7 @@ import { Menu, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
 import { contactsApi } from '../api';
+import type { Contact } from '@/types/models';
 
 export const ContactsPage: React.FC = () => {
   const { user } = useAuth();
@@ -40,7 +41,7 @@ export const ContactsPage: React.FC = () => {
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data: contacts, refetch: refetchContacts } = useContacts();
+  const { data: contacts, error: contactsError, refetch: refetchContacts } = useContacts();
 
   // Open add or import from console redirect (?open=add | ?open=import)
   useEffect(() => {
@@ -60,43 +61,54 @@ export const ContactsPage: React.FC = () => {
   }, [searchParams, setSearchParams]);
 
   const filteredContacts = useMemo(() => {
-    if (!search.trim()) return contacts;
-    const q = search.trim().toLowerCase();
-    return contacts.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        (c.email && c.email.toLowerCase().includes(q)) ||
-        (c.telephone && c.telephone.includes(q))
-    );
-  }, [contacts, search]);
+    let result = contacts;
+    if (!showInactive) {
+      result = result.filter((c) => c.status !== 'INACTIVE');
+    }
+    if (publicOnly) {
+      result = result.filter((c) => c.isPublic);
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(q) ||
+          (c.email && c.email.toLowerCase().includes(q)) ||
+          (c.telephone && c.telephone.includes(q))
+      );
+    }
+    return result;
+  }, [contacts, search, showInactive, publicOnly]);
 
-  const employeeContacts = contacts.filter((c) => c.isEmployeeContact);
-  const externalContacts = contacts.filter((c) => c.isExternalContact);
+  const employeeContacts = useMemo(
+    () => contacts.filter((c) => c.isEmployeeContact),
+    [contacts],
+  );
 
-  // Calculate visibility stats
-  const visibilityStats = useMemo(() => {
-    const publicProfiles = contacts.filter((c) => c.isPublic).length;
-    const inactive = contacts.filter((c) => c.status === 'INACTIVE').length;
-    return {
-      publicProfiles,
-      inactive,
-      employee: employeeContacts.length,
-      external: externalContacts.length,
-      total: contacts.length,
-    };
-  }, [contacts, employeeContacts.length, externalContacts.length]);
+  const externalContacts = useMemo(
+    () => contacts.filter((c) => c.isExternalContact),
+    [contacts],
+  );
 
-  const handleSelect = (id: string) => {
+  const visibilityStats = useMemo(() => ({
+    publicProfiles: contacts.filter((c) => c.isPublic).length,
+    inactive: contacts.filter((c) => c.status === 'INACTIVE').length,
+    employee: employeeContacts.length,
+    external: externalContacts.length,
+    total: contacts.length,
+  }), [contacts, employeeContacts.length, externalContacts.length]);
+
+  const handleSelect = useCallback((id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
-  };
+  }, []);
 
-  const handleSelectAll = (selected: boolean, contactList: typeof filteredContacts) => {
+  const handleSelectAll = useCallback((selected: boolean, contactList: Contact[]) => {
     setSelectedIds(selected ? contactList.map((c) => c.id) : []);
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deleteContact) return;
     setIsDeleting(true);
     try {
@@ -117,9 +129,9 @@ export const ContactsPage: React.FC = () => {
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [deleteContact, refetchContacts]);
 
-  const handleSetVisibility = async (status: 0 | 1, nids: number[]) => {
+  const handleSetVisibility = useCallback(async (status: 0 | 1, nids: number[]) => {
     if (nids.length === 0) return;
     setVisibilityLoading(true);
     try {
@@ -141,9 +153,9 @@ export const ContactsPage: React.FC = () => {
     } finally {
       setVisibilityLoading(false);
     }
-  };
+  }, [refetchContacts]);
 
-  const handleExport = async () => {
+  const handleExport = useCallback(async () => {
     setExportLoading(true);
     try {
       const blob = await contactsApi.exportContacts();
@@ -176,20 +188,20 @@ export const ContactsPage: React.FC = () => {
     } finally {
       setExportLoading(false);
     }
-  };
+  }, []);
 
-  const handleImportClick = () => {
+  const handleImportClick = useCallback(() => {
     importFileInputRef.current?.click();
-  };
+  }, []);
 
-  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     setPendingImportFile(file);
-  };
+  }, []);
 
-  const handleImportConfirm = async () => {
+  const handleImportConfirm = useCallback(async () => {
     if (!pendingImportFile) return;
     const file = pendingImportFile;
     setPendingImportFile(null);
@@ -224,7 +236,124 @@ export const ContactsPage: React.FC = () => {
     } finally {
       setImportLoading(false);
     }
-  };
+  }, [pendingImportFile, refetchContacts]);
+
+  const handleAddAsContact = useCallback(async (contact: Contact) => {
+    const uid = user?.id != null ? Number(user.id) : null;
+    if (uid == null || Number.isNaN(uid)) {
+      toast.error('You must be logged in to add yourself as a contact.');
+      return;
+    }
+    try {
+      await contactsApi.createContact({
+        name: contact.name || user?.name || 'Me',
+        uid,
+        selectedTids: [],
+      });
+      refetchContacts();
+      toast.success('Added as contact');
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { status?: number } }).response?.status === 403
+            ? 'Company context required.'
+            : (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : err instanceof Error ? err.message : 'Failed to add as contact';
+      toast.error(msg);
+    }
+  }, [user, refetchContacts]);
+
+  const handleEditSaved = useCallback(() => {
+    refetchContacts();
+    toast.success('Contact updated');
+  }, [refetchContacts]);
+
+  const handleAddEmployeeConfirm = useCallback(async (data: {
+    uid: number;
+    name: string;
+    selectedTids: number[];
+    customArea?: string;
+  }) => {
+    try {
+      await contactsApi.createContact({
+        name: data.name,
+        uid: data.uid,
+        selectedTids: data.selectedTids ?? [],
+        customArea: data.customArea,
+      });
+      refetchContacts();
+      toast.success('Contact added');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { status?: number; data?: { message?: string } } }).response?.status === 403
+          ? 'Company context required.'
+          : (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : err instanceof Error ? err.message : 'Failed to add contact';
+      toast.error(msg);
+    }
+  }, [refetchContacts]);
+
+  const handleAddExternalConfirm = useCallback(async (data: {
+    name: string;
+    email?: string;
+    phone?: string;
+    selectedTids: number[];
+    customArea?: string;
+  }) => {
+    try {
+      await contactsApi.createContact({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        selectedTids: data.selectedTids ?? [],
+        customArea: data.customArea,
+      });
+      refetchContacts();
+      toast.success('Contact added');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { status?: number } }).response?.status === 403
+          ? 'Company context required.'
+          : (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : err instanceof Error ? err.message : 'Failed to add contact';
+      toast.error(msg);
+    }
+  }, [refetchContacts]);
+
+  const handleSelectAllFiltered = useCallback(
+    (selected: boolean) => handleSelectAll(selected, filteredContacts),
+    [handleSelectAll, filteredContacts],
+  );
+
+  const handleSetPrivate = useCallback(
+    () => handleSetVisibility(0, selectedIds.map((id) => Number(id))),
+    [handleSetVisibility, selectedIds],
+  );
+
+  const handleSetPublic = useCallback(
+    () => handleSetVisibility(1, selectedIds.map((id) => Number(id))),
+    [handleSetVisibility, selectedIds],
+  );
+
+  const handleSetAllPrivate = useCallback(
+    () => handleSetVisibility(0, contacts.map((c) => Number(c.id))),
+    [handleSetVisibility, contacts],
+  );
+
+  const handleSetAllPublic = useCallback(
+    () => handleSetVisibility(1, contacts.map((c) => Number(c.id))),
+    [handleSetVisibility, contacts],
+  );
+
+  const handleEditOpen = useCallback((contact: Contact) => setEditContactId(contact.id), []);
+  const handleDeleteOpen = useCallback(
+    (contact: Contact) => setDeleteContact({ id: contact.id, name: contact.name }),
+    [],
+  );
+  const handleEditModalChange = useCallback(
+    (open: boolean) => { if (!open) setEditContactId(null); },
+    [],
+  );
 
   return (
     <PageShell>
@@ -271,13 +400,18 @@ export const ContactsPage: React.FC = () => {
           </div>
         }
       />
+      {contactsError && (
+        <div className="mb-4 rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Failed to load contacts: {contactsError.message}
+        </div>
+      )}
       <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-sm text-[#0d0e0e]">
             <span className="font-bold">Help.</span> Contacts can be employees or external contacts who
             appear in the info list and on relevant handbook pages. Existing employees are listed
             below—you can add them as contacts with one click or in bulk. For people who are not
-            employees, use “Add external contact”. Assign areas of responsibility so the right
+            employees, use "Add external contact". Assign areas of responsibility so the right
             contacts show on the right pages.
           </p>
           <Button
@@ -367,33 +501,10 @@ export const ContactsPage: React.FC = () => {
                 contacts={filteredContacts}
                 selectedIds={selectedIds}
                 onSelect={handleSelect}
-                onSelectAll={(selected) => handleSelectAll(selected, filteredContacts)}
-                onEdit={(contact) => setEditContactId(contact.id)}
-                onDelete={(contact) => setDeleteContact({ id: contact.id, name: contact.name })}
-                onAddAsContact={async (contact) => {
-                  const uid = user?.id != null ? Number(user.id) : null;
-                  if (uid == null || Number.isNaN(uid)) {
-                    toast.error('You must be logged in to add yourself as a contact.');
-                    return;
-                  }
-                  try {
-                    await contactsApi.createContact({
-                      name: contact.name || user?.name || 'Me',
-                      uid,
-                      selectedTids: [],
-                    });
-                    refetchContacts();
-                    toast.success('Added as contact');
-                  } catch (err: unknown) {
-                    const msg =
-                      err && typeof err === 'object' && 'response' in err
-                        ? (err as { response?: { status?: number } }).response?.status === 403
-                          ? 'Company context required.'
-                          : (err as { response?: { data?: { message?: string } } }).response?.data?.message
-                        : err instanceof Error ? err.message : 'Failed to add as contact';
-                    toast.error(msg);
-                  }
-                }}
+                onSelectAll={handleSelectAllFiltered}
+                onEdit={handleEditOpen}
+                onDelete={handleDeleteOpen}
+                onAddAsContact={handleAddAsContact}
               />
             </CardContent>
           </Card>
@@ -418,9 +529,7 @@ export const ContactsPage: React.FC = () => {
                 size="sm"
                 className="rounded-[999px] text-sm px-5"
                 disabled={selectedIds.length === 0 || visibilityLoading}
-                onClick={() =>
-                  handleSetVisibility(0, selectedIds.map((id) => Number(id)))
-                }
+                onClick={handleSetPrivate}
               >
                 Set selected to private
               </Button>
@@ -429,9 +538,7 @@ export const ContactsPage: React.FC = () => {
                 size="sm"
                 className="rounded-[999px] text-sm px-5"
                 disabled={selectedIds.length === 0 || visibilityLoading}
-                onClick={() =>
-                  handleSetVisibility(1, selectedIds.map((id) => Number(id)))
-                }
+                onClick={handleSetPublic}
               >
                 Set selected to public
               </Button>
@@ -473,9 +580,7 @@ export const ContactsPage: React.FC = () => {
                   size="sm"
                   className="rounded-[999px] px-4"
                   disabled={contacts.length === 0 || visibilityLoading}
-                  onClick={() =>
-                    handleSetVisibility(0, contacts.map((c) => Number(c.id)))
-                  }
+                  onClick={handleSetAllPrivate}
                 >
                   Set all to private
                 </Button>
@@ -484,9 +589,7 @@ export const ContactsPage: React.FC = () => {
                   size="sm"
                   className="rounded-[999px] px-4"
                   disabled={contacts.length === 0 || visibilityLoading}
-                  onClick={() =>
-                    handleSetVisibility(1, contacts.map((c) => Number(c.id)))
-                  }
+                  onClick={handleSetAllPublic}
                 >
                   Set all to public
                 </Button>
@@ -518,12 +621,9 @@ export const ContactsPage: React.FC = () => {
       </div>
       <EditContactModal
         open={editContactId !== null}
-        onOpenChange={(open) => !open && setEditContactId(null)}
+        onOpenChange={handleEditModalChange}
         contactId={editContactId}
-        onSaved={() => {
-          refetchContacts();
-          toast.success('Contact updated');
-        }}
+        onSaved={handleEditSaved}
       />
       <Dialog open={deleteContact !== null} onOpenChange={(open) => !open && setDeleteContact(null)}>
         <DialogContent>
@@ -576,49 +676,12 @@ export const ContactsPage: React.FC = () => {
       <AddExistingEmployeeModal
         open={addContactModalOpen}
         onOpenChange={setAddContactModalOpen}
-        onConfirm={async (data) => {
-          try {
-            await contactsApi.createContact({
-              name: data.name,
-              uid: data.uid,
-              selectedTids: data.selectedTids ?? [],
-              customArea: data.customArea,
-            });
-            refetchContacts();
-            toast.success('Contact added');
-          } catch (err: unknown) {
-            const msg = err && typeof err === 'object' && 'response' in err
-              ? (err as { response?: { status?: number; data?: { message?: string } } }).response?.status === 403
-                ? 'Company context required.'
-                : (err as { response?: { data?: { message?: string } } }).response?.data?.message
-              : err instanceof Error ? err.message : 'Failed to add contact';
-            toast.error(msg);
-          }
-        }}
+        onConfirm={handleAddEmployeeConfirm}
       />
       <AddExternalContactModal
         open={addExternalModalOpen}
         onOpenChange={setAddExternalModalOpen}
-        onConfirm={async (data) => {
-          try {
-            await contactsApi.createContact({
-              name: data.name,
-              email: data.email,
-              phone: data.phone,
-              selectedTids: data.selectedTids ?? [],
-              customArea: data.customArea,
-            });
-            refetchContacts();
-            toast.success('Contact added');
-          } catch (err: unknown) {
-            const msg = err && typeof err === 'object' && 'response' in err
-              ? (err as { response?: { status?: number } }).response?.status === 403
-                ? 'Company context required.'
-                : (err as { response?: { data?: { message?: string } } }).response?.data?.message
-              : err instanceof Error ? err.message : 'Failed to add contact';
-            toast.error(msg);
-          }
-        }}
+        onConfirm={handleAddExternalConfirm}
       />
     </PageShell>
   );

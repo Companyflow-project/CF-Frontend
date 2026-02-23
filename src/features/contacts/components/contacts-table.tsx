@@ -24,7 +24,7 @@ interface ContactsTableProps {
   onAddAsContact?: (contact: Contact) => void;
 }
 
-export const ContactsTable: React.FC<ContactsTableProps> = ({
+function ContactsTableInner({
   contacts,
   selectedIds,
   onSelect,
@@ -32,7 +32,7 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
   onEdit,
   onDelete,
   onAddAsContact,
-}) => {
+}: ContactsTableProps) {
   const allSelected = contacts.length > 0 && selectedIds.length === contacts.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < contacts.length;
 
@@ -162,4 +162,6 @@ export const ContactsTable: React.FC<ContactsTableProps> = ({
       </TableBody>
     </Table>
   );
-};
+}
+
+export const ContactsTable = React.memo(ContactsTableInner);

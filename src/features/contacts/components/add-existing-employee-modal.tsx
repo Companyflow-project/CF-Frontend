@@ -31,7 +31,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
   onOpenChange,
   onConfirm,
 }) => {
-  const { data: potentialContacts, loading: loadingPotential, refetch } = usePotentialContacts();
+  const { data: potentialContacts, loading: loadingPotential } = usePotentialContacts();
   const { data: areasData } = useContactAreas();
   const [selectedUid, setSelectedUid] = useState<string>('');
   const [selectedTids, setSelectedTids] = useState<number[]>([]);
@@ -39,12 +39,11 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
 
   useEffect(() => {
     if (open) {
-      refetch();
       setSelectedUid('');
       setSelectedTids([]);
       setCustomArea('');
     }
-  }, [open, refetch]);
+  }, [open]);
 
   const handleAreaToggle = (tid: number) => {
     setSelectedTids((prev) =>
