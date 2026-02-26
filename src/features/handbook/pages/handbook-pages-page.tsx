@@ -8,6 +8,7 @@ import { Search, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
+import { AddThemeModal } from '../components/add-theme-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
@@ -29,6 +30,7 @@ export const HandbookPagesPage: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
+    const [isAddThemeModalOpen, setIsAddThemeModalOpen] = useState(false);
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -284,6 +286,13 @@ export const HandbookPagesPage: React.FC = () => {
                     <Button
                         variant="outline"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
+                        onClick={() => {
+                            if (!canEditHandbook) {
+                                toast.error("You don't have permission to create handbook themes.");
+                                return;
+                            }
+                            setIsAddThemeModalOpen(true);
+                        }}
                     >
                         Add theme
                     </Button>
@@ -499,7 +508,10 @@ export const HandbookPagesPage: React.FC = () => {
                                             <div className="border-t border-[#e5e7eb] p-6 bg-[#f9fafb]">
                                                 <HandbookPageEditor
                                                     pageId={page.id}
-                                                    onSave={() => setExpandedPageId(null)}
+                                                    onSave={async () => {
+                                                        await refreshHandbookTree();
+                                                        setExpandedPageId(null);
+                                                    }}
                                                     onCancel={() => setExpandedPageId(null)}
                                                 />
                                             </div>
@@ -678,6 +690,15 @@ export const HandbookPagesPage: React.FC = () => {
                 defaultChapterId={activeChapterId || undefined}
                 onSuccess={(newPageId: number) => {
                     // Navigate to the edit page for the newly created page
+                    navigate(handbookRoutes.editPage(newPageId));
+                }}
+            />
+
+            {/* Add Theme Modal */}
+            <AddThemeModal
+                isOpen={isAddThemeModalOpen}
+                onClose={() => setIsAddThemeModalOpen(false)}
+                onSuccess={(newPageId: number) => {
                     navigate(handbookRoutes.editPage(newPageId));
                 }}
             />

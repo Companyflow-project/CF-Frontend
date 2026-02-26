@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -7,8 +7,10 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { handbookApi } from '../api';
+import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
 import type { HandbookPageDetail } from '@/types/models';
+import { useNavigate } from 'react-router-dom';
+import { handbookRoutes } from '../routes';
 
 interface SneakPeekModalProps {
     isOpen: boolean;
@@ -27,6 +29,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
     pageTitle,
     canEdit = false,
 }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [pageDetail, setPageDetail] = useState<HandbookPageDetail | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -79,6 +82,12 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
         ? pageDetail.pictures[0]
         : undefined;
     const placement = pageDetail?.imagePlacement || 'none';
+
+    // Determine whether this page is currently marked as Ready
+    const isReady = useMemo(
+        () => !!pageDetail?.settings?.isReady,
+        [pageDetail?.settings?.isReady],
+    );
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -217,18 +226,39 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                     >
                         Close
                     </Button>
-                    <div
-                        title={!canEdit ? 'Only admins can edit handbook pages' : undefined}
-                        className={!canEdit ? 'cursor-not-allowed' : undefined}
-                    >
-                        <Button
-                            type="button"
-                            onClick={canEdit ? onEditPage : undefined}
-                            disabled={!canEdit}
-                            className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    <div className="flex items-center gap-2">
+                        <div
+                            title={!canEdit ? 'Only admins can edit handbook pages' : undefined}
+                            className={!canEdit ? 'cursor-not-allowed' : undefined}
                         >
-                            Edit page
-                        </Button>
+                            <Button
+                                type="button"
+                                onClick={canEdit ? onEditPage : undefined}
+                                disabled={!canEdit}
+                                className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#f3f4f6] hover:bg-[#e5e7eb] text-[#111827] disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Edit page
+                            </Button>
+                        </div>
+                        {canEdit && (
+                            <Button
+                                type="button"
+                                disabled={loading || !pageDetail}
+                                onClick={() => {
+                                    if (!pageDetail) return;
+                                    if (isReady) {
+                                        // Handbook is ready — go straight to print view
+                                        navigate(handbookRoutes.printView());
+                                    } else {
+                                        // Page is not ready — open publish flow for main handbook
+                                        navigate(handbookRoutes.publish(DEFAULT_HANDBOOK_PRINT_BID));
+                                    }
+                                }}
+                                className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isReady ? 'Print' : 'Publish'}
+                            </Button>
+                        )}
                     </div>
                 </DialogFooter>
             </DialogContent>

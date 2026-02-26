@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -25,6 +25,8 @@ interface AddPageModalProps {
     chapters: HandbookNode[];
     defaultChapterId?: number;
     onSuccess: (newPageId: number) => void;
+    /** How the modal was opened: adding a page to current chapter (default) or creating a new theme/chapter. */
+    initialMode?: 'page' | 'chapter';
 }
 
 export const AddPageModal: React.FC<AddPageModalProps> = ({
@@ -33,16 +35,30 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
     chapters,
     defaultChapterId,
     onSuccess,
+    initialMode = 'page',
 }) => {
+    const getDefaultSelectedChapterId = (): number | 'new' => {
+        if (initialMode === 'chapter') {
+            return 'new';
+        }
+        return defaultChapterId || (chapters.length > 0 ? chapters[0].id : 'new');
+    };
+
     const [title, setTitle] = useState('');
-    const [selectedChapterId, setSelectedChapterId] = useState<number | 'new'>(
-        defaultChapterId || (chapters.length > 0 ? chapters[0].id : 'new')
-    );
+    const [selectedChapterId, setSelectedChapterId] = useState<number | 'new'>(getDefaultSelectedChapterId());
     const [newChapterName, setNewChapterName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const selectedChapter = chapters.find(ch => ch.id === selectedChapterId);
+
+    // Whenever the modal opens or the active chapter / mode changes,
+    // reset the selected chapter so it auto-fills correctly.
+    useEffect(() => {
+        if (!isOpen) return;
+        setSelectedChapterId(getDefaultSelectedChapterId());
+        setNewChapterName('');
+    }, [isOpen, defaultChapterId, chapters, initialMode]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,7 +92,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
             // Reset form
             setTitle('');
             setNewChapterName('');
-            setSelectedChapterId(defaultChapterId || (chapters.length > 0 ? chapters[0].id : 'new'));
+            setSelectedChapterId(getDefaultSelectedChapterId());
             onClose();
         } catch (err: any) {
             console.error('Failed to create page:', err);
@@ -90,7 +106,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
         if (!isSubmitting) {
             setTitle('');
             setNewChapterName('');
-            setSelectedChapterId(defaultChapterId || (chapters.length > 0 ? chapters[0].id : 'new'));
+            setSelectedChapterId(getDefaultSelectedChapterId());
             setError(null);
             onClose();
         }

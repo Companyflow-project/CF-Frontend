@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
@@ -13,10 +13,12 @@ import {
 } from 'lucide-react';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
+import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 
 export const ManageHandbookPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -57,10 +59,10 @@ export const ManageHandbookPage: React.FC = () => {
                                 onClick={isLocked ? undefined : action.onClick}
                                 disabled={isLocked}
                                 className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${isLocked
-                                        ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
-                                        : action.variant === 'default'
-                                            ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
-                                            : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
+                                    ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
+                                    : action.variant === 'default'
+                                        ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
+                                        : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
                                     }`}
                             >
                                 <span>{action.label}</span>
@@ -83,7 +85,10 @@ export const ManageHandbookPage: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">Manage Handbook</h1>
                 <div className="flex flex-wrap items-center gap-2">
-                    <Button className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]">
+                    <Button
+                        onClick={() => setPreviewModalOpen(true)}
+                        className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
+                    >
                         Preview Handbook
                     </Button>
                     <Button
@@ -202,6 +207,11 @@ export const ManageHandbookPage: React.FC = () => {
                     ]}
                 />
             </div>
+
+            <PreviewHandbookModal
+                isOpen={previewModalOpen}
+                onClose={() => setPreviewModalOpen(false)}
+            />
         </PageShell>
     );
 };

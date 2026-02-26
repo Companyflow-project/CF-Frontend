@@ -282,7 +282,22 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
         } finally {
             setSaving(false);
         }
-    }, [pageId, mode, customText, notes, imageId, imagePlacement, documents, links, owners, onSave]);
+    }, [
+        pageId,
+        mode,
+        customText,
+        notes,
+        imageId,
+        imagePlacement,
+        documents,
+        links,
+        owners,
+        askForReceipt,
+        isReady,
+        includeInHandbook,
+        notifyEmployees,
+        onSave,
+    ]);
 
     if (loading) {
         return (
