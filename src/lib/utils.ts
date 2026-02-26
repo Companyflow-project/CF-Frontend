@@ -69,3 +69,29 @@ export function formatRelativeTime(dateString: string | null | undefined): strin
     return dateString; // Return original if parsing fails
   }
 }
+
+/**
+ * Formats a phone number in Danish style: +45 XX XX XX XX
+ * Handles numbers with or without +45 / 0045 prefix.
+ * Non-Danish numbers (wrong digit count) are returned as-is.
+ */
+export function formatDanishPhone(raw: string | null | undefined): string {
+  if (!raw) return '';
+
+  // Strip everything except digits and leading +
+  const stripped = raw.trim();
+  if (!stripped) return '';
+
+  // Normalise: remove +45 or 0045 prefix to get the local digits
+  let digits = stripped.replace(/\D/g, '');
+  if (digits.startsWith('45') && digits.length === 10) {
+    digits = digits.slice(2); // remove country code
+  }
+
+  // Danish local numbers are exactly 8 digits
+  if (digits.length !== 8) return stripped;
+
+  // Format as XX XX XX XX
+  const formatted = `${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 6)} ${digits.slice(6, 8)}`;
+  return `+45 ${formatted}`;
+}

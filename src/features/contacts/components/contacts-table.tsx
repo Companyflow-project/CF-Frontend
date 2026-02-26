@@ -12,16 +12,22 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/empty-state';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { Contact } from '@/types/models';
+import { formatDanishPhone } from '@/lib/utils';
 
 interface ContactsTableProps {
   contacts: Contact[];
   selectedIds: string[];
   onSelect: (id: string) => void;
   onSelectAll: (selected: boolean) => void;
-  onEdit?: (contact: Contact) => void;
   onDelete?: (contact: Contact) => void;
   /** For the current-user placeholder row (nid === 0 / isCurrentUser): add as contact using current user's uid */
   onAddAsContact?: (contact: Contact) => void;
+  /** For employee-only rows (id starts with "emp-") that are not yet real contacts */
+  onAddEmployeeAsContact?: (contact: Contact) => void;
+  /** For real employee contacts — opens the pre-filled edit modal */
+  onEditEmployeeContact?: (contact: Contact) => void;
+  /** Email of the logged-in user — their row is pinned to the top and cannot be deleted */
+  currentUserEmail?: string;
 }
 
 function ContactsTableInner({
@@ -29,12 +35,27 @@ function ContactsTableInner({
   selectedIds,
   onSelect,
   onSelectAll,
-  onEdit,
   onDelete,
   onAddAsContact,
+  onAddEmployeeAsContact,
+  onEditEmployeeContact,
+  currentUserEmail,
 }: ContactsTableProps) {
-  const allSelected = contacts.length > 0 && selectedIds.length === contacts.length;
-  const someSelected = selectedIds.length > 0 && selectedIds.length < contacts.length;
+  // Pin the authenticated user's row to the top
+  const sortedContacts = React.useMemo(() => {
+    if (!currentUserEmail) return contacts;
+    const email = currentUserEmail.toLowerCase();
+    return [...contacts].sort((a, b) => {
+      const aIsSelf = (a.email ?? '').toLowerCase() === email;
+      const bIsSelf = (b.email ?? '').toLowerCase() === email;
+      if (aIsSelf && !bIsSelf) return -1;
+      if (!aIsSelf && bIsSelf) return 1;
+      return 0;
+    });
+  }, [contacts, currentUserEmail]);
+
+  const allSelected = sortedContacts.length > 0 && sortedContacts.every((c) => selectedIds.includes(c.id));
+  const someSelected = selectedIds.length > 0 && !allSelected;
 
   return (
     <Table className="min-w-[860px] text-[13px]">
@@ -63,25 +84,31 @@ function ContactsTableInner({
         </TableRow>
       </TableHeader>
       <TableBody className="[&_tr:last:border-b]">
-        {contacts.length === 0 ? (
+        {sortedContacts.length === 0 ? (
           <TableRow>
             <TableCell colSpan={7}>
               <EmptyState />
             </TableCell>
           </TableRow>
         ) : (
-          contacts.map((contact) => (
-            <TableRow key={contact.id} className="border-b border-[#ebf3ef] hover:bg-[#f6fbf9]">
+          sortedContacts.map((contact) => {
+            const isSelf = !!(currentUserEmail && (contact.email ?? '').toLowerCase() === currentUserEmail.toLowerCase());
+            return (
+              <TableRow key={contact.id} className={`border-b border-[#ebf3ef] hover:bg-[#f6fbf9] ${isSelf ? 'bg-[#f6fbf9]' : ''}`}>
               <TableCell>
                 <Checkbox
-                  checked={selectedIds.includes(contact.id)}
-                  onChange={() => onSelect(contact.id)}
-                  className="rounded-[4px] border-[#3d997d] h-4 w-4"
+                  checked={!isSelf && selectedIds.includes(contact.id)}
+                  onChange={() => !isSelf && onSelect(contact.id)}
+                  disabled={isSelf}
+                  className={`rounded-[4px] h-4 w-4 ${isSelf ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
                 />
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <span className="font-semibold text-[#111827]">{contact.name}</span>
+                  {isSelf && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#d4f4e6] text-[#1a5948]">You</span>
+                  )}
                 </div>
               </TableCell>
               <TableCell className="text-[#111b18]">{contact.email}</TableCell>
@@ -90,7 +117,7 @@ function ContactsTableInner({
                   contact.telephone ? 'text-[#111b18] w-[220px] whitespace-nowrap' : 'text-[#9fa4a4] text-xs'
                 }
               >
-                {contact.telephone || 'Not available'}
+                {contact.telephone ? formatDanishPhone(contact.telephone) : 'Not available'}
               </TableCell>
               <TableCell className="text-[#111b18]">
                 {contact.functionTitle || '-'}
@@ -105,13 +132,19 @@ function ContactsTableInner({
                     <span>{contact.isPublic ? 'Public' : 'Private'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#1a5948]" />
-                    <span>
-                      {contact.isEmployeeContact
-                        ? 'Employee'
+                    <span className={`h-2.5 w-2.5 rounded-full ${
+                      contact.id.startsWith('emp-')
+                        ? 'bg-[#9ca3af]'
+                        : contact.isExternalContact
+                          ? 'bg-[#1e40af]'
+                          : 'bg-[#1a5948]'
+                    }`} />
+                    <span className={contact.id.startsWith('emp-') ? 'text-[#9ca3af]' : ''}>
+                      {contact.id.startsWith('emp-')
+                        ? 'Not in contacts'
                         : contact.isExternalContact
                           ? 'External contact'
-                          : 'Contact'}
+                          : 'Existing contact'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -125,6 +158,7 @@ function ContactsTableInner({
               </TableCell>
               <TableCell className="text-right">
                 <div className="inline-flex items-center gap-2">
+                  {/* Current-user placeholder row */}
                   {contact.isCurrentUser || contact.id === '0' ? (
                     <Button
                       variant="outline"
@@ -136,32 +170,48 @@ function ContactsTableInner({
                       <UserPlus className="h-3.5 w-3.5" />
                       Add as contact
                     </Button>
+                  ) : contact.id.startsWith('emp-') ? (
+                    /* Employee-only row — not yet a real contact */
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
+                      onClick={() => onAddEmployeeAsContact?.(contact)}
+                      aria-label="Add as contact"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      Add as contact
+                    </Button>
                   ) : (
+                    /* Real contact — edit always; delete only if not self */
                     <>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
-                        onClick={() => onEdit?.(contact)}
+                        onClick={() => onEditEmployeeContact?.(contact)}
                         aria-label="Edit contact"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
-                        onClick={() => onDelete?.(contact)}
-                        aria-label="Delete contact"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {!isSelf && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
+                          onClick={() => onDelete?.(contact)}
+                          aria-label="Delete contact"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>
               </TableCell>
             </TableRow>
-          ))
+            );
+          })
         )}
       </TableBody>
     </Table>

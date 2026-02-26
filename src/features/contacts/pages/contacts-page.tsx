@@ -17,10 +17,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useContacts } from '../hooks';
+import { useContacts, usePotentialContacts } from '../hooks';
+import { AddEmployeeAsContactModal, type EmployeeContactData } from '../components/add-employee-as-contact-modal';
 import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
-import { Menu, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
 import { contactsApi } from '../api';
@@ -41,10 +41,18 @@ export const ContactsPage: React.FC = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
+  const [addingSelectedLoading, setAddingSelectedLoading] = useState(false);
+  const [employeeContactModal, setEmployeeContactModal] = useState<{
+    open: boolean;
+    employee: EmployeeContactData | null;
+    contactId?: string;
+    existingTids?: number[];
+  }>({ open: false, employee: null });
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: contacts, error: contactsError, refetch: refetchContacts } = useContacts();
   const { data: apiEmployees } = useEmployees({ limit: 1000 });
+  const { data: potentialContacts } = usePotentialContacts();
 
   // Merge ALL company employees into the contacts list (public and private).
   // The /api/contacts endpoint returns empty strings for email, so de-duplicate by normalized name.
@@ -64,17 +72,23 @@ export const ContactsPage: React.FC = () => {
         createdAt: emp.createdAt,
       }) satisfies import('@/types/models').Contact);
 
-    // De-duplicate against existing contacts by normalized name
-    // (email can't be used — the contacts endpoint returns empty strings for email)
-    const existingNames = new Set(
-      contacts.map((c) => c.name.trim().toLowerCase())
-    );
+    // Build a set of employee names to distinguish employee contacts from external ones
+    const employeeNames = new Set(employees.map((e) => e.name.trim().toLowerCase()));
 
+    // Mark real contacts as employee or external based on name match
+    const markedContacts = contacts.map((c) => ({
+      ...c,
+      isEmployeeContact: employeeNames.has(c.name.trim().toLowerCase()),
+      isExternalContact: !employeeNames.has(c.name.trim().toLowerCase()),
+    }));
+
+    // De-duplicate: only append employees not already in contacts
+    const existingNames = new Set(contacts.map((c) => c.name.trim().toLowerCase()));
     const newEmployees = employees.filter(
       (emp) => !existingNames.has(emp.name.trim().toLowerCase())
     );
 
-    return [...contacts, ...newEmployees];
+    return [...markedContacts, ...newEmployees];
   }, [contacts, apiEmployees]);
 
   // Open add or import from console redirect (?open=add | ?open=import)
@@ -94,14 +108,10 @@ export const ContactsPage: React.FC = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const filteredContacts = useMemo(() => {
-    let result = mergedContacts;
-    if (!showInactive) {
-      result = result.filter((c) => c.status !== 'INACTIVE');
-    }
-    if (publicOnly) {
-      result = result.filter((c) => c.isPublic);
-    }
+  const applyFilters = useCallback((list: Contact[]) => {
+    let result = list;
+    if (!showInactive) result = result.filter((c) => c.status !== 'INACTIVE');
+    if (publicOnly) result = result.filter((c) => c.isPublic);
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(
@@ -112,7 +122,7 @@ export const ContactsPage: React.FC = () => {
       );
     }
     return result;
-  }, [mergedContacts, search, showInactive, publicOnly]);
+  }, [showInactive, publicOnly, search]);
 
   const employeeContacts = useMemo(
     () => mergedContacts.filter((c) => c.isEmployeeContact),
@@ -122,6 +132,21 @@ export const ContactsPage: React.FC = () => {
   const externalContacts = useMemo(
     () => mergedContacts.filter((c) => c.isExternalContact),
     [mergedContacts],
+  );
+
+  const filteredContacts = useMemo(
+    () => applyFilters(mergedContacts),
+    [mergedContacts, applyFilters],
+  );
+
+  const filteredEmployeeContacts = useMemo(
+    () => applyFilters(employeeContacts),
+    [employeeContacts, applyFilters],
+  );
+
+  const filteredExternalContacts = useMemo(
+    () => applyFilters(externalContacts),
+    [externalContacts, applyFilters],
   );
 
   const visibilityStats = useMemo(() => ({
@@ -297,6 +322,83 @@ export const ContactsPage: React.FC = () => {
     }
   }, [user, refetchContacts]);
 
+  const handleOpenEmployeeContactModal = useCallback((contact: Contact) => {
+    const empId = contact.id.startsWith('emp-') ? contact.id.replace('emp-', '') : contact.id;
+    setEmployeeContactModal({
+      open: true,
+      employee: {
+        uid: Number(empId),
+        name: contact.name,
+        email: contact.email ?? '',
+        telephone: contact.telephone,
+      },
+    });
+  }, []);
+
+  const handleEditEmployeeContact = useCallback(async (contact: Contact) => {
+    // Fetch existing selected tids so we can show them as muted in the modal
+    let existingTids: number[] = [];
+    try {
+      const { selectedTids } = await contactsApi.getContact(contact.id);
+      existingTids = selectedTids ?? [];
+    } catch {
+      // Proceed without existing tids — they just won't be shown as muted
+    }
+    setEmployeeContactModal({
+      open: true,
+      contactId: contact.id,
+      existingTids,
+      employee: {
+        uid: Number(contact.id),
+        name: contact.name,
+        email: contact.email ?? '',
+        telephone: contact.telephone,
+      },
+    });
+  }, []);
+
+  const handleEmployeeContactConfirm = useCallback(async (data: {
+    uid: number;
+    name: string;
+    phone?: string;
+    selectedTids: number[];
+    customAreas: string[];
+  }) => {
+    const customArea = data.customAreas.filter(Boolean).join(', ') || undefined;
+    const isEdit = !!employeeContactModal.contactId;
+    try {
+      if (isEdit) {
+        await contactsApi.updateContact(employeeContactModal.contactId!, {
+          phone: data.phone,
+          selectedTids: [
+            ...(employeeContactModal.existingTids ?? []),
+            ...data.selectedTids,
+          ],
+          ...(customArea ? { role: customArea } : {}),
+        });
+        toast.success('Contact updated');
+      } else {
+        await contactsApi.createContact({
+          name: data.name,
+          uid: data.uid,
+          phone: data.phone,
+          selectedTids: data.selectedTids,
+          customArea,
+        });
+        toast.success('Employee added as contact');
+      }
+      refetchContacts();
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { status?: number; data?: { message?: string } } }).response?.status === 403
+            ? 'Company context required.'
+            : (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : err instanceof Error ? err.message : 'Failed to save contact';
+      toast.error(msg);
+    }
+  }, [employeeContactModal.contactId, employeeContactModal.existingTids, refetchContacts]);
+
   const handleEditSaved = useCallback(() => {
     refetchContacts();
     toast.success('Contact updated');
@@ -305,15 +407,18 @@ export const ContactsPage: React.FC = () => {
   const handleAddEmployeeConfirm = useCallback(async (data: {
     uid: number;
     name: string;
+    phone?: string;
     selectedTids: number[];
-    customArea?: string;
+    customAreas: string[];
   }) => {
     try {
+      const customArea = data.customAreas?.filter(Boolean).join(', ') || undefined;
       await contactsApi.createContact({
         name: data.name,
         uid: data.uid,
+        phone: data.phone,
         selectedTids: data.selectedTids ?? [],
-        customArea: data.customArea,
+        customArea,
       });
       refetchContacts();
       toast.success('Contact added');
@@ -354,10 +459,60 @@ export const ContactsPage: React.FC = () => {
     }
   }, [refetchContacts]);
 
-  const handleSelectAllFiltered = useCallback(
-    (selected: boolean) => handleSelectAll(selected, filteredContacts),
-    [handleSelectAll, filteredContacts],
-  );
+  const handleAddSelectedAsContacts = useCallback(async () => {
+    if (selectedIds.length === 0) return;
+
+    // Map potential contacts by normalized name for lookup.
+    const potentialByName = new Map(
+      potentialContacts.map((item) => [item.name.trim().toLowerCase(), item]),
+    );
+
+    // From the current filtered list, pick selected items that are employees and still potential contacts.
+    const targets = filteredContacts.filter(
+      (contact) =>
+        selectedIds.includes(contact.id) &&
+        contact.isEmployeeContact &&
+        potentialByName.has(contact.name.trim().toLowerCase()),
+    );
+
+    if (targets.length === 0) {
+      toast.info('No employees to add as contacts.');
+      return;
+    }
+
+    setAddingSelectedLoading(true);
+    try {
+      await Promise.all(
+        targets.map((contact) => {
+          const key = contact.name.trim().toLowerCase();
+          const potential = potentialByName.get(key);
+          if (!potential) return Promise.resolve();
+          return contactsApi.createContact({
+            name: potential.name,
+            uid: potential.uid,
+            selectedTids: [],
+          });
+        }),
+      );
+      refetchContacts();
+      toast.success(
+        targets.length === 1
+          ? '1 employee added as a contact.'
+          : `${targets.length} employees added as contacts.`,
+      );
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : err instanceof Error
+            ? err.message
+            : 'Failed to add selected employees as contacts';
+      toast.error(msg);
+    } finally {
+      setAddingSelectedLoading(false);
+    }
+  }, [selectedIds, filteredContacts, potentialContacts, refetchContacts]);
+
 
   const handleSetPrivate = useCallback(
     () => handleSetVisibility(0, selectedIds.map((id) => Number(id))),
@@ -379,7 +534,7 @@ export const ContactsPage: React.FC = () => {
     [handleSetVisibility, contacts],
   );
 
-  const handleEditOpen = useCallback((contact: Contact) => setEditContactId(contact.id), []);
+
   const handleDeleteOpen = useCallback(
     (contact: Contact) => setDeleteContact({ id: contact.id, name: contact.name }),
     [],
@@ -503,41 +658,38 @@ export const ContactsPage: React.FC = () => {
               </div>
             </div>
             <CardContent className="pt-6 space-y-6">
-              <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1]">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
-                  >
-                    Name
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                  >
-                    <Menu className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                  >
-                    <Filter className="h-4 w-4" />
-                  </Button>
-                </div>
+              {/* Employee Contacts */}
+              <div>
+                <h3 className="text-sm font-bold text-[#0d0e0e] mb-3">Employee Contacts</h3>
+                <ContactsTable
+                  contacts={filteredEmployeeContacts}
+                  selectedIds={selectedIds}
+                  onSelect={handleSelect}
+                  onSelectAll={(selected) => handleSelectAll(selected, filteredEmployeeContacts)}
+                  onDelete={handleDeleteOpen}
+                  onAddAsContact={handleAddAsContact}
+                  onAddEmployeeAsContact={handleOpenEmployeeContactModal}
+                  onEditEmployeeContact={handleEditEmployeeContact}
+                  currentUserEmail={user?.email ?? undefined}
+                />
               </div>
-              <ContactsTable
-                contacts={filteredContacts}
-                selectedIds={selectedIds}
-                onSelect={handleSelect}
-                onSelectAll={handleSelectAllFiltered}
-                onEdit={handleEditOpen}
-                onDelete={handleDeleteOpen}
-                onAddAsContact={handleAddAsContact}
-              />
+
+              {/* External Contacts — only shown when there are entries */}
+              {filteredExternalContacts.length > 0 && (
+                <div className="pt-2 border-t border-dashed border-[#d5e7e1]">
+                  <h3 className="text-sm font-bold text-[#0d0e0e] mb-3 mt-4">External Contacts</h3>
+                  <ContactsTable
+                    contacts={filteredExternalContacts}
+                    selectedIds={selectedIds}
+                    onSelect={handleSelect}
+                    onSelectAll={(selected) => handleSelectAll(selected, filteredExternalContacts)}
+                    onDelete={handleDeleteOpen}
+                    onAddAsContact={handleAddAsContact}
+                    onAddEmployeeAsContact={handleOpenEmployeeContactModal}
+                    onEditEmployeeContact={handleEditEmployeeContact}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
           <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -574,9 +726,11 @@ export const ContactsPage: React.FC = () => {
               </Button>
               <Button
                 size="sm"
-                className="rounded-[999px] text-sm px-5 bg-[#2f946f] text-white hover:bg-[#2f946f]/90"
+                className="rounded-[999px] text-sm px-5 bg-[#2f946f] text-white hover:bg-[#2f946f]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={selectedIds.length === 0 || addingSelectedLoading}
+                onClick={handleAddSelectedAsContacts}
               >
-                Add selected as contacts
+                {addingSelectedLoading ? 'Adding…' : 'Add selected as contacts'}
               </Button>
             </div>
           </div>
@@ -712,6 +866,14 @@ export const ContactsPage: React.FC = () => {
         open={addExternalModalOpen}
         onOpenChange={setAddExternalModalOpen}
         onConfirm={handleAddExternalConfirm}
+      />
+      <AddEmployeeAsContactModal
+        open={employeeContactModal.open}
+        onOpenChange={(open) => setEmployeeContactModal((prev) => ({ ...prev, open }))}
+        employee={employeeContactModal.employee}
+        contactId={employeeContactModal.contactId}
+        existingTids={employeeContactModal.existingTids}
+        onConfirm={handleEmployeeContactConfirm}
       />
     </PageShell>
   );

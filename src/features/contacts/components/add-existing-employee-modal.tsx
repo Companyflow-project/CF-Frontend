@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
-import { usePotentialContacts } from '../hooks';
-import { useContactAreas } from '../hooks';
-import { Loader2, UserCheck, ChevronDown } from 'lucide-react';
+import { usePotentialContacts, useContactAreas } from '../hooks';
+import { useEmployees } from '@/lib/api-hooks';
+import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
+import { UserCheck, ChevronDown, Loader2, Plus, X } from 'lucide-react';
 
 export interface AddExistingEmployeeContactPayload {
   uid: number;
   name: string;
+  phone?: string;
   selectedTids: number[];
-  customArea?: string;
+  customAreas: string[];
 }
 
 interface AddExistingEmployeeModalProps {
@@ -26,6 +26,10 @@ interface AddExistingEmployeeModalProps {
   onConfirm: (data: AddExistingEmployeeContactPayload) => void;
 }
 
+/** Values that mean "no real phone number" — treated as empty */
+const isPlaceholder = (v?: string | null) =>
+  !v || ['n/a', 'not available', '-', 'none', ''].includes(v.trim().toLowerCase());
+
 export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> = ({
   open,
   onOpenChange,
@@ -33,17 +37,56 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
 }) => {
   const { data: potentialContacts, loading: loadingPotential } = usePotentialContacts();
   const { data: areasData } = useContactAreas();
-  const [selectedUid, setSelectedUid] = useState<string>('');
-  const [selectedTids, setSelectedTids] = useState<number[]>([]);
-  const [customArea, setCustomArea] = useState('');
+  const { data: rawEmployees } = useEmployees({ limit: 1000 });
 
+  // Build a uid → Employee map for email/phone lookup
+  const employeeByUid = useMemo(() => {
+    const map = new Map<number, ReturnType<typeof transformEmployee>>();
+    const list = (rawEmployees as unknown as BackendEmployeeLike[] | null) ?? [];
+    list.forEach((raw) => {
+      const emp = transformEmployee(raw);
+      const uid = raw.uid ?? (raw.id != null ? Number(raw.id) : null);
+      if (uid != null) map.set(uid, emp);
+    });
+    return map;
+  }, [rawEmployees]);
+
+  const [selectedUid, setSelectedUid] = useState('');
+  const [phone, setPhone] = useState('');
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [selectedTids, setSelectedTids] = useState<number[]>([]);
+  const [customAreas, setCustomAreas] = useState<string[]>([]);
+
+  // Reset on open
   useEffect(() => {
     if (open) {
       setSelectedUid('');
+      setPhone('');
+      setPhoneTouched(false);
       setSelectedTids([]);
-      setCustomArea('');
+      setCustomAreas([]);
     }
   }, [open]);
+
+  // Auto-fill phone when an employee is selected
+  useEffect(() => {
+    if (!selectedUid) {
+      setPhone('');
+      setPhoneTouched(false);
+      return;
+    }
+    const uid = Number(selectedUid);
+    const emp = employeeByUid.get(uid);
+    const raw = emp?.mobileNumber ?? emp?.telephone ?? emp?.alternateNumber;
+    setPhone(isPlaceholder(raw) ? '' : (raw ?? ''));
+    setPhoneTouched(false);
+  }, [selectedUid, employeeByUid]);
+
+  const selectedPotential = potentialContacts.find((p) => String(p.uid) === selectedUid);
+  const selectedEmployee = selectedUid ? employeeByUid.get(Number(selectedUid)) : undefined;
+
+  const phoneEmpty = phone.trim() === '';
+  const showPhoneError = phoneTouched && phoneEmpty;
 
   const handleAreaToggle = (tid: number) => {
     setSelectedTids((prev) =>
@@ -51,28 +94,31 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
     );
   };
 
+  const handleAddCustomArea = () => setCustomAreas((prev) => [...prev, '']);
+  const handleCustomAreaChange = (index: number, value: string) =>
+    setCustomAreas((prev) => prev.map((a, i) => (i === index ? value : a)));
+  const handleRemoveCustomArea = (index: number) =>
+    setCustomAreas((prev) => prev.filter((_, i) => i !== index));
+
   const handleSubmit = () => {
-    const uid = selectedUid ? Number(selectedUid) : 0;
-    const item = potentialContacts.find((p) => p.uid === uid);
-    if (!uid || !item) return;
+    if (!selectedPotential) return;
+    if (phoneEmpty) {
+      setPhoneTouched(true);
+      return;
+    }
     onConfirm({
-      uid,
-      name: item.name,
+      uid: selectedPotential.uid,
+      name: selectedPotential.name,
+      phone: phone.trim() || undefined,
       selectedTids,
-      customArea: customArea.trim() || undefined,
+      customAreas: customAreas.filter((a) => a.trim() !== ''),
     });
     onOpenChange(false);
-    setSelectedUid('');
-    setSelectedTids([]);
-    setCustomArea('');
   };
-
-  const selectedItem = potentialContacts.find((p) => String(p.uid) === selectedUid);
-  const canSubmit = selectedUid !== '' && selectedItem;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 gap-0 rounded-[20px] overflow-hidden border border-[#e5efea] shadow-[0_20px_60px_rgba(14,51,38,0.15)]">
+      <DialogContent className="sm:max-w-[680px] p-0 gap-0 rounded-[20px] overflow-hidden border border-[#e5efea] shadow-[0_20px_60px_rgba(14,51,38,0.15)]">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#e5efea] bg-white">
           <div className="flex items-center gap-3">
@@ -80,53 +126,134 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
               <UserCheck className="h-5 w-5 text-[#1a5948]" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">Add contact</DialogTitle>
-              <p className="text-xs text-[#6b7280] mt-0.5">Select an employee to add as a contact</p>
+              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">Add existing employee</DialogTitle>
+              <p className="text-xs text-[#6b7280] mt-0.5">Select an employee and confirm their details</p>
             </div>
           </div>
         </DialogHeader>
 
         {/* Body */}
-        <div className="px-6 py-5 space-y-5 bg-white">
-          {/* Employee select */}
-          <div className="space-y-1.5">
-            <Label htmlFor="add-contact-employee" className="text-sm font-semibold text-[#0d0e0e]">
+        <div className="px-6 py-5 bg-white space-y-5 max-h-[65vh] overflow-y-auto">
+          {/* Employee dropdown */}
+          <div>
+            <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
               Employee
-            </Label>
+              <span className="ml-1 text-[#d5384b]">*</span>
+            </label>
             <div className="relative">
-              <Select
-                id="add-contact-employee"
+              <select
                 value={selectedUid}
                 onChange={(e) => setSelectedUid(e.target.value)}
                 disabled={loadingPotential}
-                className="w-full h-11 rounded-[10px] border border-[#e5e7eb] bg-white px-4 text-sm text-[#0d0e0e] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3d997d]/30 focus:border-[#3d997d] pr-10 disabled:opacity-60"
+                className="w-full h-11 rounded-[10px] border border-[#e5e7eb] bg-white px-4 pr-10 text-sm text-[#0d0e0e] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3d997d]/30 focus:border-[#3d997d] disabled:opacity-60"
               >
-                <option value="">Select an employee…</option>
+                <option value="">
+                  {loadingPotential ? 'Loading employees…' : 'Select an employee…'}
+                </option>
                 {potentialContacts.map((item) => (
                   <option key={item.uid} value={item.uid}>
                     {item.name}
                   </option>
                 ))}
-              </Select>
+              </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+              {loadingPotential && (
+                <Loader2 className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af] animate-spin" />
+              )}
             </div>
-            {loadingPotential && (
-              <p className="text-xs text-[#6b7280] flex items-center gap-1.5 mt-1">
-                <Loader2 className="h-3 w-3 animate-spin" /> Loading employees…
-              </p>
-            )}
             {!loadingPotential && potentialContacts.length === 0 && (
-              <p className="text-xs text-[#6b7280] mt-1">No employees available to add as contacts.</p>
+              <p className="text-xs text-[#6b7280] mt-1">
+                All employees are already contacts.
+              </p>
             )}
           </div>
 
+          {/* Auto-filled fields — shown once an employee is selected */}
+          {selectedPotential && (
+            <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end">
+              {/* Name — muted */}
+              <div className="flex-1 min-w-0">
+                <label className="text-xs font-medium text-[#6b7280] mb-1 block">Name</label>
+                <Input
+                  readOnly
+                  tabIndex={-1}
+                  value={selectedPotential.name}
+                  className="h-10 rounded-[10px] border-[#e5e7eb] bg-[#f3f4f6] text-[#6b7280] cursor-not-allowed text-sm select-none"
+                />
+              </div>
+
+              {/* Email — muted */}
+              <div className="flex-1 min-w-0">
+                <label className="text-xs font-medium text-[#6b7280] mb-1 block">Email</label>
+                <Input
+                  readOnly
+                  tabIndex={-1}
+                  value={selectedEmployee?.email ?? ''}
+                  className="h-10 rounded-[10px] border-[#e5e7eb] bg-[#f3f4f6] text-[#6b7280] cursor-not-allowed text-sm select-none"
+                />
+              </div>
+
+              {/* Telephone */}
+              <div className="flex-1 min-w-0">
+                <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
+                  Telephone
+                  {phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
+                </label>
+                <Input
+                  placeholder="Phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onBlur={() => setPhoneTouched(true)}
+                  className={`h-10 rounded-[10px] text-sm transition-colors ${
+                    phoneEmpty
+                      ? 'border-[#d5384b] focus:ring-[#d5384b]/30 focus:border-[#d5384b]'
+                      : 'border-[#e5e7eb] focus:ring-[#3d997d]/30 focus:border-[#3d997d]'
+                  }`}
+                />
+                {showPhoneError && (
+                  <p className="text-xs text-[#d5384b] mt-1">Phone number is required</p>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  onClick={handleSubmit}
+                  className="h-10 px-5 rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white text-sm shadow-[0_4px_12px_rgba(23,102,79,0.3)]"
+                >
+                  Add
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="h-10 px-5 rounded-[10px] border-[#e5e7eb] text-[#374151] text-sm hover:bg-[#f9fafb]"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Areas of responsibility */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold text-[#0d0e0e]">
-              Areas of responsibility
-              <span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
-            </Label>
-            <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="space-y-2 pt-1 border-t border-[#f0f4f2]">
+            <div className="flex items-center justify-between pt-3">
+              <label className="text-sm font-semibold text-[#0d0e0e]">
+                Areas of responsibility
+                <span className="ml-1 text-[#d5384b]">*</span>
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleAddCustomArea}
+                className="h-8 gap-1.5 text-xs text-[#1a5948] hover:bg-[#f0f7f5] rounded-[8px] px-3"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Create new
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {areasData.map((area) => {
                 const checked = selectedTids.includes(area.tid);
                 return (
@@ -134,20 +261,28 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                     key={area.tid}
                     type="button"
                     onClick={() => handleAreaToggle(area.tid)}
-                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] border text-sm font-medium transition-all text-left ${checked
-                      ? 'bg-[#d4f4e6] border-[#3d997d] text-[#1a5948]'
-                      : 'bg-white border-[#e5e7eb] text-[#374151] hover:border-[#3d997d]/40 hover:bg-[#f6fbf9]'
-                      }`}
+                    className={[
+                      'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border text-sm font-medium transition-all text-left',
+                      checked
+                        ? 'bg-[#d4f4e6] border-[#3d997d] text-[#1a5948]'
+                        : 'bg-white border-[#e5e7eb] text-[#374151] hover:border-[#3d997d]/40 hover:bg-[#f6fbf9]',
+                    ].join(' ')}
                   >
                     <span
-                      className={`h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0 transition-colors ${checked
-                        ? 'bg-[#3d997d] border-[#3d997d]'
-                        : 'border-[#d1d5db] bg-white'
-                        }`}
+                      className={[
+                        'h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0 transition-colors',
+                        checked ? 'bg-[#3d997d] border-[#3d997d]' : 'border-[#d1d5db] bg-white',
+                      ].join(' ')}
                     >
                       {checked && (
                         <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
-                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path
+                            d="M2 6l3 3 5-5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       )}
                     </span>
@@ -156,37 +291,45 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                 );
               })}
             </div>
-            <div className="pt-2">
-              <Label htmlFor="add-contact-other-area" className="text-xs text-[#9ca3af]">Other</Label>
-              <input
-                id="add-contact-other-area"
-                type="text"
-                placeholder="Type custom area…"
-                value={customArea}
-                onChange={(e) => setCustomArea(e.target.value)}
-                className="mt-1 w-full h-10 rounded-[10px] border border-[#e5e7eb] px-3 text-sm placeholder:text-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#3d997d]/30 focus:border-[#3d997d]"
-              />
-            </div>
-          </div>
-        </div>
 
-        {/* Footer */}
-        <DialogFooter className="px-6 py-4 border-t border-[#e5efea] bg-[#f9fafb] flex justify-between gap-3">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="rounded-[10px] border-[#e5e7eb] text-[#374151] px-5 py-2 h-auto text-sm hover:bg-white"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            className="rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white px-6 py-2 h-auto text-sm shadow-[0_4px_12px_rgba(23,102,79,0.3)] disabled:opacity-50 disabled:shadow-none"
-          >
-            Add contact
-          </Button>
-        </DialogFooter>
+            {/* Custom area inputs */}
+            {customAreas.length > 0 && (
+              <div className="space-y-2 pt-1">
+                {customAreas.map((area, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Input
+                      placeholder="New area of responsibility…"
+                      value={area}
+                      onChange={(e) => handleCustomAreaChange(index, e.target.value)}
+                      className="h-10 rounded-[10px] border-[#3d997d]/50 text-sm placeholder:text-[#9ca3af] focus:ring-2 focus:ring-[#3d997d]/30 focus:border-[#3d997d]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCustomArea(index)}
+                      className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-[#ffecef] text-[#9ca3af] hover:text-[#d5384b] transition-colors flex-shrink-0"
+                      aria-label="Remove"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer buttons when no employee selected yet */}
+          {!selectedPotential && (
+            <div className="flex justify-end pt-1">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="h-10 px-5 rounded-[10px] border-[#e5e7eb] text-[#374151] text-sm hover:bg-[#f9fafb]"
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

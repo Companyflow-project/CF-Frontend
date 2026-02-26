@@ -404,12 +404,6 @@ export const HandbookPagesPage: React.FC = () => {
                     >
                         Add theme
                     </Button>
-                    <Button
-                        variant="outline"
-                        className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
-                    >
-                        Handbook settings
-                    </Button>
                 </div>
             </div>
 
@@ -850,23 +844,23 @@ export const HandbookPagesPage: React.FC = () => {
                             </div>
                             <div className="border-t border-gray-200 pt-4">
                                 <p className="text-sm font-medium text-[#0d0e0e] mb-3">Ready to share changes?</p>
-                                <div className="flex gap-2">
+                                <div className="flex flex-col gap-2">
+                                    <Button
+                                        size="sm"
+                                        onClick={handlePublishHandbook}
+                                        disabled={!canEditHandbook || isSaving || isBulkUpdating}
+                                        className="w-full bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] h-9"
+                                    >
+                                        Publish handbook
+                                    </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={handleSaveProgress}
                                         disabled={!canEditHandbook || isSaving || isBulkUpdating}
-                                        className="flex-1 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] h-9"
+                                        className="w-full border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] h-9"
                                     >
                                         {isSaving ? 'Saving...' : 'Save progress'}
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        onClick={handlePublishHandbook}
-                                        disabled={!canEditHandbook || isSaving || isBulkUpdating}
-                                        className="flex-1 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] h-9"
-                                    >
-                                        Publish handbook
                                     </Button>
                                 </div>
                             </div>
