@@ -4,7 +4,7 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID, type HandbookPrintPageItem } from '../api';
-import { handbookRoutes } from '../routes';
+
 
 export const HandbookPrintPage: React.FC = () => {
   const [searchParams] = useSearchParams();

@@ -28,7 +28,7 @@ export const AddEmployeePage: React.FC = () => {
     isSeniorEmployee: false,
     isBusinessAdmin: false,
     sendEmail: 'no',
-    photoFile: null,
+    userPictureFid: null,
   });
 
   const validateForm = (): boolean => {
@@ -46,6 +46,12 @@ export const AddEmployeePage: React.FC = () => {
 
     if (!formData.mobileNumber.trim()) {
       newErrors.mobileNumber = 'Mobile number is required';
+    } else if (parseInt(formData.mobileNumber, 10) > 2_147_483_647) {
+      newErrors.mobileNumber = 'Mobile number exceeds system limit';
+    }
+
+    if (formData.alternateNumber && parseInt(formData.alternateNumber, 10) > 2_147_483_647) {
+      newErrors.alternateNumber = 'Alternate number exceeds system limit';
     }
 
     setErrors(newErrors);
@@ -72,13 +78,15 @@ export const AddEmployeePage: React.FC = () => {
         isPublic: formData.makeContactPublic,
         emergencyContactName: formData.emergencyName || undefined,
         emergencyContactMobile: formData.emergencyMobile || undefined,
+        // Send both field names for backward/forward backend compat
         emergencyContactIsPublic: formData.makeEmergencyPublic,
+        isEmergencyPublic: formData.makeEmergencyPublic,
         employmentType: formData.employmentType,
         status: formData.status,
         isSeniorEmployee: formData.isSeniorEmployee,
         isBusinessAdmin: formData.isBusinessAdmin,
         sendEmailType: formData.sendEmail,
-        photoFile: formData.photoFile || undefined,
+        ...(formData.userPictureFid != null && { userPictureFid: formData.userPictureFid }),
       };
 
       await employeesApi.createEmployee(payload);
@@ -89,12 +97,23 @@ export const AddEmployeePage: React.FC = () => {
       setTimeout(() => {
         navigate('/employees');
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
+      // Log the raw backend response to help diagnose validation errors
+      const backendMsg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.error ||
+        (typeof error?.response?.data === 'string' ? error.response.data : null);
+
       console.error('Error creating employee:', error);
+      console.error('Backend response body:', error?.response?.data);
+
       setGeneralError(
-        error instanceof Error
-          ? error.message
-          : 'Failed to create employee. Please try again.'
+        backendMsg
+          ? `Server error: ${backendMsg}`
+          : error instanceof Error
+            ? error.message
+            : 'Failed to create employee. Please try again.'
       );
     } finally {
       setIsSubmitting(false);

@@ -1,7 +1,7 @@
 import {
   Employee,
   Contact,
-  HandbookPage,
+  HandbookPageSummary,
   EmployeeStatus,
 } from '@/types/models';
 
@@ -18,9 +18,19 @@ export type BackendEmployeeLike = {
   companyId?: string;
   position?: string | null;
   mobileNumber?: string | null;
+  telephone?: string | null;
+  alternateNumber?: string | null;
   employmentType?: string | null;
+  employmentTitle?: string | null;
+  role?: string | null;
   recentVisits?: string | null;
-  messageCount?: number;
+  messageCount?: number | string | null;
+  /** API returns 0 or 1 (possibly as string with bigNumberStrings); we map to boolean in the frontend */
+  isPublic?: number | string | boolean | null;
+  /** API returns 0 or 1 (possibly as string with bigNumberStrings); we map to boolean in the frontend */
+  isEmergencyPublic?: number | string | boolean | null;
+  /** Rewritten CDN URI for the profile photo (public:// → /sites/default/files/) */
+  userPictureUri?: string | null;
   [key: string]: unknown;
 };
 
@@ -87,13 +97,32 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
     accountId: backend.companyId ?? '',
     name: backend.name ?? '',
     email: String(email ?? ''),
+    role: backend.role ?? undefined,
     mobileNumber: backend.mobileNumber ?? undefined,
+    alternateNumber: backend.alternateNumber ?? undefined,
+    telephone: backend.telephone ?? undefined,
     employmentType: backend.employmentType ?? undefined,
+    employmentTitle: backend.employmentTitle ?? undefined,
     recentVisitAt: backend.recentVisits ?? undefined,
-    messagesCount: backend.messageCount ?? 0,
+    messagesCount: backend.messageCount != null ? Number(backend.messageCount) : 0,
+    emergencyContactName: backend.emergencyContactName != null ? String(backend.emergencyContactName) : undefined,
+    emergencyContactMobile: backend.emergencyContactMobile != null ? String(backend.emergencyContactMobile) : undefined,
     status,
     createdAt: createdAt || '',
-    isPublic: true, // Defaulting to true as not explicitly provided in new payload, adjust if needed
+    // Map 0|1 integers (or '0'|'1' strings with bigNumberStrings) to booleans
+    isPublic:
+      backend.isPublic == null
+        ? true
+        : typeof backend.isPublic === 'boolean'
+          ? backend.isPublic
+          : Number(backend.isPublic) === 1,
+    isEmergencyPublic:
+      backend.isEmergencyPublic == null
+        ? false
+        : typeof backend.isEmergencyPublic === 'boolean'
+          ? backend.isEmergencyPublic
+          : Number(backend.isEmergencyPublic) === 1,
+    userPictureUri: backend.userPictureUri ?? null,
   };
 };
 
@@ -109,8 +138,8 @@ export const transformContact = (backend: BackendContact): Contact => {
   };
 };
 
-// Transform backend handbook page to frontend handbook page
-export const transformHandbookPage = (backend: BackendHandbookPage): HandbookPage => {
+// Transform backend handbook page to frontend handbook page summary
+export const transformHandbookPage = (backend: BackendHandbookPage): HandbookPageSummary => {
   return {
     id: String(backend.nid),
     sectionId: String(backend.handbookId), // Using handbookId as sectionId

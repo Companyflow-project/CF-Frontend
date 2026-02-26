@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { HelpBanner } from '@/components/common/help-banner';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Save, ArrowLeft, Loader2 } from 'lucide-react';
 import { employeesApi } from '../api';
 import { employeesRoutes } from '../routes';
+import { useAuth } from '@/context/auth-context';
 import type { Employee } from '@/types/models';
 
 function employeeToFormData(emp: Employee): EmployeeFormData {
@@ -16,21 +17,23 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
     mobileNumber: emp.mobileNumber ?? '',
     alternateNumber: emp.alternateNumber ?? '',
     makeContactPublic: emp.isPublic ?? false,
-    emergencyName: '',
-    emergencyMobile: '',
-    makeEmergencyPublic: false,
+    // Load existing emergency contact data from the API
+    emergencyName: emp.emergencyContactName ?? '',
+    emergencyMobile: emp.emergencyContactMobile ?? '',
+    makeEmergencyPublic: emp.isEmergencyPublic ?? false,
     employmentType: emp.employmentType ?? 'none',
     status: emp.status === 'ACTIVE',
     isSeniorEmployee: false,
     isBusinessAdmin: false,
     sendEmail: 'no',
-    photoFile: null,
+    userPictureFid: null,
   };
 }
 
 export const EditEmployeePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +41,25 @@ export const EditEmployeePage: React.FC = () => {
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<EmployeeFormData | null>(null);
+  // Ref to the latest uploaded fid — set by AddEmployeeForm via onFidRefReady.
+  // Using a ref avoids stale-closure issues: formData.userPictureFid may lag a render behind.
+  const uploadedFidRef = useRef<number | null>(null);
+  const handleFidRefReady = React.useCallback((ref: React.MutableRefObject<number | null>) => {
+    // Wire the child's internal ref into our local variable so handleSave can read it
+    (uploadedFidRef as React.MutableRefObject<number | null>).current = ref.current;
+    // Keep them in sync by replacing the ref object reference
+    Object.defineProperty(uploadedFidRef, 'current', {
+      get: () => ref.current,
+      set: (v) => { ref.current = v; },
+      configurable: true,
+    });
+  }, []);
+
+  // True when the employee being edited is the currently logged-in user
+  const isSelf = !!(employee && authUser && (
+    String(employee.id) === String(authUser.id) ||
+    employee.email.toLowerCase() === (authUser.email ?? '').toLowerCase()
+  ));
 
   useEffect(() => {
     if (!id) {
@@ -77,7 +99,14 @@ export const EditEmployeePage: React.FC = () => {
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
-    if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required';
+    if (!formData.mobileNumber.trim()) {
+      newErrors.mobileNumber = 'Mobile number is required';
+    } else if (parseInt(formData.mobileNumber, 10) > 2_147_483_647) {
+      newErrors.mobileNumber = 'Mobile number exceeds system limit';
+    }
+    if (formData.alternateNumber && parseInt(formData.alternateNumber, 10) > 2_147_483_647) {
+      newErrors.alternateNumber = 'Alternate number exceeds system limit';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -91,20 +120,26 @@ export const EditEmployeePage: React.FC = () => {
       return;
     }
     setIsSubmitting(true);
+    const fidToSend = uploadedFidRef.current ?? formData.userPictureFid;
     try {
       await employeesApi.updateEmployee(id, {
         name: formData.name,
-        email: formData.email,
+        // email is locked during edit — do not send it
         mobileNumber: formData.mobileNumber,
         alternateNumber: formData.alternateNumber || undefined,
         isPublic: formData.makeContactPublic,
         emergencyContactName: formData.emergencyName || undefined,
         emergencyContactMobile: formData.emergencyMobile || undefined,
         emergencyContactIsPublic: formData.makeEmergencyPublic,
-        employmentType: formData.employmentType,
-        status: formData.status,
-        isSeniorEmployee: formData.isSeniorEmployee,
-        isBusinessAdmin: formData.isBusinessAdmin,
+        isEmergencyPublic: formData.makeEmergencyPublic,
+        // Skip employment/permission fields when editing yourself
+        ...(!isSelf && {
+          employmentType: formData.employmentType,
+          status: formData.status,
+          isSeniorEmployee: formData.isSeniorEmployee,
+          isBusinessAdmin: formData.isBusinessAdmin,
+        }),
+        ...(fidToSend != null && { userPictureFid: fidToSend }),
       });
       setSuccessMessage('Employee updated successfully!');
       setTimeout(() => navigate(employeesRoutes.list), 1500);
@@ -181,7 +216,15 @@ export const EditEmployeePage: React.FC = () => {
           </div>
         )}
 
-        <AddEmployeeForm formData={formData} onChange={setFormData} errors={errors} />
+        <AddEmployeeForm
+          formData={formData}
+          onChange={setFormData}
+          errors={errors}
+          isEditMode
+          isSelf={isSelf}
+          existingPhotoUri={employee.userPictureUri ?? null}
+          onFidRefReady={handleFidRefReady}
+        />
       </div>
     </PageShell>
   );

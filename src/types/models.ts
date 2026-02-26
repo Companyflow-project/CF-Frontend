@@ -24,6 +24,7 @@ export interface Employee {
   accountId: string;
   name: string;
   email: string;
+  role?: string;
   mobileNumber?: string;
   alternateNumber?: string;
   telephone?: string;
@@ -31,9 +32,18 @@ export interface Employee {
   employmentTitle?: string;
   recentVisitAt?: string | null;
   messagesCount?: number;
+  /** Emergency contact name (relative) */
+  emergencyContactName?: string;
+  /** Emergency contact mobile number (relative's phone) */
+  emergencyContactMobile?: string;
+  /** Profile visibility — maps from API's isPublic: 0|1 */
   isPublic?: boolean;
+  /** Emergency contact visibility — maps from API's isEmergencyPublic: 0|1 */
+  isEmergencyPublic?: boolean;
   status: EmployeeStatus;
   createdAt: string;
+  /** Drupal CDN URI for the employee's profile photo (already rewritten from public://) */
+  userPictureUri?: string | null;
 }
 
 export interface HandbookSection {

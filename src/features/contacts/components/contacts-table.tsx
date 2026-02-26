@@ -99,21 +99,25 @@ function ContactsTableInner({
                 <div className="space-y-1 text-xs text-[#0d0e0e]">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        contact.isPublic ? 'bg-[#2f946f]' : 'bg-[#a15c00]'
-                      }`}
+                      className={`h-2.5 w-2.5 rounded-full ${contact.isPublic ? 'bg-[#2f946f]' : 'bg-[#a15c00]'
+                        }`}
                     />
                     <span>{contact.isPublic ? 'Public' : 'Private'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#1a5948]" />
-                    <span>{contact.isEmployeeContact ? 'Existing contact' : 'External contact'}</span>
+                    <span>
+                      {contact.isEmployeeContact
+                        ? 'Employee'
+                        : contact.isExternalContact
+                          ? 'External contact'
+                          : 'Contact'}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'
-                      }`}
+                      className={`h-2.5 w-2.5 rounded-full ${contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'
+                        }`}
                     />
                     <span>{contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span>
                   </div>

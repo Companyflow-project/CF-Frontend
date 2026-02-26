@@ -10,7 +10,6 @@ import {
     List,
     ListOrdered,
     Link as LinkIcon,
-    Heading2,
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -55,7 +54,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     React.useEffect(() => {
         if (editor && content !== editor.getHTML() && !editor.isFocused) {
-            editor.commands.setContent(content, false);
+            editor.commands.setContent(content, { emitUpdate: false });
         }
     }, [content, editor]);
 

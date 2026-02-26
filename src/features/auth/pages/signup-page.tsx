@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '../hooks';
 import { authApi } from '../api';
 import { authRoutes } from '../routes';
+import { TermsModal } from '../components/terms-modal';
 import loginLogoUrl from '/assets/Login-Logo.svg';
 
 export const SignupPage: React.FC = () => {
@@ -16,10 +17,20 @@ export const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { setUserFromRegister } = useAuth();
   const navigate = useNavigate();
+
+  // Button is only active when every required field has a value AND terms are ticked
+  const canSubmit =
+    name.trim() !== '' &&
+    companyName.trim() !== '' &&
+    cvr.trim() !== '' &&
+    email.trim() !== '' &&
+    password.trim() !== '' &&
+    termsAccepted;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,14 +151,8 @@ export const SignupPage: React.FC = () => {
               </p>
             )}
             <div className="flex flex-col gap-3">
-              <Button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-50"
-              >
-                {submitting ? 'Opretter…' : 'Prov gratis'}
-              </Button>
-              <div className="flex items-center justify-center gap-2">
+              {/* Terms checkbox */}
+              <div className="flex items-center gap-2">
                 <Checkbox
                   id="terms"
                   checked={termsAccepted}
@@ -156,11 +161,26 @@ export const SignupPage: React.FC = () => {
                 />
                 <Label
                   htmlFor="terms"
-                  className="text-[14px] font-normal text-[#0d0e0e] cursor-pointer underline"
+                  className="text-[14px] font-normal text-[#0d0e0e] cursor-pointer"
                 >
-                  Vilkår og betingelser
+                  Jeg accepterer{' '}
+                  <button
+                    type="button"
+                    onClick={() => setTermsOpen(true)}
+                    className="underline text-[#1a5948] hover:text-[#143e33] transition-colors font-medium"
+                  >
+                    vilkår og betingelser
+                  </button>
                 </Label>
               </div>
+
+              <Button
+                type="submit"
+                disabled={!canSubmit || submitting}
+                className="w-full bg-[#1a5948] hover:bg-[#143e33] active:bg-[#0f2e26] text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {submitting ? 'Opretter…' : 'Prov gratis'}
+              </Button>
             </div>
 
             {/* Login Link */}
@@ -178,6 +198,13 @@ export const SignupPage: React.FC = () => {
           </div>
         </form>
       </div>
+
+      {/* Terms & Conditions modal */}
+      <TermsModal
+        open={termsOpen}
+        onClose={() => setTermsOpen(false)}
+        onAccept={() => setTermsAccepted(true)}
+      />
     </div>
   );
 };

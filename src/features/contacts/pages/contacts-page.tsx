@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useContacts } from '../hooks';
+import { useEmployees } from '@/lib/api-hooks';
+import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { Menu, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
@@ -27,7 +29,7 @@ import type { Contact } from '@/types/models';
 export const ContactsPage: React.FC = () => {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
-  const [showInactive, setShowInactive] = useState(false);
+  const [showInactive, setShowInactive] = useState(true);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [addExternalModalOpen, setAddExternalModalOpen] = useState(false);
@@ -42,6 +44,38 @@ export const ContactsPage: React.FC = () => {
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: contacts, error: contactsError, refetch: refetchContacts } = useContacts();
+  const { data: apiEmployees } = useEmployees({ limit: 1000 });
+
+  // Merge ALL company employees into the contacts list (public and private).
+  // The /api/contacts endpoint returns empty strings for email, so de-duplicate by normalized name.
+  const mergedContacts = useMemo(() => {
+    const employees = (apiEmployees as unknown as BackendEmployeeLike[] | undefined ?? [])
+      .map(transformEmployee)
+      .map((emp) => ({
+        id: `emp-${emp.id}`,
+        accountId: emp.accountId,
+        name: emp.name,
+        email: emp.email,
+        telephone: emp.mobileNumber ?? emp.telephone,
+        isPublic: emp.isPublic,
+        isEmployeeContact: true,
+        isExternalContact: false,
+        status: emp.status,
+        createdAt: emp.createdAt,
+      }) satisfies import('@/types/models').Contact);
+
+    // De-duplicate against existing contacts by normalized name
+    // (email can't be used — the contacts endpoint returns empty strings for email)
+    const existingNames = new Set(
+      contacts.map((c) => c.name.trim().toLowerCase())
+    );
+
+    const newEmployees = employees.filter(
+      (emp) => !existingNames.has(emp.name.trim().toLowerCase())
+    );
+
+    return [...contacts, ...newEmployees];
+  }, [contacts, apiEmployees]);
 
   // Open add or import from console redirect (?open=add | ?open=import)
   useEffect(() => {
@@ -61,7 +95,7 @@ export const ContactsPage: React.FC = () => {
   }, [searchParams, setSearchParams]);
 
   const filteredContacts = useMemo(() => {
-    let result = contacts;
+    let result = mergedContacts;
     if (!showInactive) {
       result = result.filter((c) => c.status !== 'INACTIVE');
     }
@@ -78,25 +112,25 @@ export const ContactsPage: React.FC = () => {
       );
     }
     return result;
-  }, [contacts, search, showInactive, publicOnly]);
+  }, [mergedContacts, search, showInactive, publicOnly]);
 
   const employeeContacts = useMemo(
-    () => contacts.filter((c) => c.isEmployeeContact),
-    [contacts],
+    () => mergedContacts.filter((c) => c.isEmployeeContact),
+    [mergedContacts],
   );
 
   const externalContacts = useMemo(
-    () => contacts.filter((c) => c.isExternalContact),
-    [contacts],
+    () => mergedContacts.filter((c) => c.isExternalContact),
+    [mergedContacts],
   );
 
   const visibilityStats = useMemo(() => ({
-    publicProfiles: contacts.filter((c) => c.isPublic).length,
-    inactive: contacts.filter((c) => c.status === 'INACTIVE').length,
+    publicProfiles: mergedContacts.filter((c) => c.isPublic).length,
+    inactive: mergedContacts.filter((c) => c.status === 'INACTIVE').length,
     employee: employeeContacts.length,
     external: externalContacts.length,
-    total: contacts.length,
-  }), [contacts, employeeContacts.length, externalContacts.length]);
+    total: mergedContacts.length,
+  }), [mergedContacts, employeeContacts.length, externalContacts.length]);
 
   const handleSelect = useCallback((id: string) => {
     setSelectedIds((prev) =>
@@ -438,11 +472,10 @@ export const ContactsPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                 <button
                   type="button"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${
-                    showInactive
-                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
-                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${showInactive
+                    ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                    : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                    }`}
                   onClick={() => setShowInactive((v) => !v)}
                 >
                   <Checkbox
@@ -454,11 +487,10 @@ export const ContactsPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${
-                    publicOnly
-                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
-                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${publicOnly
+                    ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                    : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                    }`}
                   onClick={() => setPublicOnly((v) => !v)}
                 >
                   <Checkbox
@@ -511,14 +543,12 @@ export const ContactsPage: React.FC = () => {
           <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div
-                className={`h-3 w-3 rounded-[4px] ${
-                  selectedIds.length > 0 ? 'bg-[#1a5948]' : 'bg-[#cfd6d4]'
-                }`}
+                className={`h-3 w-3 rounded-[4px] ${selectedIds.length > 0 ? 'bg-[#1a5948]' : 'bg-[#cfd6d4]'
+                  }`}
               />
               <span
-                className={`text-sm ${
-                  selectedIds.length > 0 ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
-                }`}
+                className={`text-sm ${selectedIds.length > 0 ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
+                  }`}
               >
                 {selectedIds.length} selected
               </span>

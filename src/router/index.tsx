@@ -21,6 +21,8 @@ const EmployeeStatsAllPage = lazy(() => import('@/features/employees/pages/emplo
 const EmployeeStatsDetailPage = lazy(() => import('@/features/employees/pages/employee-stats-detail-page').then((m) => ({ default: m.EmployeeStatsDetailPage })));
 const EmployeeMessageLogsAllPage = lazy(() => import('@/features/employees/pages/employee-message-logs-all-page').then((m) => ({ default: m.EmployeeMessageLogsAllPage })));
 const EmployeeMessageLogsDetailPage = lazy(() => import('@/features/employees/pages/employee-message-logs-detail-page').then((m) => ({ default: m.EmployeeMessageLogsDetailPage })));
+const InformationListPage = lazy(() => import('@/features/employees/pages/information-list-page').then((m) => ({ default: m.InformationListPage })));
+const InformationListLinksPage = lazy(() => import('@/features/employees/pages/information-list-links-page').then((m) => ({ default: m.InformationListLinksPage })));
 const ManageHandbookPage = lazy(() => import('@/features/handbook/pages/manage-handbook-page').then((m) => ({ default: m.ManageHandbookPage })));
 const HandbookPagesPage = lazy(() => import('@/features/handbook/pages/handbook-pages-page').then((m) => ({ default: m.HandbookPagesPage })));
 const HandbookPageEditPage = lazy(() => import('@/features/handbook/pages/handbook-page-edit-page').then((m) => ({ default: m.HandbookPageEditPage })));
@@ -187,6 +189,26 @@ export const AppRouter: React.FC = () => {
               <RequireAuth>
                 <AppLayout>
                   <EmployeeMessageLogsDetailPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={employeesRoutes.informationList}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <InformationListPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={employeesRoutes.informationListLinks}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <InformationListLinksPage />
                 </AppLayout>
               </RequireAuth>
             }

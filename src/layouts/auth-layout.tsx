@@ -15,14 +15,32 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
 }) => {
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Left Column - Form Section (446px width) */}
-      <div className="w-[446px] flex items-start pt-[29px] pl-[73px] bg-white">
-        {children}
+      {/* Left Column — Form panel */}
+      <div
+        className="w-[460px] flex-shrink-0 flex flex-col bg-white relative"
+        style={{ boxShadow: '4px 0 24px rgba(26,89,72,0.07)' }}
+      >
+        {/* Form content */}
+        <div className="flex-1 flex items-start pt-10 pl-12 pr-10 pb-10">
+          {children}
+        </div>
       </div>
 
-      {/* Right Column - Promotional Section */}
-      <div className="flex-1 relative bg-white overflow-hidden min-h-screen">
-        {/* Diagram/Asset 2 - Covers the whole right side as background */}
+      {/* Gradient Vertical Divider */}
+      <div className="relative w-px flex-shrink-0 self-stretch">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to bottom, transparent 0%, #1a5948 25%, #1a5948 75%, transparent 100%)',
+            opacity: 0.35,
+          }}
+        />
+      </div>
+
+      {/* Right Column — Promotional Section */}
+      <div className="flex-1 relative bg-[#f8faf9] overflow-hidden min-h-screen">
+        {/* Diagram background */}
         <div className="absolute inset-0 pointer-events-none">
           <img
             src={signupBackgroundUrl}
@@ -31,7 +49,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           />
         </div>
 
-        {/* Wavy Background Shapes - Design 1 (Smaller, positioned to the right) */}
+        {/* Decorative wavy shape */}
         <div className="absolute right-20 top-1/2 -translate-y-1/2 pointer-events-none z-0">
           <div className="w-[700px] h-[800px]">
             <img
@@ -42,14 +60,13 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           </div>
         </div>
 
-        {/* Content Area - Text overlay */}
+        {/* Hero text */}
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center px-8">
-          {/* Text Section */}
-          <div className="w-full max-w-[967px] flex flex-col items-center gap-2.5 text-center">
-            <h1 className="text-[40px] font-bold text-[#1a5948] capitalize leading-normal">
+          <div className="w-full max-w-[700px] flex flex-col items-center gap-4 text-center">
+            <h1 className="text-[38px] font-bold text-[#1a5948] leading-tight">
               {heroTitle}
             </h1>
-            <p className="text-[24px] font-normal text-[#0d0e0e] leading-normal max-w-[835px]">
+            <p className="text-[20px] font-normal text-[#374151] leading-relaxed max-w-[580px]">
               {heroSubtitle}
             </p>
           </div>

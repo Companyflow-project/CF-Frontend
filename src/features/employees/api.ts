@@ -88,30 +88,32 @@ export const employeesApi = {
     emergencyContactName?: string;
     emergencyContactMobile?: string;
     emergencyContactIsPublic?: boolean;
+    /** Alias accepted by the backend; sent alongside emergencyContactIsPublic */
+    isEmergencyPublic?: boolean;
     employmentType?: string;
     status?: boolean;
     isSeniorEmployee?: boolean;
     isBusinessAdmin?: boolean;
     sendEmailType?: string;
-    photoFile?: File;
+    /** fid returned from POST /files — links the uploaded photo to the employee */
+    userPictureFid?: number;
   }): Promise<Employee> {
-    // Backend expects JSON, not FormData
-    // Note: photoFile is not sent in this implementation
-    // If photo upload is needed, it should be handled via a separate endpoint
     const requestBody = {
       name: payload.name,
       email: payload.email,
       mobileNumber: payload.mobileNumber,
+      status: payload.status,
+      isPublic: payload.isPublic ?? false,
       ...(payload.alternateNumber && { alternateNumber: payload.alternateNumber }),
-      ...(payload.isPublic !== undefined && { isPublic: payload.isPublic }),
       ...(payload.emergencyContactName && { emergencyContactName: payload.emergencyContactName }),
       ...(payload.emergencyContactMobile && { emergencyContactMobile: payload.emergencyContactMobile }),
       ...(payload.emergencyContactIsPublic !== undefined && { emergencyContactIsPublic: payload.emergencyContactIsPublic }),
-      ...(payload.employmentType && { employmentType: payload.employmentType }),
-      ...(payload.status !== undefined && { status: payload.status }),
+      ...(payload.isEmergencyPublic !== undefined && { isEmergencyPublic: payload.isEmergencyPublic }),
+      // employmentType accepts string | number; omit the 'none' sentinel
+      ...(payload.employmentType && payload.employmentType !== 'none' && { employmentType: payload.employmentType }),
       ...(payload.isSeniorEmployee !== undefined && { isSeniorEmployee: payload.isSeniorEmployee }),
       ...(payload.isBusinessAdmin !== undefined && { isBusinessAdmin: payload.isBusinessAdmin }),
-      ...(payload.sendEmailType && { sendEmailType: payload.sendEmailType }),
+      // NOTE: sendEmailType is NOT in the backend createEmployeeSchema — do not send it
     };
 
     const response = await axiosClient.post<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>('/employees', requestBody);
@@ -134,11 +136,15 @@ export const employeesApi = {
       emergencyContactName?: string;
       emergencyContactMobile?: string;
       emergencyContactIsPublic?: boolean;
+      /** Alias accepted by the backend; sent alongside emergencyContactIsPublic */
+      isEmergencyPublic?: boolean;
       employmentType?: string;
       employmentTitle?: string;
       status?: boolean;
       isSeniorEmployee?: boolean;
       isBusinessAdmin?: boolean;
+      /** fid returned from POST /files — links the uploaded photo to the employee */
+      userPictureFid?: number;
     }
   ): Promise<Employee> {
     const requestBody: Record<string, unknown> = {};
@@ -150,12 +156,15 @@ export const employeesApi = {
     if (payload.isPublic !== undefined) requestBody.isPublic = payload.isPublic;
     if (payload.emergencyContactName !== undefined) requestBody.emergencyContactName = payload.emergencyContactName;
     if (payload.emergencyContactMobile !== undefined) requestBody.emergencyContactMobile = payload.emergencyContactMobile;
+    // Send both field names for backward/forward compat
     if (payload.emergencyContactIsPublic !== undefined) requestBody.emergencyContactIsPublic = payload.emergencyContactIsPublic;
+    if (payload.isEmergencyPublic !== undefined) requestBody.isEmergencyPublic = payload.isEmergencyPublic;
     if (payload.employmentType !== undefined) requestBody.employmentType = payload.employmentType;
     if (payload.employmentTitle !== undefined) requestBody.employmentTitle = payload.employmentTitle;
     if (payload.status !== undefined) requestBody.status = payload.status;
     if (payload.isSeniorEmployee !== undefined) requestBody.isSeniorEmployee = payload.isSeniorEmployee;
     if (payload.isBusinessAdmin !== undefined) requestBody.isBusinessAdmin = payload.isBusinessAdmin;
+    if (payload.userPictureFid != null) requestBody.userPictureFid = payload.userPictureFid;
 
     const response = await axiosClient.patch<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>(
       `/employees/${id}`,
@@ -219,6 +228,23 @@ export const employeesApi = {
       data: response.data as EmployeeMessageLog[],
       meta: undefined,
     };
+  },
+  /**
+   * Upload a profile photo for an employee.
+   * Step 1 of the two-step photo flow: POST /files with multipart/form-data.
+   * Returns { fid, uri } — pass fid as userPictureFid in the subsequent PATCH.
+   */
+  async uploadProfilePhoto(file: File): Promise<{ fid: number; uri: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosClient.post<{ fid: number; uri?: string }>(
+      '/files',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    const fid = response.data?.fid;
+    if (!fid) throw new Error('Upload succeeded but no fid was returned.');
+    return { fid, uri: response.data.uri ?? '' };
   },
 };
 

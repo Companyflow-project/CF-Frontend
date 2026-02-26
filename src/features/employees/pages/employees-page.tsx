@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
+import { accountRoutes } from '@/features/account/routes';
 import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -21,12 +22,14 @@ import {
 } from '@/components/ui/dialog';
 import { employeesApi } from '../api';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/auth-context';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [showInactive, setShowInactive] = useState(false);
+  const [showInactive, setShowInactive] = useState(true);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,13 +50,11 @@ export const EmployeesPage: React.FC = () => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 300); // Wait 300ms after user stops typing
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Use server-side search when search query exists
-  // The hook now handles companyId from auth context automatically
   const { data: apiEmployees, loading, error, refetch } = useEmployees(
     {
       search: debouncedSearch.trim() || undefined,
@@ -61,17 +62,13 @@ export const EmployeesPage: React.FC = () => {
     }
   );
 
-  // Transform API employees to model employees (API shape may be id/email or uid/mail)
   const employees = useMemo(() => {
     if (!apiEmployees) return [];
     return (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
   }, [apiEmployees]);
 
-  // Client-side filtering (only for inactive/public filters, NOT search)
   const filteredEmployees = useMemo(() => {
-    let filtered = employees;
-
-    // Search is now handled server-side, so we don't filter by search here
+    let filtered = [...employees];
 
     if (!showInactive) {
       filtered = filtered.filter((emp) => emp.status !== 'INACTIVE');
@@ -81,10 +78,19 @@ export const EmployeesPage: React.FC = () => {
       filtered = filtered.filter((emp) => emp.isPublic);
     }
 
+    // Ensure company admins are listed at the very top
+    filtered.sort((a, b) => {
+      const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
+      const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
+      return 0;
+    });
+
     return filtered;
   }, [employees, showInactive, publicOnly]);
 
-  // Client-side pagination
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -92,7 +98,6 @@ export const EmployeesPage: React.FC = () => {
     return filteredEmployees.slice(startIndex, endIndex);
   }, [filteredEmployees, currentPage, itemsPerPage]);
 
-  // Reset to page 1 when filters change
   React.useEffect(() => {
     setCurrentPage(1);
   }, [search, showInactive, publicOnly]);
@@ -122,7 +127,7 @@ export const EmployeesPage: React.FC = () => {
     try {
       await employeesApi.deleteEmployee(deleteDialog.employeeId);
       setDeleteDialog({ isOpen: false, employeeId: null, employeeName: '' });
-      // Refresh the list
+      setSelectedIds((prev) => prev.filter((id) => id !== deleteDialog.employeeId));
       refetch();
     } catch (err) {
       console.error('Failed to delete employee:', err);
@@ -130,6 +135,60 @@ export const EmployeesPage: React.FC = () => {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const [isBulkBusy, setIsBulkBusy] = useState(false);
+
+  // Set visibility for a list of ids
+  const handleSetVisibility = async (ids: string[], isPublic: boolean) => {
+    if (ids.length === 0) return;
+    setIsBulkBusy(true);
+    try {
+      await Promise.all(ids.map((id) => employeesApi.updateEmployee(id, { isPublic })));
+      toast.success(`${ids.length} employee${ids.length > 1 ? 's' : ''} set to ${isPublic ? 'public' : 'private'}`);
+      refetch();
+    } catch {
+      toast.error('Some updates failed. Please try again.');
+    } finally {
+      setIsBulkBusy(false);
+    }
+  };
+
+  // Deactivate selected employees
+  const handleDeactivateSelected = async () => {
+    if (selectedIds.length === 0) return;
+    setIsBulkBusy(true);
+    try {
+      await Promise.all(selectedIds.map((id) => employeesApi.updateEmployee(id, { status: false })));
+      toast.success(`${selectedIds.length} employee${selectedIds.length > 1 ? 's' : ''} deactivated`);
+      setSelectedIds([]);
+      refetch();
+    } catch {
+      toast.error('Some updates failed. Please try again.');
+    } finally {
+      setIsBulkBusy(false);
+    }
+  };
+
+  // Delete all selected (runs sequentially; stops on first error)
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    // Confirm via simple window confirm for bulk delete
+    if (!window.confirm(`Delete ${selectedIds.length} selected employee${selectedIds.length > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    setIsBulkBusy(true);
+    let failed = 0;
+    for (const id of selectedIds) {
+      try {
+        await employeesApi.deleteEmployee(id);
+      } catch {
+        failed++;
+      }
+    }
+    if (failed > 0) toast.error(`${failed} deletion${failed > 1 ? 's' : ''} failed.`);
+    else toast.success(`${selectedIds.length} employee${selectedIds.length > 1 ? 's' : ''} deleted`);
+    setSelectedIds([]);
+    setIsBulkBusy(false);
+    refetch();
   };
 
   const hasSelection = selectedIds.length > 0;
@@ -162,11 +221,19 @@ export const EmployeesPage: React.FC = () => {
         title="Manage Employees"
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {/* ordered to match mockup: View as an employee | View Information List | More licenses | Add employee */}
             <Button
-              onClick={() => navigate(employeesRoutes.add)}
-              className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
+              variant="outline"
+              className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
             >
-              Add employee
+              View as an employee
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate(employeesRoutes.informationList)}
+              className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
+            >
+              View Information List
             </Button>
             <Button
               variant="outline"
@@ -175,14 +242,15 @@ export const EmployeesPage: React.FC = () => {
               More licenses
             </Button>
             <Button
-              variant="outline"
-              className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
+              onClick={() => navigate(employeesRoutes.add)}
+              className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
             >
-              View as an employee
+              Add employee
             </Button>
           </div>
         }
       />
+
       {/* help banner */}
       <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -203,16 +271,17 @@ export const EmployeesPage: React.FC = () => {
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
           >
-            User Manual
+            User manual
           </Button>
         </div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6 overflow-hidden">
-        <div className="flex flex-col overflow-hidden">
+        <div className="flex flex-col gap-4 overflow-hidden">
           {/* employee tools + table card */}
-          <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] flex-1 flex flex-col overflow-hidden">
-            <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+          <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] flex flex-col overflow-hidden">
+            {/* search + filter bar */}
+            <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4 px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
               <div className="relative w-full lg:max-w-sm">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
                 <Input
@@ -262,7 +331,8 @@ export const EmployeesPage: React.FC = () => {
               </div>
             </div>
 
-            <CardContent className="pt-6 flex-1 flex flex-col overflow-hidden">
+            <CardContent className="pt-5 pb-0 flex-1 flex flex-col overflow-hidden">
+              {/* sort + set all bar */}
               <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1]">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
@@ -294,20 +364,23 @@ export const EmployeesPage: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white"
+                    disabled={isBulkBusy || employees.length === 0}
+                    onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), false)}
+                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
                   >
                     Set all to private
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white"
+                    disabled={isBulkBusy || employees.length === 0}
+                    onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), true)}
+                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
                   >
                     Set all to public
                   </Button>
                 </div>
               </div>
-
 
               {!loading && !error && employees.length === 0 && (
                 <div className="flex flex-col items-center gap-3 py-6">
@@ -324,7 +397,8 @@ export const EmployeesPage: React.FC = () => {
                   </Button>
                 </div>
               )}
-              <div className="min-h-0 overflow-auto max-h-[calc(100vh-320px)]">
+
+              <div className="min-h-0 overflow-auto max-h-[calc(100vh-360px)]">
                 <EmployeesTable
                   employees={paginatedEmployees}
                   selectedIds={selectedIds}
@@ -336,10 +410,12 @@ export const EmployeesPage: React.FC = () => {
                   onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
                   emptyStateTitle="No employees"
                   emptyStateDescription="Try refetching or add your first employee."
+                  currentUserEmail={authUser?.email ?? undefined}
                 />
               </div>
+
               {filteredEmployees.length > itemsPerPage && (
-                <div className="flex items-center justify-between pt-6 mt-4 border-t border-[#d5e7e1] px-2">
+                <div className="flex items-center justify-between pt-4 mt-2 border-t border-[#d5e7e1] px-2 pb-2">
                   <div className="text-sm text-[#6b7475]">
                     Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
                   </div>
@@ -369,83 +445,87 @@ export const EmployeesPage: React.FC = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
 
-          {/* bulk actions bar */}
-          <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div
-              className="flex items-center gap-3 cursor-pointer h-10"
-              onClick={() => {
-                if (hasSelection) {
-                  setSelectedIds([]);
-                } else {
-                  setSelectedIds(filteredEmployees.map((emp) => emp.id));
-                }
-              }}
-            >
+            {/* bulk actions bar — inside the table card at the bottom */}
+            <div className="border-t border-[#e5efea] px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-b-[22px]">
               <div
-                className={`h-4 w-4 rounded-[4px] border ${hasSelection ? 'bg-[#1a5948] border-[#1a5948]' : 'bg-transparent border-[#cfd6d4]'
-                  }`}
-              />
-              <span
-                className={`text-sm whitespace-nowrap ${hasSelection ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
-                  }`}
+                className="flex items-center gap-3 cursor-pointer h-9"
+                onClick={() => {
+                  if (hasSelection) {
+                    setSelectedIds([]);
+                  } else {
+                    setSelectedIds(filteredEmployees.map((emp) => emp.id));
+                  }
+                }}
               >
-                {selectedIds.length} selected
-              </span>
+                <div
+                  className={`h-4 w-4 rounded-[4px] border ${hasSelection ? 'bg-[#1a5948] border-[#1a5948]' : 'bg-transparent border-[#cfd6d4]'
+                    }`}
+                />
+                <span
+                  className={`text-sm whitespace-nowrap ${hasSelection ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
+                    }`}
+                >
+                  {selectedIds.length} selected
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasSelection || isBulkBusy}
+                  className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
+                >
+                  Send message
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasSelection || isBulkBusy}
+                  onClick={() => handleSetVisibility(selectedIds, true)}
+                  className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
+                >
+                  Set selected public
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasSelection || isBulkBusy}
+                  onClick={() => handleSetVisibility(selectedIds, false)}
+                  className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
+                >
+                  Set selected private
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasSelection || isBulkBusy}
+                  onClick={handleDeactivateSelected}
+                  className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
+                >
+                  Deactivate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasSelection || isBulkBusy}
+                  onClick={handleDeleteSelected}
+                  className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50"
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasSelection}
-                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-              >
-                Send message
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasSelection}
-                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-              >
-                Set selected public
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasSelection}
-                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-              >
-                Set selected private
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasSelection}
-                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-              >
-                Deactivate
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!hasSelection}
-                className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13.3px] px-5 h-10 bg-white"
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
+          </Card>
         </div>
 
         <div className="space-y-4">
           {/* license usage card */}
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold text-[#0f172a]">License usage</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-0">
+            <CardContent className="space-y-0 px-6 pb-0">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses in subscription</span>
                 <span className="text-sm font-bold text-[#0f172a]">5</span>
@@ -463,16 +543,18 @@ export const EmployeesPage: React.FC = () => {
                 <span className="text-sm font-bold text-[#0f172a]">0</span>
               </div>
             </CardContent>
-            <CardFooter className="flex gap-2 pt-2 justify-end">
+            <CardFooter className="flex gap-2 pt-4 pb-4 px-6 justify-start">
               <Button
                 variant="outline"
-                className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px]"
+                size="sm"
+                className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px] text-xs px-4"
               >
                 More licenses
               </Button>
               <Button
                 variant="outline"
-                className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px]"
+                size="sm"
+                className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px] text-xs px-4"
               >
                 Manage SMS
               </Button>
@@ -481,19 +563,20 @@ export const EmployeesPage: React.FC = () => {
 
           {/* shortcuts card */}
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold text-[#0f172a]">Shortcuts</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {[
-                'Company settings',
-                'Employment types',
-                'Departments',
-                'Import CSV',
-              ].map((label) => (
+            <CardContent className="space-y-2 px-6 pb-5">
+              {([
+                { label: 'Company settings', route: accountRoutes.editCompanyProfile },
+                { label: 'Employment types', route: accountRoutes.employmentTypes },
+                { label: 'Departments', route: accountRoutes.departments },
+                { label: 'Import CSV', route: null },
+              ] as { label: string; route: string | null }[]).map(({ label, route }) => (
                 <button
                   key={label}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-[10px] border border-[rgba(88,172,146,0.5)] text-left hover:bg-[#f0f7f5] transition-colors"
+                  onClick={() => route && navigate(route)}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-[10px] border border-[rgba(88,172,146,0.5)] text-left hover:bg-[#f0f7f5] transition-colors ${!route ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <span className="text-sm text-[#0d0e0e]">{label}</span>
                   <span className="text-base leading-[1] text-[#1d1f1f]">⇢</span>
@@ -503,6 +586,7 @@ export const EmployeesPage: React.FC = () => {
           </Card>
         </div>
       </div>
+
       <Dialog
         open={deleteDialog.isOpen}
         onOpenChange={(isOpen) =>
