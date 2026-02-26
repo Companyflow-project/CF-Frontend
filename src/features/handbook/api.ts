@@ -50,6 +50,17 @@ interface BulkActionResponse {
   updatedCount: number;
 }
 
+type ReorderUpdate = {
+  nid: number;
+  pid: number;
+  weight: number;
+};
+
+interface ReorderHandbookResponse {
+  success: boolean;
+  updatedCount: number;
+}
+
 /** Viewer page meta: receipt requirement and tracking status (from page details response). */
 export interface HandbookViewerPageMeta {
   field_receipt_value: number;
@@ -350,6 +361,21 @@ export const handbookApi = {
       }
       throw error;
     }
+  },
+
+  /**
+   * Reorder chapters/pages within a handbook.
+   * PATCH /api/handbook/reorder
+   */
+  async reorderHandbook(
+    bid: number,
+    updates: ReorderUpdate[],
+  ): Promise<ReorderHandbookResponse> {
+    const response = await axiosClient.patch<ReorderHandbookResponse>('/handbook/reorder', {
+      bid,
+      updates,
+    });
+    return response.data;
   },
 
   /**

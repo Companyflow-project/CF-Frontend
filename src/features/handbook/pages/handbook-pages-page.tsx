@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, GripVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
 import { AddThemeModal } from '../components/add-theme-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
-import { handbookApi } from '../api';
+import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
 import { handbookRoutes } from '../routes';
 import type { HandbookNode } from '@/types/models';
 import { useAuth } from '@/context/auth-context';
@@ -34,12 +34,21 @@ export const HandbookPagesPage: React.FC = () => {
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
+    // For now we always reorder the main Employee Handbook (bid = DEFAULT_HANDBOOK_PRINT_BID).
+    const BOOK_ID = DEFAULT_HANDBOOK_PRINT_BID;
+
     // Sneak Peek modal state
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
 
     // Focused (highlighted) page for Preview Handbook
     const [focusedPageId, setFocusedPageId] = useState<number | null>(null);
+    const [draggingPageId, setDraggingPageId] = useState<number | null>(null);
+    const [draggingChapterId, setDraggingChapterId] = useState<number | null>(null);
+    const [dragOverPageId, setDragOverPageId] = useState<number | null>(null);
+    const [dragDropPosition, setDragDropPosition] = useState<'top' | 'bottom' | null>(null);
+    const [dragOverChapterId, setDragOverChapterId] = useState<number | null>(null);
+    const [dragChapterDropPosition, setDragChapterDropPosition] = useState<'left' | 'right' | null>(null);
 
     useEffect(() => {
         const fetchHandbookTree = async () => {
@@ -204,6 +213,105 @@ export const HandbookPagesPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const applyPageOrder = async (chapterId: number, orderedPages: HandbookNode[]) => {
+        // Optimistic local update
+        setHandbookTree((prev) =>
+            prev.map((node) =>
+                node.type === 'chapter' && node.id === chapterId
+                    ? { ...node, pages: orderedPages }
+                    : node,
+            ),
+        );
+
+        const updates = orderedPages.map((p, index) => ({
+            nid: p.id,
+            pid: chapterId,
+            weight: index,
+        }));
+
+        try {
+            if (!BOOK_ID) {
+                throw new Error('Handbook id is not loaded yet.');
+            }
+            await handbookApi.reorderHandbook(BOOK_ID, updates);
+        } catch (err: any) {
+            console.error('Failed to reorder pages:', err);
+            toast.error(err.message || 'Failed to reorder pages. Changes were reverted.');
+            await refreshHandbookTree();
+        }
+    };
+
+    const movePageTo = (sourceId: number, targetId: number, dropPosition: 'top' | 'bottom' = 'bottom') => {
+        if (activeChapterId == null) return;
+        const chapter = handbookTree.find(
+            (node) => node.type === 'chapter' && node.id === activeChapterId,
+        );
+        if (!chapter || !chapter.pages || chapter.pages.length === 0) return;
+
+        const pages = [...chapter.pages];
+        const fromIndex = pages.findIndex((p) => p.id === sourceId);
+        if (fromIndex === -1) return;
+
+        const originalToIndex = pages.findIndex((p) => p.id === targetId);
+        if (originalToIndex === -1 || fromIndex === originalToIndex) return;
+
+        const [moved] = pages.splice(fromIndex, 1);
+
+        let toIndex = pages.findIndex((p) => p.id === targetId);
+
+        if (dropPosition === 'bottom') {
+            toIndex += 1;
+        }
+
+        pages.splice(toIndex, 0, moved);
+
+        void applyPageOrder(chapter.id, pages);
+    };
+
+    const applyChapterOrder = async (orderedChapters: HandbookNode[]) => {
+        // Optimistic local update
+        setHandbookTree((prev) => {
+            const nonChapters = prev.filter((p) => p.type !== 'chapter');
+            return [...orderedChapters, ...nonChapters];
+        });
+
+        const updates = orderedChapters.map((ch, index) => ({
+            nid: ch.id,
+            pid: BOOK_ID,
+            weight: index,
+        }));
+
+        try {
+            await handbookApi.reorderHandbook(BOOK_ID, updates);
+        } catch (err: any) {
+            console.error('Failed to reorder themes:', err);
+            toast.error(err.message || 'Failed to reorder themes. Changes were reverted.');
+            await refreshHandbookTree();
+        }
+    };
+
+    const moveChapterTo = (sourceId: number, targetId: number, dropPosition: 'left' | 'right' = 'right') => {
+        const chapterNodes = handbookTree.filter((node) => node.type === 'chapter');
+        const chapters = [...chapterNodes];
+        const fromIndex = chapters.findIndex((c) => c.id === sourceId);
+        if (fromIndex === -1) return;
+
+        const originalToIndex = chapters.findIndex((c) => c.id === targetId);
+        if (originalToIndex === -1 || fromIndex === originalToIndex) return;
+
+        const [moved] = chapters.splice(fromIndex, 1);
+
+        let toIndex = chapters.findIndex((c) => c.id === targetId);
+
+        if (dropPosition === 'right') {
+            toIndex += 1;
+        }
+
+        chapters.splice(toIndex, 0, moved);
+
+        void applyChapterOrder(chapters);
     };
 
     const openSneakPeek = (pageId: number, title: string) => {
@@ -379,12 +487,68 @@ export const HandbookPagesPage: React.FC = () => {
                                     <button
                                         key={chapter.id}
                                         onClick={() => setActiveChapterId(chapter.id)}
-                                        className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${activeChapterId === chapter.id
-                                            ? 'text-[#0d0e0e] border border-gray-200 border-b-white bg-white rounded-t-[4px] -mb-[1px]'
-                                            : 'text-gray-500 hover:text-gray-700 border border-transparent'
-                                            }`}
+                                        className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 flex items-center gap-2 relative border-t border-l border-r border-b ${activeChapterId === chapter.id
+                                            ? 'text-[#0d0e0e] border-t-gray-200 border-l-gray-200 border-r-gray-200 border-b-white bg-white rounded-t-[4px] -mb-[1px]'
+                                            : 'text-gray-500 hover:text-gray-700 border-transparent border-b-gray-200'
+                                            } ${draggingChapterId === chapter.id ? 'opacity-40 grayscale-[0.2]' : ''} ${dragOverChapterId === chapter.id ? 'bg-[#f0faf6]' : ''}`}
+                                        draggable={canEditHandbook}
+                                        onDragStart={(e) => {
+                                            if (!canEditHandbook) return;
+                                            e.stopPropagation();
+                                            if (e.dataTransfer) {
+                                                e.dataTransfer.effectAllowed = 'move';
+                                            }
+                                            setTimeout(() => setDraggingChapterId(chapter.id), 0);
+                                        }}
+                                        onDragEnd={() => {
+                                            setDraggingChapterId(null);
+                                            setDragOverChapterId(null);
+                                            setDragChapterDropPosition(null);
+                                        }}
+                                        onDragOver={(e) => {
+                                            if (!canEditHandbook || draggingChapterId == null || draggingChapterId === chapter.id) {
+                                                e.preventDefault();
+                                                return;
+                                            }
+                                            e.preventDefault();
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            const offset = e.clientX - rect.left;
+                                            const position = offset > rect.width / 2 ? 'right' : 'left';
+
+                                            if (dragOverChapterId !== chapter.id || dragChapterDropPosition !== position) {
+                                                setDragOverChapterId(chapter.id);
+                                                setDragChapterDropPosition(position);
+                                            }
+                                        }}
+                                        onDragLeave={(e) => {
+                                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                                setDragOverChapterId(null);
+                                                setDragChapterDropPosition(null);
+                                            }
+                                        }}
+                                        onDrop={(e) => {
+                                            if (!canEditHandbook || draggingChapterId == null) return;
+                                            e.preventDefault();
+                                            if (draggingChapterId !== chapter.id && dragChapterDropPosition) {
+                                                moveChapterTo(draggingChapterId, chapter.id, dragChapterDropPosition);
+                                            }
+                                            setDraggingChapterId(null);
+                                            setDragOverChapterId(null);
+                                            setDragChapterDropPosition(null);
+                                        }}
                                     >
-                                        {chapter.title}
+                                        {/* Drop Indicators */}
+                                        {dragOverChapterId === chapter.id && dragChapterDropPosition === 'left' && (
+                                            <div className="absolute top-0 bottom-0 left-0 w-[4px] bg-[#3d997d] z-10" />
+                                        )}
+                                        {dragOverChapterId === chapter.id && dragChapterDropPosition === 'right' && (
+                                            <div className="absolute top-0 bottom-0 right-0 w-[4px] bg-[#3d997d] z-10" />
+                                        )}
+
+                                        {canEditHandbook && (
+                                            <GripVertical className="h-4 w-4 text-[#9ca3af] cursor-grab active:cursor-grabbing hover:text-[#3d997d]" />
+                                        )}
+                                        <span>{chapter.title}</span>
                                     </button>
                                 ))}
                             </div>
@@ -406,12 +570,52 @@ export const HandbookPagesPage: React.FC = () => {
                                 const isExpanded = expandedPageId === page.id;
                                 const status = (page.status as string) || 'not_ready';
                                 const hasNote = (page as any).hasNote === true;
-
                                 return (
                                     <div
                                         key={page.id}
-                                        className="bg-white rounded-[8px] border border-[#e5e7eb] overflow-hidden"
+                                        className={`page-row-container bg-white rounded-[8px] border border-[#e5e7eb] overflow-hidden relative transition-all duration-200 ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
+                                        onDragOver={(e) => {
+                                            if (!canEditHandbook || !draggingPageId || search || statusFilter || draggingPageId === page.id) {
+                                                e.preventDefault();
+                                                return;
+                                            }
+                                            e.preventDefault();
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            const offset = e.clientY - rect.top;
+                                            const position = offset > rect.height / 2 ? 'bottom' : 'top';
+
+                                            if (dragOverPageId !== page.id || dragDropPosition !== position) {
+                                                setDragOverPageId(page.id);
+                                                setDragDropPosition(position);
+                                            }
+                                        }}
+                                        onDragLeave={(e) => {
+                                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                                setDragOverPageId(null);
+                                                setDragDropPosition(null);
+                                            }
+                                        }}
+                                        onDrop={(e) => {
+                                            if (!canEditHandbook || !draggingPageId || search || statusFilter) {
+                                                return;
+                                            }
+                                            e.preventDefault();
+                                            if (draggingPageId !== page.id && dragDropPosition) {
+                                                movePageTo(draggingPageId, page.id, dragDropPosition);
+                                            }
+                                            setDraggingPageId(null);
+                                            setDragOverPageId(null);
+                                            setDragDropPosition(null);
+                                        }}
                                     >
+                                        {/* Drop Indicators */}
+                                        {dragOverPageId === page.id && dragDropPosition === 'top' && (
+                                            <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#3d997d] z-10 rounded-t-[8px]" />
+                                        )}
+                                        {dragOverPageId === page.id && dragDropPosition === 'bottom' && (
+                                            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#3d997d] z-10 rounded-b-[8px]" />
+                                        )}
+
                                         {/* Page Row Header */}
                                         <div
                                             className={`flex items-center gap-4 p-4 cursor-pointer transition-colors ${focusedPageId === page.id ? 'bg-[#f0faf6] border-l-4 border-[#3d997d]' : 'border-l-4 border-transparent hover:bg-[#fafafa]'}`}
@@ -452,6 +656,31 @@ export const HandbookPagesPage: React.FC = () => {
                                                     )}
                                                 </div>
                                             </div>
+
+                                            {/* Drag handle */}
+                                            {canEditHandbook && !search && !statusFilter && (
+                                                <div
+                                                    className="flex-shrink-0 cursor-grab active:cursor-grabbing text-[#9ca3af] hover:text-[#3d997d] hover:bg-[#ebf5f1] p-1.5 -ml-1.5 rounded-md transition-all"
+                                                    draggable
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onDragStart={(e) => {
+                                                        e.stopPropagation();
+                                                        const rowElement = (e.currentTarget as HTMLElement).closest('.page-row-container');
+                                                        if (rowElement && e.dataTransfer) {
+                                                            e.dataTransfer.setDragImage(rowElement, 50, 20);
+                                                            e.dataTransfer.effectAllowed = 'move';
+                                                        }
+                                                        setTimeout(() => setDraggingPageId(page.id), 0);
+                                                    }}
+                                                    onDragEnd={() => {
+                                                        setDraggingPageId(null);
+                                                        setDragOverPageId(null);
+                                                        setDragDropPosition(null);
+                                                    }}
+                                                >
+                                                    <GripVertical className="h-4 w-4" />
+                                                </div>
+                                            )}
 
                                             {/* Title and Badges */}
                                             <div className="flex-1 flex items-center gap-3">

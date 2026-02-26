@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, BookOpen, Search, ChevronDown, ChevronRight, FileText, CheckCircle2, Clock, XCircle } from 'lucide-react';
-import { handbookApi } from '../api';
+import { ArrowLeft, BookOpen, Search, ChevronDown, ChevronRight, FileText, CheckCircle2, Clock, XCircle, GripVertical } from 'lucide-react';
+import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
 import { handbookRoutes } from '../routes';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { useAuth } from '@/context/auth-context';
+import { toast } from 'sonner';
 import type { HandbookNode } from '@/types/models';
 
 export const HandbookTableOfContentsPage: React.FC = () => {
@@ -24,6 +25,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
     // Sneak Peek modal state
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
+    const [draggingChapterId, setDraggingChapterId] = useState<number | null>(null);
+    const BOOK_ID = DEFAULT_HANDBOOK_PRINT_BID;
 
     const openSneakPeek = (pageId: number, title: string) => {
         setSneakPeekPage({ id: pageId, title });
@@ -52,6 +55,48 @@ export const HandbookTableOfContentsPage: React.FC = () => {
         () => tree.filter((n) => n.type === 'chapter'),
         [tree],
     );
+
+    const applyChapterOrder = async (orderedChapters: HandbookNode[]) => {
+        const others = tree.filter((n) => n.type !== 'chapter');
+        setTree([...orderedChapters, ...others]);
+
+        const updates = orderedChapters.map((ch, index) => ({
+            nid: ch.id,
+            pid: BOOK_ID as number,
+            weight: index,
+        }));
+
+        try {
+            if (!BOOK_ID) {
+                throw new Error('Handbook id is not loaded yet.');
+            }
+            await handbookApi.reorderHandbook(BOOK_ID, updates);
+        } catch (err: any) {
+            console.error('Failed to reorder themes:', err);
+            toast.error(err.message || 'Failed to reorder themes. Changes were reverted.');
+            try {
+                const data = await handbookApi.getHandbookTree();
+                const unique = Array.from(new Map(data.map((n) => [n.id, n])).values());
+                setTree(unique);
+            } catch (refetchErr) {
+                console.error('Failed to refetch handbook tree after reorder error:', refetchErr);
+            }
+        }
+    };
+
+    const moveChapter = (chapterId: number, direction: 'up' | 'down') => {
+        const current = chapters;
+        const index = current.findIndex((ch) => ch.id === chapterId);
+        if (index === -1) return;
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= current.length) return;
+
+        const reordered = [...current];
+        const [moved] = reordered.splice(index, 1);
+        reordered.splice(targetIndex, 0, moved);
+
+        void applyChapterOrder(reordered);
+    };
 
     const filteredChapters = useMemo(() => {
         if (!search.trim()) return chapters;
@@ -258,19 +303,44 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                     type="button"
                                     onClick={() => toggleChapter(chapter.id)}
                                     className="w-full flex items-center gap-4 px-6 py-4 hover:bg-[#f6fbf9] transition-colors text-left group"
+                                    onDragOver={(e) => {
+                                        if (!canEditHandbook || draggingChapterId == null) return;
+                                        e.preventDefault();
+                                    }}
+                                    onDrop={(e) => {
+                                        if (!canEditHandbook || draggingChapterId == null) return;
+                                        e.preventDefault();
+                                        if (draggingChapterId === chapter.id) return;
+                                        moveChapter(draggingChapterId, 'down');
+                                        setDraggingChapterId(null);
+                                    }}
                                 >
                                     {/* Chapter number bubble */}
                                     <div className="flex-shrink-0 h-9 w-9 rounded-[10px] bg-[#1a5948] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_10px_rgba(26,89,72,0.3)]">
                                         {chapterNumber}
                                     </div>
 
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 min-w-0 flex items-center gap-3">
                                         <p className="text-base font-bold text-[#0d0e0e] truncate">
                                             {chapter.title}
                                         </p>
                                         <p className="text-xs text-[#6b7475] mt-0.5">
                                             {chapterPages.length} page{chapterPages.length !== 1 ? 's' : ''}
                                         </p>
+                                        {canEditHandbook && (
+                                            <div
+                                                className="flex-shrink-0 cursor-grab active:cursor-grabbing text-[#9ca3af]"
+                                                draggable
+                                                onClick={(e) => e.stopPropagation()}
+                                                onDragStart={(e) => {
+                                                    e.stopPropagation();
+                                                    setDraggingChapterId(chapter.id);
+                                                }}
+                                                onDragEnd={() => setDraggingChapterId(null)}
+                                            >
+                                                <GripVertical className="h-4 w-4" />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Progress pills */}
@@ -309,6 +379,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                         )}
                                     </div>
                                 </button>
+
+                                {/* Drag footer removed; drag handle is now inline with the title */}
 
                                 {/* Pages list */}
                                 {!isCollapsed && (
