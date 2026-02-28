@@ -17,14 +17,14 @@ import { handbookApi } from '../api';
 interface PreviewHandbookModalProps {
     isOpen: boolean;
     onClose: () => void;
-    /** When set, show only this page (selected page preview). When null, show all ready pages. */
-    singlePageId?: number | null;
+    /** When set, shows only those pages. When null/empty, shows all ready pages. */
+    selectedPageIds?: number[] | null;
 }
 
 export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     isOpen,
     onClose,
-    singlePageId = null,
+    selectedPageIds = null,
 }) => {
     const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree('en');
     const [bodies, setBodies] = useState<Map<number, string>>(new Map());
@@ -35,19 +35,28 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
-    // Page IDs to fetch: single selected page, or all ready page IDs
+    const selectedSet = useMemo(
+        () =>
+            selectedPageIds && selectedPageIds.length > 0
+                ? new Set(selectedPageIds)
+                : null,
+        [selectedPageIds]
+    );
+
+    // Collect IDs to fetch body content for
     const pageIdsToFetch = useMemo(() => {
         if (!Array.isArray(tree)) return [];
-        if (singlePageId != null) return [singlePageId];
         const ids: number[] = [];
         tree.forEach((node) => {
             if (node.type !== 'chapter') return;
             (node.pages || []).forEach((page: any) => {
-                if (page.status === 'ready') ids.push(page.id);
+                if (page.status !== 'ready') return;
+                if (selectedSet && !selectedSet.has(page.id)) return;
+                ids.push(page.id);
             });
         });
         return ids;
-    }, [tree, singlePageId]);
+    }, [tree, selectedSet]);
 
     useEffect(() => {
         if (!isOpen || pageIdsToFetch.length === 0) return;
@@ -82,31 +91,15 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     const loading = treeLoading || bodiesLoading;
     const error = treeError?.message || bodiesError;
 
-    // Build chapter → pages to show: one chapter with one page when singlePageId set, else all ready
     const readyHandbookData = useMemo(() => {
         if (!Array.isArray(tree)) return [];
-
-        if (singlePageId != null) {
-            for (const node of tree) {
-                if (node.type !== 'chapter' || !node.pages) continue;
-                const page = node.pages.find((p: any) => p.id === singlePageId);
-                if (page) {
-                    return [
-                        {
-                            ...node,
-                            pages: [{ ...page, body: bodies.get(page.id) ?? '' }],
-                        },
-                    ];
-                }
-            }
-            return [];
-        }
 
         return tree
             .filter((node) => node.type === 'chapter')
             .map((chapter) => {
                 const readyPages = (chapter.pages || [])
                     .filter((page: any) => page.status === 'ready')
+                    .filter((page: any) => !selectedSet || selectedSet.has(page.id))
                     .map((page: any) => ({
                         ...page,
                         body: bodies.get(page.id) ?? '',
@@ -114,12 +107,14 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                 return { ...chapter, pages: readyPages };
             })
             .filter((chapter) => chapter.pages.length > 0);
-    }, [tree, bodies, singlePageId]);
+    }, [tree, bodies, selectedSet]);
 
     const handlePrint = () => {
         onClose();
         navigate(handbookRoutes.printView());
     };
+
+    const isFiltered = !!selectedSet;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -130,9 +125,22 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                         Preview Handbook
                     </DialogTitle>
                     <p className="text-sm text-[#6b7280] font-normal mt-1">
-                        Showing all pages that are marked as{' '}
-                        <span className="font-semibold">Ready</span>. This is what
-                        employees will see.
+                        {isFiltered ? (
+                            <>
+                                Showing{' '}
+                                <span className="font-semibold">
+                                    {selectedPageIds!.length} selected page
+                                    {selectedPageIds!.length !== 1 ? 's' : ''}
+                                </span>
+                                . This is a filtered preview.
+                            </>
+                        ) : (
+                            <>
+                                Showing all pages marked as{' '}
+                                <span className="font-semibold">Ready</span>. This is
+                                what employees will see.
+                            </>
+                        )}
                     </p>
                 </DialogHeader>
 
@@ -156,18 +164,21 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                 No ready pages found
                             </h3>
                             <p className="text-[#6b7280] mt-1 text-sm max-w-md mx-auto">
-                                There are currently no handbook pages marked as "Ready".
-                                Pages must be marked as ready before they can be previewed.
+                                {isFiltered
+                                    ? 'None of the selected pages are marked as Ready.'
+                                    : 'There are currently no handbook pages marked as "Ready".'}
                             </p>
-                            <Button
-                                onClick={() => {
-                                    onClose();
-                                    navigate(handbookRoutes.pages);
-                                }}
-                                className="mt-4 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px]"
-                            >
-                                Manage Pages
-                            </Button>
+                            {!isFiltered && (
+                                <Button
+                                    onClick={() => {
+                                        onClose();
+                                        navigate(handbookRoutes.pages);
+                                    }}
+                                    className="mt-4 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px]"
+                                >
+                                    Manage Pages
+                                </Button>
+                            )}
                         </div>
                     )}
 
@@ -175,12 +186,10 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                         <div className="bg-white rounded-[16px] border border-[#e5efea] shadow-sm px-8 py-8 space-y-10">
                             {readyHandbookData.map((chapter) => (
                                 <div key={chapter.id}>
-                                    {/* Chapter heading */}
                                     <h2 className="text-lg font-bold text-[#1a5948] mb-4 pb-2 border-b border-[#d4ede5]">
                                         {chapter.title}
                                     </h2>
 
-                                    {/* Pages rendered as continuous content with page title labels */}
                                     <div className="space-y-6">
                                         {chapter.pages?.map((page: any) => (
                                             <div key={page.id} className="space-y-2">
@@ -190,9 +199,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                 {page.body ? (
                                                     <div
                                                         className="prose prose-sm max-w-none text-[#111827] leading-relaxed"
-                                                        dangerouslySetInnerHTML={{
-                                                            __html: page.body,
-                                                        }}
+                                                        dangerouslySetInnerHTML={{ __html: page.body }}
                                                     />
                                                 ) : (
                                                     <p className="text-sm italic text-[#9ca3af]">

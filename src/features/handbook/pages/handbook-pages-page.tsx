@@ -4,7 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, ArrowLeft, GripVertical } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
+import { Search, ArrowLeft, GripVertical, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
@@ -40,6 +47,10 @@ export const HandbookPagesPage: React.FC = () => {
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
+
+    // Delete confirmation modal
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [pendingDelete, setPendingDelete] = useState<{ ids: number[]; names: string[] } | null>(null);
 
     // Focused (highlighted) page for Preview Handbook
     const [focusedPageId, setFocusedPageId] = useState<number | null>(null);
@@ -130,6 +141,16 @@ export const HandbookPagesPage: React.FC = () => {
             return true;
         });
     }, [pages, search, statusFilter, user?.id, canEditHandbook]);
+
+    // Pages in the current chapter view that are checked — used for delete/preview actions
+    const checkedInView = useMemo(
+        () => filteredPages.filter((p: any) => selectedPages.has(p.id)),
+        [filteredPages, selectedPages]
+    );
+    const checkedInViewIds = useMemo(
+        () => checkedInView.map((p: any) => p.id),
+        [checkedInView]
+    );
 
     const progressStats = useMemo(() => {
         const selected = selectedPages.size;
@@ -757,35 +778,34 @@ export const HandbookPagesPage: React.FC = () => {
                                 {canEditHandbook && (
                                     <Button
                                         variant="outline"
-                                        disabled={!focusedPageId}
-                                        onClick={async () => {
-                                            if (!focusedPageId) return;
-                                            if (
-                                                !window.confirm(
-                                                    'Are you sure you want to delete this page? This cannot be undone.',
-                                                )
-                                            ) {
-                                                return;
-                                            }
-                                            try {
-                                                await handbookApi.deletePage(focusedPageId);
-                                                toast.success('Page deleted');
-                                                setFocusedPageId(null);
-                                                await refreshHandbookTree();
-                                            } catch (err: any) {
-                                                const apiError = err?.response?.data?.error;
-                                                const message =
-                                                    typeof apiError?.message === 'string' &&
-                                                    apiError.message.trim()
-                                                        ? apiError.message.trim()
-                                                        : err?.message ||
-                                                          'Failed to delete page. Please try again.';
-                                                toast.error(message);
-                                            }
+                                        disabled={checkedInViewIds.length === 0 && !focusedPageId}
+                                        onClick={() => {
+                                            const idsToDelete =
+                                                checkedInViewIds.length > 0
+                                                    ? checkedInViewIds
+                                                    : focusedPageId
+                                                    ? [focusedPageId]
+                                                    : [];
+
+                                            if (idsToDelete.length === 0) return;
+
+                                            const titleById = new Map<number, string>();
+                                            handbookTree.forEach((chapter) => {
+                                                if (chapter.type !== 'chapter') return;
+                                                (chapter.pages || []).forEach((page: any) => {
+                                                    titleById.set(page.id, page.title);
+                                                });
+                                            });
+
+                                            const names = idsToDelete.map(
+                                                (id) => titleById.get(id) || `Page ${id}`
+                                            );
+                                            setPendingDelete({ ids: idsToDelete, names });
+                                            setDeleteConfirmOpen(true);
                                         }}
                                         className="border-[#fca5a5] text-[#b91c1c] rounded-[8px] px-4 py-2 h-auto text-sm bg-[#fef2f2] hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        Delete page
+                                        Delete page{checkedInViewIds.length > 1 ? ` (${checkedInViewIds.length})` : ''}
                                     </Button>
                                 )}
                                 <Button
@@ -945,7 +965,7 @@ export const HandbookPagesPage: React.FC = () => {
             <PreviewHandbookModal
                 isOpen={previewModalOpen}
                 onClose={() => setPreviewModalOpen(false)}
-                singlePageId={focusedPageId}
+                selectedPageIds={checkedInViewIds.length > 0 ? checkedInViewIds : null}
             />
 
             {/* Add Page Modal */}
@@ -959,6 +979,90 @@ export const HandbookPagesPage: React.FC = () => {
                     navigate(handbookRoutes.editPage(newPageId));
                 }}
             />
+
+            {/* Delete confirmation modal */}
+            <Dialog
+                open={deleteConfirmOpen}
+                onOpenChange={(open) => {
+                    if (!open) setPendingDelete(null);
+                    setDeleteConfirmOpen(open);
+                }}
+            >
+                <DialogContent className="max-w-md border-[#e5efea] rounded-[16px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-[#0d0e0e]">
+                            <AlertTriangle className="h-5 w-5 text-[#b91c1c]" />
+                            Delete handbook pages?
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        {pendingDelete && (
+                            <>
+                                <p className="text-sm text-[#374151] mb-3">
+                                    You are about to delete {pendingDelete.ids.length} page
+                                    {pendingDelete.ids.length !== 1 ? 's' : ''}. This cannot be
+                                    undone.
+                                </p>
+                                <ul className="list-disc list-inside text-sm text-[#374151] space-y-1">
+                                    {pendingDelete.names.map((name) => (
+                                        <li key={name}>{name}</li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+                    </div>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteConfirmOpen(false)}
+                            className="rounded-[8px]"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="rounded-[8px] bg-[#b91c1c] hover:bg-[#991b1b] text-white"
+                            disabled={!pendingDelete}
+                            onClick={async () => {
+                                if (!pendingDelete) return;
+                                setDeleteConfirmOpen(false);
+                                try {
+                                    for (const id of pendingDelete.ids) {
+                                        await handbookApi.deletePage(id);
+                                    }
+                                    toast.success(
+                                        pendingDelete.ids.length === 1
+                                            ? 'Page deleted'
+                                            : `${pendingDelete.ids.length} pages deleted`
+                                    );
+                                    setFocusedPageId((current) =>
+                                        current && pendingDelete.ids.includes(current)
+                                            ? null
+                                            : current
+                                    );
+                                    setSelectedPages((prev) => {
+                                        const next = new Set(prev);
+                                        pendingDelete.ids.forEach((id) => next.delete(id));
+                                        return next;
+                                    });
+                                    await refreshHandbookTree();
+                                } catch (err: any) {
+                                    const apiError = err?.response?.data?.error;
+                                    const message =
+                                        typeof apiError?.message === 'string' &&
+                                        apiError.message.trim()
+                                            ? apiError.message.trim()
+                                            : err?.message ||
+                                              'Failed to delete page(s). Please try again.';
+                                    toast.error(message);
+                                }
+                                setPendingDelete(null);
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </PageShell>
     );
 };
