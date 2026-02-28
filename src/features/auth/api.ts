@@ -2,8 +2,76 @@ import { axiosClient } from '@/lib/axios-client';
 import { User } from '@/types/models';
 
 function getErrorMessage(err: unknown): string {
-  const res = (err as { response?: { data?: { error?: { message?: string }; message?: string } } })?.response?.data;
-  return res?.error?.message ?? res?.message ?? (err instanceof Error ? err.message : 'Request failed');
+  const anyErr = err as {
+    response?: {
+      status?: number;
+      data?: any;
+    };
+    message?: string;
+  };
+
+  const data = anyErr?.response?.data;
+
+  // Helper to normalise various backend validation shapes into a flat list of messages
+  const collectMessages = (): string[] => {
+    if (!data) return [];
+
+    // Plain string body
+    if (typeof data === 'string') return [data];
+
+    // { message: string }
+    if (typeof data.message === 'string' && data.message.trim()) {
+      return [data.message.trim()];
+    }
+
+    // { error: string | { message: string } | { messages: string[] } }
+    if (typeof data.error === 'string' && data.error.trim()) {
+      return [data.error.trim()];
+    }
+    if (data.error && typeof data.error === 'object') {
+      if (typeof data.error.message === 'string' && data.error.message.trim()) {
+        return [data.error.message.trim()];
+      }
+      if (Array.isArray(data.error.messages)) {
+        return data.error.messages.filter((m: unknown) => typeof m === 'string' && m.trim());
+      }
+    }
+
+    // { errors: { field: string[] } } – common validation pattern
+    if (data.errors && typeof data.errors === 'object') {
+      const fromFields: string[] = [];
+      for (const value of Object.values(data.errors)) {
+        if (Array.isArray(value)) {
+          for (const msg of value) {
+            if (typeof msg === 'string' && msg.trim()) {
+              fromFields.push(msg.trim());
+            }
+          }
+        } else if (typeof value === 'string' && value.trim()) {
+          fromFields.push(value.trim());
+        }
+      }
+      if (fromFields.length > 0) return fromFields;
+    }
+
+    return [];
+  };
+
+  const messages = collectMessages();
+
+  if (messages.length === 1) {
+    return messages[0];
+  }
+  if (messages.length > 1) {
+    // Join multiple validation messages into a single readable string
+    return messages.join(' · ');
+  }
+
+  // Fallback to the original error message if we couldn't extract anything better
+  if (anyErr?.message) return anyErr.message;
+  if (err instanceof Error && err.message) return err.message;
+
+  return 'Request failed. Please try again.';
 }
 
 const AUTH_COMPANY_KEY = 'auth_user_company';

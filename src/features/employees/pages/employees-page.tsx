@@ -29,7 +29,7 @@ export const EmployeesPage: React.FC = () => {
   const { user: authUser } = useAuth();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [showInactive, setShowInactive] = useState(true);
+  const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);

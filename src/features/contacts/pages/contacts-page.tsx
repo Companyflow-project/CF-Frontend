@@ -29,7 +29,7 @@ import type { Contact } from '@/types/models';
 export const ContactsPage: React.FC = () => {
   const { user } = useAuth();
   const [search, setSearch] = useState('');
-  const [showInactive, setShowInactive] = useState(true);
+  const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [addExternalModalOpen, setAddExternalModalOpen] = useState(false);
@@ -336,14 +336,25 @@ export const ContactsPage: React.FC = () => {
   }, []);
 
   const handleEditEmployeeContact = useCallback(async (contact: Contact) => {
-    // Fetch existing selected tids so we can show them as muted in the modal
     let existingTids: number[] = [];
     try {
       const { selectedTids } = await contactsApi.getContact(contact.id);
       existingTids = selectedTids ?? [];
     } catch {
-      // Proceed without existing tids — they just won't be shown as muted
+      // Proceed without existing tids
     }
+
+    // Fall back to employee's responsibilityIds if the contact has none
+    if (existingTids.length === 0 && apiEmployees) {
+      const empList = (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
+      const matched = empList.find(
+        (e) => e.name.trim().toLowerCase() === contact.name.trim().toLowerCase(),
+      );
+      if (matched?.responsibilityIds?.length) {
+        existingTids = matched.responsibilityIds;
+      }
+    }
+
     setEmployeeContactModal({
       open: true,
       contactId: contact.id,
@@ -355,7 +366,7 @@ export const ContactsPage: React.FC = () => {
         telephone: contact.telephone,
       },
     });
-  }, []);
+  }, [apiEmployees]);
 
   const handleEmployeeContactConfirm = useCallback(async (data: {
     uid: number;
@@ -370,10 +381,7 @@ export const ContactsPage: React.FC = () => {
       if (isEdit) {
         await contactsApi.updateContact(employeeContactModal.contactId!, {
           phone: data.phone,
-          selectedTids: [
-            ...(employeeContactModal.existingTids ?? []),
-            ...data.selectedTids,
-          ],
+          selectedTids: data.selectedTids,
           ...(customArea ? { role: customArea } : {}),
         });
         toast.success('Contact updated');
@@ -671,6 +679,7 @@ export const ContactsPage: React.FC = () => {
                   onAddEmployeeAsContact={handleOpenEmployeeContactModal}
                   onEditEmployeeContact={handleEditEmployeeContact}
                   currentUserEmail={user?.email ?? undefined}
+                  currentUserName={user?.name ?? undefined}
                 />
               </div>
 

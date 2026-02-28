@@ -396,6 +396,38 @@ export const handbookApi = {
   },
 
   /**
+   * Delete a single handbook page.
+   * DELETE /api/handbook/pages/:id
+   *
+   * Only admin or company_admin can call this.
+   */
+  async deletePage(id: number): Promise<{ success: boolean }> {
+    requireValidNid(id);
+    try {
+      const response = await axiosClient.delete<{ success: boolean; error?: { message?: string } }>(
+        `/handbook/pages/${id}`,
+      );
+      return response.data ?? { success: true };
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const apiError = error?.response?.data?.error;
+      const apiMessage =
+        (apiError && typeof apiError.message === 'string' && apiError.message.trim()) ||
+        (typeof error?.response?.data?.message === 'string' && error.response.data.message.trim()) ||
+        (typeof error?.response?.data?.error === 'string' && error.response.data.error.trim());
+
+      if (status === 403) {
+        throw new Error(apiMessage || "Only admins can delete handbook pages.");
+      }
+      if (status === 404) {
+        throw new Error(apiMessage || 'Handbook page not found.');
+      }
+
+      throw new Error(apiMessage || 'Failed to delete handbook page.');
+    }
+  },
+
+  /**
    * Get all links across handbook pages
    * GET /api/handbook/resources/links
    */

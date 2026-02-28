@@ -31,6 +31,8 @@ export type BackendEmployeeLike = {
   isEmergencyPublic?: number | string | boolean | null;
   /** Rewritten CDN URI for the profile photo (public:// → /sites/default/files/) */
   userPictureUri?: string | null;
+  /** Taxonomy nids for areas of responsibility */
+  responsibilityIds?: number[];
   [key: string]: unknown;
 };
 
@@ -123,6 +125,9 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
           ? backend.isEmergencyPublic
           : Number(backend.isEmergencyPublic) === 1,
     userPictureUri: backend.userPictureUri ?? null,
+    responsibilityIds: Array.isArray(backend.responsibilityIds)
+      ? backend.responsibilityIds.map(Number)
+      : undefined,
   };
 };
 

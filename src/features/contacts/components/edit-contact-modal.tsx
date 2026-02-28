@@ -113,7 +113,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 gap-0 rounded-[20px] overflow-hidden border border-[#e5efea] shadow-[0_20px_60px_rgba(14,51,38,0.15)]">
+      <DialogContent className="sm:max-w-[480px] p-0 flex flex-col gap-0 rounded-[20px] overflow-hidden border border-[#e5efea] shadow-[0_20px_60px_rgba(14,51,38,0.15)] max-h-[90vh]">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#e5efea] bg-white">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-[12px] bg-[#e7f5ef] flex items-center justify-center flex-shrink-0">
@@ -126,7 +126,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-5 space-y-4 bg-white">
+        <div className="px-6 py-5 space-y-4 bg-white overflow-y-auto flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-8 text-[#6b7280]">
               <Loader2 className="h-6 w-6 animate-spin mr-2" />

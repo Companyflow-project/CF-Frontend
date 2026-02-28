@@ -98,23 +98,16 @@ export const AddEmployeePage: React.FC = () => {
         navigate('/employees');
       }, 1500);
     } catch (error: any) {
-      // Log the raw backend response to help diagnose validation errors
-      const backendMsg =
-        error?.response?.data?.message ||
-        error?.response?.data?.error?.message ||
-        error?.response?.data?.error ||
-        (typeof error?.response?.data === 'string' ? error.response.data : null);
-
       console.error('Error creating employee:', error);
       console.error('Backend response body:', error?.response?.data);
 
-      setGeneralError(
-        backendMsg
-          ? `Server error: ${backendMsg}`
-          : error instanceof Error
-            ? error.message
-            : 'Failed to create employee. Please try again.'
-      );
+      const apiError = error?.response?.data?.error;
+      const message =
+        typeof apiError?.message === 'string' && apiError.message.trim()
+          ? apiError.message.trim()
+          : 'Something went wrong while creating the employee.';
+
+      setGeneralError(message);
     } finally {
       setIsSubmitting(false);
     }

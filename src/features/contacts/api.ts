@@ -1,7 +1,10 @@
 import { axiosClient } from '@/lib/axios-client';
 import { Contact } from '@/types/models';
 
-/** Area of responsibility from GET /api/contacts/areas (tid = value, name = label). */
+/**
+ * Area of responsibility for use in contact/employee UIs.
+ * Backed by GET /api/responsibilities which returns { id, name } items.
+ */
 export interface ContactAreaItem {
   tid: number;
   name: string;
@@ -136,14 +139,27 @@ export const contactsApi = {
 
   /**
    * Areas of responsibility for the checklist.
-   * GET /api/contacts/areas?lang=
+   * Source of truth is GET /api/responsibilities which returns items as
+   * { id: number; name: string }.
+   * We adapt that shape to the existing ContactAreaItem (tid/name).
    */
-  async getContactAreas(lang?: string): Promise<ContactAreaItem[]> {
-    const response = await axiosClient.get<{ data: ContactAreaItem[] }>('/contacts/areas', {
-      params: lang ? { lang } : undefined,
-    });
-    const raw = response.data?.data ?? response.data;
-    return Array.isArray(raw) ? raw : [];
+  async getContactAreas(): Promise<ContactAreaItem[]> {
+    type Responsibility = { id: number; name: string };
+
+    const response = await axiosClient.get<Responsibility[] | { data: Responsibility[] }>(
+      '/responsibilities',
+    );
+
+    const raw: Responsibility[] = Array.isArray(response.data)
+      ? response.data
+      : Array.isArray((response.data as { data?: Responsibility[] }).data)
+        ? (response.data as { data: Responsibility[] }).data
+        : [];
+
+    return raw.map((item) => ({
+      tid: Number(item.id),
+      name: item.name,
+    }));
   },
 
   /**

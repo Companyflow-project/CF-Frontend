@@ -37,7 +37,7 @@ export const usePotentialContacts = () => {
 export const useContactAreas = (lang?: string) => {
   const { data, isLoading } = useQuery({
     queryKey: contactsQueries.areas(lang),
-    queryFn: () => contactsApi.getContactAreas(lang),
+    queryFn: () => contactsApi.getContactAreas(),
     staleTime: 5 * 60_000,
   });
 

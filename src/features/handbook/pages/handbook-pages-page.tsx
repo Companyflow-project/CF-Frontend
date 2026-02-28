@@ -10,6 +10,7 @@ import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
 import { AddThemeModal } from '../components/add-theme-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
+import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
 import { handbookRoutes } from '../routes';
 import type { HandbookNode } from '@/types/models';
@@ -39,6 +40,7 @@ export const HandbookPagesPage: React.FC = () => {
 
     // Sneak Peek modal state
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
+    const [previewModalOpen, setPreviewModalOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
 
     // Focused (highlighted) page for Preview Handbook
@@ -105,13 +107,31 @@ export const HandbookPagesPage: React.FC = () => {
     }, [chapters, activeChapterId]);
 
     const filteredPages = useMemo(() => {
-        return pages.filter((page) => {
+        const currentUserId = user?.id;
+        const isAdmin = canEditHandbook;
+
+        return pages.filter((page: any) => {
             const status = page.status as string;
+
+            // For non-admins: only show non-ready pages to their owners
+            if (!isAdmin) {
+                const isReady = status === 'ready';
+                const owners: unknown = page.owners;
+                const ownerIds: string[] = Array.isArray(owners)
+                    ? owners.map((id: unknown) => String(id))
+                    : [];
+                const isOwner = !!currentUserId && ownerIds.includes(String(currentUserId));
+
+                if (!isReady && !isOwner) {
+                    return false;
+                }
+            }
+
             if (statusFilter && status !== statusFilter) return false;
             if (search && !page.title.toLowerCase().includes(search.toLowerCase())) return false;
             return true;
         });
-    }, [pages, search, statusFilter]);
+    }, [pages, search, statusFilter, user?.id, canEditHandbook]);
 
     const progressStats = useMemo(() => {
         const selected = selectedPages.size;
@@ -369,22 +389,12 @@ export const HandbookPagesPage: React.FC = () => {
                     <h1 className="text-2xl font-bold text-[#0d0e0e]">View All Pages</h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <div
-                        title={!focusedPageId ? 'Select a page first to preview it' : undefined}
-                        className={!focusedPageId ? 'cursor-not-allowed' : undefined}
+                    <Button
+                        onClick={() => setPreviewModalOpen(true)}
+                        className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-4 py-2 h-auto text-sm"
                     >
-                        <Button
-                            disabled={!focusedPageId}
-                            onClick={() => {
-                                const pg = filteredPages.find(p => p.id === focusedPageId)
-                                    ?? pages.find(p => p.id === focusedPageId);
-                                if (pg) openSneakPeek(pg.id, pg.title);
-                            }}
-                            className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-4 py-2 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Preview Handbook
-                        </Button>
-                    </div>
+                        Preview handbook
+                    </Button>
                     <Button
                         variant="outline"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
@@ -563,7 +573,6 @@ export const HandbookPagesPage: React.FC = () => {
                             {filteredPages.map((page) => {
                                 const isExpanded = expandedPageId === page.id;
                                 const status = (page.status as string) || 'not_ready';
-                                const hasNote = (page as any).hasNote === true;
                                 return (
                                     <div
                                         key={page.id}
@@ -684,11 +693,6 @@ export const HandbookPagesPage: React.FC = () => {
                                                         {page.badge === 'custom' ? 'Custom' : 'Premade'}
                                                     </Badge>
                                                 )}
-                                                {hasNote && (
-                                                    <Badge className="bg-[#fff7d6] text-[#7a5a00] border border-[#d4b86a] rounded-[6px] px-2.5 py-0.5 text-xs">
-                                                        Note
-                                                    </Badge>
-                                                )}
                                                 {isExpanded && (
                                                     <span className="text-xs text-gray-400 italic">No text - Editing draft...</span>
                                                 )}
@@ -750,8 +754,42 @@ export const HandbookPagesPage: React.FC = () => {
                                 </div>
                             )}
 
-                            {/* Add Page Button */}
-                            <div className="flex justify-end pt-2">
+                            {/* Add / Delete Page Actions */}
+                            <div className="flex justify-end pt-2 gap-2">
+                                {canEditHandbook && (
+                                    <Button
+                                        variant="outline"
+                                        disabled={!focusedPageId}
+                                        onClick={async () => {
+                                            if (!focusedPageId) return;
+                                            if (
+                                                !window.confirm(
+                                                    'Are you sure you want to delete this page? This cannot be undone.',
+                                                )
+                                            ) {
+                                                return;
+                                            }
+                                            try {
+                                                await handbookApi.deletePage(focusedPageId);
+                                                toast.success('Page deleted');
+                                                setFocusedPageId(null);
+                                                await refreshHandbookTree();
+                                            } catch (err: any) {
+                                                const apiError = err?.response?.data?.error;
+                                                const message =
+                                                    typeof apiError?.message === 'string' &&
+                                                    apiError.message.trim()
+                                                        ? apiError.message.trim()
+                                                        : err?.message ||
+                                                          'Failed to delete page. Please try again.';
+                                                toast.error(message);
+                                            }
+                                        }}
+                                        className="border-[#fca5a5] text-[#b91c1c] rounded-[8px] px-4 py-2 h-auto text-sm bg-[#fef2f2] hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Delete page
+                                    </Button>
+                                )}
                                 <Button
                                     className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-6 py-2 h-auto text-sm"
                                     onClick={handleAddPage}
@@ -890,7 +928,7 @@ export const HandbookPagesPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Sneak Peek Modal */}
+            {/* Sneak Peek Modal for single pages (from list) */}
             {sneakPeekPage && (
                 <SneakPeekModal
                     isOpen={sneakPeekOpen}
@@ -904,6 +942,13 @@ export const HandbookPagesPage: React.FC = () => {
                     canEdit={canEditHandbook}
                 />
             )}
+
+            {/* Preview Handbook Modal – shows all ready pages across chapters */}
+            <PreviewHandbookModal
+                isOpen={previewModalOpen}
+                onClose={() => setPreviewModalOpen(false)}
+                singlePageId={focusedPageId}
+            />
 
             {/* Add Page Modal */}
             <AddPageModal

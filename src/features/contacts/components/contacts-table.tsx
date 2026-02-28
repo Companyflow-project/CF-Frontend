@@ -28,6 +28,8 @@ interface ContactsTableProps {
   onEditEmployeeContact?: (contact: Contact) => void;
   /** Email of the logged-in user — their row is pinned to the top and cannot be deleted */
   currentUserEmail?: string;
+  /** Name of the logged-in user — used as a fallback when contact email is missing */
+  currentUserName?: string;
 }
 
 function ContactsTableInner({
@@ -40,19 +42,28 @@ function ContactsTableInner({
   onAddEmployeeAsContact,
   onEditEmployeeContact,
   currentUserEmail,
+  currentUserName,
 }: ContactsTableProps) {
   // Pin the authenticated user's row to the top
   const sortedContacts = React.useMemo(() => {
-    if (!currentUserEmail) return contacts;
-    const email = currentUserEmail.toLowerCase();
+    if (!currentUserEmail && !currentUserName) return contacts;
+    const email = currentUserEmail?.toLowerCase();
+    const name = currentUserName?.trim().toLowerCase();
     return [...contacts].sort((a, b) => {
-      const aIsSelf = (a.email ?? '').toLowerCase() === email;
-      const bIsSelf = (b.email ?? '').toLowerCase() === email;
+      const aEmail = (a.email ?? '').toLowerCase();
+      const bEmail = (b.email ?? '').toLowerCase();
+      const aName = a.name.trim().toLowerCase();
+      const bName = b.name.trim().toLowerCase();
+
+      const aIsSelf =
+        (!!email && aEmail === email) || (!aEmail && !!name && aName === name);
+      const bIsSelf =
+        (!!email && bEmail === email) || (!bEmail && !!name && bName === name);
       if (aIsSelf && !bIsSelf) return -1;
       if (!aIsSelf && bIsSelf) return 1;
       return 0;
     });
-  }, [contacts, currentUserEmail]);
+  }, [contacts, currentUserEmail, currentUserName]);
 
   const allSelected = sortedContacts.length > 0 && sortedContacts.every((c) => selectedIds.includes(c.id));
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -92,7 +103,13 @@ function ContactsTableInner({
           </TableRow>
         ) : (
           sortedContacts.map((contact) => {
-            const isSelf = !!(currentUserEmail && (contact.email ?? '').toLowerCase() === currentUserEmail.toLowerCase());
+            const email = currentUserEmail?.toLowerCase();
+            const name = currentUserName?.trim().toLowerCase();
+            const contactEmail = (contact.email ?? '').toLowerCase();
+            const contactName = contact.name.trim().toLowerCase();
+            const isSelf =
+              (!!email && contactEmail === email) ||
+              (!contactEmail && !!name && contactName === name);
             return (
               <TableRow key={contact.id} className={`border-b border-[#ebf3ef] hover:bg-[#f6fbf9] ${isSelf ? 'bg-[#f6fbf9]' : ''}`}>
               <TableCell>

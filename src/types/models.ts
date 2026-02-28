@@ -44,6 +44,8 @@ export interface Employee {
   createdAt: string;
   /** Drupal CDN URI for the employee's profile photo (already rewritten from public://) */
   userPictureUri?: string | null;
+  /** Taxonomy nids for areas of responsibility assigned to this employee */
+  responsibilityIds?: number[];
 }
 
 export interface HandbookSection {

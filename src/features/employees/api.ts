@@ -97,6 +97,8 @@ export const employeesApi = {
     sendEmailType?: string;
     /** fid returned from POST /files — links the uploaded photo to the employee */
     userPictureFid?: number;
+    /** Responsibility ids from GET /api/responsibilities */
+    responsibilityIds?: number[];
   }): Promise<Employee> {
     const requestBody = {
       name: payload.name,
@@ -113,6 +115,9 @@ export const employeesApi = {
       ...(payload.employmentType && payload.employmentType !== 'none' && { employmentType: payload.employmentType }),
       ...(payload.isSeniorEmployee !== undefined && { isSeniorEmployee: payload.isSeniorEmployee }),
       ...(payload.isBusinessAdmin !== undefined && { isBusinessAdmin: payload.isBusinessAdmin }),
+      ...(payload.responsibilityIds && payload.responsibilityIds.length > 0 && {
+        responsibilityIds: payload.responsibilityIds,
+      }),
       // NOTE: sendEmailType is NOT in the backend createEmployeeSchema — do not send it
     };
 
@@ -145,6 +150,8 @@ export const employeesApi = {
       isBusinessAdmin?: boolean;
       /** fid returned from POST /files — links the uploaded photo to the employee */
       userPictureFid?: number;
+      /** Responsibility ids from GET /api/responsibilities */
+      responsibilityIds?: number[];
     }
   ): Promise<Employee> {
     const requestBody: Record<string, unknown> = {};
@@ -165,6 +172,9 @@ export const employeesApi = {
     if (payload.isSeniorEmployee !== undefined) requestBody.isSeniorEmployee = payload.isSeniorEmployee;
     if (payload.isBusinessAdmin !== undefined) requestBody.isBusinessAdmin = payload.isBusinessAdmin;
     if (payload.userPictureFid != null) requestBody.userPictureFid = payload.userPictureFid;
+    if (payload.responsibilityIds !== undefined) {
+      requestBody.responsibilityIds = payload.responsibilityIds;
+    }
 
     const response = await axiosClient.patch<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>(
       `/employees/${id}`,

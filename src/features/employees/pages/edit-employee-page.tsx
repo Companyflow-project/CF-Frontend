@@ -143,9 +143,17 @@ export const EditEmployeePage: React.FC = () => {
       });
       setSuccessMessage('Employee updated successfully!');
       setTimeout(() => navigate(employeesRoutes.list), 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating employee:', error);
-      setGeneralError(error instanceof Error ? error.message : 'Failed to update employee. Please try again.');
+      console.error('Backend response body:', error?.response?.data);
+
+      const apiError = error?.response?.data?.error;
+      const message =
+        typeof apiError?.message === 'string' && apiError.message.trim()
+          ? apiError.message.trim()
+          : 'Something went wrong while updating the employee.';
+
+      setGeneralError(message);
     } finally {
       setIsSubmitting(false);
     }
