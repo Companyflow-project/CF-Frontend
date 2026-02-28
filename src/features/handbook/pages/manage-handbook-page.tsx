@@ -116,7 +116,7 @@ export const ManageHandbookPage: React.FC = () => {
                         },
                         {
                             label: 'Add theme',
-                            onClick: () => navigate('/handbook/add-theme'),
+                            onClick: () => navigate(handbookRoutes.addTheme),
                             variant: 'outline',
                             adminOnly: true,
                         },

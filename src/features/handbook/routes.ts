@@ -8,6 +8,7 @@ export const handbookRoutes = {
     const q = search.toString();
     return `/handbook/print-view${q ? `?${q}` : ''}`;
   },
+  addTheme: '/handbook/add-theme',
   editTheme: (id: string) => `/handbook/edit-theme/${id}`,
   editPage: (id: string | number) => `/handbook/pages/${id}/edit`,
   createPage: '/handbook/pages/new',

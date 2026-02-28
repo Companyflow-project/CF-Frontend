@@ -27,6 +27,7 @@ const ManageHandbookPage = lazy(() => import('@/features/handbook/pages/manage-h
 const HandbookPagesPage = lazy(() => import('@/features/handbook/pages/handbook-pages-page').then((m) => ({ default: m.HandbookPagesPage })));
 const HandbookPageEditPage = lazy(() => import('@/features/handbook/pages/handbook-page-edit-page').then((m) => ({ default: m.HandbookPageEditPage })));
 const PublishHandbookPage = lazy(() => import('@/features/handbook/pages/publish-handbook-page').then((m) => ({ default: m.PublishHandbookPage })));
+const AddThemePage = lazy(() => import('@/features/handbook/pages/add-theme-page').then((m) => ({ default: m.AddThemePage })));
 const EditThemePage = lazy(() => import('@/features/handbook/pages/edit-theme-page').then((m) => ({ default: m.EditThemePage })));
 const HandbookLinksPage = lazy(() => import('@/features/handbook/pages/handbook-links-page').then((m) => ({ default: m.HandbookLinksPage })));
 const HandbookNotesPage = lazy(() => import('@/features/handbook/pages/handbook-notes-page').then((m) => ({ default: m.HandbookNotesPage })));
@@ -269,6 +270,16 @@ export const AppRouter: React.FC = () => {
               <RequireAuth>
                 <AppLayout>
                   <HandbookPageEditPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={handbookRoutes.addTheme}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <AddThemePage />
                 </AppLayout>
               </RequireAuth>
             }

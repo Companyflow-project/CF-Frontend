@@ -8,7 +8,6 @@ import { Search, ArrowLeft, GripVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
-import { AddThemeModal } from '../components/add-theme-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
@@ -31,7 +30,6 @@ export const HandbookPagesPage: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
-    const [isAddThemeModalOpen, setIsAddThemeModalOpen] = useState(false);
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -409,7 +407,7 @@ export const HandbookPagesPage: React.FC = () => {
                                 toast.error("You don't have permission to create handbook themes.");
                                 return;
                             }
-                            setIsAddThemeModalOpen(true);
+                            navigate(handbookRoutes.addTheme);
                         }}
                     >
                         Add theme
@@ -958,15 +956,6 @@ export const HandbookPagesPage: React.FC = () => {
                 defaultChapterId={activeChapterId || undefined}
                 onSuccess={(newPageId: number) => {
                     // Navigate to the edit page for the newly created page
-                    navigate(handbookRoutes.editPage(newPageId));
-                }}
-            />
-
-            {/* Add Theme Modal */}
-            <AddThemeModal
-                isOpen={isAddThemeModalOpen}
-                onClose={() => setIsAddThemeModalOpen(false)}
-                onSuccess={(newPageId: number) => {
                     navigate(handbookRoutes.editPage(newPageId));
                 }}
             />

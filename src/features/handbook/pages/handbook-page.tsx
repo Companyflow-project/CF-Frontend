@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { HandbookTabs } from '../components/handbook-tabs';
@@ -10,9 +11,11 @@ import { TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useHandbookSections, useHandbookPages } from '../hooks';
+import { handbookRoutes } from '../routes';
 import { Plus, Search } from 'lucide-react';
 
 export const HandbookPage: React.FC = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [activeSection, setActiveSection] = useState('');
   const [editingPageId, setEditingPageId] = useState<string | null>(null);
@@ -61,6 +64,7 @@ export const HandbookPage: React.FC = () => {
               variant="outline"
               size="sm"
               className="border-[rgba(16,66,51,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13px] bg-white"
+              onClick={() => navigate(handbookRoutes.addTheme)}
             >
               Add theme
             </Button>
