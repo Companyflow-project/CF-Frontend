@@ -16,6 +16,8 @@ export interface ContactListItem {
   title: string;
   role: string | null;
   phone: string | null;
+  /** Optional email, now returned by /contacts. */
+  email?: string | null;
   isCurrentUser?: boolean;
 }
 
@@ -61,7 +63,7 @@ function mapContactListItem(item: ContactListItem): Contact {
     id: String(item.nid),
     accountId: '',
     name: item.title,
-    email: '',
+    email: item.email ?? '',
     telephone: item.phone ?? undefined,
     functionTitle: item.role ?? undefined,
     isCurrentUser,
