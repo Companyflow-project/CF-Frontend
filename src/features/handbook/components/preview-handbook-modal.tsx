@@ -13,20 +13,26 @@ import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
+import type { HandbookNode } from '@/types/models';
 
 interface PreviewHandbookModalProps {
     isOpen: boolean;
     onClose: () => void;
     /** When set, shows only those pages. When null/empty, shows all ready pages. */
     selectedPageIds?: number[] | null;
+    /** Pass the parent's already-fetched tree to avoid a stale re-fetch inside the modal. */
+    tree?: HandbookNode[];
 }
 
 export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     isOpen,
     onClose,
     selectedPageIds = null,
+    tree: treeProp,
 }) => {
-    const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree('en');
+    const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree('en');
+    const tree = treeProp ?? treeFromHook;
+    // When the parent provides the tree directly, we don't need to wait for the hook's fetch.
     const [bodies, setBodies] = useState<Map<number, string>>(new Map());
     const [bodiesLoading, setBodiesLoading] = useState(false);
     const [bodiesError, setBodiesError] = useState<string | null>(null);
@@ -88,8 +94,8 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
         };
     }, [isOpen, pageIdsToFetch.join(',')]);
 
-    const loading = treeLoading || bodiesLoading;
-    const error = treeError?.message || bodiesError;
+    const loading = (!treeProp && treeLoading) || bodiesLoading;
+    const error = (!treeProp ? treeError?.message : null) || bodiesError;
 
     const readyHandbookData = useMemo(() => {
         if (!Array.isArray(tree)) return [];

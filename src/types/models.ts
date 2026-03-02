@@ -112,6 +112,7 @@ export interface HandbookNode {
   type: 'chapter' | 'page';
   status: 'ready' | 'opted_out' | 'not_ready';
   badge: 'custom' | 'premade';
+  isDeletable: boolean;
   pages?: HandbookNode[];
 }
 
@@ -166,6 +167,7 @@ export interface HandbookPageDetail {
     includeInHandbook: boolean;
     notifyEmployees: boolean;
   };
+  isDeletable: boolean;
 }
 
 export interface HandbookPage extends HandbookPageDetail { }

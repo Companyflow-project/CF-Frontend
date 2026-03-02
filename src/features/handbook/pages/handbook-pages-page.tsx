@@ -142,9 +142,10 @@ export const HandbookPagesPage: React.FC = () => {
         });
     }, [pages, search, statusFilter, user?.id, canEditHandbook]);
 
-    // Pages in the current chapter view that are checked — used for delete/preview actions
+    // Pages in the current chapter view that are checked — used for delete/preview actions.
+    // Non-deletable pages are excluded even if visually checked.
     const checkedInView = useMemo(
-        () => filteredPages.filter((p: any) => selectedPages.has(p.id)),
+        () => filteredPages.filter((p: any) => selectedPages.has(p.id) && p.isDeletable !== false),
         [filteredPages, selectedPages]
     );
     const checkedInViewIds = useMemo(
@@ -643,10 +644,11 @@ export const HandbookPagesPage: React.FC = () => {
                                             className={`flex items-center gap-4 p-4 cursor-pointer transition-colors ${focusedPageId === page.id ? 'bg-[#f0faf6] border-l-4 border-[#3d997d]' : 'border-l-4 border-transparent hover:bg-[#fafafa]'}`}
                                             onClick={() => setFocusedPageId(prev => prev === page.id ? null : page.id)}
                                         >
-                                            {/* Checkbox */}
+                                            {/* Checkbox — muted and non-interactive for non-deletable pages */}
                                             <div
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    if (page.isDeletable === false) return;
                                                     const newSelected = new Set(selectedPages);
                                                     if (newSelected.has(page.id)) {
                                                         newSelected.delete(page.id);
@@ -655,15 +657,18 @@ export const HandbookPagesPage: React.FC = () => {
                                                     }
                                                     setSelectedPages(newSelected);
                                                 }}
-                                                className="flex-shrink-0 cursor-pointer"
+                                                title={page.isDeletable === false ? 'This page cannot be deleted' : undefined}
+                                                className={`flex-shrink-0 ${page.isDeletable === false ? 'cursor-default' : 'cursor-pointer'}`}
                                             >
                                                 <div
-                                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedPages.has(page.id)
-                                                        ? 'bg-[#3d997d] border-[#3d997d]'
-                                                        : 'border-[#d1d5db] bg-white'
+                                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${page.isDeletable === false
+                                                        ? 'bg-[#a8d5c5] border-[#a8d5c5]'
+                                                        : selectedPages.has(page.id)
+                                                            ? 'bg-[#3d997d] border-[#3d997d]'
+                                                            : 'border-[#d1d5db] bg-white'
                                                         }`}
                                                 >
-                                                    {selectedPages.has(page.id) && (
+                                                    {(page.isDeletable === false || selectedPages.has(page.id)) && (
                                                         <svg
                                                             className="w-3 h-3 text-white"
                                                             fill="none"
@@ -778,13 +783,14 @@ export const HandbookPagesPage: React.FC = () => {
                                 {canEditHandbook && (
                                     <Button
                                         variant="outline"
-                                        disabled={checkedInViewIds.length === 0 && !focusedPageId}
+                                        disabled={checkedInViewIds.length === 0 && (!focusedPageId || filteredPages.find((p: any) => p.id === focusedPageId)?.isDeletable === false)}
                                         onClick={() => {
+                                            const focusedIsDeletable = focusedPageId && filteredPages.find((p: any) => p.id === focusedPageId)?.isDeletable !== false;
                                             const idsToDelete =
                                                 checkedInViewIds.length > 0
                                                     ? checkedInViewIds
-                                                    : focusedPageId
-                                                    ? [focusedPageId]
+                                                    : focusedIsDeletable
+                                                    ? [focusedPageId!]
                                                     : [];
 
                                             if (idsToDelete.length === 0) return;
@@ -965,6 +971,7 @@ export const HandbookPagesPage: React.FC = () => {
             <PreviewHandbookModal
                 isOpen={previewModalOpen}
                 onClose={() => setPreviewModalOpen(false)}
+                tree={handbookTree}
                 selectedPageIds={checkedInViewIds.length > 0 ? checkedInViewIds : null}
             />
 
