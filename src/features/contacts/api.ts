@@ -26,6 +26,12 @@ export interface ContactListItem {
   email?: string | null;
   /** Comma-separated area-of-responsibility names (from contact_area_assignments). */
   areas?: string | null;
+  /**
+   * Visibility flag from contact_visibility_overrides.
+   * 1 = public (default), 0 = private.
+   * Contacts always appear in the list regardless of this value.
+   */
+  visibility?: 0 | 1 | null;
   isCurrentUser?: boolean;
 }
 
@@ -71,6 +77,11 @@ interface ContactAreasResponse {
 
 function mapContactListItem(item: ContactListItem): Contact {
   const isCurrentUser = item.nid === 0 || item.isCurrentUser === true;
+  // visibility: 1 = public (default when missing), 0 = private
+  const isPublic =
+    item.visibility == null
+      ? true
+      : item.visibility === 1;
   // Prefer new areas-of-responsibility names; fall back to the legacy role field
   const functionTitle = item.areas?.trim() || item.role?.trim() || undefined;
   return {
@@ -82,6 +93,7 @@ function mapContactListItem(item: ContactListItem): Contact {
     functionTitle,
     areas: item.areas ? item.areas.split(', ').filter(Boolean) : undefined,
     isCurrentUser,
+    isPublic,
     status: 'ACTIVE',
   };
 }

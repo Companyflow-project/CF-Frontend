@@ -58,6 +58,8 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [selectedAreaIds, setSelectedAreaIds] = useState<number[]>([]);
   const [customAreas, setCustomAreas] = useState<string[]>([]);
+  /** Tracks which session-only new areas are currently checked (by index). Starts as all checked. */
+  const [checkedCustomAreaIndices, setCheckedCustomAreaIndices] = useState<number[]>([]);
   const [newCustomArea, setNewCustomArea] = useState('');
   const [isAddingCustomArea, setIsAddingCustomArea] = useState(false);
   /** areaId of a persisted custom area pending delete confirmation */
@@ -69,6 +71,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
       setPhoneTouched(false);
       setSelectedAreaIds(existingAreaIds ?? []);
       setCustomAreas([]);
+      setCheckedCustomAreaIndices([]);
       setNewCustomArea('');
       setIsAddingCustomArea(false);
       setPendingDeleteAreaId(null);
@@ -90,13 +93,29 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
   const handleConfirmCustomArea = () => {
     const trimmed = newCustomArea.trim();
     if (trimmed && !customAreas.includes(trimmed)) {
-      setCustomAreas((prev) => [...prev, trimmed]);
+      setCustomAreas((prev) => {
+        const newIndex = prev.length;
+        // Auto-check the new area
+        setCheckedCustomAreaIndices((ci) => [...ci, newIndex]);
+        return [...prev, trimmed];
+      });
     }
     setNewCustomArea('');
     setIsAddingCustomArea(false);
   };
-  const handleRemoveCustomArea = (index: number) =>
+  const handleRemoveCustomArea = (index: number) => {
     setCustomAreas((prev) => prev.filter((_, i) => i !== index));
+    // Re-index the checked indices after removal
+    setCheckedCustomAreaIndices((prev) =>
+      prev.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i)),
+    );
+  };
+
+  const handleToggleCustomArea = (index: number) => {
+    setCheckedCustomAreaIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    );
+  };
 
   /** Called when the user confirms deleting a persisted custom area. */
   const handleConfirmDeletePersistedArea = async () => {
@@ -136,7 +155,11 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
       setPhoneTouched(true);
       return;
     }
-    const newAreas = customAreas.map((a) => a.trim()).filter((a) => a !== '');
+    // Only submit session-only areas that are still checked
+    const newAreas = customAreas
+      .filter((_, i) => checkedCustomAreaIndices.includes(i))
+      .map((a) => a.trim())
+      .filter((a) => a !== '');
     onConfirm({
       uid: employee.uid,
       name: employee.name,
@@ -289,7 +312,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                       <span className="truncate">{area.name}</span>
                     </button>
 
-                    {/* Delete button — only for persisted custom areas */}
+                    {/* Delete button — only for persisted custom areas, always visible */}
                     {isCustom && (
                       <button
                         type="button"
@@ -298,7 +321,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                           setPendingDeleteAreaId(area.id);
                         }}
                         title="Delete this custom area"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
                         aria-label={`Delete ${area.name}`}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -309,33 +332,53 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
               })}
 
               {/* Session-only (unsaved) areas typed in this modal */}
-              {customAreas.map((area, index) => (
-                <div
-                  key={`custom-${index}`}
-                  className="relative flex items-center gap-2 rounded-[10px] border border-[#3d997d] bg-[#d4f4e6] px-3 py-2 text-sm font-medium text-[#1a5948] w-full"
-                >
-                  <span className="h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0 bg-[#3d997d] border-[#3d997d]">
-                    <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
-                      <path
-                        d="M2 6l3 3 5-5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                  <span className="flex-1 truncate">{area}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveCustomArea(index)}
-                    className="h-4 w-4 rounded-full flex items-center justify-center text-[#3d997d] hover:text-[#d5384b] hover:bg-[#ffecef] transition-colors flex-shrink-0"
-                    aria-label="Remove"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
+              {customAreas.map((area, index) => {
+                const isCustomChecked = checkedCustomAreaIndices.includes(index);
+                return (
+                  <div key={`custom-${index}`} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleCustomArea(index)}
+                      className={[
+                        'flex items-center gap-2 rounded-[10px] border text-left transition-all w-full px-3 py-2 pr-7 text-sm font-medium',
+                        isCustomChecked
+                          ? 'bg-[#d4f4e6] border-[#3d997d] text-[#1a5948]'
+                          : 'bg-white border-[#e5e7eb] text-[#374151] hover:border-[#3d997d]/40 hover:bg-[#f6fbf9]',
+                      ].join(' ')}
+                    >
+                      <span
+                        className={[
+                          'h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0',
+                          isCustomChecked ? 'bg-[#3d997d] border-[#3d997d]' : 'border-[#d1d5db] bg-white',
+                        ].join(' ')}
+                      >
+                        {isCustomChecked && (
+                          <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
+                            <path
+                              d="M2 6l3 3 5-5"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="truncate">{area}</span>
+                    </button>
+                    {/* Delete button — always visible for session-only areas */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCustomArea(index)}
+                      title="Remove this area"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
+                      aria-label={`Remove ${area}`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Custom area input */}

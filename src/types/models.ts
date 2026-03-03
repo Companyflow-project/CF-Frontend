@@ -75,6 +75,7 @@ export interface Contact {
   functionTitle?: string;
   /** Area-of-responsibility names assigned to this contact */
   areas?: string[];
+  /** Visibility flag — true = public, false = private. Sourced from contact.visibility (0|1) in GET /contacts. */
   isPublic?: boolean;
   isEmployeeContact?: boolean;
   isExternalContact?: boolean;

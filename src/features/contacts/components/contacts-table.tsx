@@ -160,17 +160,16 @@ function ContactsTableInner({
                   <div className="space-y-1 text-xs text-[#0d0e0e]">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`h-2.5 w-2.5 rounded-full ${contact.isPublic ? 'bg-[#2f946f]' : 'bg-[#a15c00]'
-                          }`}
+                        className={`h-2.5 w-2.5 rounded-full ${contact.isPublic !== false ? 'bg-[#2f946f]' : 'bg-[#a15c00]'}`}
                       />
-                      <span>{contact.isPublic ? 'Public' : 'Private'}</span>
+                      <span>{contact.isPublic !== false ? 'Public' : 'Private'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`h-2.5 w-2.5 rounded-full ${contact.id.startsWith('emp-')
-                          ? 'bg-[#9ca3af]'
-                          : contact.isExternalContact
-                            ? 'bg-[#1e40af]'
-                            : 'bg-[#1a5948]'
+                        ? 'bg-[#9ca3af]'
+                        : contact.isExternalContact
+                          ? 'bg-[#1e40af]'
+                          : 'bg-[#1a5948]'
                         }`} />
                       <span className={contact.id.startsWith('emp-') ? 'text-[#9ca3af]' : ''}>
                         {contact.id.startsWith('emp-')
@@ -182,8 +181,7 @@ function ContactsTableInner({
                     </div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`h-2.5 w-2.5 rounded-full ${contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'
-                          }`}
+                        className={`h-2.5 w-2.5 rounded-full ${contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'}`}
                       />
                       <span>{contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span>
                     </div>

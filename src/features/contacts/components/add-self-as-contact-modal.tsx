@@ -184,7 +184,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
                     </svg>
                   </span>
                   {label}
-                  <X className="h-3.5 w-3.5 ml-auto flex-shrink-0 opacity-70" />
+                  <X className="h-3.5 w-3.5 ml-auto flex-shrink-0" />
                 </button>
               ))}
             </div>

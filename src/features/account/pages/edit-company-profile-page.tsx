@@ -12,10 +12,12 @@ import { HelpBanner } from '@/components/ui/help-banner';
 
 export const EditCompanyProfilePage: React.FC = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const companyId = user?.companyId ? Number(user.companyId) : undefined;
 
-    const { data: profile, isLoading, error } = useCompanyProfile(companyId);
+    const { data: profile, isLoading, error } = useCompanyProfile(
+        !authLoading ? companyId : undefined
+    );
     const updateMutation = useUpdateCompanyProfile();
 
     const [formData, setFormData] = useState({
@@ -124,8 +126,19 @@ export const EditCompanyProfilePage: React.FC = () => {
         return `${baseUrl}${formData.logoUrl}`;
     };
 
-    // Show error if user has no company linked
-    if (!companyId && !isLoading) {
+    // Still waiting for auth session to resolve — show nothing yet
+    if (authLoading) {
+        return (
+            <PageShell>
+                <div className="max-w-[1200px] mx-auto pb-20">
+                    <div className="text-center py-20 text-gray-500">Loading…</div>
+                </div>
+            </PageShell>
+        );
+    }
+
+    // Auth resolved but user has no company linked
+    if (!companyId) {
         return (
             <PageShell>
                 <div className="max-w-[1200px] mx-auto pb-20">
@@ -169,6 +182,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
                         <p className="text-red-600">Failed to load company profile. Please try again later.</p>
+                        <p className="text-sm text-red-400 mt-1">{error.message}</p>
                     </div>
                 </div>
             </PageShell>

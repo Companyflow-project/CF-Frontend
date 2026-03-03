@@ -62,8 +62,9 @@ export const ContactsPage: React.FC = () => {
   const { data: apiEmployees } = useEmployees({ limit: 1000 });
   const { data: potentialContacts } = usePotentialContacts();
 
-  // Merge ALL company employees into the contacts list (public and private).
-  // The /api/contacts endpoint returns empty strings for email, so de-duplicate by normalized name.
+  // Merge ALL company employees into the contacts list.
+  // The /api/contacts endpoint returns only status=1 rows; employees not in contacts appear
+  // as "emp-{id}" rows with an "Add as contact" button.
   const mergedContacts = useMemo(() => {
     const employees = (apiEmployees as unknown as BackendEmployeeLike[] | undefined ?? [])
       .map(transformEmployee)
@@ -80,21 +81,35 @@ export const ContactsPage: React.FC = () => {
         createdAt: emp.createdAt,
       }) satisfies import('@/types/models').Contact);
 
+    // De-duplicate raw contacts: the backend can return multiple nids for the same person
+    // (e.g. if they were added as a contact more than once). Keep the first occurrence,
+    // using email as the primary key and normalised name as fallback.
+    const seenKeys = new Set<string>();
+    const dedupedContacts = contacts.filter((c) => {
+      const key = c.email?.trim().toLowerCase() || c.name.trim().toLowerCase();
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    });
+
     // Build a set of employee names to distinguish employee contacts from external ones
     const employeeNames = new Set(employees.map((e) => e.name.trim().toLowerCase()));
 
     // Mark real contacts as employee or external based on name match
-    const markedContacts = contacts.map((c) => ({
+    const markedContacts = dedupedContacts.map((c) => ({
       ...c,
       isEmployeeContact: employeeNames.has(c.name.trim().toLowerCase()),
       isExternalContact: !employeeNames.has(c.name.trim().toLowerCase()),
     }));
 
     // De-duplicate: only append employees not already in contacts
-    const existingNames = new Set(contacts.map((c) => c.name.trim().toLowerCase()));
-    const newEmployees = employees.filter(
-      (emp) => !existingNames.has(emp.name.trim().toLowerCase())
-    );
+    const existingKeys = new Set(dedupedContacts.map((c) =>
+      c.email?.trim().toLowerCase() || c.name.trim().toLowerCase()
+    ));
+    const newEmployees = employees.filter((emp) => {
+      const key = emp.email?.trim().toLowerCase() || emp.name.trim().toLowerCase();
+      return !existingKeys.has(key);
+    });
 
     return [...markedContacts, ...newEmployees];
   }, [contacts, apiEmployees]);
@@ -158,7 +173,7 @@ export const ContactsPage: React.FC = () => {
   );
 
   const visibilityStats = useMemo(() => ({
-    publicProfiles: mergedContacts.filter((c) => c.isPublic).length,
+    publicProfiles: mergedContacts.filter((c) => c.isPublic !== false).length,
     inactive: mergedContacts.filter((c) => c.status === 'INACTIVE').length,
     employee: employeeContacts.length,
     external: externalContacts.length,
@@ -221,6 +236,7 @@ export const ContactsPage: React.FC = () => {
       setVisibilityLoading(false);
     }
   }, [refetchContacts]);
+
 
   const handleExport = useCallback(async () => {
     setExportLoading(true);
@@ -559,7 +575,6 @@ export const ContactsPage: React.FC = () => {
     }
   }, [addSelectedTargets, refetchContacts]);
 
-
   const handleSetPrivate = useCallback(
     () => handleSetVisibility(0, selectedIds.map((id) => Number(id))),
     [handleSetVisibility, selectedIds],
@@ -579,7 +594,6 @@ export const ContactsPage: React.FC = () => {
     () => handleSetVisibility(1, contacts.map((c) => Number(c.id))),
     [handleSetVisibility, contacts],
   );
-
 
   const handleDeleteOpen = useCallback(
     (contact: Contact) => setDeleteContact({ id: contact.id, name: contact.name }),

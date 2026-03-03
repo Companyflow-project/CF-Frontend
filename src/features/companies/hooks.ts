@@ -9,15 +9,27 @@ export const useCompanyProfile = (companyId: number | undefined) => {
             if (!companyId) {
                 throw new Error('Company ID is required');
             }
-            const response = await companiesApi.getProfile(companyId);
-            // Cast to unknowns to check if it's an error response
-            if ('error' in response && response.error) {
-                const errorResponse = response as unknown as ApiErrorResponse;
-                throw new Error(errorResponse.error.message || 'Failed to fetch company profile');
+            try {
+                const response = await companiesApi.getProfile(companyId);
+                // Backend may return error: {} (empty object) alongside data: null —
+                // only treat as real error if there's an actual message/code.
+                const err = response.error as { message?: string; code?: string } | null | undefined;
+                if (err && (err.message || err.code)) {
+                    throw new Error(err.message || 'Failed to fetch company profile');
+                }
+                return response.data ?? null;
+            } catch (err: unknown) {
+                // 404 = company profile not created yet — treat as empty, not as error
+                const status =
+                    err && typeof err === 'object' && 'response' in err
+                        ? (err as { response?: { status?: number } }).response?.status
+                        : undefined;
+                if (status === 404) return null;
+                throw err;
             }
-            return response.data;
         },
         enabled: !!companyId,
+        retry: false, // don't hammer the endpoint on failure
     });
 };
 
