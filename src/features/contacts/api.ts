@@ -3,11 +3,17 @@ import { Contact } from '@/types/models';
 
 /**
  * Area of responsibility for use in contact/employee UIs.
- * Backed by GET /api/responsibilities which returns { id, name } items.
+ * Backed by GET /contacts/areas which returns { data: AreaOfResponsibility[] }.
  */
 export interface ContactAreaItem {
-  tid: number;
+  id: number;
+  code: string;
   name: string;
+  description?: string;
+  companyId?: number;
+  isActive: boolean;
+  isDefault: boolean;
+  sortOrder: number;
 }
 
 /** Backend contact item (my company's contacts – no companyId in request). */
@@ -18,6 +24,8 @@ export interface ContactListItem {
   phone: string | null;
   /** Optional email, now returned by /contacts. */
   email?: string | null;
+  /** Comma-separated area-of-responsibility names (from contact_area_assignments). */
+  areas?: string | null;
   isCurrentUser?: boolean;
 }
 
@@ -51,21 +59,28 @@ interface ContactDetailResponse {
     telephone?: string | null;
     role?: string | null;
     functionTitle?: string | null;
-    selectedTids?: number[];
   } | null;
   meta?: null;
   error: { code: string; message: string } | null;
 }
 
+interface ContactAreasResponse {
+  data: ContactAreaItem[];
+  error: null;
+}
+
 function mapContactListItem(item: ContactListItem): Contact {
   const isCurrentUser = item.nid === 0 || item.isCurrentUser === true;
+  // Prefer new areas-of-responsibility names; fall back to the legacy role field
+  const functionTitle = item.areas?.trim() || item.role?.trim() || undefined;
   return {
     id: String(item.nid),
     accountId: '',
     name: item.title,
     email: item.email ?? '',
     telephone: item.phone ?? undefined,
-    functionTitle: item.role ?? undefined,
+    functionTitle,
+    areas: item.areas ? item.areas.split(', ').filter(Boolean) : undefined,
     isCurrentUser,
     status: 'ACTIVE',
   };
@@ -124,10 +139,10 @@ export const contactsApi = {
 
   /**
    * GET /api/contacts/:id
-   * Success: status 200 and error === null → returns contact and optional selectedTids.
+   * Success: status 200 and error === null → returns contact details.
    * Failure: 404 or error !== null → throws (caller shows "Contact not found").
    */
-  async getContact(id: string): Promise<{ contact: Contact; selectedTids?: number[] }> {
+  async getContact(id: string): Promise<Contact> {
     const response = await axiosClient.get<ContactDetailResponse>(`/contacts/${id}`);
     const body = response.data;
     if (body?.error != null || body?.data == null) {
@@ -135,39 +150,33 @@ export const contactsApi = {
       throw new Error(msg);
     }
     const contact = mapContactDetail(body.data);
-    const selectedTids = Array.isArray(body.data.selectedTids) ? body.data.selectedTids : undefined;
-    return { contact, selectedTids };
+    return contact;
   },
 
   /**
    * Areas of responsibility for the checklist.
-   * Source of truth is GET /api/responsibilities which returns items as
-   * { id: number; name: string }.
-   * We adapt that shape to the existing ContactAreaItem (tid/name).
+   * Source of truth is GET /contacts/areas which returns { data: AreaOfResponsibility[] }.
    */
   async getContactAreas(): Promise<ContactAreaItem[]> {
-    type Responsibility = { id: number; name: string };
+    const response = await axiosClient.get<ContactAreasResponse>('/contacts/areas');
+    const raw = response.data?.data ?? [];
+    return Array.isArray(raw) ? raw : [];
+  },
 
-    const response = await axiosClient.get<Responsibility[] | { data: Responsibility[] }>(
-      '/responsibilities',
-    );
-
-    const raw: Responsibility[] = Array.isArray(response.data)
-      ? response.data
-      : Array.isArray((response.data as { data?: Responsibility[] }).data)
-        ? (response.data as { data: Responsibility[] }).data
-        : [];
-
-    return raw.map((item) => ({
-      tid: Number(item.id),
-      name: item.name,
-    }));
+  /**
+   * Areas assigned to a specific contact.
+   * GET /contacts/:id/areas → { data: AreaOfResponsibility[] }.
+   */
+  async getContactAreasForContact(id: string): Promise<ContactAreaItem[]> {
+    const response = await axiosClient.get<ContactAreasResponse>(`/contacts/${id}/areas`);
+    const raw = response.data?.data ?? [];
+    return Array.isArray(raw) ? raw : [];
   },
 
   /**
    * Create / promote contact.
    * POST /api/contacts
-   * Body: name (required), uid? (internal), phone?, email?, selectedTids (required, can be []), customArea? (Other).
+   * Body: name (required), uid? (internal), phone?, email?, role?, areaIds? (can be []), newAreas? ([] of labels).
    * Returns 201 { data: { nid: number } }. 403 = company context required; 400 = validation.
    */
   async createContact(payload: {
@@ -175,16 +184,18 @@ export const contactsApi = {
     uid?: number;
     phone?: string;
     email?: string;
-    selectedTids: number[];
-    customArea?: string;
+    areaIds?: number[];
+    role?: string | null;
+    newAreas?: string[];
   }): Promise<{ nid: number }> {
     const response = await axiosClient.post<{ data: { nid: number } }>('/contacts', {
       name: payload.name,
       ...(payload.uid != null && { uid: payload.uid }),
       ...(payload.phone != null && payload.phone !== '' && { phone: payload.phone }),
       ...(payload.email != null && payload.email !== '' && { email: payload.email }),
-      selectedTids: payload.selectedTids ?? [],
-      ...(payload.customArea != null && payload.customArea.trim() !== '' && { customArea: payload.customArea.trim() }),
+      ...(payload.role != null && payload.role !== '' && { role: payload.role }),
+      ...(payload.areaIds && payload.areaIds.length > 0 && { areaIds: payload.areaIds }),
+      ...(payload.newAreas && payload.newAreas.length > 0 && { newAreas: payload.newAreas }),
     });
     const data = response.data?.data;
     if (data?.nid == null) throw new Error('Invalid create contact response');
@@ -194,7 +205,7 @@ export const contactsApi = {
   /**
    * Update contact. Tenant-aware (company must match).
    * PATCH /api/contacts/:id
-   * Body: name?, phone?, email?, role?, selectedTids? (if backend supports).
+   * Body: name?, phone?, email?, role?, areaIds?, newAreas? (if backend supports).
    */
   async updateContact(
     id: string,
@@ -203,15 +214,17 @@ export const contactsApi = {
       phone?: string;
       email?: string;
       role?: string;
-      selectedTids?: number[];
+      areaIds?: number[];
+      newAreas?: string[];
     },
   ): Promise<void> {
-    const body: Record<string, string | number[]> = {};
+    const body: Record<string, unknown> = {};
     if (payload.name !== undefined) body.name = payload.name;
     if (payload.phone !== undefined) body.phone = payload.phone;
     if (payload.email !== undefined) body.email = payload.email;
     if (payload.role !== undefined) body.role = payload.role;
-    if (payload.selectedTids !== undefined) body.selectedTids = payload.selectedTids;
+    if (payload.areaIds !== undefined) body.areaIds = payload.areaIds;
+    if (payload.newAreas !== undefined) body.newAreas = payload.newAreas;
     await axiosClient.patch(`/contacts/${id}`, body);
   },
 

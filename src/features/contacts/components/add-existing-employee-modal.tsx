@@ -16,8 +16,9 @@ export interface AddExistingEmployeeContactPayload {
   uid: number;
   name: string;
   phone?: string;
-  selectedTids: number[];
-  customAreas: string[];
+  areaIds: number[];
+  /** Names of brand-new areas created in this modal. */
+  newAreas?: string[];
 }
 
 interface AddExistingEmployeeModalProps {
@@ -54,7 +55,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
   const [selectedUid, setSelectedUid] = useState('');
   const [phone, setPhone] = useState('');
   const [phoneTouched, setPhoneTouched] = useState(false);
-  const [selectedTids, setSelectedTids] = useState<number[]>([]);
+  const [selectedAreaIds, setSelectedAreaIds] = useState<number[]>([]);
   const [customAreas, setCustomAreas] = useState<string[]>([]);
   const [newCustomArea, setNewCustomArea] = useState('');
   const [isAddingCustomArea, setIsAddingCustomArea] = useState(false);
@@ -65,7 +66,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
       setSelectedUid('');
       setPhone('');
       setPhoneTouched(false);
-      setSelectedTids([]);
+      setSelectedAreaIds([]);
       setCustomAreas([]);
       setNewCustomArea('');
       setIsAddingCustomArea(false);
@@ -92,9 +93,9 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
   const phoneEmpty = phone.trim() === '';
   const showPhoneError = phoneTouched && phoneEmpty;
 
-  const handleAreaToggle = (tid: number) => {
-    setSelectedTids((prev) =>
-      prev.includes(tid) ? prev.filter((t) => t !== tid) : [...prev, tid],
+  const handleAreaToggle = (areaId: number) => {
+    setSelectedAreaIds((prev) =>
+      prev.includes(areaId) ? prev.filter((id) => id !== areaId) : [...prev, areaId],
     );
   };
 
@@ -116,12 +117,13 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
       setPhoneTouched(true);
       return;
     }
+    const newAreas = customAreas.map((a) => a.trim()).filter((a) => a !== '');
     onConfirm({
       uid: selectedPotential.uid,
       name: selectedPotential.name,
       phone: phone.trim() || undefined,
-      selectedTids,
-      customAreas: customAreas.filter((a) => a.trim() !== ''),
+      areaIds: selectedAreaIds,
+      newAreas,
     });
     onOpenChange(false);
   };
@@ -250,12 +252,12 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {areasData.map((area) => {
-                const checked = selectedTids.includes(area.tid);
+                const checked = selectedAreaIds.includes(area.id);
                 return (
                   <button
-                    key={area.tid}
+                    key={area.id}
                     type="button"
-                    onClick={() => handleAreaToggle(area.tid)}
+                    onClick={() => handleAreaToggle(area.id)}
                     className={[
                       'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border text-sm font-medium transition-all text-left',
                       checked

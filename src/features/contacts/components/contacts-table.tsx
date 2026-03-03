@@ -112,121 +112,137 @@ function ContactsTableInner({
               (!contactEmail && !!name && contactName === name);
             return (
               <TableRow key={contact.id} className={`border-b border-[#ebf3ef] hover:bg-[#f6fbf9] ${isSelf ? 'bg-[#f6fbf9]' : ''}`}>
-              <TableCell>
-                <Checkbox
-                  checked={!isSelf && selectedIds.includes(contact.id)}
-                  onChange={() => !isSelf && onSelect(contact.id)}
-                  disabled={isSelf}
-                  className={`rounded-[4px] h-4 w-4 ${isSelf ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
-                />
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-[#111827]">{contact.name}</span>
-                  {isSelf && (
-                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#d4f4e6] text-[#1a5948]">You</span>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="text-[#111b18]">{contact.email}</TableCell>
-              <TableCell
-                className={
-                  contact.telephone ? 'text-[#111b18] w-[220px] whitespace-nowrap' : 'text-[#9fa4a4] text-xs'
-                }
-              >
-                {contact.telephone ? formatDanishPhone(contact.telephone) : 'Not available'}
-              </TableCell>
-              <TableCell className="text-[#111b18]">
-                {contact.functionTitle || '-'}
-              </TableCell>
-              <TableCell className="text-[#111b18]">
-                <div className="space-y-1 text-xs text-[#0d0e0e]">
+                <TableCell>
+                  <Checkbox
+                    checked={!isSelf && selectedIds.includes(contact.id)}
+                    onChange={() => !isSelf && onSelect(contact.id)}
+                    disabled={isSelf}
+                    className={`rounded-[4px] h-4 w-4 ${isSelf ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
+                  />
+                </TableCell>
+                <TableCell>
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`h-2.5 w-2.5 rounded-full ${contact.isPublic ? 'bg-[#2f946f]' : 'bg-[#a15c00]'
-                        }`}
-                    />
-                    <span>{contact.isPublic ? 'Public' : 'Private'}</span>
+                    <span className="font-semibold text-[#111827]">{contact.name}</span>
+                    {isSelf && (
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#d4f4e6] text-[#1a5948]">You</span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${
-                      contact.id.startsWith('emp-')
-                        ? 'bg-[#9ca3af]'
-                        : contact.isExternalContact
-                          ? 'bg-[#1e40af]'
-                          : 'bg-[#1a5948]'
-                    }`} />
-                    <span className={contact.id.startsWith('emp-') ? 'text-[#9ca3af]' : ''}>
-                      {contact.id.startsWith('emp-')
-                        ? 'Not in contacts'
-                        : contact.isExternalContact
-                          ? 'External contact'
-                          : 'Existing contact'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`h-2.5 w-2.5 rounded-full ${contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'
-                        }`}
-                    />
-                    <span>{contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="inline-flex items-center gap-2">
-                  {/* Current-user placeholder row */}
-                  {contact.isCurrentUser || contact.id === '0' ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
-                      onClick={() => onAddAsContact?.(contact)}
-                      aria-label="Add as contact"
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                      Add as contact
-                    </Button>
-                  ) : contact.id.startsWith('emp-') ? (
-                    /* Employee-only row — not yet a real contact */
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
-                      onClick={() => onAddEmployeeAsContact?.(contact)}
-                      aria-label="Add as contact"
-                    >
-                      <UserPlus className="h-3.5 w-3.5" />
-                      Add as contact
-                    </Button>
+                </TableCell>
+                <TableCell className={contact.email ? 'text-[#111b18]' : 'text-[#9fa4a4] text-xs'}>
+                  {contact.email || '—'}
+                </TableCell>
+                <TableCell
+                  className={
+                    contact.telephone ? 'text-[#111b18] w-[220px] whitespace-nowrap' : 'text-[#9fa4a4] text-xs'
+                  }
+                >
+                  {contact.telephone ? formatDanishPhone(contact.telephone) : 'Not available'}
+                </TableCell>
+                <TableCell className="text-[#111b18]">
+                  {contact.areas && contact.areas.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {contact.areas.map((area) => (
+                        <span
+                          key={area}
+                          className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#e8f5ef] text-[#1a5948] whitespace-nowrap"
+                        >
+                          {area}
+                        </span>
+                      ))}
+                    </div>
+                  ) : contact.functionTitle ? (
+                    <span className="text-sm">{contact.functionTitle}</span>
                   ) : (
-                    /* Real contact — edit always; delete only if not self */
-                    <>
+                    <span className="text-[#9fa4a4] text-xs">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-[#111b18]">
+                  <div className="space-y-1 text-xs text-[#0d0e0e]">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${contact.isPublic ? 'bg-[#2f946f]' : 'bg-[#a15c00]'
+                          }`}
+                      />
+                      <span>{contact.isPublic ? 'Public' : 'Private'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${contact.id.startsWith('emp-')
+                          ? 'bg-[#9ca3af]'
+                          : contact.isExternalContact
+                            ? 'bg-[#1e40af]'
+                            : 'bg-[#1a5948]'
+                        }`} />
+                      <span className={contact.id.startsWith('emp-') ? 'text-[#9ca3af]' : ''}>
+                        {contact.id.startsWith('emp-')
+                          ? 'Not in contacts'
+                          : contact.isExternalContact
+                            ? 'External contact'
+                            : 'Existing contact'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'
+                          }`}
+                      />
+                      <span>{contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="inline-flex items-center gap-2">
+                    {/* Current-user placeholder row */}
+                    {contact.isCurrentUser || contact.id === '0' ? (
                       <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
-                        onClick={() => onEditEmployeeContact?.(contact)}
-                        aria-label="Edit contact"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
+                        onClick={() => onAddAsContact?.(contact)}
+                        aria-label="Add as contact"
                       >
-                        <Edit className="h-4 w-4" />
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Add as contact
                       </Button>
-                      {!isSelf && (
+                    ) : contact.id.startsWith('emp-') ? (
+                      /* Employee-only row — not yet a real contact */
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
+                        onClick={() => onAddEmployeeAsContact?.(contact)}
+                        aria-label="Add as contact"
+                      >
+                        <UserPlus className="h-3.5 w-3.5" />
+                        Add as contact
+                      </Button>
+                    ) : (
+                      /* Real contact — edit always; delete only if not self */
+                      <>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
-                          onClick={() => onDelete?.(contact)}
-                          aria-label="Delete contact"
+                          className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
+                          onClick={() => onEditEmployeeContact?.(contact)}
+                          aria-label="Edit contact"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Edit className="h-4 w-4" />
                         </Button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
+                        {!isSelf && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
+                            onClick={() => onDelete?.(contact)}
+                            aria-label="Delete contact"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
             );
           })
         )}

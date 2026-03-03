@@ -34,9 +34,11 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
-  const [selectedTids, setSelectedTids] = useState<number[]>([]);
+  const [selectedAreaIds, setSelectedAreaIds] = useState<number[]>([]);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
 
-  const { data: contactData, isLoading: loading, error: fetchError } = useQuery({
+  const { data: contact, isLoading: loading, error: fetchError } = useQuery({
     queryKey: contactsQueries.detail(contactId ?? ''),
     queryFn: () => contactsApi.getContact(contactId!),
     enabled: open && !!contactId,
@@ -52,39 +54,64 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
       setPhone('');
       setEmail('');
       setRole('');
-      setSelectedTids([]);
+      setSelectedAreaIds([]);
       setSaveError(null);
+      setEmailTouched(false);
+      setPhoneTouched(false);
     }
   }, [open, contactId]);
 
   // Populate form fields when contact data arrives
   useEffect(() => {
-    if (!contactData) return;
-    const { contact: c, selectedTids: tids } = contactData;
-    setName(c.name ?? '');
-    setPhone(c.telephone ?? '');
-    setEmail(c.email ?? '');
-    setRole(c.functionTitle ?? '');
-    setSelectedTids(Array.isArray(tids) ? tids : []);
-  }, [contactData]);
+    if (!contact) return;
+    setName(contact.name ?? '');
+    setPhone(contact.telephone ?? '');
+    setEmail(contact.email ?? '');
+    setRole(contact.functionTitle ?? '');
+  }, [contact]);
 
-  const handleAreaToggle = useCallback((tid: number) => {
-    setSelectedTids((prev) =>
-      prev.includes(tid) ? prev.filter((t) => t !== tid) : [...prev, tid],
+  // Fetch areas assigned to this contact when the modal opens
+  useEffect(() => {
+    if (!open || !contactId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const areasForContact = await contactsApi.getContactAreasForContact(contactId);
+        if (!cancelled) {
+          setSelectedAreaIds(areasForContact.map((a) => a.id));
+        }
+      } catch {
+        if (!cancelled) {
+          setSelectedAreaIds([]);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, contactId]);
+
+  const handleAreaToggle = useCallback((areaId: number) => {
+    setSelectedAreaIds((prev) =>
+      prev.includes(areaId) ? prev.filter((id) => id !== areaId) : [...prev, areaId],
     );
   }, []);
 
+  const emailEmpty = (email ?? '').trim() === '';
+  const phoneEmpty = (phone ?? '').trim() === '';
+  const canSave = name.trim() !== '' && !emailEmpty && !phoneEmpty;
+
   const handleSubmit = useCallback(async () => {
-    if (!contactId) return;
+    if (!contactId || !canSave) return;
     setSaving(true);
     setSaveError(null);
     try {
       await contactsApi.updateContact(contactId, {
         name: name.trim(),
-        phone: phone.trim() || undefined,
-        email: email.trim() || undefined,
+        phone: phone.trim(),
+        email: email.trim(),
         role: role.trim() || undefined,
-        selectedTids: selectedTids.length ? selectedTids : undefined,
+        areaIds: selectedAreaIds.length ? selectedAreaIds : undefined,
       });
       onSaved();
       onOpenChange(false);
@@ -101,9 +128,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
     } finally {
       setSaving(false);
     }
-  }, [contactId, name, phone, email, role, selectedTids, onSaved, onOpenChange]);
-
-  const contact = contactData?.contact ?? null;
+  }, [contactId, name, phone, email, role, selectedAreaIds, canSave, onSaved, onOpenChange]);
   const fetchErrorMsg = fetchError instanceof Error
     ? fetchError.message
     : fetchError
@@ -149,25 +174,37 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-phone" className="text-sm font-semibold text-[#0d0e0e]">Phone</Label>
+                <Label htmlFor="edit-phone" className="text-sm font-semibold text-[#0d0e0e]">
+                  Phone <span className="text-[#d5384b]">*</span>
+                </Label>
                 <Input
                   id="edit-phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  onBlur={() => setPhoneTouched(true)}
                   placeholder="+1 000 000 0000"
-                  className="h-11 rounded-[10px] border-[#e5e7eb] text-sm"
+                  className={`h-11 rounded-[10px] text-sm ${phoneEmpty && phoneTouched ? 'border-[#d5384b]' : 'border-[#e5e7eb]'}`}
                 />
+                {phoneEmpty && phoneTouched && (
+                  <p className="text-xs text-[#d5384b]">Phone is required</p>
+                )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-email" className="text-sm font-semibold text-[#0d0e0e]">Email</Label>
+                <Label htmlFor="edit-email" className="text-sm font-semibold text-[#0d0e0e]">
+                  Email <span className="text-[#d5384b]">*</span>
+                </Label>
                 <Input
                   id="edit-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setEmailTouched(true)}
                   placeholder="email@example.com"
-                  className="h-11 rounded-[10px] border-[#e5e7eb] text-sm"
+                  className={`h-11 rounded-[10px] text-sm ${emailEmpty && emailTouched ? 'border-[#d5384b]' : 'border-[#e5e7eb]'}`}
                 />
+                {emailEmpty && emailTouched && (
+                  <p className="text-xs text-[#d5384b]">Email is required</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-role" className="text-sm font-semibold text-[#0d0e0e]">Role</Label>
@@ -187,12 +224,12 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
                   </Label>
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     {areas.map((area) => {
-                      const checked = selectedTids.includes(area.tid);
+                      const checked = selectedAreaIds.includes(area.id);
                       return (
                         <button
-                          key={area.tid}
+                          key={area.id}
                           type="button"
-                          onClick={() => handleAreaToggle(area.tid)}
+                          onClick={() => handleAreaToggle(area.id)}
                           className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] border text-sm font-medium transition-all text-left ${checked
                             ? 'bg-[#d4f4e6] border-[#3d997d] text-[#1a5948]'
                             : 'bg-white border-[#e5e7eb] text-[#374151] hover:border-[#3d997d]/40 hover:bg-[#f6fbf9]'
@@ -228,7 +265,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={saving || !name.trim()}
+              disabled={saving || !canSave}
               className="rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white"
             >
               {saving ? (

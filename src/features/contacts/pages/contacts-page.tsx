@@ -19,6 +19,11 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useContacts, usePotentialContacts } from '../hooks';
 import { AddEmployeeAsContactModal, type EmployeeContactData } from '../components/add-employee-as-contact-modal';
+import { AddSelfAsContactModal } from '../components/add-self-as-contact-modal';
+import {
+  AddSelectedAsContactsModal,
+  type BatchContactTarget,
+} from '../components/add-selected-as-contacts-modal';
 import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { toast } from 'sonner';
@@ -46,8 +51,11 @@ export const ContactsPage: React.FC = () => {
     open: boolean;
     employee: EmployeeContactData | null;
     contactId?: string;
-    existingTids?: number[];
+    existingAreaIds?: number[];
   }>({ open: false, employee: null });
+  const [addSelfModalOpen, setAddSelfModalOpen] = useState(false);
+  const [addSelectedModalOpen, setAddSelectedModalOpen] = useState(false);
+  const [addSelectedTargets, setAddSelectedTargets] = useState<BatchContactTarget[]>([]);
   const importFileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: contacts, error: contactsError, refetch: refetchContacts } = useContacts();
@@ -297,20 +305,33 @@ export const ContactsPage: React.FC = () => {
     }
   }, [pendingImportFile, refetchContacts]);
 
-  const handleAddAsContact = useCallback(async (contact: Contact) => {
+  const handleAddAsContact = useCallback((_contact: Contact) => {
     const uid = user?.id != null ? Number(user.id) : null;
     if (uid == null || Number.isNaN(uid)) {
       toast.error('You must be logged in to add yourself as a contact.');
       return;
     }
+    setAddSelfModalOpen(true);
+  }, [user]);
+
+  const handleAddSelfConfirm = useCallback(async (data: {
+    name: string;
+    uid: number;
+    phone?: string;
+    areaIds: number[];
+    newAreas?: string[];
+  }) => {
     try {
       await contactsApi.createContact({
-        name: contact.name || user?.name || 'Me',
-        uid,
-        selectedTids: [],
+        name: data.name,
+        uid: data.uid,
+        phone: data.phone,
+        areaIds: data.areaIds ?? [],
+        newAreas: data.newAreas,
       });
       refetchContacts();
       toast.success('Added as contact');
+      setAddSelfModalOpen(false);
     } catch (err: unknown) {
       const msg =
         err && typeof err === 'object' && 'response' in err
@@ -320,7 +341,7 @@ export const ContactsPage: React.FC = () => {
           : err instanceof Error ? err.message : 'Failed to add as contact';
       toast.error(msg);
     }
-  }, [user, refetchContacts]);
+  }, [refetchContacts]);
 
   const handleOpenEmployeeContactModal = useCallback((contact: Contact) => {
     const empId = contact.id.startsWith('emp-') ? contact.id.replace('emp-', '') : contact.id;
@@ -336,29 +357,29 @@ export const ContactsPage: React.FC = () => {
   }, []);
 
   const handleEditEmployeeContact = useCallback(async (contact: Contact) => {
-    let existingTids: number[] = [];
+    let existingAreaIds: number[] = [];
     try {
-      const { selectedTids } = await contactsApi.getContact(contact.id);
-      existingTids = selectedTids ?? [];
+      const areas = await contactsApi.getContactAreasForContact(contact.id);
+      existingAreaIds = areas.map((a) => a.id);
     } catch {
-      // Proceed without existing tids
+      // Proceed without existing areas
     }
 
     // Fall back to employee's responsibilityIds if the contact has none
-    if (existingTids.length === 0 && apiEmployees) {
+    if (existingAreaIds.length === 0 && apiEmployees) {
       const empList = (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
       const matched = empList.find(
         (e) => e.name.trim().toLowerCase() === contact.name.trim().toLowerCase(),
       );
       if (matched?.responsibilityIds?.length) {
-        existingTids = matched.responsibilityIds;
+        existingAreaIds = matched.responsibilityIds;
       }
     }
 
     setEmployeeContactModal({
       open: true,
       contactId: contact.id,
-      existingTids,
+      existingAreaIds,
       employee: {
         uid: Number(contact.id),
         name: contact.name,
@@ -372,17 +393,16 @@ export const ContactsPage: React.FC = () => {
     uid: number;
     name: string;
     phone?: string;
-    selectedTids: number[];
-    customAreas: string[];
+    areaIds: number[];
+    newAreas?: string[];
   }) => {
-    const customArea = data.customAreas.filter(Boolean).join(', ') || undefined;
     const isEdit = !!employeeContactModal.contactId;
     try {
       if (isEdit) {
         await contactsApi.updateContact(employeeContactModal.contactId!, {
           phone: data.phone,
-          selectedTids: data.selectedTids,
-          ...(customArea ? { role: customArea } : {}),
+          areaIds: data.areaIds,
+          newAreas: data.newAreas,
         });
         toast.success('Contact updated');
       } else {
@@ -390,8 +410,8 @@ export const ContactsPage: React.FC = () => {
           name: data.name,
           uid: data.uid,
           phone: data.phone,
-          selectedTids: data.selectedTids,
-          customArea,
+          areaIds: data.areaIds,
+          newAreas: data.newAreas,
         });
         toast.success('Employee added as contact');
       }
@@ -405,7 +425,7 @@ export const ContactsPage: React.FC = () => {
           : err instanceof Error ? err.message : 'Failed to save contact';
       toast.error(msg);
     }
-  }, [employeeContactModal.contactId, employeeContactModal.existingTids, refetchContacts]);
+  }, [employeeContactModal.contactId, refetchContacts]);
 
   const handleEditSaved = useCallback(() => {
     refetchContacts();
@@ -416,17 +436,16 @@ export const ContactsPage: React.FC = () => {
     uid: number;
     name: string;
     phone?: string;
-    selectedTids: number[];
-    customAreas: string[];
+    areaIds: number[];
+    newAreas?: string[];
   }) => {
     try {
-      const customArea = data.customAreas?.filter(Boolean).join(', ') || undefined;
       await contactsApi.createContact({
         name: data.name,
         uid: data.uid,
         phone: data.phone,
-        selectedTids: data.selectedTids ?? [],
-        customArea,
+        areaIds: data.areaIds ?? [],
+        newAreas: data.newAreas,
       });
       refetchContacts();
       toast.success('Contact added');
@@ -442,18 +461,18 @@ export const ContactsPage: React.FC = () => {
 
   const handleAddExternalConfirm = useCallback(async (data: {
     name: string;
-    email?: string;
-    phone?: string;
-    selectedTids: number[];
-    customArea?: string;
+    email: string;
+    phone: string;
+    areaIds: number[];
+    newAreas?: string[];
   }) => {
     try {
       await contactsApi.createContact({
         name: data.name,
         email: data.email,
         phone: data.phone,
-        selectedTids: data.selectedTids ?? [],
-        customArea: data.customArea,
+        areaIds: data.areaIds ?? [],
+        newAreas: data.newAreas,
       });
       refetchContacts();
       toast.success('Contact added');
@@ -467,47 +486,66 @@ export const ContactsPage: React.FC = () => {
     }
   }, [refetchContacts]);
 
-  const handleAddSelectedAsContacts = useCallback(async () => {
+  const handleAddSelectedAsContacts = useCallback(() => {
     if (selectedIds.length === 0) return;
 
-    // Map potential contacts by normalized name for lookup.
     const potentialByName = new Map(
       potentialContacts.map((item) => [item.name.trim().toLowerCase(), item]),
     );
 
-    // From the current filtered list, pick selected items that are employees and still potential contacts.
-    const targets = filteredContacts.filter(
+    const matchingContacts = filteredContacts.filter(
       (contact) =>
         selectedIds.includes(contact.id) &&
         contact.isEmployeeContact &&
         potentialByName.has(contact.name.trim().toLowerCase()),
     );
 
-    if (targets.length === 0) {
+    if (matchingContacts.length === 0) {
       toast.info('No employees to add as contacts.');
       return;
     }
 
+    const targets: BatchContactTarget[] = matchingContacts.map((contact) => {
+      const potential = potentialByName.get(contact.name.trim().toLowerCase())!;
+      return {
+        id: contact.id,
+        name: contact.name,
+        email: contact.email ?? undefined,
+        telephone: contact.telephone,
+        uid: potential.uid,
+      };
+    });
+    setAddSelectedTargets(targets);
+    setAddSelectedModalOpen(true);
+  }, [selectedIds, filteredContacts, potentialContacts]);
+
+  const handleAddSelectedConfirm = useCallback(async (payload: {
+    areaIds: number[];
+    newAreas?: string[];
+  }) => {
+    if (addSelectedTargets.length === 0) return;
     setAddingSelectedLoading(true);
     try {
       await Promise.all(
-        targets.map((contact) => {
-          const key = contact.name.trim().toLowerCase();
-          const potential = potentialByName.get(key);
-          if (!potential) return Promise.resolve();
-          return contactsApi.createContact({
-            name: potential.name,
-            uid: potential.uid,
-            selectedTids: [],
-          });
-        }),
+        addSelectedTargets.map((t) =>
+          contactsApi.createContact({
+            name: t.name,
+            uid: t.uid,
+            phone: t.telephone,
+            email: t.email,
+            areaIds: payload.areaIds ?? [],
+            newAreas: payload.newAreas,
+          }),
+        ),
       );
       refetchContacts();
       toast.success(
-        targets.length === 1
+        addSelectedTargets.length === 1
           ? '1 employee added as a contact.'
-          : `${targets.length} employees added as contacts.`,
+          : `${addSelectedTargets.length} employees added as contacts.`,
       );
+      setAddSelectedModalOpen(false);
+      setAddSelectedTargets([]);
     } catch (err: unknown) {
       const msg =
         err && typeof err === 'object' && 'response' in err
@@ -519,7 +557,7 @@ export const ContactsPage: React.FC = () => {
     } finally {
       setAddingSelectedLoading(false);
     }
-  }, [selectedIds, filteredContacts, potentialContacts, refetchContacts]);
+  }, [addSelectedTargets, refetchContacts]);
 
 
   const handleSetPrivate = useCallback(
@@ -881,8 +919,20 @@ export const ContactsPage: React.FC = () => {
         onOpenChange={(open) => setEmployeeContactModal((prev) => ({ ...prev, open }))}
         employee={employeeContactModal.employee}
         contactId={employeeContactModal.contactId}
-        existingTids={employeeContactModal.existingTids}
+        existingAreaIds={employeeContactModal.existingAreaIds}
         onConfirm={handleEmployeeContactConfirm}
+      />
+      <AddSelfAsContactModal
+        open={addSelfModalOpen}
+        onOpenChange={setAddSelfModalOpen}
+        user={addSelfModalOpen && user ? { id: Number(user.id), name: user.name ?? undefined, email: user.email ?? undefined } : null}
+        onConfirm={handleAddSelfConfirm}
+      />
+      <AddSelectedAsContactsModal
+        open={addSelectedModalOpen}
+        onOpenChange={(open) => { setAddSelectedModalOpen(open); if (!open) setAddSelectedTargets([]); }}
+        targets={addSelectedTargets}
+        onConfirm={handleAddSelectedConfirm}
       />
     </PageShell>
   );

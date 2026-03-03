@@ -73,6 +73,8 @@ export interface Contact {
   email: string;
   telephone?: string;
   functionTitle?: string;
+  /** Area-of-responsibility names assigned to this contact */
+  areas?: string[];
   isPublic?: boolean;
   isEmployeeContact?: boolean;
   isExternalContact?: boolean;

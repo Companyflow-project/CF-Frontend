@@ -12,10 +12,13 @@ import { UserPlus, Plus, X } from 'lucide-react';
 
 export interface AddExternalContactPayload {
   name: string;
-  email?: string;
-  phone?: string;
-  selectedTids: number[];
-  customArea?: string;
+  /** Required for external contacts. */
+  email: string;
+  /** Required for external contacts. */
+  phone: string;
+  areaIds: number[];
+  /** Names of brand-new areas created in this modal. */
+  newAreas?: string[];
 }
 
 interface AddExternalContactModalProps {
@@ -36,7 +39,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [nameTouched, setNameTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
-  const [selectedTids, setSelectedTids] = useState<number[]>([]);
+  const [selectedAreaIds, setSelectedAreaIds] = useState<number[]>([]);
   const [customAreas, setCustomAreas] = useState<string[]>([]);
   const [newCustomArea, setNewCustomArea] = useState('');
   const [isAddingCustomArea, setIsAddingCustomArea] = useState(false);
@@ -48,7 +51,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
     setPhoneTouched(false);
     setNameTouched(false);
     setEmailTouched(false);
-    setSelectedTids([]);
+    setSelectedAreaIds([]);
     setCustomAreas([]);
     setNewCustomArea('');
     setIsAddingCustomArea(false);
@@ -66,9 +69,9 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
   const showEmailError = emailTouched && emailEmpty;
   const showPhoneError = phoneTouched && phoneEmpty;
 
-  const handleAreaToggle = (tid: number) => {
-    setSelectedTids((prev) =>
-      prev.includes(tid) ? prev.filter((t) => t !== tid) : [...prev, tid],
+  const handleAreaToggle = (areaId: number) => {
+    setSelectedAreaIds((prev) =>
+      prev.includes(areaId) ? prev.filter((id) => id !== areaId) : [...prev, areaId],
     );
   };
 
@@ -88,13 +91,13 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
     if (nameEmpty) { setNameTouched(true); return; }
     if (emailEmpty) { setEmailTouched(true); return; }
     if (phoneEmpty) { setPhoneTouched(true); return; }
-    const customArea = customAreas.filter(Boolean).join(', ') || undefined;
+    const newAreas = customAreas.map((a) => a.trim()).filter(Boolean);
     onConfirm({
       name: name.trim(),
-      email: email.trim() || undefined,
+      email: email.trim(),
       phone: phone.trim(),
-      selectedTids,
-      customArea,
+      areaIds: selectedAreaIds,
+      newAreas,
     });
     handleOpenChange(false);
   };
@@ -116,12 +119,12 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
         </DialogHeader>
 
         {/* Body */}
-        <div className="px-6 py-5 bg-white space-y-5 overflow-y-auto flex-1">
+        <div className="px-8 py-6 bg-white space-y-6 overflow-y-auto flex-1">
           {/* Inline fields row */}
-          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Name — editable, required */}
-            <div className="flex-1 min-w-0">
-              <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
+            <div className="min-w-0">
+              <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
                 Name
                 {nameEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
@@ -130,7 +133,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => setNameTouched(true)}
-                className={`h-10 rounded-[10px] text-sm transition-colors ${nameEmpty
+                className={`h-11 rounded-[10px] text-sm transition-colors ${nameEmpty
                   ? 'border-[#d5384b] focus:ring-[#d5384b]/30 focus:border-[#d5384b]'
                   : 'border-[#e5e7eb] focus:ring-[#3d997d]/30 focus:border-[#3d997d]'
                   }`}
@@ -141,8 +144,8 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
             </div>
 
             {/* Email — required */}
-            <div className="flex-1 min-w-0">
-              <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
+            <div className="min-w-0">
+              <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
                 Email
                 {emailEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
@@ -152,7 +155,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setEmailTouched(true)}
-                className={`h-10 rounded-[10px] text-sm transition-colors ${emailEmpty
+                className={`h-11 rounded-[10px] text-sm transition-colors ${emailEmpty
                   ? 'border-[#d5384b] focus:ring-[#d5384b]/30 focus:border-[#d5384b]'
                   : 'border-[#e5e7eb] focus:ring-[#3d997d]/30 focus:border-[#3d997d]'
                   }`}
@@ -163,8 +166,8 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
             </div>
 
             {/* Telephone — required */}
-            <div className="flex-1 min-w-0">
-              <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
+            <div className="min-w-0">
+              <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
                 Telephone
                 {phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
@@ -173,7 +176,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => setPhoneTouched(true)}
-                className={`h-10 rounded-[10px] text-sm transition-colors ${phoneEmpty
+                className={`h-11 rounded-[10px] text-sm transition-colors ${phoneEmpty
                   ? 'border-[#d5384b] focus:ring-[#d5384b]/30 focus:border-[#d5384b]'
                   : 'border-[#e5e7eb] focus:ring-[#3d997d]/30 focus:border-[#3d997d]'
                   }`}
@@ -187,8 +190,8 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
         </div>
 
         {/* Areas of responsibility */}
-        <div className="space-y-2 pt-1 border-t border-[#f0f4f2]">
-          <div className="flex items-center justify-between pt-3">
+        <div className="px-8 pb-6 pt-2 border-t border-[#f0f4f2] bg-white">
+          <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-semibold text-[#0d0e0e]">
               Areas of responsibility
               <span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
@@ -209,12 +212,12 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {areasData.map((area) => {
-              const checked = selectedTids.includes(area.tid);
+              const checked = selectedAreaIds.includes(area.id);
               return (
                 <button
-                  key={area.tid}
+                  key={area.id}
                   type="button"
-                  onClick={() => handleAreaToggle(area.tid)}
+                  onClick={() => handleAreaToggle(area.id)}
                   className={[
                     'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border text-sm font-medium transition-all text-left',
                     checked
