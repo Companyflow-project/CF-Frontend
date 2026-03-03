@@ -21,6 +21,8 @@ import { EmptyState } from '@/components/common/empty-state';
 export const InformationListPage: React.FC = () => {
     const navigate = useNavigate();
     const [search, setSearch] = useState('');
+    const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
     const { data: apiEmployees, loading, error } = useEmployees({ limit: 1000 });
 
@@ -42,6 +44,26 @@ export const InformationListPage: React.FC = () => {
                 (emp.mobileNumber && emp.mobileNumber.includes(q))
         );
     }, [employees, search]);
+
+    const sortedEmployees = useMemo(() => {
+        const list = [...filteredEmployees];
+        const getKey = (emp: ReturnType<typeof transformEmployee>) => {
+            if (sortField === 'name') return emp.name ?? '';
+            if (sortField === 'email') return emp.email ?? '';
+            const employment = emp.employmentTitle || emp.employmentType || '';
+            return employment ?? '';
+        };
+        list.sort((a, b) => {
+            const av = getKey(a).toLowerCase();
+            const bv = getKey(b).toLowerCase();
+            if (!av && !bv) return 0;
+            if (!av) return 1;
+            if (!bv) return -1;
+            const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+        return list;
+    }, [filteredEmployees, sortField, sortDirection]);
 
     return (
         <PageShell>
@@ -88,22 +110,32 @@ export const InformationListPage: React.FC = () => {
                                 variant="outline"
                                 size="sm"
                                 className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                                onClick={() =>
+                                    setSortField((prev) =>
+                                        prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
+                                    )
+                                }
                             >
-                                Name
+                                {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
                                 aria-label="Toggle sort direction"
+                                onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
                             >
-                                <ArrowUpDown className="h-4 w-4" />
+                                <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
                             </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
                                 aria-label="Advanced sort"
+                                onClick={() => {
+                                    setSortField('name');
+                                    setSortDirection('asc');
+                                }}
                             >
                                 <ArrowDownWideNarrow className="h-4 w-4" />
                             </Button>
@@ -159,7 +191,7 @@ export const InformationListPage: React.FC = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredEmployees.length === 0 ? (
+                                    {sortedEmployees.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={6}>
                                                 <EmptyState
@@ -169,7 +201,7 @@ export const InformationListPage: React.FC = () => {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredEmployees.map((employee) => {
+                                        sortedEmployees.map((employee) => {
                                             const phone =
                                                 employee.telephone ||
                                                 employee.mobileNumber ||

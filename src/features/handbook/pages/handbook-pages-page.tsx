@@ -431,12 +431,6 @@ export const HandbookPagesPage: React.FC = () => {
                     <Button
                         variant="outline"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
-                    >
-                        Order of themes
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
                         onClick={() => {
                             if (!canEditHandbook) {
                                 toast.error("You don't have permission to create handbook themes.");

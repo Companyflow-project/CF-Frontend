@@ -18,6 +18,22 @@ export const useContacts = (params?: { page?: number; limit?: number }) => {
   };
 };
 
+export const usePublicContacts = (params?: { page?: number; limit?: number }) => {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: contactsQueries.publicList(params),
+    queryFn: () => contactsApi.listPublicContacts(params),
+    staleTime: 30_000,
+  });
+
+  return {
+    data: data?.data ?? [],
+    meta: data?.meta,
+    loading: isLoading,
+    error: error as Error | null,
+    refetch,
+  };
+};
+
 export const usePotentialContacts = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: contactsQueries.potential(),

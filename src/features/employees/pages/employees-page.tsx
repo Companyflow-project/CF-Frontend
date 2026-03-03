@@ -11,6 +11,7 @@ import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
 import { accountRoutes } from '@/features/account/routes';
+import { contactsRoutes } from '@/features/contacts/routes';
 import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -31,6 +32,8 @@ export const EmployeesPage: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
+  const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -78,25 +81,46 @@ export const EmployeesPage: React.FC = () => {
       filtered = filtered.filter((emp) => emp.isPublic);
     }
 
-    // Ensure company admins are listed at the very top
-    filtered.sort((a, b) => {
+    return filtered;
+  }, [employees, showInactive, publicOnly]);
+
+  const sortedEmployees = useMemo(() => {
+    const withAdminBoost = [...filteredEmployees];
+    // Keep company admins at the top regardless of sort field
+    withAdminBoost.sort((a, b) => {
       const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
       const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
-
       if (aIsAdmin && !bIsAdmin) return -1;
       if (!aIsAdmin && bIsAdmin) return 1;
       return 0;
     });
 
-    return filtered;
-  }, [employees, showInactive, publicOnly]);
+    const getKey = (emp: ReturnType<typeof transformEmployee>) => {
+      if (sortField === 'name') return emp.name ?? '';
+      if (sortField === 'email') return emp.email ?? '';
+      const employment = emp.employmentTitle || emp.employmentType || '';
+      return employment ?? '';
+    };
 
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+    withAdminBoost.sort((a, b) => {
+      const av = getKey(a).toLowerCase();
+      const bv = getKey(b).toLowerCase();
+      if (!av && !bv) return 0;
+      if (!av) return 1;
+      if (!bv) return -1;
+      const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+
+    return withAdminBoost;
+  }, [filteredEmployees, sortField, sortDirection]);
+
+  const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
   const paginatedEmployees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return filteredEmployees.slice(startIndex, endIndex);
-  }, [filteredEmployees, currentPage, itemsPerPage]);
+    return sortedEmployees.slice(startIndex, endIndex);
+  }, [sortedEmployees, currentPage, itemsPerPage]);
 
   React.useEffect(() => {
     setCurrentPage(1);
@@ -340,22 +364,32 @@ export const EmployeesPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                    onClick={() =>
+                      setSortField((prev) =>
+                        prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
+                      )
+                    }
                   >
-                    Name
+                    {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
                     aria-label="Toggle sort direction"
+                    onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
                   >
-                    <ArrowUpDown className="h-4 w-4" />
+                    <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
                     aria-label="Advanced sort"
+                    onClick={() => {
+                      setSortField('name');
+                      setSortDirection('asc');
+                    }}
                   >
                     <ArrowDownWideNarrow className="h-4 w-4" />
                   </Button>
@@ -571,7 +605,7 @@ export const EmployeesPage: React.FC = () => {
                 { label: 'Company settings', route: accountRoutes.editCompanyProfile },
                 { label: 'Employment types', route: accountRoutes.employmentTypes },
                 { label: 'Departments', route: accountRoutes.departments },
-                { label: 'Import CSV', route: null },
+                { label: 'Import CSV', route: `${contactsRoutes.list}?open=import` },
               ] as { label: string; route: string | null }[]).map(({ label, route }) => (
                 <button
                   key={label}

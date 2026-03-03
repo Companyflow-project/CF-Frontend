@@ -25,12 +25,13 @@ import {
   type BatchContactTarget,
 } from '../components/add-selected-as-contacts-modal';
 import { useEmployees } from '@/lib/api-hooks';
-import { employeesRoutes } from '@/features/employees/routes';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
 import { contactsApi } from '../api';
+import { contactsRoutes } from '@/features/contacts/routes';
 import type { Contact } from '@/types/models';
+import { ArrowDownWideNarrow, ArrowUpDown, Search } from 'lucide-react';
 
 export const ContactsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -38,6 +39,8 @@ export const ContactsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
+  const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [addExternalModalOpen, setAddExternalModalOpen] = useState(false);
   const [addContactModalOpen, setAddContactModalOpen] = useState(false);
@@ -116,23 +119,6 @@ export const ContactsPage: React.FC = () => {
     return [...markedContacts, ...newEmployees];
   }, [contacts, apiEmployees]);
 
-  // Open add or import from console redirect (?open=add | ?open=import)
-  useEffect(() => {
-    const open = searchParams.get('open');
-    if (!open) return;
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.delete('open');
-      return next;
-    }, { replace: true });
-    if (open === 'add') {
-      setAddContactModalOpen(true);
-    } else if (open === 'import') {
-      const t = setTimeout(() => importFileInputRef.current?.click(), 0);
-      return () => clearTimeout(t);
-    }
-  }, [searchParams, setSearchParams]);
-
   const applyFilters = useCallback((list: Contact[]) => {
     let result = list;
     if (!showInactive) result = result.filter((c) => c.status !== 'INACTIVE');
@@ -172,6 +158,35 @@ export const ContactsPage: React.FC = () => {
   const filteredExternalContacts = useMemo(
     () => applyFilters(externalContacts),
     [externalContacts, applyFilters],
+  );
+
+  const sortContacts = useCallback((list: Contact[]) => {
+    const getKey = (c: Contact) => {
+      if (sortField === 'name') return c.name ?? '';
+      if (sortField === 'email') return c.email ?? '';
+      const employment = c.functionTitle || (c.areas && c.areas.length > 0 ? c.areas[0] : '');
+      return employment ?? '';
+    };
+    const sorted = [...list].sort((a, b) => {
+      const av = getKey(a).toLowerCase();
+      const bv = getKey(b).toLowerCase();
+      if (!av && !bv) return 0;
+      if (!av) return 1;
+      if (!bv) return -1;
+      const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+    return sorted;
+  }, [sortField, sortDirection]);
+
+  const sortedEmployeeContacts = useMemo(
+    () => sortContacts(filteredEmployeeContacts),
+    [filteredEmployeeContacts, sortContacts],
+  );
+
+  const sortedExternalContacts = useMemo(
+    () => sortContacts(filteredExternalContacts),
+    [filteredExternalContacts, sortContacts],
   );
 
   const visibilityStats = useMemo(() => ({
@@ -445,6 +460,32 @@ export const ContactsPage: React.FC = () => {
     }
   }, [employeeContactModal.contactId, refetchContacts]);
 
+  // Open add/import from console redirect (?open=add | ?open=import)
+  // Or open a specific contact in edit mode when coming from the public contacts page (?edit-contact-id=123)
+  useEffect(() => {
+    const open = searchParams.get('open');
+    const editId = searchParams.get('edit-contact-id');
+    if (!open && !editId) return;
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('open');
+      next.delete('edit-contact-id');
+      return next;
+    }, { replace: true });
+    if (open === 'add') {
+      setAddContactModalOpen(true);
+    } else if (open === 'import') {
+      const t = setTimeout(() => importFileInputRef.current?.click(), 0);
+      return () => clearTimeout(t);
+    }
+    if (editId) {
+      const contactToEdit = mergedContacts.find((c) => c.id === editId);
+      if (contactToEdit) {
+        void handleEditEmployeeContact(contactToEdit);
+      }
+    }
+  }, [searchParams, setSearchParams, mergedContacts, handleEditEmployeeContact]);
+
   const handleEditSaved = useCallback(() => {
     refetchContacts();
     toast.success('Contact updated');
@@ -615,7 +656,7 @@ export const ContactsPage: React.FC = () => {
             <Button
               variant="outline"
               className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
-              onClick={() => navigate(employeesRoutes.informationList)}
+              onClick={() => navigate(contactsRoutes.informationList)}
             >
               View information list
             </Button>
@@ -685,15 +726,55 @@ export const ContactsPage: React.FC = () => {
         <div className="space-y-4">
           <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)]">
             <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4 px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-              <div className="relative w-full lg:max-w-sm">
-                <Input
-                  placeholder="Search contacts (name, email, phone)"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-4 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
-                />
+              {/* Sort controls */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                  onClick={() =>
+                    setSortField((prev) =>
+                      prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
+                    )
+                  }
+                >
+                  {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
+                  aria-label="Toggle sort direction"
+                  onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                >
+                  <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
+                  aria-label="Reset sort"
+                  onClick={() => {
+                    setSortField('name');
+                    setSortDirection('asc');
+                  }}
+                >
+                  <ArrowDownWideNarrow className="h-4 w-4" />
+                </Button>
               </div>
-              <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+
+              {/* Search + filters */}
+              <div className="flex flex-1 flex-wrap items-center gap-3 lg:justify-end">
+                <div className="relative w-full lg:w-auto lg:max-w-sm">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
+                  <Input
+                    placeholder="Search contacts (name, email, phone)"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm w-full"
+                  />
+                </div>
                 <button
                   type="button"
                   className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${showInactive
@@ -731,10 +812,10 @@ export const ContactsPage: React.FC = () => {
               <div>
                 <h3 className="text-sm font-bold text-[#0d0e0e] mb-3">Employee Contacts</h3>
                 <ContactsTable
-                  contacts={filteredEmployeeContacts}
+                  contacts={sortedEmployeeContacts}
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
-                  onSelectAll={(selected) => handleSelectAll(selected, filteredEmployeeContacts)}
+                  onSelectAll={(selected) => handleSelectAll(selected, sortedEmployeeContacts)}
                   onDelete={handleDeleteOpen}
                   onAddAsContact={handleAddAsContact}
                   onAddEmployeeAsContact={handleOpenEmployeeContactModal}
@@ -749,10 +830,10 @@ export const ContactsPage: React.FC = () => {
                 <div className="pt-2 border-t border-dashed border-[#d5e7e1]">
                   <h3 className="text-sm font-bold text-[#0d0e0e] mb-3 mt-4">External Contacts</h3>
                   <ContactsTable
-                    contacts={filteredExternalContacts}
+                    contacts={sortedExternalContacts}
                     selectedIds={selectedIds}
                     onSelect={handleSelect}
-                    onSelectAll={(selected) => handleSelectAll(selected, filteredExternalContacts)}
+                    onSelectAll={(selected) => handleSelectAll(selected, sortedExternalContacts)}
                     onDelete={handleDeleteOpen}
                     onAddAsContact={handleAddAsContact}
                     onAddEmployeeAsContact={handleOpenEmployeeContactModal}

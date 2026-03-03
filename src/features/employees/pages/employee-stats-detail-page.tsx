@@ -11,10 +11,14 @@ import { ArrowLeft, Search, ArrowUpDown, ArrowDownWideNarrow } from 'lucide-reac
 import { employeesRoutes } from '../routes';
 import { employeesApi } from '../api';
 import { Employee, EmployeeSummaryStat, EmployeePageViewStat } from '@/types/models';
+import { companiesApi, type LicenseUsage } from '@/features/companies/api';
+import { useAuth } from '@/context/auth-context';
 
 export const EmployeeStatsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const companyId = user?.companyId ? Number(user.companyId) : undefined;
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [employee, setEmployee] = useState<Employee | null>(null);
@@ -31,6 +35,8 @@ export const EmployeeStatsDetailPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFetchingModalStats, setIsFetchingModalStats] = useState(false);
   const [modalStats, setModalStats] = useState<EmployeePageViewStat[]>([]);
+
+  const [licenseUsage, setLicenseUsage] = useState<LicenseUsage | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -86,6 +92,29 @@ export const EmployeeStatsDetailPage: React.FC = () => {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!companyId) return;
+
+    let isMounted = true;
+
+    const fetchLicenseUsage = async () => {
+      try {
+        const usage = await companiesApi.getLicenseUsage(companyId);
+        if (!isMounted) return;
+        setLicenseUsage(usage);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('failed to load license usage', err);
+      }
+    };
+
+    void fetchLicenseUsage();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [companyId]);
+
   const handleViewStats = async (employeeId: string) => {
     try {
       setIsFetchingModalStats(true);
@@ -116,11 +145,35 @@ export const EmployeeStatsDetailPage: React.FC = () => {
     ];
   }, [employee, statistics, id]);
 
+  const [sortField, setSortField] = useState<'name' | 'pageViews' | 'lastVisit' | 'messagesCount'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
   const filteredStats = useMemo(() => {
     return stats.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
   }, [stats, search]);
 
+  const sortedStats = useMemo(() => {
+    return [...filteredStats].sort((a, b) => {
+      let cmp = 0;
+      if (sortField === 'name') {
+        cmp = a.name.localeCompare(b.name);
+      } else if (sortField === 'pageViews') {
+        cmp = (a.pageViews ?? 0) - (b.pageViews ?? 0);
+      } else if (sortField === 'lastVisit') {
+        cmp = (a.lastVisitAt ?? '').localeCompare(b.lastVisitAt ?? '');
+      } else if (sortField === 'messagesCount') {
+        cmp = (a.messagesCount ?? 0) - (b.messagesCount ?? 0);
+      }
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredStats, sortField, sortDirection]);
+
   const employeeName = statistics?.name || employee?.name || (loading ? 'Loading...' : 'Employee');
+
+  const licensesInSubscription = licenseUsage?.licensesInSubscription ?? 0;
+  const licensesUsed = licenseUsage?.licensesUsed ?? 0;
+  const smsMessagesUsed = licenseUsage?.smsMessagesUsed ?? 0;
+  const licensesLeft = Math.max(licensesInSubscription - licensesUsed, 0);
 
   return (
     <PageShell
@@ -133,19 +186,19 @@ export const EmployeeStatsDetailPage: React.FC = () => {
             <CardContent className="space-y-0">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses in subscription</span>
-                <span className="text-sm font-bold text-[#0f172a]">5</span>
+                <span className="text-sm font-bold text-[#0f172a]">{licensesInSubscription}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses used</span>
-                <span className="text-sm font-bold text-[#0f172a]">4</span>
+                <span className="text-sm font-bold text-[#0f172a]">{licensesUsed}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses left</span>
-                <span className="text-sm font-bold text-[#0f172a]">1</span>
+                <span className="text-sm font-bold text-[#0f172a]">{licensesLeft}</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-[#0f172a]">SMS messages used</span>
-                <span className="text-sm font-bold text-[#0f172a]">0</span>
+                <span className="text-sm font-bold text-[#0f172a]">{smsMessagesUsed}</span>
               </div>
             </CardContent>
             <CardFooter className="flex gap-2 pt-2 justify-end">
@@ -241,13 +294,19 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => {
+                      const fields: typeof sortField[] = ['name', 'pageViews', 'lastVisit', 'messagesCount'];
+                      const next = fields[(fields.indexOf(sortField) + 1) % fields.length];
+                      setSortField(next);
+                    }}
                     className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
                   >
-                    Name
+                    {sortField === 'name' ? 'Name' : sortField === 'pageViews' ? 'Page Views' : sortField === 'lastVisit' ? 'Last Visit' : 'Messages'}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}
                     className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
                   >
                     <ArrowUpDown className="h-4 w-4" />
@@ -255,6 +314,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => { setSortField('name'); setSortDirection('asc'); }}
                     className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
                   >
                     <ArrowDownWideNarrow className="h-4 w-4" />
@@ -270,10 +330,10 @@ export const EmployeeStatsDetailPage: React.FC = () => {
 
               <div className="min-h-0 overflow-auto">
                 <EmployeeStatsTable
-                  stats={filteredStats}
+                  stats={sortedStats}
                   selectedIds={selectedIds}
                   onSelect={(id) => setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])}
-                  onSelectAll={(selected) => setSelectedIds(selected ? filteredStats.map(s => s.employeeId) : [])}
+                  onSelectAll={(selected) => setSelectedIds(selected ? sortedStats.map(s => s.employeeId) : [])}
                   onViewStats={handleViewStats}
                   onSendMessage={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
                 />

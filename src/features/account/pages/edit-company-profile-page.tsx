@@ -9,7 +9,6 @@ import { useAuth } from '@/context/auth-context';
 import { useCompanyProfile, useUpdateCompanyProfile } from '@/features/companies/hooks';
 import { toast } from 'sonner';
 import { HelpBanner } from '@/components/ui/help-banner';
-
 export const EditCompanyProfilePage: React.FC = () => {
     const navigate = useNavigate();
     const { user, loading: authLoading } = useAuth();
@@ -44,6 +43,7 @@ export const EditCompanyProfilePage: React.FC = () => {
             });
         }
     }, [profile]);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -279,7 +279,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 items-center">
                                     <Label className="text-[15px] font-bold text-[#0d0e0e]">Sender name</Label>
                                     <Input
-                                        value="MySigrid"
+                                        value={formData.businessName || ''}
                                         readOnly
                                         className="h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e]"
                                     />

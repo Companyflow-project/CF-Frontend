@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
+import { employeesRoutes } from '@/features/employees/routes';
 import { toast } from 'sonner';
 
 type MessageType = 'none' | 'standard' | 'custom';
@@ -110,14 +111,6 @@ Greetings from your company.`;
           <h1 className="text-2xl font-bold text-[#0d0e0e]">Publish Handbook</h1>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(handbookRoutes.pages)}
-            className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
-          >
-            Edit handbook
-          </Button>
           <Button
             size="sm"
             onClick={handlePublish}
@@ -299,6 +292,7 @@ Greetings from your company.`;
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => navigate(employeesRoutes.messageLogs)}
                   className="w-full justify-between border-[#e5e7eb] text-[#0d0e0e] rounded-[999px] h-9 text-sm"
                 >
                   <span>Send follow up</span>

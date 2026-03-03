@@ -75,6 +75,9 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
     };
   }, [id, page, limit]);
 
+  const [sortField, setSortField] = useState<'name' | 'email' | 'date'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
   const filteredLogs = useMemo(() => {
     if (!logs || !Array.isArray(logs)) return [];
     if (!search.trim()) return logs;
@@ -84,6 +87,20 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
       (log.email?.toLowerCase().includes(search.toLowerCase()))
     );
   }, [logs, search]);
+
+  const sortedLogs = useMemo(() => {
+    return [...filteredLogs].sort((a, b) => {
+      let cmp = 0;
+      if (sortField === 'name') {
+        cmp = (a.name ?? '').localeCompare(b.name ?? '');
+      } else if (sortField === 'email') {
+        cmp = (a.email ?? '').localeCompare(b.email ?? '');
+      } else if (sortField === 'date') {
+        cmp = (a.date ?? '').localeCompare(b.date ?? '');
+      }
+      return sortDirection === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredLogs, sortField, sortDirection]);
 
   const employeeName = employee?.name || logs[0]?.name || 'Employee';
 
@@ -139,13 +156,19 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => {
+                  const fields: typeof sortField[] = ['date', 'name', 'email'];
+                  const next = fields[(fields.indexOf(sortField) + 1) % fields.length];
+                  setSortField(next);
+                }}
                 className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
               >
-                Name
+                {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Date'}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}
                 className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
               >
                 <ArrowUpDown className="h-4 w-4" />
@@ -153,6 +176,7 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => { setSortField('date'); setSortDirection('desc'); }}
                 className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
               >
                 <ArrowDownWideNarrow className="h-4 w-4" />
@@ -172,7 +196,7 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
             ) : error ? (
               <div className="py-12 text-center text-red-400">{error}</div>
             ) : (
-              <EmployeeMessageLogsTable logs={filteredLogs} />
+              <EmployeeMessageLogsTable logs={sortedLogs} />
             )}
           </div>
 

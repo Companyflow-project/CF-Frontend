@@ -6,13 +6,7 @@ import {
   EmployeePageViewStat,
   EmployeeMessageLog,
 } from '@/types/models';
-
-// Helper type for standard API response
-interface ApiResponse<T> {
-  data: T;
-  meta?: any;
-  error: any;
-}
+import type { ApiResponse } from '@/lib/api-types';
 
 interface EmployeeStatisticsData {
   id: number;
@@ -188,10 +182,31 @@ export const employeesApi = {
     await axiosClient.delete(`/employees/${id}`);
   },
 
-  async listEmployeeStats(_params?: {
-    employeeId?: string;
+  async listEmployeeStats(params?: {
+    companyId?: string;
+    page?: number;
+    limit?: number;
+    search?: string;
   }): Promise<EmployeeSummaryStat[]> {
-    // Endpoint not in OpenAPI spec - may need to be implemented
+    const queryParams: Record<string, string> = {};
+    if (params?.companyId) queryParams.companyId = params.companyId;
+    if (params?.page) queryParams.page = String(params.page);
+    if (params?.limit) queryParams.limit = String(params.limit);
+    if (params?.search) queryParams.search = params.search;
+
+    const response = await axiosClient.get<ApiResponse<EmployeeSummaryStat[]> | EmployeeSummaryStat[]>(
+      '/employees/statistics',
+      { params: queryParams }
+    );
+
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+
+    if (response.data && Array.isArray((response.data as ApiResponse<EmployeeSummaryStat[]>).data)) {
+      return (response.data as ApiResponse<EmployeeSummaryStat[]>).data;
+    }
+
     return [];
   },
 

@@ -36,6 +36,7 @@ const HandbookTableOfContentsPage = lazy(() => import('@/features/handbook/pages
 const HandbookPrintPage = lazy(() => import('@/features/handbook/pages/handbook-print-page').then((m) => ({ default: m.HandbookPrintPage })));
 const HandbookViewerPage = lazy(() => import('@/features/handbook/pages/handbook-viewer-page').then((m) => ({ default: m.HandbookViewerPage })));
 const ContactsPage = lazy(() => import('@/features/contacts/pages/contacts-page').then((m) => ({ default: m.ContactsPage })));
+const PublicContactsPage = lazy(() => import('@/features/contacts/pages/public-contacts-page').then((m) => ({ default: m.PublicContactsPage })));
 const AccountPage = lazy(() => import('@/features/account/pages/account-page').then((m) => ({ default: m.AccountPage })));
 const EditCompanyProfilePage = lazy(() => import('@/features/account/pages/edit-company-profile-page').then((m) => ({ default: m.EditCompanyProfilePage })));
 const AppearancePage = lazy(() => import('@/features/account/pages/appearance-page').then((m) => ({ default: m.AppearancePage })));
@@ -340,6 +341,16 @@ export const AppRouter: React.FC = () => {
               <RequireAuth>
                 <AppLayout>
                   <ContactsPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={contactsRoutes.informationList}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <PublicContactsPage />
                 </AppLayout>
               </RequireAuth>
             }

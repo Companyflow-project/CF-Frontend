@@ -136,6 +136,29 @@ export const contactsApi = {
   },
 
   /**
+   * Public contacts for the information list.
+   * Reuses GET /api/contacts and filters to public, non-current-user contacts.
+   */
+  async listPublicContacts(params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: Contact[]; meta: { page: number; limit: number; total: number } }> {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 100;
+
+    const response = await axiosClient.get<ContactsListResponse>('/contacts', {
+      params: { page, limit },
+    });
+    const raw = response.data?.data ?? [];
+    const meta = response.data?.meta ?? { page: 1, limit: 50, total: 0 };
+    const mapped = (Array.isArray(raw) ? raw : []).map((item: ContactListItem) => mapContactListItem(item));
+    return {
+      data: mapped.filter((contact) => contact.isPublic && !contact.isCurrentUser),
+      meta,
+    };
+  },
+
+  /**
    * Employees that can be added as contacts (for "Add contact" / "Choose employee").
    * GET /api/contacts/potential
    */

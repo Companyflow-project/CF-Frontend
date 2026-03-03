@@ -2,6 +2,12 @@ import { axiosClient } from '@/lib/axios-client';
 import { ApiResponse } from '@/lib/api-types';
 import { CompanyProfile } from '@/types/models';
 
+export interface LicenseUsage {
+    licensesInSubscription: number;
+    licensesUsed: number;
+    smsMessagesUsed: number;
+}
+
 export interface UpdateCompanyProfileRequest {
     businessName: string;
     cvrNumber: string;
@@ -41,5 +47,21 @@ export const companiesApi = {
             data
         );
         return response.data;
+    },
+
+    /**
+     * Get license and SMS usage for a company.
+     * GET /api/companies/:companyId/license-usage
+     */
+    getLicenseUsage: async (companyId: number): Promise<LicenseUsage> => {
+        const response = await axiosClient.get<ApiResponse<LicenseUsage> | LicenseUsage>(
+            `/companies/${companyId}/license-usage`
+        );
+
+        if ('data' in response.data) {
+            return (response.data as ApiResponse<LicenseUsage>).data;
+        }
+
+        return response.data as LicenseUsage;
     },
 };

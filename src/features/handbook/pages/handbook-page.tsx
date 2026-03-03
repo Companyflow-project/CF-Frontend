@@ -57,13 +57,6 @@ export const HandbookPage: React.FC = () => {
               variant="outline"
               size="sm"
               className="border-[rgba(16,66,51,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13px] bg-white"
-            >
-              Order of themes
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-[rgba(16,66,51,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13px] bg-white"
               onClick={() => navigate(handbookRoutes.addTheme)}
             >
               Add theme
