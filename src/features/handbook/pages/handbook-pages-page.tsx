@@ -12,7 +12,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Search, ArrowLeft, GripVertical, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
@@ -38,10 +38,23 @@ export const HandbookPagesPage: React.FC = () => {
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
 
+    const [searchParams, setSearchParams] = useSearchParams();
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
     // For now we always reorder the main Employee Handbook (bid = DEFAULT_HANDBOOK_PRINT_BID).
     const BOOK_ID = DEFAULT_HANDBOOK_PRINT_BID;
+
+    useEffect(() => {
+        const open = searchParams.get('open');
+        if (open === 'add') {
+            setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.delete('open');
+                return next;
+            }, { replace: true });
+            setIsAddPageModalOpen(true);
+        }
+    }, [searchParams, setSearchParams]);
 
     // Sneak Peek modal state
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);

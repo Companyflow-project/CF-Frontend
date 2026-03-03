@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { handbookRoutes } from '@/features/handbook/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
 import { useAuth } from '@/context/auth-context';
+import { RolesPermissionsModal } from '@/features/employees/components/roles-permissions-modal';
 
 interface ConsoleAction {
   label: string;
@@ -56,10 +57,10 @@ const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
               onClick={isLocked ? undefined : action.onClick}
               disabled={isLocked}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${isLocked
-                  ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
-                  : action.variant === 'primary'
-                    ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
-                    : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
+                ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
+                : action.variant === 'primary'
+                  ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
+                  : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
                 }`}
             >
               <span>{action.label}</span>
@@ -80,6 +81,7 @@ export const ConsolePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+  const [rolesModalOpen, setRolesModalOpen] = useState(false);
 
   return (
     <PageShell>
@@ -123,7 +125,7 @@ export const ConsolePage: React.FC = () => {
           actions={[
             { label: 'Go to Employees →', onClick: () => navigate(employeesRoutes.list), variant: 'primary' },
             { label: 'Invite employees', onClick: () => navigate(employeesRoutes.add), adminOnly: true },
-            { label: 'Roles & permissions', adminOnly: true },
+            { label: 'Roles & permissions', onClick: () => setRolesModalOpen(true), adminOnly: true },
           ]}
         />
         <ConsoleCard
@@ -134,8 +136,7 @@ export const ConsolePage: React.FC = () => {
           iconBg="bg-[#d4f4e6]"
           actions={[
             { label: 'Open Handbook →', onClick: () => navigate(handbookRoutes.manage), variant: 'primary' },
-            { label: 'New handbook section', adminOnly: true },
-            { label: 'Handbook settings', adminOnly: true },
+            { label: 'New handbook page', onClick: () => navigate(`${handbookRoutes.pages}?open=add`), adminOnly: true },
           ]}
         />
       </div>
@@ -183,10 +184,14 @@ export const ConsolePage: React.FC = () => {
           actions={[
             { label: 'Invite your team', onClick: () => navigate(employeesRoutes.add) },
             { label: 'Publish a handbook section', onClick: () => navigate(handbookRoutes.pages) },
-            { label: 'Customize theme', onClick: () => navigate(accountRoutes.appearance) },
           ]}
         />
       </div>
+
+      <RolesPermissionsModal
+        open={rolesModalOpen}
+        onOpenChange={setRolesModalOpen}
+      />
     </PageShell>
   );
 };

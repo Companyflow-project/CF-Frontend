@@ -91,12 +91,6 @@ export const ManageHandbookPage: React.FC = () => {
                     >
                         Preview Handbook
                     </Button>
-                    <Button
-                        variant="outline"
-                        className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13px] bg-white"
-                    >
-                        Handbook settings
-                    </Button>
                 </div>
             </div>
 
@@ -150,7 +144,7 @@ export const ManageHandbookPage: React.FC = () => {
                         },
                         {
                             label: 'Grant access to employees',
-                            onClick: () => navigate('/handbook/grant-access'),
+                            onClick: () => navigate(handbookRoutes.publish('main')),
                             variant: 'outline',
                             adminOnly: true,
                         },

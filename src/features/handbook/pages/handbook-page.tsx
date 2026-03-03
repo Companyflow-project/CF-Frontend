@@ -68,13 +68,6 @@ export const HandbookPage: React.FC = () => {
             >
               Add theme
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-[rgba(16,66,51,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13px] bg-white"
-            >
-              Handbook settings
-            </Button>
           </div>
         }
       />
@@ -119,11 +112,10 @@ export const HandbookPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setStatusFilter(null)}
-                  className={`rounded-[999px] px-5 h-11 text-sm ${
-                    statusFilter === null
+                  className={`rounded-[999px] px-5 h-11 text-sm ${statusFilter === null
                       ? 'bg-[#1a5948] text-white border-[#1a5948]'
                       : 'border-[#c8d8d3] text-[#0d0e0e] bg-white'
-                  }`}
+                    }`}
                 >
                   Show Your Pages
                 </Button>
@@ -295,7 +287,7 @@ export const HandbookPage: React.FC = () => {
           </Card>
         </div>
       </div>
-      
+
       {/* tip section */}
       <div className="mt-6 bg-[#fff9f0] border border-[#f59e0b] border-l-[6px] rounded-[16px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] p-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">

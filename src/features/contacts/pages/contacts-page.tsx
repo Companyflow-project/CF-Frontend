@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,6 +25,7 @@ import {
   type BatchContactTarget,
 } from '../components/add-selected-as-contacts-modal';
 import { useEmployees } from '@/lib/api-hooks';
+import { employeesRoutes } from '@/features/employees/routes';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
@@ -32,6 +33,7 @@ import { contactsApi } from '../api';
 import type { Contact } from '@/types/models';
 
 export const ContactsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
@@ -611,17 +613,18 @@ export const ContactsPage: React.FC = () => {
         actions={
           <div className="flex flex-wrap gap-2">
             <Button
+              variant="outline"
+              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
+              onClick={() => navigate(employeesRoutes.informationList)}
+            >
+              View information list
+            </Button>
+            <Button
               onClick={() => setAddContactModalOpen(true)}
               variant="outline"
               className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
             >
               Add contact
-            </Button>
-            <Button
-              onClick={() => setAddExternalModalOpen(true)}
-              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
-            >
-              Add external contact
             </Button>
             <input
               ref={importFileInputRef}
@@ -645,6 +648,12 @@ export const ContactsPage: React.FC = () => {
               onClick={handleExport}
             >
               {exportLoading ? 'Exporting…' : 'Export'}
+            </Button>
+            <Button
+              onClick={() => setAddExternalModalOpen(true)}
+              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+            >
+              Add external contact
             </Button>
           </div>
         }
