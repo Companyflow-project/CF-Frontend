@@ -96,144 +96,351 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                     onScroll={handleScroll}
                     className="overflow-y-auto px-8 py-6 text-sm text-[#374151] leading-relaxed space-y-4 flex-1"
                 >
-                    <h3 className="font-semibold text-[#111827]">Data Controller at CompanyFlow</h3>
+                    <h3 className="font-semibold text-[#111827]">Abonnementsvilkår</h3>
+                    <p className="text-xs text-[#6b7280]">Senest opdateret september 2025.</p>
+
                     <p>
-                        Michael Hartmann Frandsen –{' '}
-                        <a href="mailto:michael@companyflow.dk" className="text-[#1a5948] underline">
-                            michael@companyflow.dk
+                        Kundens abonnement hos Degoan ApS er underlagt disse abonnementsvilkår, som kunden skal
+                        acceptere i forbindelse med oprettelse som bruger af abonnementet.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Kontaktinformationer</h4>
+                    <p>
+                        Abonnementet udbydes og ejes af Degoan ApS, som har følgende kontaktoplysninger:
+                    </p>
+                    <p>
+                        Degoan ApS
+                        <br />
+                        CVR-nr.: 42562254
+                        <br />
+                        Adresse: Lunavej 6, 4700 Næstved
+                        <br />
+                        E-mail:{' '}
+                        <a href="mailto:info@degoan.dk" className="text-[#1a5948] underline">
+                            info@degoan.dk
                         </a>
                     </p>
-
                     <p>
-                        CompanyFlow is to be considered a data processor in the use of the company's data. The
-                        company itself is the data controller. CompanyFlow.dk collects and processes data that is
-                        necessary to be able to deliver our services to the company, which is our customer and
-                        which has purchased access to our employee handbook.
+                        Kunden er altid velkommen til at kontakte Degoan ApS, hvis der er spørgsmål til
+                        abonnementsvilkårene eller abonnementet generelt.
                     </p>
 
+                    <h4 className="font-medium text-[#111827]">Accept af abonnement</h4>
                     <p>
-                        We register company and personal information. This includes names, email addresses,
-                        phone numbers and various other information about the company that is entered into the
-                        system. The company's employees indirectly consent to the collection of their
-                        information. The collection of personal data for employees is fundamental to our ability
-                        to provide our services to the company.
+                        Abonnementsvilkårene accepteres ved fakturering af kunden, hvorefter abonnementet åbnes.
                     </p>
 
+                    <h4 className="font-medium text-[#111827]">Ændring i abonnementsvilkår</h4>
                     <p>
-                        Without this information, we are unable to fulfill the agreement that is entered into and
-                        cannot deliver our service as agreed. We collect the information that the company itself
-                        provides us when entering into the agreement as well as information about the users' use
-                        of the system. This is a central and necessary part of our service.
+                        Degoan ApS har til enhver tid ret til at ændre abonnementsvilkårene. I tilfælde af væsentlige
+                        ændringer vil kunden blive varslet minimum en måned inden, at ændringerne træder i kraft. De
+                        gældende abonnementsvilkår kan altid ses på degoan.dk.
                     </p>
 
+                    <h4 className="font-medium text-[#111827]">Behandling af persondata (GDPR-regler)</h4>
                     <p>
-                        The company is responsible for the accuracy of this data, and we have no obligation (or
-                        ability) to ensure this. Similarly, we cannot ensure that confidential information is not
-                        included in the company handbook. This is solely the company's own responsibility.
+                        Degoan ApS er at betragte som databehandler i brugen af kundens data. Det er kunden selv, der
+                        er dataansvarlig. Degoan.dk indsamler og behandler data, som er nødvendige for at kunne levere
+                        ydelser til kunden, som har købt adgang til Degoan ApS&apos; personalehåndbog.
                     </p>
-
                     <p>
-                        We collect information via cookies to customize the user experience on companyflow.dk
-                        and to optimize the product. See more about this in our cookie policy at the bottom of
-                        the page.
+                        Degoan ApS registrerer virksomheds- og personoplysninger. Det drejer sig om navne, mailadresser,
+                        telefonnumre samt forskellige andre oplysninger om kunden, som er indtastet i systemet.
+                        Kundens medarbejdere godtager indirekte indsamlingen af deres personlige oplysninger.
+                        Indsamlingen af personoplysninger for medarbejderne er fundamental for, at Degoan ApS kan
+                        levere sine ydelser til kunden.
                     </p>
-
                     <p>
-                        This data is stored for as long as the company has an account with us, and is only
-                        accessible to CompanyFlow employees and the company itself. The data is{' '}
-                        <strong>NOT</strong> shared with third parties.
+                        Uden disse oplysninger er Degoan ApS ikke i stand til at opfylde aftalen, som indgås, og kan
+                        ikke levere sin ydelse som aftalt. Degoan ApS indsamler de oplysninger, som kunden selv
+                        udleverer ved indgåelsen af aftalen, samt oplysninger om brugernes brug af systemet. Dette er
+                        en central og nødvendig del af Degoan ApS&apos; ydelse.
                     </p>
-
                     <p>
-                        The company has the right to view, correct and delete its own data – and to object to our
-                        processing of data. The individual user / employee does not have these rights directly,
-                        but must go through their company to enforce their rights under the GDPR.
+                        Kunden er selv ansvarlig for, at disse data er korrekte, og Degoan ApS har ingen pligt (eller
+                        mulighed) for at sikre dette. På samme måde kan Degoan ApS heller ikke sikre, at der ikke
+                        forekommer fortrolig information i kundens håndbog. Dette er alene virksomhedens eget ansvar.
                     </p>
-
                     <p>
-                        If there are other objections to our processing of data, or if you wish to access the
-                        information registered about the company and employees at CompanyFlow, or if you wish
-                        to change, export or delete it, you can do so by contacting Kim Conrad Petersen –{' '}
-                        <a href="mailto:michael@companyflow.dk" className="text-[#1a5948] underline">
-                            michael@companyflow.dk
-                        </a>
+                        Degoan ApS indsamler informationer via cookies for at kunne tilpasse brugeroplevelsen på
+                        degoan.dk og for at kunne optimere produktet. Se mere herom i Degoan ApS&apos; cookiepolitik
+                        nederst på siden.
                     </p>
-
                     <p>
-                        It is possible to complain about our processing of the information if we do not agree
-                        with the objections. The complaint must be sent to the Danish Data Protection Authority.
-                        See more at the Danish Data Protection Authority.
+                        Disse data opbevares, så længe kunden har en konto hos Degoan ApS, og er kun tilgængelige for
+                        medarbejdere i Degoan ApS og kunden selv. Ingen oplysninger deles med tredjepart.
                     </p>
-
-                    <h3 className="font-semibold text-[#111827] pt-2">We protect all data</h3>
-
                     <p>
-                        We store the information on computers (servers) with limited access, and our security
-                        measures are constantly checked to ensure that our information is handled responsibly
-                        and with constant consideration for your rights. We take all necessary security measures
-                        and keep our software updated as best as is technically possible in order to prevent
-                        security gaps or breaches.
+                        Kunden har ret til at se, rette og slette sine egne data og til at gøre indsigelser mod Degoan
+                        ApS&apos; behandling af data. Den enkelte bruger/medarbejder har ikke direkte disse rettigheder,
+                        men skal gå gennem sin virksomhed for at håndhæve sine rettigheder i henhold til GDPR.
                     </p>
-
                     <p>
-                        We cannot guarantee 100 percent security for data transfers via the Internet. This means
-                        that there may be a risk that others may gain unauthorized access to information when
-                        data is sent and stored electronically. Personal information is therefore provided at your
-                        own risk. We undertake to inform you of any security breaches that we become aware of.
-                    </p>
-
-                    <p>
-                        We are constantly changing our data processing practices as our product and relevant
-                        technologies evolve. We therefore reserve the right to update and change this document.
-                        If we do so, we will revise the "last updated" date. In the event of significant changes,
-                        we will notify you by means of a visible notice on our website or by email.
-                    </p>
-
-                    <h3 className="font-semibold text-[#111827] pt-2">Cookies</h3>
-
-                    <p>
-                        A cookie is a small text file that is stored in the user's browser to recognize the
-                        computer on return visits. No personal information is stored in CompanyFlow ApS'
-                        cookies, and they cannot contain viruses.
-                    </p>
-
-                    <h4 className="font-medium text-[#111827]">Necessary cookie before consent</h4>
-                    <p>
-                        <code className="bg-[#f3f4f6] px-1 rounded text-xs">_js</code> – checks if the browser
-                        has JavaScript and only lasts until the browser is closed.
-                    </p>
-
-                    <h4 className="font-medium text-[#111827]">Removing cookies</h4>
-                    <p>
-                        Cookies can be controlled as described below. However, as a company or employee of a
-                        company that has entered into an agreement with CompanyFlow ApS, it makes no sense to
-                        remove cookies, as the system cannot function as intended without them.
-                    </p>
-
-                    <h4 className="font-medium text-[#111827]">Control your own cookies</h4>
-                    <ul className="list-disc list-inside space-y-1 text-[#374151]">
-                        <li>Reject all cookies</li>
-                        <li>Reject cookies from selected domains</li>
-                        <li>Delete all cookies from selected domains</li>
-                    </ul>
-
-                    <p className="text-xs text-[#6b7280] italic">
-                        Note: If the use of some or all cookies is prevented on companyflow.dk, the system will
-                        not function as intended. This is the customer's own responsibility and does not exempt
-                        them from paying the subscription.
-                    </p>
-
-                    <p>
-                        Learn how to manage cookies at the Danish Business Authority:{' '}
-                        <a
-                            href="https://www.virk.dk"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#1a5948] underline"
-                        >
-                            How to avoid cookies
+                        Hvis der er andre indsigelser mod Degoan ApS&apos; behandling af data, eller hvis der ønskes
+                        adgang til de oplysninger, som er registreret om kunden og medarbejderne hos Degoan ApS, eller
+                        hvis de ønskes ændret, eksporteret eller slettet, kan det ske ved henvendelse til Kim Conrad
+                        Petersen:{' '}
+                        <a href="mailto:kim@degoan.dk" className="text-[#1a5948] underline">
+                            kim@degoan.dk
                         </a>
                         .
+                    </p>
+                    <p>
+                        Der er mulighed for at klage over Degoan ApS&apos; behandling af oplysningerne, hvis Degoan ApS
+                        ikke er enig i indsigelserne. Klagen skal sendes til Datatilsynet. Se mere hos Datatilsynet.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Degoan ApS beskytter alle data</h4>
+                    <p>
+                        Degoan ApS gemmer oplysningerne på computere (servere) med begrænset adgang. Degoan ApS&apos;
+                        sikkerhedsforanstaltninger kontrolleres løbende for at sikre, at oplysninger håndteres
+                        forsvarligt og under stadig hensyntagen til kundens rettigheder. Degoan ApS foretager alle
+                        nødvendige sikkerhedsforanstaltninger og holder softwaren opdateret med henblik på at forhindre
+                        sikkerhedshuller eller -brud.
+                    </p>
+                    <p>
+                        Degoan ApS kan ikke garantere 100 procent sikkerhed ved dataoverførsler via internettet. Det
+                        betyder, at der kan være en risiko for, at andre uberettiget tiltvinger sig adgang til
+                        oplysninger, når data sendes og opbevares elektronisk. Der afgives således personlige
+                        oplysninger på eget ansvar. Degoan ApS forpligter sig til at informere ved eventuelle brud på
+                        sikkerheden, som Degoan ApS får kendskab til.
+                    </p>
+                    <p>
+                        Degoan ApS ændrer løbende sin behandling af oplysninger i takt med udviklingen af produkter og
+                        relevante teknologier. Degoan ApS forbeholder sig derfor ret til at opdatere og ændre dette
+                        dokument. Gør Degoan ApS det, rettes datoen for &quot;senest opdateret&quot;. I tilfælde af
+                        væsentlige ændringer gives kunden besked i form af en synlig meddelelse på Degoan ApS&apos;
+                        website eller en e-mail.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Cookiepolitik</h4>
+                    <p>
+                        Læs vores separate dokument om privatlivspolitik, persondatabehandling og cookiepolitik for
+                        nærmere information.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Abonnementets indhold</h4>
+                    <p>
+                        Degoan ApS har på forhånd skrevet 80-90% af de tekster, som en almindelig personalehåndbog
+                        indeholder. Tilbage står de tekster, der er unikke for virksomheden – eksempelvis historie,
+                        værdier, vision, mission osv. Alle Degoans tekster kan vælges fra og erstattes af egne tekster.
+                    </p>
+                    <p>
+                        Overenskomster og lokalaftaler indgår ikke i de tekster eller emner, som Degoan ApS har skrevet
+                        på forhånd. Teksterne i Degoan ApS&apos; personalehåndbog kan oversættes til andre sprog. Degoan
+                        ApS garanterer ikke for fejloversættelser mv.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Er indholdet juridisk korrekt?</h4>
+                    <p>
+                        Alle Degoans tekster i personalehåndbogen bliver gennemlæst og tjekket af Degoans advokat. Det
+                        betyder, at Degoan står inde for, at indholdet i Degoans tekster er korrekt i forhold til dansk
+                        lovgivning.
+                    </p>
+                    <p>
+                        Det er væsentligt at være opmærksom på, at Degoan ikke står inde for de tekster, som en
+                        abonnerende virksomhed selv lægger op. Det gælder også for tekster, der tager udgangspunkt i
+                        Degoans tekster, men som er blevet rettet til af virksomheden – uanset hvor lidt eller hvor
+                        meget, der er rettet til i forhold til Degoans oprindelige tekst.
+                    </p>
+                    <p>
+                        Degoan holder sig orienteret om nye tiltag – lovgivning mv. – som kommer fra offentlige
+                        myndigheder. Ændringer bliver straks skrevet ind i Degoans tekster, og de abonnerende
+                        virksomheder bliver orienteret pr. mail. Ovennævnte gælder også for oversatte varianter, fx
+                        engelsk, af Degoans personalehåndbog.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Brugen af abonnementet</h4>
+                    <p>
+                        Abonnementet giver kunden og kundens medarbejdere adgang til at tilgå abonnementets indhold i
+                        abonnementsperioden og bruge det inden for de begrænsninger for bl.a. antal licenser, der gælder
+                        for det specifikke produkt til enhver tid. Abonnementet dækker alle ansatte i kundens
+                        virksomhed – ledere, fuldtidsansatte, deltids- og timeansatte mv.
+                    </p>
+                    <p>
+                        Adgangen til abonnementet og dets indhold gælder udelukkende medarbejdere og eventuelle
+                        rådgivere. Abonnementet og dets indhold må ikke anvendes af andre og må ikke videresælges til
+                        andre. Kunden står inde for og har det fulde ansvar for alle, som kunden giver adgang til
+                        abonnementets indhold, eller som bruger kundens login.
+                    </p>
+                    <p>
+                        Kunden har pligt til at sikre sig, at abonnementet ikke bliver anvendt i strid med gældende
+                        lovgivning eller på en måde, som kan skade Degoan ApS&apos; omdømme. Hvis kunden får kendskab
+                        til, at abonnementsadgangen er blevet anvendt i strid med disse abonnementsvilkår, gældende
+                        lovgivning eller på anden måde, der kan skade Degoan ApS&apos; omdømme, er kunden forpligtet til
+                        straks skriftligt at underrette Degoan ApS herom.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Opdatering</h4>
+                    <p>
+                        Degoan ApS foretager opdatering af teknik, software, servere mv., som driver Degoan ApS&apos;
+                        platforme. Degoan ApS opdaterer hele tiden de tekster, som er skrevet på forhånd af Degoan ApS,
+                        i forhold til ny lovgivning og retningslinjer.
+                    </p>
+                    <p>
+                        Tekster, tilføjelser og andet, som er skrevet og uploadet af kunden, skal kunden selv sørge for
+                        at opdatere. Indhold i kundens egne tekster er ikke underlagt Degoan ApS&apos; ansvar.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Support</h4>
+                    <p>Degoan ApS yder support på sin egen platform:</p>
+                    <ul className="list-disc list-inside space-y-1 text-[#374151]">
+                        <li>Vi kan svare på enkle spørgsmål om opbygning, valg af tekster og lignende.</li>
+                        <li>Vi kan i et vist omfang yde hjælp til det indhold, man selv vælger at skrive.</li>
+                        <li>
+                            For spørgsmål om jura og HR samt overenskomster og andre aftaler må man henvende sig til
+                            brancheforening eller advokat.
+                        </li>
+                    </ul>
+
+                    <h4 className="font-medium text-[#111827]">Ophavsret og immaterielle rettigheder</h4>
+                    <p>
+                        Abonnementets indhold og design er beskyttet af ophavsret, varemærkeret og andre immaterielle
+                        rettigheder, der tilhører Degoan ApS. Tilsvarende ejer Degoan ApS alle immaterielle rettigheder,
+                        der eksisterer eller måtte opstå som led i Degoan ApS&apos; opfyldelse af aftalen, herunder
+                        enhver form for kilde- og objektkode mv.
+                    </p>
+                    <p>
+                        Kunden er ikke berettiget til at ændre eller fjerne mærker eller meddelelser vedrørende
+                        immaterielle rettigheder, der er anvendt eller fremgår af abonnementets indhold. Kunden skal
+                        straks skriftligt give Degoan ApS meddelelse om enhver krænkelse eller potentiel krænkelse af
+                        Degoan ApS&apos; immaterielle rettigheder.
+                    </p>
+                    <p>
+                        Degoan ApS overdrager kunden en ikke-overdragelig og ikke-eksklusiv brugsret til at tilgå
+                        abonnementets indhold i overensstemmelse med disse vilkår. Der er ikke overdraget andre
+                        rettigheder.
+                    </p>
+                    <p>
+                        Virksomhedens egne tekster er beskyttet af rettighedslovgivningen, og Degoan ApS har
+                        tavshedspligt, hvad indholdet angår i en virksomheds personalehåndbog. Degoan ApS kan ikke
+                        bruge eller overføre indhold fra en virksomheds personalehåndbog til en anden. Det er
+                        virksomhedens eget ansvar, hvis der i personalehåndbogen skrives koder til alarmer,
+                        it-systemer mv.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Betaling</h4>
+                    <p>
+                        Betaling sker ved bestillingen efter fremsendt faktura, og første abonnementsperiode løber fra
+                        bestillingsdatoen og en måned, et kvartal eller et år frem. Herefter betales månedsvis,
+                        kvartalsvis eller årsvis forud, medmindre andet følger af aftalen eller vilkårene for det
+                        specifikke produkt.
+                    </p>
+                    <p>
+                        Abonnementet fortsætter, indtil det opsiges med 2 måneders varsel til udgangen af en
+                        abonnementsperiode, og betaling sker efter fakturering, inden den nye abonnementsperiode
+                        begynder.
+                    </p>
+                    <p>
+                        Kunden kan til enhver tid finde gældende priser på Degoan ApS&apos; hjemmeside. Degoan ApS tager
+                        forbehold for tryk- og prisfejl. Alle priser er angivet i danske kroner (DKK) og er eksklusiv
+                        moms, skatter og afgifter. Kunden skal betale den til enhver tid gældende moms, skatter og
+                        afgifter.
+                    </p>
+                    <p>
+                        Degoan ApS har ret til at ændre prisen med en måneds varsel til udgangen af et kvartal. Det
+                        samme gør sig gældende for ændringer i abonnementet.
+                    </p>
+                    <p>
+                        Degoan ApS sælger licenser i bundter af 5 (5, 10, 15, 20, 25 osv.). Man råder over det antal
+                        licenser, som man har betalt for. Hvis en medarbejder forlader virksomheden, slettes
+                        vedkommende, og licensen kan overgå til en anden medarbejder. Degoan ApS gemmer data om den
+                        slettede medarbejder i 3 måneder, hvorefter de slettes.
+                    </p>
+                    <p>
+                        Hvis man behøver flere licenser, bestiller man dem hos Degoan ApS via
+                        virksomhedsadministratorens side. Flere licenser betales forholdsmæssigt for resten af
+                        abonnementsperioden. Ved fortsættelse af abonnementet lægges de nye licenser sammen med de
+                        oprindelige og løber i den næste periode.
+                    </p>
+                    <p>
+                        Til hver licens hører 5 SMS&apos;er. SMS&apos;er kan bruges til at give medarbejdere besked om
+                        udgivelse af personalehåndbogen, opdateringer mv. Det er muligt at købe flere licenser. Hvis
+                        man ønsker at nedgradere antallet af licenser, kan det ske med udgangen af en
+                        abonnementsperiode.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Varighed</h4>
+                    <p>
+                        Abonnementet træder i kraft ved bestilling og betaling pr. faktura og varer, indtil det opsiges
+                        i overensstemmelse med disse abonnementsvilkår.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Opsigelse og misligholdelse</h4>
+                    <p>
+                        Kunden kan opsige sit abonnement i applikationen senest 2 måneder før udløbet af en
+                        abonnementsperiode. Hvis dette ikke sker, vil der automatisk blive faktureret for en ny
+                        abonnementsperiode.
+                    </p>
+                    <p>
+                        Degoan ApS kan opsige abonnementet med 6 måneders varsel til udløbet af et kalenderkvartal. I
+                        tilfælde af kundens misligholdelse, konkurs eller insolvens kan Degoan ApS opsige kundens
+                        abonnement uden varsel.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Driftsstabilitet</h4>
+                    <p>
+                        Degoan ApS tilstræber højest mulig driftsstabilitet, men fraskriver sig alt ansvar ved nedbrud
+                        eller driftsforstyrrelser, inklusiv driftsforstyrrelser forårsaget af faktorer uden for Degoan
+                        ApS&apos; kontrol, fx internetforbindelse og strømsvigt.
+                    </p>
+                    <p>
+                        Applikationen og servicen leveres, som den er, og Degoan ApS garanterer ikke for tilgængelighed
+                        og funktionalitet. Degoan ApS fraskriver sig i videst muligt omfang enhver garanti, tilsikring,
+                        indeståelse, anprisning eller andre vilkår, uanset direkte eller indirekte. Ved nedbrud vil
+                        Degoan ApS bestræbe sig på at genskabe normal drift hurtigst muligt.
+                    </p>
+                    <p>
+                        Planlagte afbrydelser vil fortrinsvis blive placeret i tidsrummet 22–02. Skulle det blive
+                        nødvendigt at afbryde adgangen uden for tidsrummet, vil Degoan ApS så vidt muligt varsle kunden
+                        herom.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Degoan ApS&apos; ansvar</h4>
+                    <p>
+                        Degoan ApS fraskriver sig i videst muligt omfang ethvert ansvar i relation til disse vilkår,
+                        services eller brug af abonnementet. Degoan ApS er ikke ansvarlig og hæfter ikke for nogen form
+                        for skader eller tab, herunder men ikke begrænset til direkte og indirekte tab, som følge af at
+                        abonnementet indeholder fejl eller er ufuldstændigt, uanset at Degoan ApS måtte være gjort
+                        bekendt med risikoen for sådanne skader eller tab.
+                    </p>
+                    <p>
+                        Abonnementets indhold eller anden kommunikation med Degoan ApS udgør ikke juridisk rådgivning,
+                        og Degoan ApS indestår ikke for, at abonnementets indhold ved anvendelse lever op til gældende
+                        lovgivning.
+                    </p>
+                    <p>
+                        Uanset typen af tab eller ansvarsgrundlag er Degoan ApS&apos; samlede ansvar beløbsmæssigt
+                        begrænset til beløbet for din betaling i 12 måneder før det ansvarspådragende forholds
+                        indtræden, dog i alle tilfælde maksimalt DKK 10.000. Kunden accepterer at skadesløsholde
+                        Degoan ApS mod ethvert krav eller tab, der skyldes produktansvar, tredjemandstab eller øvrige
+                        krav fra tredjemand, i det omfang det hidrører fra kundens brug af abonnementet.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Reklamation</h4>
+                    <p>
+                        Ved fejl eller mangler kan kunden kontakte Degoan ApS på{' '}
+                        <a href="mailto:info@degoan.dk" className="text-[#1a5948] underline">
+                            info@degoan.dk
+                        </a>
+                        . Kunden er selv ansvarlig for, at alle tekniske krav og øvrige forudsætninger for brug af
+                        abonnementet er opfyldt, herunder at kunden benytter udstyr, der er kompatibelt med
+                        abonnementet. Fejl på kundens tekniske udstyr er Degoan ApS uvedkommende.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Overdragelse</h4>
+                    <p>
+                        Degoan ApS har ret til uden forudgående samtykke at overdrage sine rettigheder og forpligtelser
+                        over for kunden til et koncernforbundet selskab eller tredjemand. Kunden accepterer, at Degoan
+                        ApS er berettiget til at anvende underleverandører i alle forhold, herunder til afvikling og
+                        drift af applikationen samt til opbevaring af data.
+                    </p>
+
+                    <h4 className="font-medium text-[#111827]">Lovvalg og værneting</h4>
+                    <p>
+                        Denne aftale er underlagt og skal fortolkes i overensstemmelse med dansk ret, idet der ses bort
+                        fra lovvalgsregler, der måtte føre til anvendelse af et andet lands lov. Eventuelle tvister kan
+                        søges løst ved de almindelige danske domstole.
                     </p>
                 </div>
 

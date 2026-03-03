@@ -114,7 +114,7 @@ export const AppearancePage: React.FC = () => {
 
                 {/* Help Banner */}
                 <HelpBanner className="mb-6">
-                    Here you can set visual elements in your handbook. You must choose whether to display images in Diagona texts, what type of images they should be, and whether you want to use special colors on the pages.
+                    Here you can set visual elements in your handbook. You must choose whether to display images in Degoan texts, what type of images they should be, and whether you want to use special colors on the pages.
                 </HelpBanner>
 
                 {/* Pictures Section */}
