@@ -69,7 +69,7 @@ function ContactsTableInner({
   const someSelected = selectedIds.length > 0 && !allSelected;
 
   return (
-    <Table className="min-w-[860px] text-[13px]">
+    <Table className="w-full text-[13px]">
       <TableHeader className="bg-[#f5fbf8]">
         <TableRow className="border-b border-[#dbe8e1]">
           <TableHead className="w-12">
@@ -86,11 +86,11 @@ function ContactsTableInner({
           </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Name</TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Email</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[220px]">
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[130px]">
             Telephone
           </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Function</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[220px]">Status</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[160px]">Status</TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -133,7 +133,7 @@ function ContactsTableInner({
                 </TableCell>
                 <TableCell
                   className={
-                    contact.telephone ? 'text-[#111b18] w-[220px] whitespace-nowrap' : 'text-[#9fa4a4] text-xs'
+                    contact.telephone ? 'text-[#111b18] w-[130px] tabular-nums whitespace-nowrap' : 'text-[#9fa4a4] text-xs w-[130px]'
                   }
                 >
                   {contact.telephone ? formatDanishPhone(contact.telephone) : 'Not available'}
@@ -194,26 +194,26 @@ function ContactsTableInner({
                     {/* Current-user placeholder row */}
                     {contact.isCurrentUser || contact.id === '0' ? (
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
                         onClick={() => onAddAsContact?.(contact)}
                         aria-label="Add as contact"
+                        title="Add as contact"
                       >
-                        <UserPlus className="h-3.5 w-3.5" />
-                        Add as contact
+                        <UserPlus className="h-4 w-4" />
                       </Button>
                     ) : contact.id.startsWith('emp-') ? (
                       /* Employee-only row — not yet a real contact */
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 rounded-full bg-[#e7f5ef] border-[#3d997d] text-[#2c7860] hover:bg-[#d0ebe0] text-xs gap-1.5"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
                         onClick={() => onAddEmployeeAsContact?.(contact)}
                         aria-label="Add as contact"
+                        title="Add as contact"
                       >
-                        <UserPlus className="h-3.5 w-3.5" />
-                        Add as contact
+                        <UserPlus className="h-4 w-4" />
                       </Button>
                     ) : (
                       /* Real contact — edit always; delete only if not self */
