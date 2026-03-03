@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { contactsApi } from './api';
 import { contactsQueries } from './queries';
 
@@ -45,4 +45,18 @@ export const useContactAreas = (lang?: string) => {
     data: data ?? [],
     loading: isLoading,
   };
+};
+
+/**
+ * Mutation to delete a persisted custom area (isDefault === false).
+ * Invalidates the areas cache on success so all open area lists refresh.
+ */
+export const useDeleteContactArea = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (areaId: number) => contactsApi.deleteContactArea(areaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: contactsQueries.areas() });
+    },
+  });
 };

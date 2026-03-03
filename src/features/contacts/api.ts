@@ -174,6 +174,15 @@ export const contactsApi = {
   },
 
   /**
+   * Delete a custom area of responsibility.
+   * DELETE /contacts/areas/:areaId
+   * 403 with "Default areas cannot be deleted" → built-in area guard.
+   */
+  async deleteContactArea(areaId: number): Promise<void> {
+    await axiosClient.delete(`/contacts/areas/${areaId}`);
+  },
+
+  /**
    * Create / promote contact.
    * POST /api/contacts
    * Body: name (required), uid? (internal), phone?, email?, role?, areaIds? (can be []), newAreas? ([] of labels).

@@ -7,8 +7,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useContactAreas } from '../hooks';
-import { UserCheck, Plus, X } from 'lucide-react';
+import { useContactAreas, useDeleteContactArea } from '../hooks';
+import { UserCheck, Plus, X, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export interface AddEmployeeAsContactPayload {
   uid: number;
@@ -51,12 +52,16 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
 }) => {
   const isEditMode = !!contactId;
   const { data: areasData } = useContactAreas();
+  const deleteAreaMutation = useDeleteContactArea();
+
   const [phone, setPhone] = useState('');
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [selectedAreaIds, setSelectedAreaIds] = useState<number[]>([]);
   const [customAreas, setCustomAreas] = useState<string[]>([]);
   const [newCustomArea, setNewCustomArea] = useState('');
   const [isAddingCustomArea, setIsAddingCustomArea] = useState(false);
+  /** areaId of a persisted custom area pending delete confirmation */
+  const [pendingDeleteAreaId, setPendingDeleteAreaId] = useState<number | null>(null);
 
   useEffect(() => {
     if (open && employee) {
@@ -66,6 +71,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
       setCustomAreas([]);
       setNewCustomArea('');
       setIsAddingCustomArea(false);
+      setPendingDeleteAreaId(null);
     }
     // existingAreaIds omitted: when default [] is used it's a new ref each render → infinite loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,6 +98,38 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
   const handleRemoveCustomArea = (index: number) =>
     setCustomAreas((prev) => prev.filter((_, i) => i !== index));
 
+  /** Called when the user confirms deleting a persisted custom area. */
+  const handleConfirmDeletePersistedArea = async () => {
+    if (pendingDeleteAreaId === null) return;
+    const areaId = pendingDeleteAreaId;
+    setPendingDeleteAreaId(null);
+    try {
+      await deleteAreaMutation.mutateAsync(areaId);
+      // Also deselect it if currently chosen
+      setSelectedAreaIds((prev) => prev.filter((id) => id !== areaId));
+      toast.success('Area deleted');
+    } catch (err: unknown) {
+      const status =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { status?: number } }).response?.status
+          : undefined;
+      const serverMsg =
+        err && typeof err === 'object' && 'response' in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+
+      if (status === 403) {
+        toast.error(
+          serverMsg?.includes('Default') || serverMsg?.includes('default')
+            ? 'Built-in areas cannot be removed. Only custom areas you created can be deleted.'
+            : 'You don\'t have permission to delete this area.',
+        );
+      } else {
+        toast.error(serverMsg ?? 'Failed to delete area');
+      }
+    }
+  };
+
   const handleSubmit = () => {
     if (!employee) return;
     if (phoneEmpty) {
@@ -110,6 +148,11 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
   };
 
   if (!employee) return null;
+
+  const pendingDeleteArea =
+    pendingDeleteAreaId !== null
+      ? areasData.find((a) => a.id === pendingDeleteAreaId)
+      : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -173,8 +216,8 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => setPhoneTouched(true)}
                 className={`h-10 rounded-[10px] text-sm transition-colors ${phoneEmpty
-                    ? 'border-[#d5384b] focus:ring-[#d5384b]/30 focus:border-[#d5384b]'
-                    : 'border-[#e5e7eb] focus:ring-[#3d997d]/30 focus:border-[#3d997d]'
+                  ? 'border-[#d5384b] focus:ring-[#d5384b]/30 focus:border-[#d5384b]'
+                  : 'border-[#e5e7eb] focus:ring-[#3d997d]/30 focus:border-[#3d997d]'
                   }`}
               />
               {showPhoneError && (
@@ -205,50 +248,71 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
               )}
             </div>
 
-            {/* 3-column flat checkbox grid — buttons so clicks register reliably in the dialog */}
+            {/* 3-column flat checkbox grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2">
               {areasData.map((area) => {
                 const isChecked = selectedAreaIds.includes(area.id);
+                // A persisted custom area: not a default and belongs to a company
+                const isCustom = !area.isDefault && !!area.companyId;
                 return (
-                  <button
-                    key={area.id}
-                    type="button"
-                    onClick={() => handleAreaToggle(area.id)}
-                    className={[
-                      'flex items-center gap-2 rounded-[10px] border text-left transition-all w-full px-3 py-2 text-sm font-medium',
-                      isChecked
-                        ? 'bg-[#d4f4e6] border-[#3d997d] text-[#1a5948]'
-                        : 'bg-white border-[#e5e7eb] text-[#374151] hover:border-[#3d997d]/40 hover:bg-[#f6fbf9]',
-                    ].join(' ')}
-                  >
-                    <span
+                  <div key={area.id} className="relative group">
+                    <button
+                      type="button"
+                      onClick={() => handleAreaToggle(area.id)}
                       className={[
-                        'h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0',
-                        isChecked ? 'bg-[#3d997d] border-[#3d997d]' : 'border-[#d1d5db] bg-white',
+                        'flex items-center gap-2 rounded-[10px] border text-left transition-all w-full px-3 py-2 text-sm font-medium',
+                        isChecked
+                          ? 'bg-[#d4f4e6] border-[#3d997d] text-[#1a5948]'
+                          : 'bg-white border-[#e5e7eb] text-[#374151] hover:border-[#3d997d]/40 hover:bg-[#f6fbf9]',
+                        // leave room for the delete button on custom areas
+                        isCustom ? 'pr-7' : '',
                       ].join(' ')}
                     >
-                      {isChecked && (
-                        <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
-                          <path
-                            d="M2 6l3 3 5-5"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                    </span>
-                    {area.name}
-                  </button>
+                      <span
+                        className={[
+                          'h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0',
+                          isChecked ? 'bg-[#3d997d] border-[#3d997d]' : 'border-[#d1d5db] bg-white',
+                        ].join(' ')}
+                      >
+                        {isChecked && (
+                          <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
+                            <path
+                              d="M2 6l3 3 5-5"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="truncate">{area.name}</span>
+                    </button>
+
+                    {/* Delete button — only for persisted custom areas */}
+                    {isCustom && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPendingDeleteAreaId(area.id);
+                        }}
+                        title="Delete this custom area"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
+                        aria-label={`Delete ${area.name}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
                 );
               })}
 
-              {/* Custom (user-added) areas */}
+              {/* Session-only (unsaved) areas typed in this modal */}
               {customAreas.map((area, index) => (
                 <div
                   key={`custom-${index}`}
-                  className="flex items-center gap-2 group"
+                  className="relative flex items-center gap-2 rounded-[10px] border border-[#3d997d] bg-[#d4f4e6] px-3 py-2 text-sm font-medium text-[#1a5948] w-full"
                 >
                   <span className="h-4 w-4 rounded-[4px] border-2 flex items-center justify-center flex-shrink-0 bg-[#3d997d] border-[#3d997d]">
                     <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
@@ -261,11 +325,11 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                       />
                     </svg>
                   </span>
-                  <span className="text-sm text-[#1a5948] font-medium flex-1">{area}</span>
+                  <span className="flex-1 truncate">{area}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveCustomArea(index)}
-                    className="h-4 w-4 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-colors flex-shrink-0"
+                    className="h-4 w-4 rounded-full flex items-center justify-center text-[#3d997d] hover:text-[#d5384b] hover:bg-[#ffecef] transition-colors flex-shrink-0"
                     aria-label="Remove"
                   >
                     <X className="h-3 w-3" />
@@ -330,6 +394,52 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
           </Button>
         </div>
       </DialogContent>
+
+      {/* ── Delete area confirmation dialog ── */}
+      <Dialog
+        open={pendingDeleteAreaId !== null}
+        onOpenChange={(open) => { if (!open) setPendingDeleteAreaId(null); }}
+      >
+        <DialogContent className="sm:max-w-[380px] rounded-[16px] border border-[#fce8ea] p-0 overflow-hidden">
+          <DialogHeader className="px-5 pt-5 pb-3 border-b border-[#fce8ea] bg-white">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-[10px] bg-[#ffecef] flex items-center justify-center flex-shrink-0">
+                <Trash2 className="h-4 w-4 text-[#d5384b]" />
+              </div>
+              <DialogTitle className="text-base font-bold text-[#0d0e0e]">
+                Delete custom area?
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="px-5 py-4 bg-white space-y-3">
+            <p className="text-sm text-[#374151]">
+              <span className="font-semibold">&ldquo;{pendingDeleteArea?.name}&rdquo;</span> will be
+              permanently removed and will no longer be available to assign to any contact.
+            </p>
+            <p className="text-xs text-[#6b7280] bg-[#f9fafb] rounded-[8px] px-3 py-2 border border-[#e5e7eb]">
+              Only custom areas you created can be deleted. Built-in default areas cannot be removed.
+            </p>
+          </div>
+          <div className="px-5 py-3 border-t border-[#f3f4f6] bg-[#f9fafb] flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPendingDeleteAreaId(null)}
+              className="rounded-[8px] border-[#e5e7eb] text-[#374151] text-sm"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={deleteAreaMutation.isPending}
+              onClick={handleConfirmDeletePersistedArea}
+              className="rounded-[8px] bg-[#d5384b] hover:bg-[#d5384b]/90 text-white text-sm"
+            >
+              {deleteAreaMutation.isPending ? 'Deleting…' : 'Delete area'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
