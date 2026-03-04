@@ -46,14 +46,18 @@ export const InformationListPage: React.FC = () => {
     }, [employees, search]);
 
     const sortedEmployees = useMemo(() => {
-        const list = [...filteredEmployees];
         const getKey = (emp: ReturnType<typeof transformEmployee>) => {
             if (sortField === 'name') return emp.name ?? '';
             if (sortField === 'email') return emp.email ?? '';
-            const employment = emp.employmentTitle || emp.employmentType || '';
-            return employment ?? '';
+            return emp.employmentTitle || emp.employmentType || '';
         };
-        list.sort((a, b) => {
+        return [...filteredEmployees].sort((a, b) => {
+            // Admins/owners always stay at the top, regardless of sort direction or field.
+            const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
+            const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+            if (aIsAdmin && !bIsAdmin) return -1;
+            if (!aIsAdmin && bIsAdmin) return 1;
+
             const av = getKey(a).toLowerCase();
             const bv = getKey(b).toLowerCase();
             if (!av && !bv) return 0;
@@ -62,7 +66,6 @@ export const InformationListPage: React.FC = () => {
             const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
             return sortDirection === 'asc' ? cmp : -cmp;
         });
-        return list;
     }, [filteredEmployees, sortField, sortDirection]);
 
     return (

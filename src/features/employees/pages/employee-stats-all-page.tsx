@@ -80,6 +80,12 @@ export const EmployeeStatsAllPage: React.FC = () => {
 
   const sortedStats = useMemo(() => {
     return [...filteredStats].sort((a, b) => {
+      // Current user (admin/owner viewing the page) always stays at the top.
+      const aIsSelf = !!user?.id && a.employeeId === user.id;
+      const bIsSelf = !!user?.id && b.employeeId === user.id;
+      if (aIsSelf && !bIsSelf) return -1;
+      if (!aIsSelf && bIsSelf) return 1;
+
       let cmp = 0;
       if (sortField === 'name') {
         cmp = a.name.localeCompare(b.name);
@@ -92,7 +98,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
       }
       return sortDirection === 'asc' ? cmp : -cmp;
     });
-  }, [filteredStats, sortField, sortDirection]);
+  }, [filteredStats, sortField, sortDirection, user?.id]);
 
   const licensesInSubscription = licenseUsage?.licensesInSubscription ?? 0;
   const licensesUsed = licenseUsage?.licensesUsed ?? 0;

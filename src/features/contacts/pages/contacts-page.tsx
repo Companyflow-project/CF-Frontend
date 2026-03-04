@@ -167,7 +167,11 @@ export const ContactsPage: React.FC = () => {
       const employment = c.functionTitle || (c.areas && c.areas.length > 0 ? c.areas[0] : '');
       return employment ?? '';
     };
-    const sorted = [...list].sort((a, b) => {
+    return [...list].sort((a, b) => {
+      // "You" row (current user) always stays at the top regardless of sort field/direction.
+      if (a.isCurrentUser && !b.isCurrentUser) return -1;
+      if (!a.isCurrentUser && b.isCurrentUser) return 1;
+
       const av = getKey(a).toLowerCase();
       const bv = getKey(b).toLowerCase();
       if (!av && !bv) return 0;
@@ -176,7 +180,6 @@ export const ContactsPage: React.FC = () => {
       const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
       return sortDirection === 'asc' ? cmp : -cmp;
     });
-    return sorted;
   }, [sortField, sortDirection]);
 
   const sortedEmployeeContacts = useMemo(

@@ -85,24 +85,20 @@ export const EmployeesPage: React.FC = () => {
   }, [employees, showInactive, publicOnly]);
 
   const sortedEmployees = useMemo(() => {
-    const withAdminBoost = [...filteredEmployees];
-    // Keep company admins at the top regardless of sort field
-    withAdminBoost.sort((a, b) => {
+    const getKey = (emp: ReturnType<typeof transformEmployee>) => {
+      if (sortField === 'name') return emp.name ?? '';
+      if (sortField === 'email') return emp.email ?? '';
+      return emp.employmentTitle || emp.employmentType || '';
+    };
+
+    return [...filteredEmployees].sort((a, b) => {
+      // Admins/owners always stay at the top, regardless of sort direction or field.
       const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
       const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
       if (aIsAdmin && !bIsAdmin) return -1;
       if (!aIsAdmin && bIsAdmin) return 1;
-      return 0;
-    });
 
-    const getKey = (emp: ReturnType<typeof transformEmployee>) => {
-      if (sortField === 'name') return emp.name ?? '';
-      if (sortField === 'email') return emp.email ?? '';
-      const employment = emp.employmentTitle || emp.employmentType || '';
-      return employment ?? '';
-    };
-
-    withAdminBoost.sort((a, b) => {
+      // Within the same group, sort by the selected field.
       const av = getKey(a).toLowerCase();
       const bv = getKey(b).toLowerCase();
       if (!av && !bv) return 0;
@@ -111,8 +107,6 @@ export const EmployeesPage: React.FC = () => {
       const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
       return sortDirection === 'asc' ? cmp : -cmp;
     });
-
-    return withAdminBoost;
   }, [filteredEmployees, sortField, sortDirection]);
 
   const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
