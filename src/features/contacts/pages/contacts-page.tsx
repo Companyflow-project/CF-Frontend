@@ -36,6 +36,7 @@ import { ArrowDownWideNarrow, ArrowUpDown, Search } from 'lucide-react';
 export const ContactsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin' || user?.role === 'MANAGER';
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [publicOnly, setPublicOnly] = useState(false);
@@ -663,42 +664,46 @@ export const ContactsPage: React.FC = () => {
             >
               View information list
             </Button>
-            <Button
-              onClick={() => setAddContactModalOpen(true)}
-              variant="outline"
-              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
-            >
-              Add contact
-            </Button>
-            <input
-              ref={importFileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleImportFileChange}
-            />
-            <Button
-              variant="outline"
-              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
-              disabled={importLoading}
-              onClick={handleImportClick}
-            >
-              {importLoading ? 'Importing…' : 'Import CSV'}
-            </Button>
-            <Button
-              variant="outline"
-              className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
-              disabled={exportLoading}
-              onClick={handleExport}
-            >
-              {exportLoading ? 'Exporting…' : 'Export'}
-            </Button>
-            <Button
-              onClick={() => setAddExternalModalOpen(true)}
-              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
-            >
-              Add external contact
-            </Button>
+            {isAdmin && (
+              <>
+                <Button
+                  onClick={() => setAddContactModalOpen(true)}
+                  variant="outline"
+                  className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
+                >
+                  Add contact
+                </Button>
+                <input
+                  ref={importFileInputRef}
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleImportFileChange}
+                />
+                <Button
+                  variant="outline"
+                  className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
+                  disabled={importLoading}
+                  onClick={handleImportClick}
+                >
+                  {importLoading ? 'Importing…' : 'Import CSV'}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
+                  disabled={exportLoading}
+                  onClick={handleExport}
+                >
+                  {exportLoading ? 'Exporting…' : 'Export'}
+                </Button>
+                <Button
+                  onClick={() => setAddExternalModalOpen(true)}
+                  className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                >
+                  Add external contact
+                </Button>
+              </>
+            )}
           </div>
         }
       />
@@ -819,10 +824,10 @@ export const ContactsPage: React.FC = () => {
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
                   onSelectAll={(selected) => handleSelectAll(selected, sortedEmployeeContacts)}
-                  onDelete={handleDeleteOpen}
-                  onAddAsContact={handleAddAsContact}
-                  onAddEmployeeAsContact={handleOpenEmployeeContactModal}
-                  onEditEmployeeContact={handleEditEmployeeContact}
+                  onDelete={isAdmin ? handleDeleteOpen : undefined}
+                  onAddAsContact={isAdmin ? handleAddAsContact : undefined}
+                  onAddEmployeeAsContact={isAdmin ? handleOpenEmployeeContactModal : undefined}
+                  onEditEmployeeContact={isAdmin ? handleEditEmployeeContact : undefined}
                   currentUserEmail={user?.email ?? undefined}
                   currentUserName={user?.name ?? undefined}
                 />
@@ -837,57 +842,59 @@ export const ContactsPage: React.FC = () => {
                     selectedIds={selectedIds}
                     onSelect={handleSelect}
                     onSelectAll={(selected) => handleSelectAll(selected, sortedExternalContacts)}
-                    onDelete={handleDeleteOpen}
-                    onAddAsContact={handleAddAsContact}
-                    onAddEmployeeAsContact={handleOpenEmployeeContactModal}
-                    onEditEmployeeContact={handleEditEmployeeContact}
+                    onDelete={isAdmin ? handleDeleteOpen : undefined}
+                    onAddAsContact={isAdmin ? handleAddAsContact : undefined}
+                    onAddEmployeeAsContact={isAdmin ? handleOpenEmployeeContactModal : undefined}
+                    onEditEmployeeContact={isAdmin ? handleEditEmployeeContact : undefined}
                   />
                 </div>
               )}
             </CardContent>
           </Card>
-          <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div
-                className={`h-3 w-3 rounded-[4px] ${selectedIds.length > 0 ? 'bg-[#1a5948]' : 'bg-[#cfd6d4]'
-                  }`}
-              />
-              <span
-                className={`text-sm ${selectedIds.length > 0 ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
-                  }`}
-              >
-                {selectedIds.length} selected
-              </span>
+          {isAdmin && (
+            <div className="bg-white border border-[#e5efea] rounded-[16px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`h-3 w-3 rounded-[4px] ${selectedIds.length > 0 ? 'bg-[#1a5948]' : 'bg-[#cfd6d4]'
+                    }`}
+                />
+                <span
+                  className={`text-sm ${selectedIds.length > 0 ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
+                    }`}
+                >
+                  {selectedIds.length} selected
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-[999px] text-sm px-5"
+                  disabled={selectedIds.length === 0 || visibilityLoading}
+                  onClick={handleSetPrivate}
+                >
+                  Set selected to private
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-[999px] text-sm px-5"
+                  disabled={selectedIds.length === 0 || visibilityLoading}
+                  onClick={handleSetPublic}
+                >
+                  Set selected to public
+                </Button>
+                <Button
+                  size="sm"
+                  className="rounded-[999px] text-sm px-5 bg-[#2f946f] text-white hover:bg-[#2f946f]/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={selectedIds.length === 0 || addingSelectedLoading}
+                  onClick={handleAddSelectedAsContacts}
+                >
+                  {addingSelectedLoading ? 'Adding…' : 'Add selected as contacts'}
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-[999px] text-sm px-5"
-                disabled={selectedIds.length === 0 || visibilityLoading}
-                onClick={handleSetPrivate}
-              >
-                Set selected to private
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-[999px] text-sm px-5"
-                disabled={selectedIds.length === 0 || visibilityLoading}
-                onClick={handleSetPublic}
-              >
-                Set selected to public
-              </Button>
-              <Button
-                size="sm"
-                className="rounded-[999px] text-sm px-5 bg-[#2f946f] text-white hover:bg-[#2f946f]/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={selectedIds.length === 0 || addingSelectedLoading}
-                onClick={handleAddSelectedAsContacts}
-              >
-                {addingSelectedLoading ? 'Adding…' : 'Add selected as contacts'}
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
         <div className="space-y-4">
           <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
@@ -912,26 +919,28 @@ export const ContactsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-[999px] px-4"
-                  disabled={contacts.length === 0 || visibilityLoading}
-                  onClick={handleSetAllPrivate}
-                >
-                  Set all to private
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-[999px] px-4"
-                  disabled={contacts.length === 0 || visibilityLoading}
-                  onClick={handleSetAllPublic}
-                >
-                  Set all to public
-                </Button>
-              </div>
+              {isAdmin && (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-[999px] px-4"
+                    disabled={contacts.length === 0 || visibilityLoading}
+                    onClick={handleSetAllPrivate}
+                  >
+                    Set all to private
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-[999px] px-4"
+                    disabled={contacts.length === 0 || visibilityLoading}
+                    onClick={handleSetAllPublic}
+                  >
+                    Set all to public
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
           <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">

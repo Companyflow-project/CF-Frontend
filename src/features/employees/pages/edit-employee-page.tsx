@@ -4,7 +4,7 @@ import { PageShell } from '@/components/layout/page-shell';
 import { HelpBanner } from '@/components/common/help-banner';
 import { AddEmployeeForm, EmployeeFormData } from '../components/add-employee-form';
 import { Button } from '@/components/ui/button';
-import { Save, ArrowLeft, Loader2 } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Link2, Copy, Check } from 'lucide-react';
 import { employeesApi } from '../api';
 import { employeesRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
@@ -41,6 +41,9 @@ export const EditEmployeePage: React.FC = () => {
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<EmployeeFormData | null>(null);
+  const [magicLink, setMagicLink] = useState<string | null>(null);
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false);
+  const [magicLinkCopied, setMagicLinkCopied] = useState(false);
   // Ref to the latest uploaded fid — set by AddEmployeeForm via onFidRefReady.
   // Using a ref avoids stale-closure issues: formData.userPictureFid may lag a render behind.
   const uploadedFidRef = useRef<number | null>(null);
@@ -160,6 +163,32 @@ export const EditEmployeePage: React.FC = () => {
     }
   };
 
+  const handleGenerateMagicLink = async () => {
+    if (!id) return;
+    setMagicLinkLoading(true);
+    setMagicLink(null);
+    try {
+      const url = await employeesApi.generateMagicLink(id);
+      setMagicLink(url);
+    } catch (error: any) {
+      const apiError = error?.response?.data?.error;
+      const message =
+        typeof apiError?.message === 'string' && apiError.message.trim()
+          ? apiError.message.trim()
+          : 'Failed to generate magic link.';
+      setGeneralError(message);
+    } finally {
+      setMagicLinkLoading(false);
+    }
+  };
+
+  const handleCopyMagicLink = async () => {
+    if (!magicLink) return;
+    await navigator.clipboard.writeText(magicLink);
+    setMagicLinkCopied(true);
+    setTimeout(() => setMagicLinkCopied(false), 2000);
+  };
+
   const handleBack = () => navigate(employeesRoutes.list);
 
   if (loading) {
@@ -234,6 +263,53 @@ export const EditEmployeePage: React.FC = () => {
           existingPhotoUri={employee.userPictureUri ?? null}
           onFidRefReady={handleFidRefReady}
         />
+
+        {!isSelf && (
+          <div className="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">Magic Link</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              Generate a one-time login link for this employee. The link expires after 24 hours and can only be used once.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateMagicLink}
+                disabled={magicLinkLoading}
+              >
+                {magicLinkLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Link2 className="h-4 w-4 mr-2" />
+                )}
+                {magicLinkLoading ? 'Generating...' : 'Generate magic link'}
+              </Button>
+              {magicLink && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyMagicLink}
+                  className="text-teal-700 border-teal-300 hover:bg-teal-50"
+                >
+                  {magicLinkCopied ? (
+                    <>
+                      <Check className="h-4 w-4 mr-1" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy link
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+            {magicLink && (
+              <p className="text-xs text-gray-400 mt-2 break-all font-mono">{magicLink}</p>
+            )}
+          </div>
+        )}
       </div>
     </PageShell>
   );

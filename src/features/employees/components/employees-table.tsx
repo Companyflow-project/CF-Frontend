@@ -19,7 +19,7 @@ interface EmployeesTableProps {
   selectedIds: string[];
   onSelect: (id: string) => void;
   onSelectAll: (selected: boolean) => void;
-  onDelete: (id: string, name: string) => void;
+  onDelete?: (id: string, name: string) => void;
   onEdit?: (id: string) => void;
   onStatistics?: (id: string) => void;
   onMessageLogs?: (id: string) => void;
@@ -147,16 +147,18 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                   {/* Actions */}
                   <TableCell className="w-[12%] align-middle">
                     <div className="flex items-center justify-center gap-1">
-                      {/* Edit — always visible */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
-                        aria-label="Edit"
-                        onClick={() => onEdit?.(employee.id)}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
+                      {/* Edit — only visible when handler is provided (admin) */}
+                      {onEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
+                          aria-label="Edit"
+                          onClick={() => onEdit(employee.id)}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       {/* Message — always visible */}
                       <Button
                         variant="ghost"
@@ -179,8 +181,8 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                           <BarChart3 className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {/* Delete — hidden for self */}
-                      {!isSelf && (
+                      {/* Delete — hidden for self and non-admin */}
+                      {!isSelf && onDelete && (
                         <Button
                           variant="ghost"
                           size="icon"

@@ -30,6 +30,7 @@ export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
   const companyId = authUser?.companyId ? String(authUser.companyId) : undefined;
+  const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin' || authUser?.role === 'MANAGER';
   const { data: subscriptionData } = useSubscription(companyId);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -262,12 +263,14 @@ export const EmployeesPage: React.FC = () => {
             >
               More licenses
             </Button>
-            <Button
-              onClick={() => navigate(employeesRoutes.add)}
-              className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
-            >
-              Add employee
-            </Button>
+            {isAdmin && (
+              <Button
+                onClick={() => navigate(employeesRoutes.add)}
+                className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
+              >
+                Add employee
+              </Button>
+            )}
           </div>
         }
       />
@@ -435,8 +438,8 @@ export const EmployeesPage: React.FC = () => {
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
-                  onDelete={handleDeleteRequest}
-                  onEdit={(id) => navigate(employeesRoutes.edit(id))}
+                  onDelete={isAdmin ? handleDeleteRequest : undefined}
+                  onEdit={isAdmin ? (id) => navigate(employeesRoutes.edit(id)) : undefined}
                   onStatistics={(id) => navigate(employeesRoutes.statisticsDetail(id))}
                   onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
                   emptyStateTitle="No employees"
@@ -477,8 +480,8 @@ export const EmployeesPage: React.FC = () => {
               )}
             </CardContent>
 
-            {/* bulk actions bar — inside the table card at the bottom */}
-            <div className="border-t border-[#e5efea] px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-b-[22px]">
+            {/* bulk actions bar — inside the table card at the bottom (admin only) */}
+            {isAdmin && <div className="border-t border-[#e5efea] px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-b-[22px]">
               <div
                 className="flex items-center gap-3 cursor-pointer h-9"
                 onClick={() => {
@@ -546,7 +549,7 @@ export const EmployeesPage: React.FC = () => {
                   Delete
                 </Button>
               </div>
-            </div>
+            </div>}
           </Card>
         </div>
 

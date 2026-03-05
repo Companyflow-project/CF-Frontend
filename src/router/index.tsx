@@ -69,6 +69,17 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const ADMIN_ROLES = new Set(['ADMIN', 'company_admin', 'MANAGER']);
+
+const RequireAdminRole: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <PageFallback />;
+  if (!user || !ADMIN_ROLES.has(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
+
 const RedirectIfAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
@@ -149,9 +160,11 @@ export const AppRouter: React.FC = () => {
             path={employeesRoutes.add}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <AddEmployeePage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <AddEmployeePage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -159,9 +172,11 @@ export const AppRouter: React.FC = () => {
             path="/employees/:id/edit"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EditEmployeePage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <EditEmployeePage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />

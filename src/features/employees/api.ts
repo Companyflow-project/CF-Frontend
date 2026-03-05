@@ -275,5 +275,12 @@ export const employeesApi = {
     if (!fid) throw new Error('Upload succeeded but no fid was returned.');
     return { fid, uri: response.data.uri ?? '' };
   },
+
+  async generateMagicLink(employeeId: string): Promise<string> {
+    const response = await axiosClient.post<ApiResponse<{ url: string }>>(`/employees/${employeeId}/magic-link`);
+    const url = response.data?.data?.url;
+    if (!url) throw new Error('Failed to generate magic link');
+    return url;
+  },
 };
 
