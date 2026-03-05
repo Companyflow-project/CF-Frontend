@@ -56,10 +56,10 @@ const AccountCard: React.FC<AccountCardProps> = ({ title, description, icon, ico
               onClick={isLocked ? undefined : action.onClick}
               disabled={isLocked}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${isLocked
-                  ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
-                  : action.variant === 'primary'
-                    ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
-                    : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
+                ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
+                : action.variant === 'primary'
+                  ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
+                  : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
                 }`}
             >
               <span>{action.label}</span>
@@ -110,11 +110,21 @@ export const AccountPage: React.FC = () => {
       actions: [
         {
           label: 'Update Subscription →',
+          onClick: () =>
+            window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer'),
           variant: 'primary',
           adminOnly: true,
         },
-        { label: 'View subscription' },
-        { label: 'Add more licenses', adminOnly: true },
+        {
+          label: 'View subscription',
+          onClick: () => navigate(accountRoutes.subscription),
+        },
+        {
+          label: 'Add more licenses',
+          onClick: () =>
+            window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer'),
+          adminOnly: true,
+        },
       ],
     },
     {
@@ -173,7 +183,7 @@ export const AccountPage: React.FC = () => {
       icon: <MoreHorizontal className="h-5 w-5 text-[#6b7280]" />,
       iconBg: 'bg-[#f3f4f6]',
       actions: [
-        { label: 'Setup whistleblower system' },
+        { label: 'Setup whistleblower system', onClick: () => window.open('https://companyflow.digibida.com/whistleblowerordning/', '_blank', 'noopener,noreferrer') },
       ],
     },
   ];

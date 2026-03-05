@@ -43,6 +43,7 @@ const AppearancePage = lazy(() => import('@/features/account/pages/appearance-pa
 const AddDepartmentPage = lazy(() => import('@/features/account/pages/add-department-page').then((m) => ({ default: m.AddDepartmentPage })));
 const ViewDepartmentsPage = lazy(() => import('@/features/account/pages/view-departments-page').then((m) => ({ default: m.ViewDepartmentsPage })));
 const EditDepartmentPage = lazy(() => import('@/features/account/pages/edit-department-page').then((m) => ({ default: m.EditDepartmentPage })));
+const SubscriptionPage = lazy(() => import('@/features/account/pages/subscription-page').then((m) => ({ default: m.SubscriptionPage })));
 const ViewEmploymentTypesPage = lazy(() => import('@/features/employment-types/pages').then((m) => ({ default: m.ViewEmploymentTypesPage })));
 const AssignEmploymentTypePage = lazy(() => import('@/features/employment-types/pages').then((m) => ({ default: m.AssignEmploymentTypePage })));
 const CompaniesPage = lazy(() => import('@/features/companies/pages/companies-page').then((m) => ({ default: m.CompaniesPage })));
@@ -411,6 +412,16 @@ export const AppRouter: React.FC = () => {
               <RequireAuth>
                 <AppLayout>
                   <EditDepartmentPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={accountRoutes.subscription}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <SubscriptionPage />
                 </AppLayout>
               </RequireAuth>
             }

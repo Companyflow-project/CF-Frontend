@@ -22,5 +22,8 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: ['my-companyflow.ngrok-free.app'],
+  },
 })
 

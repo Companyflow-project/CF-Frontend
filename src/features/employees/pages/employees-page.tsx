@@ -12,6 +12,7 @@ import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transform
 import { employeesRoutes } from '../routes';
 import { accountRoutes } from '@/features/account/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
+import { useSubscription } from '@/features/account/hooks';
 import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -28,6 +29,8 @@ import { useAuth } from '@/context/auth-context';
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
+  const companyId = authUser?.companyId ? String(authUser.companyId) : undefined;
+  const { data: subscriptionData } = useSubscription(companyId);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
@@ -548,7 +551,7 @@ export const EmployeesPage: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          {/* license usage card */}
+          {/* license usage card — values from GET /companies/{id}/subscription */}
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-bold text-[#0f172a]">License usage</CardTitle>
@@ -556,25 +559,36 @@ export const EmployeesPage: React.FC = () => {
             <CardContent className="space-y-0 px-6 pb-0">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses in subscription</span>
-                <span className="text-sm font-bold text-[#0f172a]">5</span>
+                <span className="text-sm font-bold text-[#0f172a]">
+                  {subscriptionData?.licensesTotal ?? '–'}
+                </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses used</span>
-                <span className="text-sm font-bold text-[#0f172a]">4</span>
+                <span className="text-sm font-bold text-[#0f172a]">
+                  {subscriptionData?.licensesUsed ?? '–'}
+                </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
                 <span className="text-sm text-[#0f172a]">Licenses left</span>
-                <span className="text-sm font-bold text-[#0f172a]">1</span>
+                <span className="text-sm font-bold text-[#0f172a]">
+                  {subscriptionData
+                    ? subscriptionData.licensesTotal - subscriptionData.licensesUsed
+                    : '–'}
+                </span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-[#0f172a]">SMS messages used</span>
-                <span className="text-sm font-bold text-[#0f172a]">0</span>
+                <span className="text-sm font-bold text-[#0f172a]">
+                  {subscriptionData?.smsUsed ?? '–'}
+                </span>
               </div>
             </CardContent>
             <CardFooter className="flex gap-2 pt-4 pb-4 px-6 justify-start">
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => navigate(accountRoutes.subscription)}
                 className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px] text-xs px-4"
               >
                 More licenses
@@ -582,6 +596,7 @@ export const EmployeesPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => navigate(accountRoutes.subscription)}
                 className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px] text-xs px-4"
               >
                 Manage SMS

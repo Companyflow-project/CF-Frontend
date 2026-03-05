@@ -31,6 +31,17 @@ export const SignupPage: React.FC = () => {
       navigate('/');
     } catch (error) {
       console.error('Signup failed:', error);
+      const raw = error instanceof Error ? error.message : 'Signup failed';
+      const lower = raw.toLowerCase();
+      if (lower.includes('email already') || lower.includes('duplicate') || lower.includes('already registered')) {
+        toast.error('This email is already registered. Please log in or use a different email.');
+      } else if (lower.includes('network') || lower.includes('econnrefused') || lower.includes('failed to fetch')) {
+        toast.error('Unable to reach the server. Please check your internet connection.');
+      } else if (!lower.includes('sql') && !lower.includes('er_') && raw.length < 200) {
+        toast.error(raw);
+      } else {
+        toast.error('Registration failed. Please try again or contact support.');
+      }
     }
   };
 

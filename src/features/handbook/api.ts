@@ -147,7 +147,7 @@ export const handbookApi = {
    */
   async getHandbookPrint(
     bid: number,
-    lang: string = 'en',
+    lang: string = 'da',
     readyOnly: boolean = true
   ): Promise<HandbookPrintPageItem[]> {
     const response = await axiosClient.get<HandbookPrintPageItem[]>(
@@ -209,18 +209,28 @@ export const handbookApi = {
   /**
    * Get handbook tree/overview
    * GET /api/handbook?lang=en
-   * Returns a simple array (no { data } wrapper)
-   * 
+   *
+   * Backend response (new shape):
+   * {
+   *   bid: number;
+   *   chapters: HandbookNode[];
+   * }
+   *
+   * This helper unwraps the response and returns only the chapters array so
+   * existing callers continue to work without changes.
+   *
    * Errors:
    * - 403: "Handbook not yet published" (for employees)
    * - 403: "User not assigned to a company"
    */
-  async getHandbookTree(lang: string = 'en'): Promise<HandbookNode[]> {
+  async getHandbookTree(lang: string = 'da'): Promise<{ bid: number | null; chapters: HandbookNode[] }> {
     try {
-      const response = await axiosClient.get<HandbookNode[]>('/handbook', {
+      const response = await axiosClient.get<{ bid?: number; chapters?: HandbookNode[] }>('/handbook', {
         params: { lang },
       });
-      return response.data;
+      const chapters = response.data?.chapters;
+      const bid = response.data?.bid ?? null;
+      return { bid: bid ?? null, chapters: Array.isArray(chapters) ? chapters : [] };
     } catch (error: any) {
       if (error.response?.status === 403) {
         const message = error.response?.data?.message || error.response?.data?.error;
@@ -241,7 +251,7 @@ export const handbookApi = {
    * Get page details for editing
    * GET /api/handbook/pages/:id?lang=en
    */
-  async getPageDetail(pageId: number, lang: string = 'en'): Promise<HandbookPageDetail | null> {
+  async getPageDetail(pageId: number, lang: string = 'da'): Promise<HandbookPageDetail | null> {
     try {
       const response = await axiosClient.get<HandbookPageDetail>(
         `/handbook/pages/${pageId}`,

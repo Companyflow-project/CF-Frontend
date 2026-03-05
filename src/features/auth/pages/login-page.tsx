@@ -5,7 +5,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '../hooks';
 import { authRoutes } from '../routes';
+import { toast } from 'sonner';
 import loginLogoUrl from '/assets/Login-Logo.svg';
+
+function friendlyLoginError(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes('invalid') || lower.includes('credentials') || lower.includes('password') || lower.includes('unauthorized')) {
+    return 'Incorrect email or password. Please try again.';
+  }
+  if (lower.includes('network') || lower.includes('econnrefused') || lower.includes('failed to fetch')) {
+    return 'Unable to reach the server. Please check your internet connection.';
+  }
+  if (lower.includes('rate') || lower.includes('too many')) {
+    return 'Too many login attempts. Please wait a minute and try again.';
+  }
+  if (lower.includes('internal') || lower.includes('500') || lower.includes('something went wrong')) {
+    return 'Something went wrong on our end. Please try again in a moment.';
+  }
+  if (!lower.includes('sql') && !lower.includes('er_') && !lower.includes('errno') && raw.length < 200) {
+    return raw;
+  }
+  return 'Login failed. Please try again or contact support.';
+}
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +44,10 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const raw = err instanceof Error ? err.message : 'Login failed';
+      const friendly = friendlyLoginError(raw);
+      setError(friendly);
+      toast.error(friendly);
     } finally {
       setSubmitting(false);
     }

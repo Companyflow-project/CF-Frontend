@@ -4,7 +4,7 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, BookOpen, Search, ChevronDown, ChevronRight, FileText, CheckCircle2, Clock, XCircle, GripVertical } from 'lucide-react';
-import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
+import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { useAuth } from '@/context/auth-context';
@@ -26,7 +26,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
     const [draggingChapterId, setDraggingChapterId] = useState<number | null>(null);
-    const BOOK_ID = DEFAULT_HANDBOOK_PRINT_BID;
+    const [handbookBid, setHandbookBid] = useState<number | null>(null);
 
     const openSneakPeek = (pageId: number, title: string) => {
         setSneakPeekPage({ id: pageId, title });
@@ -38,10 +38,11 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await handbookApi.getHandbookTree();
+                const { bid, chapters: data } = await handbookApi.getHandbookTree();
                 // Deduplicate
                 const unique = Array.from(new Map(data.map((n) => [n.id, n])).values());
                 setTree(unique);
+                setHandbookBid(bid);
             } catch (err: any) {
                 setError(err.message || 'Failed to load table of contents');
             } finally {
@@ -60,22 +61,24 @@ export const HandbookTableOfContentsPage: React.FC = () => {
         const others = tree.filter((n) => n.type !== 'chapter');
         setTree([...orderedChapters, ...others]);
 
+        if (!handbookBid) {
+            toast.error('Handbook not fully loaded yet. Please wait and try again.');
+            return;
+        }
+
         const updates = orderedChapters.map((ch, index) => ({
             nid: ch.id,
-            pid: BOOK_ID as number,
+            pid: handbookBid,
             weight: index,
         }));
 
         try {
-            if (!BOOK_ID) {
-                throw new Error('Handbook id is not loaded yet.');
-            }
-            await handbookApi.reorderHandbook(BOOK_ID, updates);
+            await handbookApi.reorderHandbook(handbookBid, updates);
         } catch (err: any) {
             console.error('Failed to reorder themes:', err);
             toast.error(err.message || 'Failed to reorder themes. Changes were reverted.');
             try {
-                const data = await handbookApi.getHandbookTree();
+                const { chapters: data } = await handbookApi.getHandbookTree();
                 const unique = Array.from(new Map(data.map((n) => [n.id, n])).values());
                 setTree(unique);
             } catch (refetchErr) {

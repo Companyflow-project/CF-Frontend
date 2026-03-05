@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Account } from '@/types/models';
-import { accountApi, CompanyAppearance } from './api';
+import { accountApi, CompanyAppearance, SubscriptionData } from './api';
 
 export const useAccount = () => {
   const [data, setData] = useState<Account | null>(null);
@@ -47,3 +47,14 @@ export const useUpdateCompanyAppearance = () => {
   });
 };
 
+export const useSubscription = (companyId?: string) => {
+  return useQuery<SubscriptionData>({
+    queryKey: ['subscription', companyId],
+    queryFn: () => accountApi.getSubscription(companyId!),
+    enabled: !!companyId,
+    staleTime: 0,                    // always consider data stale so refetch fires
+    refetchInterval: 30_000,         // poll every 30 seconds
+    refetchOnWindowFocus: true,      // re-fetch instantly when user returns to tab
+    refetchIntervalInBackground: false, // pause polling while tab is hidden
+  });
+};

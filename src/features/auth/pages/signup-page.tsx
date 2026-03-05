@@ -8,7 +8,47 @@ import { useAuth } from '../hooks';
 import { authApi } from '../api';
 import { authRoutes } from '../routes';
 import { TermsModal } from '../components/terms-modal';
+import { toast } from 'sonner';
 import loginLogoUrl from '/assets/Login-Logo.svg';
+
+/** Map raw backend/network error messages to user-friendly strings. */
+function friendlySignupError(raw: string): string {
+  const lower = raw.toLowerCase();
+
+  // Email already taken
+  if (lower.includes('email already') || lower.includes('duplicate') || lower.includes('already registered')) {
+    return 'This email is already registered. Please log in or use a different email.';
+  }
+  // Validation
+  if (lower.includes('valid email') || lower.includes('format')) {
+    return 'Please enter a valid email address.';
+  }
+  if (lower.includes('password') && (lower.includes('short') || lower.includes('weak') || lower.includes('least'))) {
+    return 'Your password is too short. Please use at least 8 characters.';
+  }
+  // Network / server
+  if (lower.includes('network') || lower.includes('econnrefused') || lower.includes('failed to fetch')) {
+    return 'Unable to reach the server. Please check your internet connection and try again.';
+  }
+  if (lower.includes('timeout')) {
+    return 'The request timed out. Please try again.';
+  }
+  if (lower.includes('internal') || lower.includes('500') || lower.includes('something went wrong')) {
+    return 'Something went wrong on our end. Please try again in a moment.';
+  }
+  // Rate limiting
+  if (lower.includes('rate') || lower.includes('too many')) {
+    return 'Too many attempts. Please wait a minute and try again.';
+  }
+
+  // If the message already looks user-friendly (no SQL, no stack trace), show it as-is
+  if (!lower.includes('sql') && !lower.includes('er_') && !lower.includes('errno') && raw.length < 200) {
+    return raw;
+  }
+
+  // Fallback for any truly unrecognizable error
+  return 'Registration failed. Please try again or contact support.';
+}
 
 export const SignupPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -36,16 +76,21 @@ export const SignupPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     if (!termsAccepted) {
-      setError('Du skal acceptere vilkårene');
+      toast.error('Du skal acceptere vilkår og betingelser.');
       return;
     }
     setSubmitting(true);
     try {
       const user = await authApi.register({ name, companyName, cvr, email, password });
+      toast.success('Account created successfully!');
+      toast.info('Setting up your handbook — this may take a moment. Please don\'t refresh the page.', { duration: 10000 });
       setUserFromRegister(user);
       navigate('/');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      const raw = err instanceof Error ? err.message : 'Signup failed';
+      const friendly = friendlySignupError(raw);
+      setError(friendly);
+      toast.error(friendly);
     } finally {
       setSubmitting(false);
     }

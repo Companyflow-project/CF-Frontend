@@ -1,37 +1,70 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
 import { handbookApi } from './api';
 
+const POLL_INTERVAL_MS = 5000;
+
 /**
- * Hook to fetch the handbook tree (chapters and pages)
+ * Hook to fetch the handbook tree (chapters and pages).
+ * When the tree comes back empty (no chapters) it auto-polls every 5s
+ * until chapters appear — handles handbook provisioning after new signup.
  */
 export const useHandbookTree = (lang: string = 'en') => {
   const [data, setData] = useState<HandbookNode[]>([]);
+  const [bid, setBid] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [provisioning, setProvisioning] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  const fetchTree = useCallback(async (isPolling = false) => {
+    try {
+      if (!isPolling) setLoading(true);
+      setError(null);
+      const result = await handbookApi.getHandbookTree(lang);
+      console.log('Handbook tree fetched:', result);
+      setData(result.chapters);
+      setBid(result.bid);
+
+      if (result.chapters.length > 0) {
+        setProvisioning(false);
+        stopPolling();
+      } else if (!isPolling) {
+        setProvisioning(true);
+      }
+    } catch (err) {
+      console.error('Error fetching handbook tree:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch handbook tree';
+      setError(new Error(errorMessage));
+      setData([]);
+      setBid(null);
+    } finally {
+      if (!isPolling) setLoading(false);
+    }
+  }, [lang, stopPolling]);
 
   useEffect(() => {
-    const fetchTree = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await handbookApi.getHandbookTree(lang);
-        console.log('Handbook tree fetched:', result);
-        setData(result);
-      } catch (err) {
-        console.error('Error fetching handbook tree:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch handbook tree';
-        setError(new Error(errorMessage));
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchTree();
-  }, [lang]);
+    return stopPolling;
+  }, [fetchTree, stopPolling]);
 
-  return { data, loading, error, refetch: () => { } };
+  // Poll while provisioning
+  useEffect(() => {
+    if (provisioning && !pollRef.current) {
+      pollRef.current = setInterval(() => fetchTree(true), POLL_INTERVAL_MS);
+    }
+    if (!provisioning) stopPolling();
+    return stopPolling;
+  }, [provisioning, fetchTree, stopPolling]);
+
+  return { data, bid, loading, error, provisioning, refetch: () => fetchTree() };
 };
 
 /**

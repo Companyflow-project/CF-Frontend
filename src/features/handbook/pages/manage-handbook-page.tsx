@@ -10,15 +10,18 @@ import {
     Send,
     Printer,
     MoreHorizontal,
+    Loader2,
 } from 'lucide-react';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
+import { useHandbookTree } from '../hooks';
 
 export const ManageHandbookPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
+    const { provisioning } = useHandbookTree();
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -94,8 +97,21 @@ export const ManageHandbookPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* Provisioning Banner */}
+            {provisioning && (
+                <div className="mb-6 bg-[#fef3c7] border border-[#fde68a] rounded-[14px] px-5 py-4 flex items-center gap-3">
+                    <Loader2 className="h-5 w-5 text-[#d97706] animate-spin flex-shrink-0" />
+                    <div>
+                        <p className="text-sm font-semibold text-[#92400e]">Setting up your handbook...</p>
+                        <p className="text-sm text-[#a16207] mt-0.5">
+                            We're preparing your handbook template. This usually takes a minute or two. The page will update automatically.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Action Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${provisioning ? 'opacity-50 pointer-events-none' : ''}`}>
                 {/* Handbook Card */}
                 <ActionCard
                     title="Handbook"

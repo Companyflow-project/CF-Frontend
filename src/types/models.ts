@@ -115,6 +115,11 @@ export interface HandbookNode {
   type: 'chapter' | 'page';
   status: 'ready' | 'opted_out' | 'not_ready';
   badge: 'custom' | 'premade';
+  hasNote?: boolean;
+  hasDocuments?: boolean;
+  hasLinks?: boolean;
+  hasImage?: boolean;
+  hasCustomBody?: boolean;
   isDeletable: boolean;
   pages?: HandbookNode[];
 }

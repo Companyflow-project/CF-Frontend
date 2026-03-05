@@ -8,5 +8,6 @@ export const accountRoutes = {
   employmentTypes: '/account/employment-types',
   addEmploymentType: '/account/employment-types/add',
   editEmploymentType: '/account/employment-types/edit/:id',
+  subscription: '/account/subscription',
 } as const;
 

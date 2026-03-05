@@ -1,6 +1,23 @@
 import { axiosClient } from '@/lib/axios-client';
 import { Account } from '@/types/models';
 
+export interface SubscriptionData {
+  productName: string;
+  subscriptionStart: string | null;
+  subscriptionEnd: string | null;
+  subscriptionRemainingMonths: number | null;
+  licensesTotal: number;
+  licensesUsed: number;
+  smsCreditsTotal: number;
+  smsUsed: number;
+  smsUsedByUsers: number;
+  whistleblowerAccess: boolean;
+  employmentTypesTotal: number;
+  departmentsTotal: number;
+  additionalManualsTotal: number;
+  sopTotal: number;
+}
+
 
 export interface CompanyAppearance {
   pictureType: string; // 'none' | 'small' | 'photographs'
@@ -50,6 +67,13 @@ export const accountApi = {
 
   async updateCompanyAppearance(payload: CompanyAppearance): Promise<{ success: boolean; message: string }> {
     const response = await axiosClient.put<{ data: { success: boolean; message: string }; error: null }>('/company/appearance', payload);
+    return response.data.data;
+  },
+
+  async getSubscription(companyId: string): Promise<SubscriptionData> {
+    const response = await axiosClient.get<{ data: SubscriptionData; error: null }>(
+      `/companies/${companyId}/subscription`
+    );
     return response.data.data;
   },
 };

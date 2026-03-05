@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,13 +11,13 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { Search, ArrowLeft, GripVertical, AlertTriangle } from 'lucide-react';
+import { Search, ArrowLeft, GripVertical, AlertTriangle, FileText, Link2, Image, StickyNote, PenLine, Loader2 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
-import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
+import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import type { HandbookNode } from '@/types/models';
 import { useAuth } from '@/context/auth-context';
@@ -34,15 +34,17 @@ export const HandbookPagesPage: React.FC = () => {
     const [handbookTree, setHandbookTree] = useState<HandbookNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [provisioning, setProvisioning] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
-    // For now we always reorder the main Employee Handbook (bid = DEFAULT_HANDBOOK_PRINT_BID).
-    const BOOK_ID = DEFAULT_HANDBOOK_PRINT_BID;
+    // The actual bid comes from the API — it differs per company and must NOT be hardcoded to 21.
+    const [handbookBid, setHandbookBid] = useState<number | null>(null);
 
     useEffect(() => {
         const open = searchParams.get('open');
@@ -74,19 +76,28 @@ export const HandbookPagesPage: React.FC = () => {
     const [dragOverChapterId, setDragOverChapterId] = useState<number | null>(null);
     const [dragChapterDropPosition, setDragChapterDropPosition] = useState<'left' | 'right' | null>(null);
 
-    useEffect(() => {
-        const fetchHandbookTree = async () => {
-            try {
+    const fetchHandbookTree = useCallback(async (isPolling = false) => {
+        try {
+            if (!isPolling) {
                 setLoading(true);
                 setError(null);
-                const tree = await handbookApi.getHandbookTree();
+            }
+            const { bid, chapters: tree } = await handbookApi.getHandbookTree();
 
-                // Deduplicate the entire tree by node ID to prevent duplicate key warnings
-                const uniqueTree = Array.from(
-                    new Map(tree.map(node => [node.id, node])).values()
-                );
+            // Deduplicate the entire tree by node ID to prevent duplicate key warnings
+            const uniqueTree = Array.from(
+                new Map(tree.map(node => [node.id, node])).values()
+            );
 
-                setHandbookTree(uniqueTree);
+            setHandbookTree(uniqueTree);
+            setHandbookBid(bid);
+
+            if (uniqueTree.length > 0) {
+                setProvisioning(false);
+                if (pollRef.current) {
+                    clearInterval(pollRef.current);
+                    pollRef.current = null;
+                }
 
                 // Preselect all pages with status === 'ready'
                 const readyPageIds = new Set<number>();
@@ -100,19 +111,56 @@ export const HandbookPagesPage: React.FC = () => {
                     }
                 });
                 setSelectedPages(readyPageIds);
-                if (uniqueTree.length > 0 && uniqueTree[0].type === 'chapter') {
+                if (uniqueTree[0].type === 'chapter') {
                     setActiveChapterId(uniqueTree[0].id);
                 }
-            } catch (err: any) {
-                console.error('Failed to fetch handbook tree:', err);
-                setError(err.message || 'Failed to load handbook data');
-            } finally {
-                setLoading(false);
+            } else if (!isPolling) {
+                // Empty tree — handbook still provisioning
+                setProvisioning(true);
+            }
+        } catch (err: any) {
+            console.error('Failed to fetch handbook tree:', err);
+            if (!isPolling) {
+                // Check if this is a "not found" style error during provisioning
+                const msg = err.message || '';
+                if (msg.includes('not published') || msg.includes('not found') || msg.includes('not linked')) {
+                    setProvisioning(true);
+                    setError(null);
+                } else {
+                    setError(msg || 'Failed to load handbook data');
+                }
+            }
+        } finally {
+            if (!isPolling) setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchHandbookTree();
+        return () => {
+            if (pollRef.current) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
             }
         };
+    }, [fetchHandbookTree]);
 
-        fetchHandbookTree();
-    }, []);
+    // Poll while provisioning
+    useEffect(() => {
+        if (provisioning && !pollRef.current) {
+            pollRef.current = setInterval(() => fetchHandbookTree(true), 5000);
+        }
+        if (!provisioning && pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+        }
+        return () => {
+            if (pollRef.current) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
+            }
+        };
+    }, [provisioning, fetchHandbookTree]);
 
     const chapters = useMemo(() => {
         const chapterNodes = handbookTree.filter((node) => node.type === 'chapter');
@@ -237,13 +285,14 @@ export const HandbookPagesPage: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const tree = await handbookApi.getHandbookTree();
+            const { bid, chapters: tree } = await handbookApi.getHandbookTree();
 
             const uniqueTree = Array.from(
                 new Map(tree.map(node => [node.id, node])).values()
             );
 
             setHandbookTree(uniqueTree);
+            setHandbookBid(bid);
 
             const readyPageIds = new Set<number>();
             uniqueTree.forEach(node => {
@@ -285,10 +334,10 @@ export const HandbookPagesPage: React.FC = () => {
         }));
 
         try {
-            if (!BOOK_ID) {
+            if (!handbookBid) {
                 throw new Error('Handbook id is not loaded yet.');
             }
-            await handbookApi.reorderHandbook(BOOK_ID, updates);
+            await handbookApi.reorderHandbook(handbookBid, updates);
         } catch (err: any) {
             console.error('Failed to reorder pages:', err);
             toast.error(err.message || 'Failed to reorder pages. Changes were reverted.');
@@ -330,14 +379,20 @@ export const HandbookPagesPage: React.FC = () => {
             return [...orderedChapters, ...nonChapters];
         });
 
+        if (!handbookBid) {
+            toast.error('Handbook not fully loaded yet. Please wait and try again.');
+            await refreshHandbookTree();
+            return;
+        }
+
         const updates = orderedChapters.map((ch, index) => ({
             nid: ch.id,
-            pid: BOOK_ID,
+            pid: handbookBid,
             weight: index,
         }));
 
         try {
-            await handbookApi.reorderHandbook(BOOK_ID, updates);
+            await handbookApi.reorderHandbook(handbookBid, updates);
         } catch (err: any) {
             console.error('Failed to reorder themes:', err);
             toast.error(err.message || 'Failed to reorder themes. Changes were reverted.');
@@ -511,7 +566,7 @@ export const HandbookPagesPage: React.FC = () => {
                     </div>
 
                     {/* Chapter Tabs */}
-                    {!loading && !error && (
+                    {!loading && !error && !provisioning && (
                         <div className="w-full overflow-x-auto overflow-y-hidden">
                             <div className="flex items-end gap-0 w-max border-b border-gray-200">
                                 {chapters.map((chapter) => (
@@ -591,11 +646,26 @@ export const HandbookPagesPage: React.FC = () => {
                         <div className="text-center py-12 text-gray-400">Loading handbook...</div>
                     )}
 
-                    {error && (
+                    {provisioning && !error && (
+                        <div className="flex flex-col items-center justify-center py-16 gap-4">
+                            <Loader2 className="h-8 w-8 text-[#d97706] animate-spin" />
+                            <div className="text-center">
+                                <p className="text-base font-semibold text-[#92400e]">Setting up your handbook...</p>
+                                <p className="text-sm text-[#a16207] mt-1">
+                                    We're preparing your handbook template. This usually takes a minute or two.
+                                </p>
+                                <p className="text-sm text-[#a16207] mt-0.5">
+                                    The page will refresh automatically when it's ready.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {error && !provisioning && (
                         <div className="text-center py-12 text-red-500">{error}</div>
                     )}
 
-                    {!loading && !error && (
+                    {!loading && !error && !provisioning && (
                         <div className="space-y-3 pt-2">
                             {filteredPages.map((page) => {
                                 const isExpanded = expandedPageId === page.id;
@@ -655,7 +725,6 @@ export const HandbookPagesPage: React.FC = () => {
                                             <div
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (page.isDeletable === false) return;
                                                     const newSelected = new Set(selectedPages);
                                                     if (newSelected.has(page.id)) {
                                                         newSelected.delete(page.id);
@@ -665,17 +734,15 @@ export const HandbookPagesPage: React.FC = () => {
                                                     setSelectedPages(newSelected);
                                                 }}
                                                 title={page.isDeletable === false ? 'This page cannot be deleted' : undefined}
-                                                className={`flex-shrink-0 ${page.isDeletable === false ? 'cursor-default' : 'cursor-pointer'}`}
+                                                className="flex-shrink-0 cursor-pointer"
                                             >
                                                 <div
-                                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${page.isDeletable === false
-                                                        ? 'bg-[#a8d5c5] border-[#a8d5c5]'
-                                                        : selectedPages.has(page.id)
+                                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedPages.has(page.id)
                                                             ? 'bg-[#3d997d] border-[#3d997d]'
                                                             : 'border-[#d1d5db] bg-white'
                                                         }`}
                                                 >
-                                                    {(page.isDeletable === false || selectedPages.has(page.id)) && (
+                                                    {selectedPages.has(page.id) && (
                                                         <svg
                                                             className="w-3 h-3 text-white"
                                                             fill="none"
@@ -717,15 +784,45 @@ export const HandbookPagesPage: React.FC = () => {
                                             )}
 
                                             {/* Title and Badges */}
-                                            <div className="flex-1 flex items-center gap-3">
-                                                <span className="font-medium text-[#0d0e0e]">{page.title}</span>
+                                            <div className="flex-1 flex items-center gap-3 min-w-0">
+                                                <span className="font-medium text-[#0d0e0e] truncate">{page.title}</span>
                                                 {page.badge && (
-                                                    <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs">
+                                                    <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
                                                         {page.badge === 'custom' ? 'Custom' : 'Premade'}
                                                     </Badge>
                                                 )}
+                                                {/* Change indicators */}
+                                                {(page.hasCustomBody || page.hasNote || page.hasDocuments || page.hasLinks || page.hasImage) && (
+                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                        {page.hasCustomBody && (
+                                                            <span title="Edited text" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f0f4ff] text-[#4b6cb7] text-[10px] leading-none">
+                                                                <PenLine className="h-3 w-3" />
+                                                            </span>
+                                                        )}
+                                                        {page.hasNote && (
+                                                            <span title="Has notes" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fef9ee] text-[#9a7b2e] text-[10px] leading-none">
+                                                                <StickyNote className="h-3 w-3" />
+                                                            </span>
+                                                        )}
+                                                        {page.hasDocuments && (
+                                                            <span title="Has documents" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f3eef8] text-[#7c5caa] text-[10px] leading-none">
+                                                                <FileText className="h-3 w-3" />
+                                                            </span>
+                                                        )}
+                                                        {page.hasLinks && (
+                                                            <span title="Has links" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#eef6f3] text-[#3d8b6e] text-[10px] leading-none">
+                                                                <Link2 className="h-3 w-3" />
+                                                            </span>
+                                                        )}
+                                                        {page.hasImage && (
+                                                            <span title="Has image" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fef0f0] text-[#b85c5c] text-[10px] leading-none">
+                                                                <Image className="h-3 w-3" />
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 {isExpanded && (
-                                                    <span className="text-xs text-gray-400 italic">No text - Editing draft...</span>
+                                                    <span className="text-xs text-gray-400 italic flex-shrink-0">No text - Editing draft...</span>
                                                 )}
                                             </div>
 
@@ -797,8 +894,8 @@ export const HandbookPagesPage: React.FC = () => {
                                                 checkedInViewIds.length > 0
                                                     ? checkedInViewIds
                                                     : focusedIsDeletable
-                                                    ? [focusedPageId!]
-                                                    : [];
+                                                        ? [focusedPageId!]
+                                                        : [];
 
                                             if (idsToDelete.length === 0) return;
 
@@ -1063,10 +1160,10 @@ export const HandbookPagesPage: React.FC = () => {
                                     const apiError = err?.response?.data?.error;
                                     const message =
                                         typeof apiError?.message === 'string' &&
-                                        apiError.message.trim()
+                                            apiError.message.trim()
                                             ? apiError.message.trim()
                                             : err?.message ||
-                                              'Failed to delete page(s). Please try again.';
+                                            'Failed to delete page(s). Please try again.';
                                     toast.error(message);
                                 }
                                 setPendingDelete(null);

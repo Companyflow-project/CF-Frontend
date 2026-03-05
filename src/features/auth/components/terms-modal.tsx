@@ -100,16 +100,16 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                     <p className="text-xs text-[#6b7280]">Senest opdateret september 2025.</p>
 
                     <p>
-                        Kundens abonnement hos Degoan ApS er underlagt disse abonnementsvilkår, som kunden skal
+                        Kundens abonnement hos CompanyFlow er underlagt disse abonnementsvilkår, som kunden skal
                         acceptere i forbindelse med oprettelse som bruger af abonnementet.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Kontaktinformationer</h4>
                     <p>
-                        Abonnementet udbydes og ejes af Degoan ApS, som har følgende kontaktoplysninger:
+                        Abonnementet udbydes og ejes af CompanyFlow, som har følgende kontaktoplysninger:
                     </p>
                     <p>
-                        Degoan ApS
+                        CompanyFlow
                         <br />
                         CVR-nr.: 42562254
                         <br />
@@ -121,7 +121,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                         </a>
                     </p>
                     <p>
-                        Kunden er altid velkommen til at kontakte Degoan ApS, hvis der er spørgsmål til
+                        Kunden er altid velkommen til at kontakte CompanyFlow, hvis der er spørgsmål til
                         abonnementsvilkårene eller abonnementet generelt.
                     </p>
 
@@ -132,52 +132,52 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
 
                     <h4 className="font-medium text-[#111827]">Ændring i abonnementsvilkår</h4>
                     <p>
-                        Degoan ApS har til enhver tid ret til at ændre abonnementsvilkårene. I tilfælde af væsentlige
+                        CompanyFlow har til enhver tid ret til at ændre abonnementsvilkårene. I tilfælde af væsentlige
                         ændringer vil kunden blive varslet minimum en måned inden, at ændringerne træder i kraft. De
                         gældende abonnementsvilkår kan altid ses på degoan.dk.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Behandling af persondata (GDPR-regler)</h4>
                     <p>
-                        Degoan ApS er at betragte som databehandler i brugen af kundens data. Det er kunden selv, der
+                        CompanyFlow er at betragte som databehandler i brugen af kundens data. Det er kunden selv, der
                         er dataansvarlig. Degoan.dk indsamler og behandler data, som er nødvendige for at kunne levere
-                        ydelser til kunden, som har købt adgang til Degoan ApS&apos; personalehåndbog.
+                        ydelser til kunden, som har købt adgang til CompanyFlows personalehåndbog.
                     </p>
                     <p>
-                        Degoan ApS registrerer virksomheds- og personoplysninger. Det drejer sig om navne, mailadresser,
+                        CompanyFlow registrerer virksomheds- og personoplysninger. Det drejer sig om navne, mailadresser,
                         telefonnumre samt forskellige andre oplysninger om kunden, som er indtastet i systemet.
                         Kundens medarbejdere godtager indirekte indsamlingen af deres personlige oplysninger.
-                        Indsamlingen af personoplysninger for medarbejderne er fundamental for, at Degoan ApS kan
+                        Indsamlingen af personoplysninger for medarbejderne er fundamental for, at CompanyFlow kan
                         levere sine ydelser til kunden.
                     </p>
                     <p>
-                        Uden disse oplysninger er Degoan ApS ikke i stand til at opfylde aftalen, som indgås, og kan
-                        ikke levere sin ydelse som aftalt. Degoan ApS indsamler de oplysninger, som kunden selv
+                        Uden disse oplysninger er CompanyFlow ikke i stand til at opfylde aftalen, som indgås, og kan
+                        ikke levere sin ydelse som aftalt. CompanyFlow indsamler de oplysninger, som kunden selv
                         udleverer ved indgåelsen af aftalen, samt oplysninger om brugernes brug af systemet. Dette er
-                        en central og nødvendig del af Degoan ApS&apos; ydelse.
+                        en central og nødvendig del af CompanyFlows ydelse.
                     </p>
                     <p>
-                        Kunden er selv ansvarlig for, at disse data er korrekte, og Degoan ApS har ingen pligt (eller
-                        mulighed) for at sikre dette. På samme måde kan Degoan ApS heller ikke sikre, at der ikke
+                        Kunden er selv ansvarlig for, at disse data er korrekte, og CompanyFlow har ingen pligt (eller
+                        mulighed) for at sikre dette. På samme måde kan CompanyFlow heller ikke sikre, at der ikke
                         forekommer fortrolig information i kundens håndbog. Dette er alene virksomhedens eget ansvar.
                     </p>
                     <p>
-                        Degoan ApS indsamler informationer via cookies for at kunne tilpasse brugeroplevelsen på
-                        degoan.dk og for at kunne optimere produktet. Se mere herom i Degoan ApS&apos; cookiepolitik
+                        CompanyFlow indsamler informationer via cookies for at kunne tilpasse brugeroplevelsen på
+                        degoan.dk og for at kunne optimere produktet. Se mere herom i CompanyFlows cookiepolitik
                         nederst på siden.
                     </p>
                     <p>
-                        Disse data opbevares, så længe kunden har en konto hos Degoan ApS, og er kun tilgængelige for
-                        medarbejdere i Degoan ApS og kunden selv. Ingen oplysninger deles med tredjepart.
+                        Disse data opbevares, så længe kunden har en konto hos CompanyFlow, og er kun tilgængelige for
+                        medarbejdere i CompanyFlow og kunden selv. Ingen oplysninger deles med tredjepart.
                     </p>
                     <p>
-                        Kunden har ret til at se, rette og slette sine egne data og til at gøre indsigelser mod Degoan
-                        ApS&apos; behandling af data. Den enkelte bruger/medarbejder har ikke direkte disse rettigheder,
+                        Kunden har ret til at se, rette og slette sine egne data og til at gøre indsigelser mod CompanyFlows
+                        behandling af data. Den enkelte bruger/medarbejder har ikke direkte disse rettigheder,
                         men skal gå gennem sin virksomhed for at håndhæve sine rettigheder i henhold til GDPR.
                     </p>
                     <p>
-                        Hvis der er andre indsigelser mod Degoan ApS&apos; behandling af data, eller hvis der ønskes
-                        adgang til de oplysninger, som er registreret om kunden og medarbejderne hos Degoan ApS, eller
+                        Hvis der er andre indsigelser mod CompanyFlows behandling af data, eller hvis der ønskes
+                        adgang til de oplysninger, som er registreret om kunden og medarbejderne hos CompanyFlow, eller
                         hvis de ønskes ændret, eksporteret eller slettet, kan det ske ved henvendelse til Kim Conrad
                         Petersen:{' '}
                         <a href="mailto:kim@degoan.dk" className="text-[#1a5948] underline">
@@ -186,30 +186,30 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                         .
                     </p>
                     <p>
-                        Der er mulighed for at klage over Degoan ApS&apos; behandling af oplysningerne, hvis Degoan ApS
+                        Der er mulighed for at klage over CompanyFlows behandling af oplysningerne, hvis CompanyFlow
                         ikke er enig i indsigelserne. Klagen skal sendes til Datatilsynet. Se mere hos Datatilsynet.
                     </p>
 
-                    <h4 className="font-medium text-[#111827]">Degoan ApS beskytter alle data</h4>
+                    <h4 className="font-medium text-[#111827]">CompanyFlow beskytter alle data</h4>
                     <p>
-                        Degoan ApS gemmer oplysningerne på computere (servere) med begrænset adgang. Degoan ApS&apos;
+                        CompanyFlow gemmer oplysningerne på computere (servere) med begrænset adgang. CompanyFlows
                         sikkerhedsforanstaltninger kontrolleres løbende for at sikre, at oplysninger håndteres
-                        forsvarligt og under stadig hensyntagen til kundens rettigheder. Degoan ApS foretager alle
+                        forsvarligt og under stadig hensyntagen til kundens rettigheder. CompanyFlow foretager alle
                         nødvendige sikkerhedsforanstaltninger og holder softwaren opdateret med henblik på at forhindre
                         sikkerhedshuller eller -brud.
                     </p>
                     <p>
-                        Degoan ApS kan ikke garantere 100 procent sikkerhed ved dataoverførsler via internettet. Det
+                        CompanyFlow kan ikke garantere 100 procent sikkerhed ved dataoverførsler via internettet. Det
                         betyder, at der kan være en risiko for, at andre uberettiget tiltvinger sig adgang til
                         oplysninger, når data sendes og opbevares elektronisk. Der afgives således personlige
-                        oplysninger på eget ansvar. Degoan ApS forpligter sig til at informere ved eventuelle brud på
-                        sikkerheden, som Degoan ApS får kendskab til.
+                        oplysninger på eget ansvar. CompanyFlow forpligter sig til at informere ved eventuelle brud på
+                        sikkerheden, som CompanyFlow får kendskab til.
                     </p>
                     <p>
-                        Degoan ApS ændrer løbende sin behandling af oplysninger i takt med udviklingen af produkter og
-                        relevante teknologier. Degoan ApS forbeholder sig derfor ret til at opdatere og ændre dette
-                        dokument. Gør Degoan ApS det, rettes datoen for &quot;senest opdateret&quot;. I tilfælde af
-                        væsentlige ændringer gives kunden besked i form af en synlig meddelelse på Degoan ApS&apos;
+                        CompanyFlow ændrer løbende sin behandling af oplysninger i takt med udviklingen af produkter og
+                        relevante teknologier. CompanyFlow forbeholder sig derfor ret til at opdatere og ændre dette
+                        dokument. Gør CompanyFlow det, rettes datoen for &quot;senest opdateret&quot;. I tilfælde af
+                        væsentlige ændringer gives kunden besked i form af en synlig meddelelse på CompanyFlows
                         website eller en e-mail.
                     </p>
 
@@ -221,33 +221,33 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
 
                     <h4 className="font-medium text-[#111827]">Abonnementets indhold</h4>
                     <p>
-                        Degoan ApS har på forhånd skrevet 80-90% af de tekster, som en almindelig personalehåndbog
+                        CompanyFlow har på forhånd skrevet 80-90% af de tekster, som en almindelig personalehåndbog
                         indeholder. Tilbage står de tekster, der er unikke for virksomheden – eksempelvis historie,
-                        værdier, vision, mission osv. Alle Degoans tekster kan vælges fra og erstattes af egne tekster.
+                        værdier, vision, mission osv. Alle CompanyFlows tekster kan vælges fra og erstattes af egne tekster.
                     </p>
                     <p>
-                        Overenskomster og lokalaftaler indgår ikke i de tekster eller emner, som Degoan ApS har skrevet
-                        på forhånd. Teksterne i Degoan ApS&apos; personalehåndbog kan oversættes til andre sprog. Degoan
-                        ApS garanterer ikke for fejloversættelser mv.
+                        Overenskomster og lokalaftaler indgår ikke i de tekster eller emner, som CompanyFlow har skrevet
+                        på forhånd. Teksterne i CompanyFlows personalehåndbog kan oversættes til andre sprog. CompanyFlow
+                        garanterer ikke for fejloversættelser mv.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Er indholdet juridisk korrekt?</h4>
                     <p>
-                        Alle Degoans tekster i personalehåndbogen bliver gennemlæst og tjekket af Degoans advokat. Det
-                        betyder, at Degoan står inde for, at indholdet i Degoans tekster er korrekt i forhold til dansk
+                        Alle CompanyFlows tekster i personalehåndbogen bliver gennemlæst og tjekket af CompanyFlows advokat. Det
+                        betyder, at CompanyFlow står inde for, at indholdet i CompanyFlows tekster er korrekt i forhold til dansk
                         lovgivning.
                     </p>
                     <p>
-                        Det er væsentligt at være opmærksom på, at Degoan ikke står inde for de tekster, som en
+                        Det er væsentligt at være opmærksom på, at CompanyFlow ikke står inde for de tekster, som en
                         abonnerende virksomhed selv lægger op. Det gælder også for tekster, der tager udgangspunkt i
-                        Degoans tekster, men som er blevet rettet til af virksomheden – uanset hvor lidt eller hvor
-                        meget, der er rettet til i forhold til Degoans oprindelige tekst.
+                        CompanyFlows tekster, men som er blevet rettet til af virksomheden – uanset hvor lidt eller hvor
+                        meget, der er rettet til i forhold til CompanyFlows oprindelige tekst.
                     </p>
                     <p>
-                        Degoan holder sig orienteret om nye tiltag – lovgivning mv. – som kommer fra offentlige
-                        myndigheder. Ændringer bliver straks skrevet ind i Degoans tekster, og de abonnerende
+                        CompanyFlow holder sig orienteret om nye tiltag – lovgivning mv. – som kommer fra offentlige
+                        myndigheder. Ændringer bliver straks skrevet ind i CompanyFlows tekster, og de abonnerende
                         virksomheder bliver orienteret pr. mail. Ovennævnte gælder også for oversatte varianter, fx
-                        engelsk, af Degoans personalehåndbog.
+                        engelsk, af CompanyFlows personalehåndbog.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Brugen af abonnementet</h4>
@@ -265,25 +265,25 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                     </p>
                     <p>
                         Kunden har pligt til at sikre sig, at abonnementet ikke bliver anvendt i strid med gældende
-                        lovgivning eller på en måde, som kan skade Degoan ApS&apos; omdømme. Hvis kunden får kendskab
+                        lovgivning eller på en måde, som kan skade CompanyFlows omdømme. Hvis kunden får kendskab
                         til, at abonnementsadgangen er blevet anvendt i strid med disse abonnementsvilkår, gældende
-                        lovgivning eller på anden måde, der kan skade Degoan ApS&apos; omdømme, er kunden forpligtet til
-                        straks skriftligt at underrette Degoan ApS herom.
+                        lovgivning eller på anden måde, der kan skade CompanyFlows omdømme, er kunden forpligtet til
+                        straks skriftligt at underrette CompanyFlow herom.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Opdatering</h4>
                     <p>
-                        Degoan ApS foretager opdatering af teknik, software, servere mv., som driver Degoan ApS&apos;
-                        platforme. Degoan ApS opdaterer hele tiden de tekster, som er skrevet på forhånd af Degoan ApS,
+                        CompanyFlow foretager opdatering af teknik, software, servere mv., som driver CompanyFlows
+                        platforme. CompanyFlow opdaterer hele tiden de tekster, som er skrevet på forhånd af CompanyFlow,
                         i forhold til ny lovgivning og retningslinjer.
                     </p>
                     <p>
                         Tekster, tilføjelser og andet, som er skrevet og uploadet af kunden, skal kunden selv sørge for
-                        at opdatere. Indhold i kundens egne tekster er ikke underlagt Degoan ApS&apos; ansvar.
+                        at opdatere. Indhold i kundens egne tekster er ikke underlagt CompanyFlows ansvar.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Support</h4>
-                    <p>Degoan ApS yder support på sin egen platform:</p>
+                    <p>CompanyFlow yder support på sin egen platform:</p>
                     <ul className="list-disc list-inside space-y-1 text-[#374151]">
                         <li>Vi kan svare på enkle spørgsmål om opbygning, valg af tekster og lignende.</li>
                         <li>Vi kan i et vist omfang yde hjælp til det indhold, man selv vælger at skrive.</li>
@@ -296,24 +296,24 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                     <h4 className="font-medium text-[#111827]">Ophavsret og immaterielle rettigheder</h4>
                     <p>
                         Abonnementets indhold og design er beskyttet af ophavsret, varemærkeret og andre immaterielle
-                        rettigheder, der tilhører Degoan ApS. Tilsvarende ejer Degoan ApS alle immaterielle rettigheder,
-                        der eksisterer eller måtte opstå som led i Degoan ApS&apos; opfyldelse af aftalen, herunder
+                        rettigheder, der tilhører CompanyFlow. Tilsvarende ejer CompanyFlow alle immaterielle rettigheder,
+                        der eksisterer eller måtte opstå som led i CompanyFlows opfyldelse af aftalen, herunder
                         enhver form for kilde- og objektkode mv.
                     </p>
                     <p>
                         Kunden er ikke berettiget til at ændre eller fjerne mærker eller meddelelser vedrørende
                         immaterielle rettigheder, der er anvendt eller fremgår af abonnementets indhold. Kunden skal
-                        straks skriftligt give Degoan ApS meddelelse om enhver krænkelse eller potentiel krænkelse af
-                        Degoan ApS&apos; immaterielle rettigheder.
+                        straks skriftligt give CompanyFlow meddelelse om enhver krænkelse eller potentiel krænkelse af
+                        CompanyFlows immaterielle rettigheder.
                     </p>
                     <p>
-                        Degoan ApS overdrager kunden en ikke-overdragelig og ikke-eksklusiv brugsret til at tilgå
+                        CompanyFlow overdrager kunden en ikke-overdragelig og ikke-eksklusiv brugsret til at tilgå
                         abonnementets indhold i overensstemmelse med disse vilkår. Der er ikke overdraget andre
                         rettigheder.
                     </p>
                     <p>
-                        Virksomhedens egne tekster er beskyttet af rettighedslovgivningen, og Degoan ApS har
-                        tavshedspligt, hvad indholdet angår i en virksomheds personalehåndbog. Degoan ApS kan ikke
+                        Virksomhedens egne tekster er beskyttet af rettighedslovgivningen, og CompanyFlow har
+                        tavshedspligt, hvad indholdet angår i en virksomheds personalehåndbog. CompanyFlow kan ikke
                         bruge eller overføre indhold fra en virksomheds personalehåndbog til en anden. Det er
                         virksomhedens eget ansvar, hvis der i personalehåndbogen skrives koder til alarmer,
                         it-systemer mv.
@@ -332,23 +332,23 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                         begynder.
                     </p>
                     <p>
-                        Kunden kan til enhver tid finde gældende priser på Degoan ApS&apos; hjemmeside. Degoan ApS tager
+                        Kunden kan til enhver tid finde gældende priser på CompanyFlows hjemmeside. CompanyFlow tager
                         forbehold for tryk- og prisfejl. Alle priser er angivet i danske kroner (DKK) og er eksklusiv
                         moms, skatter og afgifter. Kunden skal betale den til enhver tid gældende moms, skatter og
                         afgifter.
                     </p>
                     <p>
-                        Degoan ApS har ret til at ændre prisen med en måneds varsel til udgangen af et kvartal. Det
+                        CompanyFlow har ret til at ændre prisen med en måneds varsel til udgangen af et kvartal. Det
                         samme gør sig gældende for ændringer i abonnementet.
                     </p>
                     <p>
-                        Degoan ApS sælger licenser i bundter af 5 (5, 10, 15, 20, 25 osv.). Man råder over det antal
+                        CompanyFlow sælger licenser i bundter af 5 (5, 10, 15, 20, 25 osv.). Man råder over det antal
                         licenser, som man har betalt for. Hvis en medarbejder forlader virksomheden, slettes
-                        vedkommende, og licensen kan overgå til en anden medarbejder. Degoan ApS gemmer data om den
+                        vedkommende, og licensen kan overgå til en anden medarbejder. CompanyFlow gemmer data om den
                         slettede medarbejder i 3 måneder, hvorefter de slettes.
                     </p>
                     <p>
-                        Hvis man behøver flere licenser, bestiller man dem hos Degoan ApS via
+                        Hvis man behøver flere licenser, bestiller man dem hos CompanyFlow via
                         virksomhedsadministratorens side. Flere licenser betales forholdsmæssigt for resten af
                         abonnementsperioden. Ved fortsættelse af abonnementet lægges de nye licenser sammen med de
                         oprindelige og løber i den næste periode.
@@ -373,66 +373,66 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                         abonnementsperiode.
                     </p>
                     <p>
-                        Degoan ApS kan opsige abonnementet med 6 måneders varsel til udløbet af et kalenderkvartal. I
-                        tilfælde af kundens misligholdelse, konkurs eller insolvens kan Degoan ApS opsige kundens
+                        CompanyFlow kan opsige abonnementet med 6 måneders varsel til udløbet af et kalenderkvartal. I
+                        tilfælde af kundens misligholdelse, konkurs eller insolvens kan CompanyFlow opsige kundens
                         abonnement uden varsel.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Driftsstabilitet</h4>
                     <p>
-                        Degoan ApS tilstræber højest mulig driftsstabilitet, men fraskriver sig alt ansvar ved nedbrud
-                        eller driftsforstyrrelser, inklusiv driftsforstyrrelser forårsaget af faktorer uden for Degoan
-                        ApS&apos; kontrol, fx internetforbindelse og strømsvigt.
+                        CompanyFlow tilstræber højest mulig driftsstabilitet, men fraskriver sig alt ansvar ved nedbrud
+                        eller driftsforstyrrelser, inklusiv driftsforstyrrelser forårsaget af faktorer uden for CompanyFlows
+                        kontrol, fx internetforbindelse og strømsvigt.
                     </p>
                     <p>
-                        Applikationen og servicen leveres, som den er, og Degoan ApS garanterer ikke for tilgængelighed
-                        og funktionalitet. Degoan ApS fraskriver sig i videst muligt omfang enhver garanti, tilsikring,
+                        Applikationen og servicen leveres, som den er, og CompanyFlow garanterer ikke for tilgængelighed
+                        og funktionalitet. CompanyFlow fraskriver sig i videst muligt omfang enhver garanti, tilsikring,
                         indeståelse, anprisning eller andre vilkår, uanset direkte eller indirekte. Ved nedbrud vil
-                        Degoan ApS bestræbe sig på at genskabe normal drift hurtigst muligt.
+                        CompanyFlow bestræbe sig på at genskabe normal drift hurtigst muligt.
                     </p>
                     <p>
                         Planlagte afbrydelser vil fortrinsvis blive placeret i tidsrummet 22–02. Skulle det blive
-                        nødvendigt at afbryde adgangen uden for tidsrummet, vil Degoan ApS så vidt muligt varsle kunden
+                        nødvendigt at afbryde adgangen uden for tidsrummet, vil CompanyFlow så vidt muligt varsle kunden
                         herom.
                     </p>
 
-                    <h4 className="font-medium text-[#111827]">Degoan ApS&apos; ansvar</h4>
+                    <h4 className="font-medium text-[#111827]">CompanyFlows ansvar</h4>
                     <p>
-                        Degoan ApS fraskriver sig i videst muligt omfang ethvert ansvar i relation til disse vilkår,
-                        services eller brug af abonnementet. Degoan ApS er ikke ansvarlig og hæfter ikke for nogen form
+                        CompanyFlow fraskriver sig i videst muligt omfang ethvert ansvar i relation til disse vilkår,
+                        services eller brug af abonnementet. CompanyFlow er ikke ansvarlig og hæfter ikke for nogen form
                         for skader eller tab, herunder men ikke begrænset til direkte og indirekte tab, som følge af at
-                        abonnementet indeholder fejl eller er ufuldstændigt, uanset at Degoan ApS måtte være gjort
+                        abonnementet indeholder fejl eller er ufuldstændigt, uanset at CompanyFlow måtte være gjort
                         bekendt med risikoen for sådanne skader eller tab.
                     </p>
                     <p>
-                        Abonnementets indhold eller anden kommunikation med Degoan ApS udgør ikke juridisk rådgivning,
-                        og Degoan ApS indestår ikke for, at abonnementets indhold ved anvendelse lever op til gældende
+                        Abonnementets indhold eller anden kommunikation med CompanyFlow udgør ikke juridisk rådgivning,
+                        og CompanyFlow indestår ikke for, at abonnementets indhold ved anvendelse lever op til gældende
                         lovgivning.
                     </p>
                     <p>
-                        Uanset typen af tab eller ansvarsgrundlag er Degoan ApS&apos; samlede ansvar beløbsmæssigt
+                        Uanset typen af tab eller ansvarsgrundlag er CompanyFlows samlede ansvar beløbsmæssigt
                         begrænset til beløbet for din betaling i 12 måneder før det ansvarspådragende forholds
                         indtræden, dog i alle tilfælde maksimalt DKK 10.000. Kunden accepterer at skadesløsholde
-                        Degoan ApS mod ethvert krav eller tab, der skyldes produktansvar, tredjemandstab eller øvrige
+                        CompanyFlow mod ethvert krav eller tab, der skyldes produktansvar, tredjemandstab eller øvrige
                         krav fra tredjemand, i det omfang det hidrører fra kundens brug af abonnementet.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Reklamation</h4>
                     <p>
-                        Ved fejl eller mangler kan kunden kontakte Degoan ApS på{' '}
+                        Ved fejl eller mangler kan kunden kontakte CompanyFlow på{' '}
                         <a href="mailto:info@degoan.dk" className="text-[#1a5948] underline">
                             info@degoan.dk
                         </a>
                         . Kunden er selv ansvarlig for, at alle tekniske krav og øvrige forudsætninger for brug af
                         abonnementet er opfyldt, herunder at kunden benytter udstyr, der er kompatibelt med
-                        abonnementet. Fejl på kundens tekniske udstyr er Degoan ApS uvedkommende.
+                        abonnementet. Fejl på kundens tekniske udstyr er CompanyFlow uvedkommende.
                     </p>
 
                     <h4 className="font-medium text-[#111827]">Overdragelse</h4>
                     <p>
-                        Degoan ApS har ret til uden forudgående samtykke at overdrage sine rettigheder og forpligtelser
-                        over for kunden til et koncernforbundet selskab eller tredjemand. Kunden accepterer, at Degoan
-                        ApS er berettiget til at anvende underleverandører i alle forhold, herunder til afvikling og
+                        CompanyFlow har ret til uden forudgående samtykke at overdrage sine rettigheder og forpligtelser
+                        over for kunden til et koncernforbundet selskab eller tredjemand. Kunden accepterer, at CompanyFlow
+                        er berettiget til at anvende underleverandører i alle forhold, herunder til afvikling og
                         drift af applikationen samt til opbevaring af data.
                     </p>
 

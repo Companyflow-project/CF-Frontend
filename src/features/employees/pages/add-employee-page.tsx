@@ -6,13 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Save, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { employeesApi } from '../api';
+import { toast } from 'sonner';
 
 export const AddEmployeePage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormData, string>>>({});
-  const [generalError, setGeneralError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<EmployeeFormData>({
     name: '',
@@ -59,11 +58,8 @@ export const AddEmployeePage: React.FC = () => {
   };
 
   const handleSave = async () => {
-    setGeneralError(null);
-    setSuccessMessage(null);
-
     if (!validateForm()) {
-      setGeneralError('Please fix the errors above before submitting');
+      toast.error('Please fix the errors above before submitting');
       return;
     }
 
@@ -91,7 +87,7 @@ export const AddEmployeePage: React.FC = () => {
 
       await employeesApi.createEmployee(payload);
 
-      setSuccessMessage('Employee created successfully!');
+      toast.success('Employee created successfully!');
 
       // Redirect to employees list after a short delay
       setTimeout(() => {
@@ -107,7 +103,7 @@ export const AddEmployeePage: React.FC = () => {
           ? apiError.message.trim()
           : 'Something went wrong while creating the employee.';
 
-      setGeneralError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -150,19 +146,6 @@ export const AddEmployeePage: React.FC = () => {
           linkHref="#"
         />
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-800 font-medium">{successMessage}</p>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {generalError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800 font-medium">{generalError}</p>
-          </div>
-        )}
 
         <AddEmployeeForm
           formData={formData}

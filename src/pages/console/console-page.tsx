@@ -10,6 +10,16 @@ import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
 import { useAuth } from '@/context/auth-context';
 import { RolesPermissionsModal } from '@/features/employees/components/roles-permissions-modal';
+import { useSubscription } from '@/features/account/hooks';
+
+/** Returns the number of whole days between now and an ISO date string, or null if not available. */
+function getDaysRemaining(isoEnd: string | null | undefined): number | null {
+  if (!isoEnd) return null;
+  const end = new Date(isoEnd);
+  if (isNaN(end.getTime())) return null;
+  const diff = end.getTime() - Date.now();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
 
 interface ConsoleAction {
   label: string;
@@ -83,30 +93,47 @@ export const ConsolePage: React.FC = () => {
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
   const [rolesModalOpen, setRolesModalOpen] = useState(false);
 
+  const companyId = user?.companyId ? String(user.companyId) : undefined;
+  const { data: subscription } = useSubscription(companyId);
+
+  const daysRemaining = getDaysRemaining(subscription?.subscriptionEnd);
+  // Show the trial banner only when we have an end date (and it hasn't fully expired beyond 0)
+  const showTrialBanner = subscription !== undefined && subscription.subscriptionEnd !== null;
+
   return (
     <PageShell>
-      {/* Trial Banner */}
-      <div className="mb-8 bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)] px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-[#1a5948]">Your free trial is active.</p>
-          <p className="text-sm text-[#6b7280] mt-0.5">You have 21 days remaining.</p>
+      {/* Trial Banner — only shown when the subscription has an end date */}
+      {showTrialBanner && (
+        <div className="mb-8 bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)] px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[#1a5948]">
+              {daysRemaining !== null && daysRemaining > 0
+                ? 'Your free trial is active.'
+                : 'Your free trial has ended.'}
+            </p>
+            <p className="text-sm text-[#6b7280] mt-0.5">
+              {daysRemaining !== null && daysRemaining > 0
+                ? `You have ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining.`
+                : 'Upgrade your plan to continue using all features.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => navigate(employeesRoutes.add)}
+              className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-2 h-auto text-sm shadow-[0_8px_16px_rgba(23,102,79,0.3)]"
+            >
+              Invite Employees
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate(accountRoutes.account)}
+              className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-2 h-auto text-sm bg-white"
+            >
+              Manage Billing
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => navigate(employeesRoutes.add)}
-            className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-2 h-auto text-sm shadow-[0_8px_16px_rgba(23,102,79,0.3)]"
-          >
-            Invite Employees
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate(accountRoutes.account)}
-            className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-2 h-auto text-sm bg-white"
-          >
-            Manage Billing
-          </Button>
-        </div>
-      </div>
+      )}
 
       {/* Header */}
       <div className="mb-6">
