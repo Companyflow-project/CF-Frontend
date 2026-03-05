@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithMagicLink: (token: string) => Promise<void>;
   setUserFromRegister: (user: User) => void;
   logout: () => Promise<void>;
   loading: boolean;
@@ -40,6 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setUser(userData);
   };
 
+  const loginWithMagicLink = async (token: string) => {
+    const userData = await authApi.magicLink(token);
+    setUser(userData);
+  };
+
   const setUserFromRegister = (user: User) => {
     setUser(user);
   };
@@ -55,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         user,
         isAuthenticated: !!user,
         login,
+        loginWithMagicLink,
         setUserFromRegister,
         logout,
         loading,

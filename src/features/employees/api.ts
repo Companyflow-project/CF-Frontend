@@ -112,7 +112,7 @@ export const employeesApi = {
       ...(payload.responsibilityIds && payload.responsibilityIds.length > 0 && {
         responsibilityIds: payload.responsibilityIds,
       }),
-      // NOTE: sendEmailType is NOT in the backend createEmployeeSchema — do not send it
+      ...(payload.sendEmailType && payload.sendEmailType !== 'no' && { sendEmailType: payload.sendEmailType }),
     };
 
     const response = await axiosClient.post<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>('/employees', requestBody);
@@ -146,6 +146,7 @@ export const employeesApi = {
       userPictureFid?: number;
       /** Responsibility ids from GET /api/responsibilities */
       responsibilityIds?: number[];
+      sendEmailType?: string;
     }
   ): Promise<Employee> {
     const requestBody: Record<string, unknown> = {};
@@ -168,6 +169,9 @@ export const employeesApi = {
     if (payload.userPictureFid != null) requestBody.userPictureFid = payload.userPictureFid;
     if (payload.responsibilityIds !== undefined) {
       requestBody.responsibilityIds = payload.responsibilityIds;
+    }
+    if (payload.sendEmailType && payload.sendEmailType !== 'no') {
+      requestBody.sendEmailType = payload.sendEmailType;
     }
 
     const response = await axiosClient.patch<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>(

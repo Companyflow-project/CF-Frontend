@@ -11,6 +11,7 @@ import { accountRoutes } from '@/features/account/routes';
 import { companiesRoutes } from '@/features/companies/routes';
 import { userManualRoutes } from '@/features/user-manual/routes';
 
+const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
 const ConsolePage = lazy(() => import('@/pages/console/console-page').then((m) => ({ default: m.ConsolePage })));
 const LoginPage = lazy(() => import('@/features/auth/pages/login-page').then((m) => ({ default: m.LoginPage })));
 const SignupPage = lazy(() => import('@/features/auth/pages/signup-page').then((m) => ({ default: m.SignupPage })));
@@ -98,6 +99,14 @@ export const AppRouter: React.FC = () => {
                   <SignupPage />
                 </AuthLayout>
               </RedirectIfAuth>
+            }
+          />
+          <Route
+            path="/magic-link/:token"
+            element={
+              <AuthLayout>
+                <MagicLinkPage />
+              </AuthLayout>
             }
           />
           <Route

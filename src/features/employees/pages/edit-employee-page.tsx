@@ -138,6 +138,7 @@ export const EditEmployeePage: React.FC = () => {
           status: formData.status,
           isSeniorEmployee: formData.isSeniorEmployee,
           isBusinessAdmin: formData.isBusinessAdmin,
+          sendEmailType: formData.sendEmail,
         }),
         ...(fidToSend != null && { userPictureFid: fidToSend }),
       });

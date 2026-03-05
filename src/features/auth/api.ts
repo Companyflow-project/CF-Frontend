@@ -188,6 +188,26 @@ export const authApi = {
     }
   },
 
+  async magicLink(token: string): Promise<User> {
+    try {
+      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>(
+        '/auth/magic-link',
+        { token }
+      );
+      const body = response.data;
+      const payloadData = body.data ?? body;
+      const jwt = payloadData.token;
+      const raw = payloadData.user;
+      if (jwt) localStorage.setItem('token', jwt);
+      if (!raw) throw new Error('Invalid magic link response');
+      const user = toUser(raw as Parameters<typeof toUser>[0]);
+      persistCompanyId(user);
+      return user;
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
   /** POST /auth/logout – requires Bearer token. Client removes token after call (JWT is stateless). */
   async logout(): Promise<void> {
     try {
