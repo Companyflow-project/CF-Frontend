@@ -11,7 +11,8 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { Search, ArrowLeft, GripVertical, AlertTriangle, FileText, Link2, Image, StickyNote, PenLine, Loader2 } from 'lucide-react';
+import { Search, ArrowLeft, GripVertical, AlertTriangle, Loader2 } from 'lucide-react';
+import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
@@ -38,6 +39,7 @@ export const HandbookPagesPage: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
+    const [lang, setLang] = useHandbookLang();
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -82,7 +84,7 @@ export const HandbookPagesPage: React.FC = () => {
                 setLoading(true);
                 setError(null);
             }
-            const { bid, chapters: tree } = await handbookApi.getHandbookTree();
+            const { bid, chapters: tree } = await handbookApi.getHandbookTree(lang);
 
             // Deduplicate the entire tree by node ID to prevent duplicate key warnings
             const uniqueTree = Array.from(
@@ -133,7 +135,7 @@ export const HandbookPagesPage: React.FC = () => {
         } finally {
             if (!isPolling) setLoading(false);
         }
-    }, []);
+    }, [lang]);
 
     useEffect(() => {
         fetchHandbookTree();
@@ -285,7 +287,7 @@ export const HandbookPagesPage: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const { bid, chapters: tree } = await handbookApi.getHandbookTree();
+            const { bid, chapters: tree } = await handbookApi.getHandbookTree(lang);
 
             const uniqueTree = Array.from(
                 new Map(tree.map(node => [node.id, node])).values()
@@ -475,6 +477,7 @@ export const HandbookPagesPage: React.FC = () => {
                         Back
                     </Button>
                     <h1 className="text-2xl font-bold text-[#0d0e0e]">View All Pages</h1>
+                    <LanguageToggle value={lang} onChange={setLang} disabled={loading} />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -791,36 +794,20 @@ export const HandbookPagesPage: React.FC = () => {
                                                         {page.badge === 'custom' ? 'Custom' : 'Premade'}
                                                     </Badge>
                                                 )}
-                                                {/* Change indicators */}
-                                                {(page.hasCustomBody || page.hasNote || page.hasDocuments || page.hasLinks || page.hasImage) && (
-                                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                                        {page.hasCustomBody && (
-                                                            <span title="Edited text" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f0f4ff] text-[#4b6cb7] text-[10px] leading-none">
-                                                                <PenLine className="h-3 w-3" />
-                                                            </span>
-                                                        )}
-                                                        {page.hasNote && (
-                                                            <span title="Has notes" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fef9ee] text-[#9a7b2e] text-[10px] leading-none">
-                                                                <StickyNote className="h-3 w-3" />
-                                                            </span>
-                                                        )}
-                                                        {page.hasDocuments && (
-                                                            <span title="Has documents" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#f3eef8] text-[#7c5caa] text-[10px] leading-none">
-                                                                <FileText className="h-3 w-3" />
-                                                            </span>
-                                                        )}
-                                                        {page.hasLinks && (
-                                                            <span title="Has links" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#eef6f3] text-[#3d8b6e] text-[10px] leading-none">
-                                                                <Link2 className="h-3 w-3" />
-                                                            </span>
-                                                        )}
-                                                        {page.hasImage && (
-                                                            <span title="Has image" className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#fef0f0] text-[#b85c5c] text-[10px] leading-none">
-                                                                <Image className="h-3 w-3" />
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                {/* Recent activity summary */}
+                                                {(() => {
+                                                    const activities: string[] = [];
+                                                    if (page.hasCustomBody) activities.push('Edited text');
+                                                    if (page.hasNote) activities.push('Note added');
+                                                    if (page.hasDocuments) activities.push('Documents attached');
+                                                    if (page.hasLinks) activities.push('Links added');
+                                                    if (page.hasImage) activities.push('Image added');
+                                                    return activities.length > 0 ? (
+                                                        <span className="text-xs italic text-gray-400 flex-shrink-0 whitespace-nowrap">
+                                                            ({activities.join(', ')})
+                                                        </span>
+                                                    ) : null;
+                                                })()}
                                                 {isExpanded && (
                                                     <span className="text-xs text-gray-400 italic flex-shrink-0">No text - Editing draft...</span>
                                                 )}
@@ -863,6 +850,7 @@ export const HandbookPagesPage: React.FC = () => {
                                             <div className="border-t border-[#e5e7eb] p-6 bg-[#f9fafb]">
                                                 <HandbookPageEditor
                                                     pageId={page.id}
+                                                    lang={lang}
                                                     onSave={async () => {
                                                         await refreshHandbookTree();
                                                         setExpandedPageId(null);
@@ -1067,6 +1055,7 @@ export const HandbookPagesPage: React.FC = () => {
                     }}
                     pageId={sneakPeekPage.id}
                     pageTitle={sneakPeekPage.title}
+                    lang={lang}
                     canEdit={canEditHandbook}
                 />
             )}

@@ -18,6 +18,7 @@ interface SneakPeekModalProps {
     onEditPage: () => void;
     pageId: number;
     pageTitle: string;
+    lang?: string;
     canEdit?: boolean;
 }
 
@@ -27,6 +28,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
     onEditPage,
     pageId,
     pageTitle,
+    lang = 'da',
     canEdit = false,
 }) => {
     const navigate = useNavigate();
@@ -38,13 +40,13 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
         if (isOpen && pageId) {
             fetchPageDetail();
         }
-    }, [isOpen, pageId]);
+    }, [isOpen, pageId, lang]);
 
     const fetchPageDetail = async () => {
         try {
             setLoading(true);
             setError(null);
-            const detail = await handbookApi.getPageDetail(pageId);
+            const detail = await handbookApi.getPageDetail(pageId, lang);
             setPageDetail(detail);
         } catch (err: any) {
             console.error('Failed to fetch page detail:', err);

@@ -4,6 +4,7 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
+import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
 import { handbookRoutes } from '../routes';
 import { handbookApi } from '../api';
 
@@ -12,6 +13,7 @@ export const HandbookPageEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [pageTitle, setPageTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useHandbookLang();
 
   const pageId = id ? Number.parseInt(id, 10) : NaN;
 
@@ -21,7 +23,7 @@ export const HandbookPageEditPage: React.FC = () => {
 
       try {
         setLoading(true);
-        const pageDetail = await handbookApi.getPageDetail(pageId);
+        const pageDetail = await handbookApi.getPageDetail(pageId, lang);
         if (pageDetail) {
           setPageTitle(pageDetail.title);
         }
@@ -33,7 +35,7 @@ export const HandbookPageEditPage: React.FC = () => {
     };
 
     fetchPageTitle();
-  }, [pageId]);
+  }, [pageId, lang]);
 
   if (!id || Number.isNaN(pageId)) {
     return (
@@ -76,11 +78,13 @@ export const HandbookPageEditPage: React.FC = () => {
               `Edit ${pageTitle || 'handbook page'}`
             )}
           </h1>
+          <LanguageToggle value={lang} onChange={setLang} disabled={loading} />
         </div>
       </div>
 
       <HandbookPageEditor
         pageId={pageId}
+        lang={lang}
         onSave={() => navigate(handbookRoutes.pages)}
         onCancel={() => navigate(handbookRoutes.pages)}
       />

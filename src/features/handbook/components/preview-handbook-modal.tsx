@@ -7,13 +7,13 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, FileText, Link2, StickyNote } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
-import type { HandbookNode } from '@/types/models';
+import type { HandbookNode, HandbookPageDetail } from '@/types/models';
 
 interface PreviewHandbookModalProps {
     isOpen: boolean;
@@ -34,6 +34,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     const tree = treeProp ?? treeFromHook;
     // When the parent provides the tree directly, we don't need to wait for the hook's fetch.
     const [bodies, setBodies] = useState<Map<number, string>>(new Map());
+    const [pageDetails, setPageDetails] = useState<Map<number, HandbookPageDetail>>(new Map());
     const [bodiesLoading, setBodiesLoading] = useState(false);
     const [bodiesError, setBodiesError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -70,16 +71,26 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
         setBodiesLoading(true);
         setBodiesError(null);
 
-        Promise.all(
-            pageIdsToFetch.map((id) =>
-                handbookApi.getHandbookContent(id).then((html) => ({ id, html }))
-            )
-        )
-            .then((results) => {
+        Promise.all([
+            Promise.all(
+                pageIdsToFetch.map((id) =>
+                    handbookApi.getHandbookContent(id).then((html) => ({ id, html }))
+                )
+            ),
+            Promise.all(
+                pageIdsToFetch.map((id) =>
+                    handbookApi.getPageDetail(id).then((detail) => ({ id, detail })).catch(() => ({ id, detail: null }))
+                )
+            ),
+        ])
+            .then(([bodyResults, detailResults]) => {
                 if (cancelled) return;
-                const map = new Map<number, string>();
-                results.forEach(({ id, html }) => map.set(id, html));
-                setBodies(map);
+                const bodyMap = new Map<number, string>();
+                bodyResults.forEach(({ id, html }) => bodyMap.set(id, html));
+                setBodies(bodyMap);
+                const detailMap = new Map<number, HandbookPageDetail>();
+                detailResults.forEach(({ id, detail }) => { if (detail) detailMap.set(id, detail); });
+                setPageDetails(detailMap);
             })
             .catch((err: any) => {
                 if (!cancelled)
@@ -197,7 +208,9 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                     </h2>
 
                                     <div className="space-y-6">
-                                        {chapter.pages?.map((page: any) => (
+                                        {chapter.pages?.map((page: any) => {
+                                            const detail = pageDetails.get(page.id);
+                                            return (
                                             <div key={page.id} className="space-y-2">
                                                 <h3 className="text-base font-semibold text-[#374151]">
                                                     {page.title}
@@ -212,8 +225,64 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                         No content available.
                                                     </p>
                                                 )}
+
+                                                {/* Documents */}
+                                                {detail?.documents && detail.documents.length > 0 && (
+                                                    <div className="pt-3">
+                                                        <h4 className="text-sm font-bold text-[#0d0e0e] mb-1.5 flex items-center gap-1.5">
+                                                            <FileText className="h-3.5 w-3.5 text-[#7c5caa]" />
+                                                            Documents
+                                                        </h4>
+                                                        <div className="space-y-1">
+                                                            {detail.documents.map((doc, i) => (
+                                                                <div key={i}>
+                                                                    {doc.url ? (
+                                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d0e0e] underline hover:text-[#3d997d]">
+                                                                            {doc.name || 'Document'}
+                                                                        </a>
+                                                                    ) : (
+                                                                        <span className="text-sm text-[#0d0e0e]">{doc.name || 'Document'}</span>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Links */}
+                                                {detail?.links && detail.links.length > 0 && (
+                                                    <div className="pt-3">
+                                                        <h4 className="text-sm font-bold text-[#0d0e0e] mb-1.5 flex items-center gap-1.5">
+                                                            <Link2 className="h-3.5 w-3.5 text-[#3d8b6e]" />
+                                                            Links
+                                                        </h4>
+                                                        <div className="space-y-1">
+                                                            {detail.links.map((link, i) => (
+                                                                <div key={i}>
+                                                                    <a href={link.uri || link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d0e0e] underline hover:text-[#3d997d]">
+                                                                        {link.title || link.uri || link.url}
+                                                                    </a>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Internal Note */}
+                                                {detail?.internalNote && (
+                                                    <div className="pt-3 mt-2 border-t-2 border-[#f59e0b]">
+                                                        <h4 className="text-sm font-bold text-[#f59e0b] mb-1 flex items-center gap-1.5">
+                                                            <StickyNote className="h-3.5 w-3.5" />
+                                                            Note
+                                                        </h4>
+                                                        <p className="text-sm text-[#0d0e0e] leading-relaxed">
+                                                            {detail.internalNote}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             ))}

@@ -23,6 +23,7 @@ import type { HandbookPageDetail, UpdatePagePayload } from '@/types/models';
 
 interface HandbookPageEditorProps {
     pageId?: number;
+    lang?: string;
     onSave?: () => void;
     onCancel?: () => void;
 }
@@ -41,6 +42,7 @@ interface DocumentItem {
 
 export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
     pageId,
+    lang = 'da',
     onSave,
     onCancel,
 }) => {
@@ -89,7 +91,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
             try {
                 setLoading(true);
                 setError(null);
-                const data = await handbookApi.getPageDetail(pageId);
+                const data = await handbookApi.getPageDetail(pageId, lang);
                 if (data) {
                     setPageDetail(data);
                     setHeading(data.title || '');
@@ -149,7 +151,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
         };
 
         loadPage();
-    }, [pageId]);
+    }, [pageId, lang]);
 
     const toggleSection = (section: string) => {
         const newExpanded = new Set(expandedSections);

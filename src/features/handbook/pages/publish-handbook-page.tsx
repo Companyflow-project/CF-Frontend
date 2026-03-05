@@ -65,7 +65,7 @@ export const PublishHandbookPage: React.FC = () => {
       return customMessage || 'Write your custom email message...';
     }
 
-    return `[recipient name],
+    return `Hello [recipient name],
 
 You now have access to the Staff Handbook. Click on the link below to log in directly to the handbook.
 
