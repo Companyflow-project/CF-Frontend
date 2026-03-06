@@ -154,7 +154,7 @@ export const ManageHandbookPage: React.FC = () => {
                         },
                         {
                             label: 'Add message to employees',
-                            onClick: () => navigate('/handbook/add-message'),
+                            onClick: () => navigate(handbookRoutes.publish('main')),
                             variant: 'outline',
                             adminOnly: true,
                         },

@@ -4,6 +4,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
@@ -18,6 +19,7 @@ export const PublishHandbookPage: React.FC = () => {
 
   const [messageType, setMessageType] = useState<MessageType>('standard');
   const [channels, setChannels] = useState<Array<'email' | 'sms'>>(['email']);
+  const [customSubject, setCustomSubject] = useState('');
   const [customMessage, setCustomMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,6 +45,7 @@ export const PublishHandbookPage: React.FC = () => {
         handbookId,
         messageType,
         channels: effectiveChannels,
+        customSubject: messageType === 'custom' && customSubject.trim() ? customSubject.trim() : undefined,
         customMessage: messageType === 'custom' ? customMessage || undefined : undefined,
       });
 
@@ -58,11 +61,19 @@ export const PublishHandbookPage: React.FC = () => {
     }
   };
 
+  /** Replace placeholder tokens with example values for the preview */
+  const previewPlaceholders = (text: string) =>
+    text
+      .replace(/\[Employee Name\]/g, 'John Doe')
+      .replace(/\[Company Name\]/g, 'Your Company')
+      .replace(/\[Date\]/g, new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))
+      .replace(/\[Login Link\]/g, 'https://app.companyflow.dk/magic-link/...');
+
   const renderEmailPreview = () => {
     if (messageType === 'none' || !hasEmail) return null;
 
     if (messageType === 'custom') {
-      return customMessage || 'Write your custom email message...';
+      return customMessage ? previewPlaceholders(customMessage) : 'Write your custom email message...';
     }
 
     return `Hello [recipient name],
@@ -79,7 +90,7 @@ Your Company`;
     if (messageType === 'none' || !hasSms) return null;
 
     if (messageType === 'custom') {
-      return customMessage || 'Write your custom SMS message...';
+      return customMessage ? previewPlaceholders(customMessage) : 'Write your custom SMS message...';
     }
 
     return `[recipient name],
@@ -169,6 +180,14 @@ Greetings from your company.`;
                         <div className="bg-[#1a5948] text-white px-4 py-2 text-sm font-semibold">
                           Email
                         </div>
+                        {messageType === 'custom' && customSubject.trim() && (
+                          <div className="px-4 pt-3 pb-0">
+                            <p className="text-xs font-medium text-[#6b7280]">Subject</p>
+                            <p className="text-sm font-semibold text-[#111827]">
+                              {previewPlaceholders(customSubject)}
+                            </p>
+                          </div>
+                        )}
                         <div className="p-4">
                           <p className="whitespace-pre-wrap text-sm text-[#111827]">
                             {renderEmailPreview()}
@@ -197,9 +216,18 @@ Greetings from your company.`;
 
           {messageType === 'custom' && (
             <Card className="border border-[#e5e7eb] rounded-[16px]">
-              <CardContent className="p-4 space-y-2">
+              <CardContent className="p-4 space-y-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#0d0e0e] mb-1.5">Subject</p>
+                  <Input
+                    value={customSubject}
+                    onChange={(e) => setCustomSubject(e.target.value)}
+                    placeholder="e.g. The Staff Handbook for [Company Name]"
+                    className="rounded-[10px] border-[#c8d8d3] bg-white text-sm"
+                  />
+                </div>
                 <p className="text-sm font-semibold text-[#0d0e0e]">
-                  Customized message
+                  Message body
                 </p>
                 <Textarea
                   rows={8}
@@ -208,6 +236,33 @@ Greetings from your company.`;
                   placeholder="Write your custom message to employees..."
                   className="rounded-[10px] border-[#c8d8d3] bg-white text-sm"
                 />
+                <div className="pt-1">
+                  <p className="text-xs font-medium text-[#6b7280] mb-2">
+                    Insert placeholder — these will be replaced with real values when sent:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: '[Employee Name]', value: '[Employee Name]' },
+                      { label: '[Company Name]', value: '[Company Name]' },
+                      { label: '[Date]', value: '[Date]' },
+                      { label: '[Login Link]', value: '[Login Link]' },
+                    ].map((placeholder) => (
+                      <button
+                        key={placeholder.value}
+                        type="button"
+                        onClick={() =>
+                          setCustomMessage((prev) => {
+                            const needsSpace = prev.length > 0 && !prev.endsWith(' ') && !prev.endsWith('\n');
+                            return prev + (needsSpace ? ' ' : '') + placeholder.value;
+                          })
+                        }
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#e8f5ef] text-[#1a5948] border border-[#cde3da] hover:bg-[#d4f4e6] transition-colors cursor-pointer"
+                      >
+                        {placeholder.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}

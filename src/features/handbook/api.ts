@@ -20,6 +20,7 @@ interface PublishHandbookPayload {
   handbookId: number;
   messageType: MessageType;
   channels?: Array<'email' | 'sms'>;
+  customSubject?: string;
   customMessage?: string;
 }
 
