@@ -42,9 +42,12 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   emptyStateDescription,
   currentUserEmail,
 }) => {
-  // For the header checkbox: exclude self-row from the count so it can never be "all selected"
+  // For the header checkbox: exclude self-row and admin rows so they can never be "all selected"
   const selectableEmployees = employees.filter(
-    (e) => !currentUserEmail || e.email.toLowerCase() !== currentUserEmail.toLowerCase()
+    (e) =>
+      (!currentUserEmail || e.email.toLowerCase() !== currentUserEmail.toLowerCase()) &&
+      e.role !== 'company_admin' &&
+      e.role !== 'ADMIN'
   );
   const allSelected = selectableEmployees.length > 0 && selectableEmployees.every((e) => selectedIds.includes(e.id));
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -102,6 +105,8 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
               const phone =
                 employee.telephone || employee.mobileNumber || employee.alternateNumber;
               const isSelf = !!(currentUserEmail && employee.email.toLowerCase() === currentUserEmail.toLowerCase());
+              const isAdminRow = employee.role === 'company_admin' || employee.role === 'ADMIN';
+              const isProtected = isSelf || isAdminRow;
 
               return (
                 <TableRow
@@ -110,10 +115,10 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                 >
                   <TableCell className="w-[4%]">
                     <Checkbox
-                      checked={!isSelf && selectedIds.includes(employee.id)}
-                      onChange={() => !isSelf && onSelect(employee.id)}
-                      disabled={isSelf}
-                      className={`rounded-[4px] h-4 w-4 ${isSelf ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
+                      checked={!isProtected && selectedIds.includes(employee.id)}
+                      onChange={() => !isProtected && onSelect(employee.id)}
+                      disabled={isProtected}
+                      className={`rounded-[4px] h-4 w-4 ${isProtected ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
                     />
                   </TableCell>
                   <TableCell className="w-[16%]">
@@ -169,8 +174,8 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       >
                         <MessageSquare className="h-3.5 w-3.5" />
                       </Button>
-                      {/* Statistics — hidden for self */}
-                      {!isSelf && (
+                      {/* Statistics — hidden for self and admins */}
+                      {!isProtected && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -181,8 +186,8 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                           <BarChart3 className="h-3.5 w-3.5" />
                         </Button>
                       )}
-                      {/* Delete — hidden for self and non-admin */}
-                      {!isSelf && onDelete && (
+                      {/* Delete — hidden for self, admins, and non-admin viewers */}
+                      {!isProtected && onDelete && (
                         <Button
                           variant="ghost"
                           size="icon"

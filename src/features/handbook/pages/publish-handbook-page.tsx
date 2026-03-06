@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Check, BookOpen, FileText, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import { employeesRoutes } from '@/features/employees/routes';
+import { useHandbookTree } from '../hooks';
 import { toast } from 'sonner';
 
 type MessageType = 'none' | 'standard' | 'custom';
@@ -16,12 +17,58 @@ type MessageType = 'none' | 'standard' | 'custom';
 export const PublishHandbookPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
 
   const [messageType, setMessageType] = useState<MessageType>('standard');
   const [channels, setChannels] = useState<Array<'email' | 'sms'>>(['email']);
   const [customSubject, setCustomSubject] = useState('');
   const [customMessage, setCustomMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [summaryExpanded, setSummaryExpanded] = useState(true);
+
+  const { data: tree, loading: treeLoading } = useHandbookTree('en');
+
+  // Parse selected page IDs from URL (passed from the pages screen)
+  const selectedPageIds = useMemo(() => {
+    const pagesParam = searchParams.get('pages');
+    if (!pagesParam) return null;
+    const ids = pagesParam.split(',').map(Number).filter((n) => Number.isFinite(n) && n > 0);
+    return ids.length > 0 ? new Set(ids) : null;
+  }, [searchParams]);
+
+  const readySummary = useMemo(() => {
+    if (!Array.isArray(tree)) return [];
+    return tree
+      .filter((node) => node.type === 'chapter')
+      .map((chapter) => {
+        const readyPages = (chapter.pages || []).filter((p: any) => {
+          if (p.status !== 'ready') return false;
+          // If specific pages were selected, only include those
+          if (selectedPageIds && !selectedPageIds.has(p.id)) return false;
+          return true;
+        });
+        return { ...chapter, readyPages };
+      })
+      .filter((ch) => ch.readyPages.length > 0);
+  }, [tree, selectedPageIds]);
+
+  const totalReadyPages = useMemo(
+    () => readySummary.reduce((sum, ch) => sum + ch.readyPages.length, 0),
+    [readySummary],
+  );
+
+  // Count all ready pages in tree (regardless of selection) to detect if handbook was previously published
+  const allReadyCount = useMemo(() => {
+    if (!Array.isArray(tree)) return 0;
+    let count = 0;
+    tree.forEach((node) => {
+      if (node.type !== 'chapter') return;
+      (node.pages || []).forEach((p: any) => { if (p.status === 'ready') count++; });
+    });
+    return count;
+  }, [tree]);
+
+  const isFiltered = !!selectedPageIds;
 
   const hasEmail = channels.includes('email');
   const hasSms = channels.includes('sms');
@@ -125,10 +172,10 @@ Greetings from your company.`;
           <Button
             size="sm"
             onClick={handlePublish}
-            disabled={submitting}
-            className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[9px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.35)]"
+            disabled={submitting || totalReadyPages === 0}
+            className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[9px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.35)] disabled:opacity-50 disabled:shadow-none"
           >
-            {submitting ? 'Publishing...' : 'Publish'}
+            {submitting ? 'Publishing...' : `Publish${totalReadyPages > 0 ? ` (${totalReadyPages})` : ''}`}
           </Button>
         </div>
       </div>
@@ -151,6 +198,82 @@ Greetings from your company.`;
           </Button>
         </div>
       </div>
+
+      {/* Ready pages summary */}
+      <Card className="border border-[#cde3da] rounded-[16px] mb-6">
+        <CardContent className="p-0">
+          <button
+            type="button"
+            onClick={() => setSummaryExpanded((v) => !v)}
+            className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[#f8faf9] transition-colors rounded-t-[16px]"
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-[#2f946f]" />
+              <span className="text-sm font-bold text-[#0d0e0e]">
+                Pages to publish
+              </span>
+              <span className="text-xs font-medium text-[#6b7280] bg-[#f3f4f6] rounded-full px-2 py-0.5">
+                {treeLoading ? '...' : `${totalReadyPages} page${totalReadyPages !== 1 ? 's' : ''} ready`}
+              </span>
+            </div>
+            {summaryExpanded ? (
+              <ChevronDown className="h-4 w-4 text-[#6b7280]" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-[#6b7280]" />
+            )}
+          </button>
+
+          {summaryExpanded && (
+            <div className="px-5 pb-4 border-t border-[#e5efea]">
+              {/* Info helper */}
+              {!treeLoading && (
+                <div className="flex items-start gap-2 pt-3 pb-2">
+                  <Info className="h-4 w-4 text-[#6b7280] shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#6b7280]">
+                    {isFiltered
+                      ? `Showing ${totalReadyPages} of ${allReadyCount} ready page${allReadyCount !== 1 ? 's' : ''} — only pages you selected and marked as Ready will be published.`
+                      : `All ${totalReadyPages} page${totalReadyPages !== 1 ? 's' : ''} marked as Ready will be published and visible to employees.`}
+                  </p>
+                </div>
+              )}
+
+              {treeLoading ? (
+                <p className="text-sm text-[#6b7280] py-3">Loading handbook pages...</p>
+              ) : readySummary.length === 0 ? (
+                <div className="py-4 text-center">
+                  <p className="text-sm text-[#6b7280]">No pages are marked as ready.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(handbookRoutes.pages)}
+                    className="mt-2 rounded-[999px] text-xs"
+                  >
+                    Go to Pages
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3 pt-1">
+                  {readySummary.map((chapter) => (
+                    <div key={chapter.id}>
+                      <p className="text-xs font-bold text-[#1a5948] uppercase tracking-wide mb-1">
+                        {chapter.title}
+                      </p>
+                      <div className="space-y-0.5 pl-3">
+                        {chapter.readyPages.map((page: any) => (
+                          <div key={page.id} className="flex items-center gap-2 text-sm text-[#374151]">
+                            <FileText className="h-3.5 w-3.5 text-[#2f946f] shrink-0" />
+                            {page.title}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* main layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-6 items-start">

@@ -278,9 +278,15 @@ export const HandbookPagesPage: React.FC = () => {
     };
 
     const handlePublishHandbook = () => {
-        // Redirect to the dedicated publish UI instead of
-        // publishing immediately from this sidebar button.
-        navigate(handbookRoutes.publish('21'));
+        const bid = handbookBid || '21';
+        // Collect IDs of pages that are both selected AND ready
+        const readySelectedIds = pages
+            .filter((p: any) => selectedPages.has(p.id) && p.status === 'ready')
+            .map((p: any) => p.id);
+        const url = readySelectedIds.length > 0
+            ? `${handbookRoutes.publish(bid)}?pages=${readySelectedIds.join(',')}`
+            : handbookRoutes.publish(bid);
+        navigate(url);
     };
 
     const refreshHandbookTree = async () => {

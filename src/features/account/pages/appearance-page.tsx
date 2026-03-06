@@ -9,6 +9,7 @@ import { HelpBanner } from '@/components/ui/help-banner';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { toast } from 'sonner';
 import { useCompanyAppearance, useUpdateCompanyAppearance } from '../hooks';
+import { useAppearance, DEFAULT_APPEARANCE_COLORS } from '@/context/appearance-context';
 
 interface ColorSetting {
     id: string;
@@ -17,36 +18,40 @@ interface ColorSetting {
     value: string;
 }
 
+const isValidHex = (value: string): boolean =>
+    /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(value);
+
 export const AppearancePage: React.FC = () => {
     const navigate = useNavigate();
-    const [pictureType, setPictureType] = useState<'none' | 'small' | 'photographs'>('none');
+    const [pictureType, setPictureType] = useState<'own' | 'small' | 'photographs'>('own');
     const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
     const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
 
     const { data: appearanceData } = useCompanyAppearance();
     const updateAppearanceMutation = useUpdateCompanyAppearance();
+    const { refresh: refreshAppearance } = useAppearance();
 
     const [colors, setColors] = useState<ColorSetting[]>([
-        { id: 'topBottom', label: 'Top and bottom', description: 'Top of page behind company name or logo', value: '#3D99FD' },
-        { id: 'headlines', label: 'Headlines', description: 'Headings on pages and sections in h9', value: '#3D99FD' },
-        { id: 'bodyText', label: 'Body text', description: 'Plain text, paragraphs, lists', value: '#3D99FD' },
-        { id: 'lightBackground', label: 'Light background', description: 'Lighter background e.g. in certain forms', value: '#3D99FD' },
-        { id: 'confirmationButton', label: 'Confirmation button', description: 'Most buttons, e.g. confirm, save, next, previous', value: '#3D99FD' },
-        { id: 'topButton', label: 'Top button', description: 'The buttons on the right of the top of the page', value: '#3D99FD' },
-        { id: 'textOnTopButtons', label: 'Text on top buttons', description: 'Text on buttons in header (top right)', value: '#3D99FD' },
-        { id: 'structureButton', label: 'Structure button', description: 'Structure Control Buttons (All Pages)', value: '#3D99FD' },
-        { id: 'cancelButton', label: 'Cancel button', description: 'Cancel and delete buttons', value: '#3D99FD' },
-        { id: 'bigButton', label: 'Big button', description: 'Buttons on the employee control panel', value: '#3D99FD' },
-        { id: 'buttonText', label: 'Button text', description: 'Text on buttons', value: '#3D99FD' },
-        { id: 'frameColor', label: 'Frame color', description: 'Thin lines around cards/ fields and surfaces', value: '#3D99FD' },
-        { id: 'htmlBackground', label: 'HTML background', description: 'Full screen background color', value: '#3D99FD' },
-        { id: 'pageBackground', label: 'Page background', description: 'Background color of the page content', value: '#3D99FD' },
-        { id: 'links', label: 'Links', description: 'The color of link text on manual pages', value: '#3D99FD' },
+        { id: 'topBottom', label: 'Top and bottom', description: 'Top of page behind company name or logo', value: DEFAULT_APPEARANCE_COLORS.topBottom },
+        { id: 'headlines', label: 'Headlines', description: 'Headings on pages and sections in h9', value: DEFAULT_APPEARANCE_COLORS.headlines },
+        { id: 'bodyText', label: 'Body text', description: 'Plain text, paragraphs, lists', value: DEFAULT_APPEARANCE_COLORS.bodyText },
+        { id: 'lightBackground', label: 'Light background', description: 'Lighter background e.g. in certain forms', value: DEFAULT_APPEARANCE_COLORS.lightBackground },
+        { id: 'confirmationButton', label: 'Confirmation button', description: 'Most buttons, e.g. confirm, save, next, previous', value: DEFAULT_APPEARANCE_COLORS.confirmationButton },
+        { id: 'topButton', label: 'Top button', description: 'The buttons on the right of the top of the page', value: DEFAULT_APPEARANCE_COLORS.topButton },
+        { id: 'textOnTopButtons', label: 'Text on top buttons', description: 'Text on buttons in header (top right)', value: DEFAULT_APPEARANCE_COLORS.textOnTopButtons },
+        { id: 'structureButton', label: 'Structure button', description: 'Structure Control Buttons (All Pages)', value: DEFAULT_APPEARANCE_COLORS.structureButton },
+        { id: 'cancelButton', label: 'Cancel button', description: 'Cancel and delete buttons', value: DEFAULT_APPEARANCE_COLORS.cancelButton },
+        { id: 'bigButton', label: 'Big button', description: 'Buttons on the employee control panel', value: DEFAULT_APPEARANCE_COLORS.bigButton },
+        { id: 'buttonText', label: 'Button text', description: 'Text on buttons', value: DEFAULT_APPEARANCE_COLORS.buttonText },
+        { id: 'frameColor', label: 'Frame color', description: 'Thin lines around cards/ fields and surfaces', value: DEFAULT_APPEARANCE_COLORS.frameColor },
+        { id: 'htmlBackground', label: 'HTML background', description: 'Full screen background color', value: DEFAULT_APPEARANCE_COLORS.htmlBackground },
+        { id: 'pageBackground', label: 'Page background', description: 'Background color of the page content', value: DEFAULT_APPEARANCE_COLORS.pageBackground },
+        { id: 'links', label: 'Links', description: 'The color of link text on manual pages', value: DEFAULT_APPEARANCE_COLORS.links },
     ]);
 
     useEffect(() => {
         if (appearanceData) {
-            setPictureType(appearanceData.pictureType as any || 'none');
+            setPictureType(appearanceData.pictureType as any || 'own');
 
             if (appearanceData.colors) {
                 setColors(prevColors => prevColors.map(color => ({
@@ -70,12 +75,18 @@ export const AppearancePage: React.FC = () => {
 
     const handleResetColors = () => {
         if (window.confirm('Are you sure you want to reset all colors to default?')) {
-            setColors(colors.map(color => ({ ...color, value: '#3D99FD' })));
+            setColors(colors.map(color => ({ ...color, value: DEFAULT_APPEARANCE_COLORS[color.id] || '#3d997d' })));
             toast.success('Colors reset to default');
         }
     };
 
     const handleSaveUpdates = () => {
+        const invalidColors = colors.filter(c => !isValidHex(c.value));
+        if (invalidColors.length > 0) {
+            toast.error(`Invalid hex color${invalidColors.length > 1 ? 's' : ''}: ${invalidColors.map(c => c.label).join(', ')}`);
+            return;
+        }
+
         const colorsPayload = colors.reduce((acc, color) => {
             acc[color.id] = color.value;
             return acc;
@@ -86,6 +97,7 @@ export const AppearancePage: React.FC = () => {
             colors: colorsPayload
         }, {
             onSuccess: () => {
+                refreshAppearance();
                 toast.success('Appearance settings saved successfully');
             },
             onError: () => {
@@ -134,8 +146,8 @@ export const AppearancePage: React.FC = () => {
                                 <input
                                     type="radio"
                                     name="pictureType"
-                                    value="none"
-                                    checked={pictureType === 'none'}
+                                    value="own"
+                                    checked={pictureType === 'own'}
                                     onChange={(e) => setPictureType(e.target.value as any)}
                                     className="w-4 h-4 text-[#2f946f] focus:ring-[#2f946f]"
                                 />
@@ -190,8 +202,8 @@ export const AppearancePage: React.FC = () => {
                                         type="text"
                                         value={color.value}
                                         onChange={(e) => handleColorChange(color.id, e.target.value)}
-                                        className="h-9 w-24 font-mono text-xs"
-                                        placeholder="#3D99FD"
+                                        className={`h-9 w-24 font-mono text-xs ${!isValidHex(color.value) ? 'border-red-400 focus:ring-red-400' : ''}`}
+                                        placeholder="#3d997d"
                                     />
                                 </div>
                                 <p className="text-sm text-gray-600">
@@ -225,7 +237,7 @@ export const AppearancePage: React.FC = () => {
                     <ColorPicker
                         open={isColorPickerOpen}
                         onOpenChange={setIsColorPickerOpen}
-                        value={colors.find(c => c.id === selectedColorId)?.value || '#3D99FD'}
+                        value={colors.find(c => c.id === selectedColorId)?.value || DEFAULT_APPEARANCE_COLORS[selectedColorId] || '#3d997d'}
                         onChange={(newColor) => handleColorChange(selectedColorId, newColor)}
                     />
                 )}

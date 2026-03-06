@@ -62,7 +62,15 @@ export const accountApi = {
 
   async getCompanyAppearance(): Promise<CompanyAppearance> {
     const response = await axiosClient.get<{ data: CompanyAppearance; error: null }>('/company/appearance');
-    return response.data.data || { pictureType: 'none', colors: {} };
+    const raw = response.data.data;
+    // Backend may return an empty object if no appearance has been saved yet
+    if (!raw || !raw.pictureType) {
+      return { pictureType: 'own', colors: {} };
+    }
+    return {
+      pictureType: raw.pictureType || 'own',
+      colors: raw.colors || {},
+    };
   },
 
   async updateCompanyAppearance(payload: CompanyAppearance): Promise<{ success: boolean; message: string }> {

@@ -30,6 +30,8 @@ interface ContactsTableProps {
   currentUserEmail?: string;
   /** Name of the logged-in user — used as a fallback when contact email is missing */
   currentUserName?: string;
+  /** Whether to show the Actions column (default: true). Hide for non-admin users. */
+  showActions?: boolean;
 }
 
 function ContactsTableInner({
@@ -43,13 +45,21 @@ function ContactsTableInner({
   onEditEmployeeContact,
   currentUserEmail,
   currentUserName,
+  showActions = true,
 }: ContactsTableProps) {
-  // Pin the authenticated user's row to the top
+  // Pin admin/owner rows to the very top, then the authenticated user's row
   const sortedContacts = React.useMemo(() => {
-    if (!currentUserEmail && !currentUserName) return contacts;
     const email = currentUserEmail?.toLowerCase();
     const name = currentUserName?.trim().toLowerCase();
     return [...contacts].sort((a, b) => {
+      // Admins/owners always first
+      const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
+      const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
+
+      if (!email && !name) return 0;
+
       const aEmail = (a.email ?? '').toLowerCase();
       const bEmail = (b.email ?? '').toLowerCase();
       const aName = a.name.trim().toLowerCase();
@@ -65,7 +75,18 @@ function ContactsTableInner({
     });
   }, [contacts, currentUserEmail, currentUserName]);
 
-  const allSelected = sortedContacts.length > 0 && sortedContacts.every((c) => selectedIds.includes(c.id));
+  const selfEmail = currentUserEmail?.toLowerCase();
+  const selfName = currentUserName?.trim().toLowerCase();
+  const selectableContacts = sortedContacts.filter((c) => {
+    if (c.role === 'company_admin' || c.role === 'ADMIN') return false;
+    if (c.isCurrentUser) return false;
+    const cEmail = (c.email ?? '').toLowerCase();
+    const cName = c.name.trim().toLowerCase();
+    if (selfEmail && cEmail === selfEmail) return false;
+    if (!cEmail && selfName && cName === selfName) return false;
+    return true;
+  });
+  const allSelected = selectableContacts.length > 0 && selectableContacts.every((c) => selectedIds.includes(c.id));
   const someSelected = selectedIds.length > 0 && !allSelected;
 
   return (
@@ -91,13 +112,13 @@ function ContactsTableInner({
           </TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide">Function</TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[160px]">Status</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>
+          {showActions && <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody className="[&_tr:last:border-b]">
         {sortedContacts.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={7}>
+            <TableCell colSpan={showActions ? 7 : 6}>
               <EmptyState />
             </TableCell>
           </TableRow>
@@ -110,14 +131,16 @@ function ContactsTableInner({
             const isSelf =
               (!!email && contactEmail === email) ||
               (!contactEmail && !!name && contactName === name);
+            const isAdminRow = contact.role === 'company_admin' || contact.role === 'ADMIN';
+            const isProtected = isSelf || isAdminRow;
             return (
               <TableRow key={contact.id} className={`border-b border-[#ebf3ef] hover:bg-[#f6fbf9] ${isSelf ? 'bg-[#f6fbf9]' : ''}`}>
                 <TableCell>
                   <Checkbox
-                    checked={!isSelf && selectedIds.includes(contact.id)}
-                    onChange={() => !isSelf && onSelect(contact.id)}
-                    disabled={isSelf}
-                    className={`rounded-[4px] h-4 w-4 ${isSelf ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
+                    checked={!isProtected && selectedIds.includes(contact.id)}
+                    onChange={() => !isProtected && onSelect(contact.id)}
+                    disabled={isProtected}
+                    className={`rounded-[4px] h-4 w-4 ${isProtected ? 'border-[#c8d4d0] opacity-40 cursor-not-allowed' : 'border-[#3d997d]'}`}
                   />
                 </TableCell>
                 <TableCell>
@@ -187,6 +210,7 @@ function ContactsTableInner({
                     </div>
                   </div>
                 </TableCell>
+                {showActions && (
                 <TableCell className="text-right">
                   <div className="inline-flex items-center gap-2">
                     {/* Current-user placeholder row */}
@@ -214,23 +238,25 @@ function ContactsTableInner({
                         <UserPlus className="h-4 w-4" />
                       </Button>
                     ) : (
-                      /* Real contact — edit always; delete only if not self */
+                      /* Real contact — edit only if handler provided; delete only if handler provided and not self */
                       <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
-                          onClick={() => onEditEmployeeContact?.(contact)}
-                          aria-label="Edit contact"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        {!isSelf && (
+                        {onEditEmployeeContact && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
+                            onClick={() => onEditEmployeeContact(contact)}
+                            aria-label="Edit contact"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {!isProtected && onDelete && (
                           <Button
                             variant="ghost"
                             size="icon"
                             className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
-                            onClick={() => onDelete?.(contact)}
+                            onClick={() => onDelete(contact)}
                             aria-label="Delete contact"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -240,6 +266,7 @@ function ContactsTableInner({
                     )}
                   </div>
                 </TableCell>
+                )}
               </TableRow>
             );
           })

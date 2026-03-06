@@ -200,6 +200,12 @@ export const ManageHandbookPage: React.FC = () => {
                     iconBg="bg-[#fef3c7]"
                     actions={[
                         {
+                            label: 'Appearance',
+                            onClick: () => navigate('/account/appearance'),
+                            variant: 'outline',
+                            adminOnly: true,
+                        },
+                        {
                             label: 'View Documents',
                             onClick: () => navigate('/handbook/documents'),
                             variant: 'outline',

@@ -81,6 +81,8 @@ export interface Contact {
   isExternalContact?: boolean;
   /** True when this row is the current user (placeholder); use "Add as contact" instead of Edit. */
   isCurrentUser?: boolean;
+  /** Role of the underlying employee (e.g. 'company_admin', 'ADMIN'). Used for pinning & protecting rows. */
+  role?: string;
   status: "ACTIVE" | "INACTIVE";
   createdAt?: string;
 }

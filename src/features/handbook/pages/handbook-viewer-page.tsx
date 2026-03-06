@@ -8,6 +8,7 @@ import { useHandbookPages } from '@/lib/api-hooks';
 import type { HandbookPage } from '@/lib/api-types';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
 import { Check, Loader2 } from 'lucide-react';
+import { useAppearance } from '@/context/appearance-context';
 
 interface HandbookPageWithChildren extends HandbookPage {
   children: HandbookPageWithChildren[];
@@ -26,6 +27,7 @@ function findPageByNid(nodes: HandbookPageWithChildren[], nid: number): Handbook
 
 export const HandbookViewerPage: React.FC = () => {
   const { handbookId } = useParams<{ handbookId: string }>();
+  const { getColor } = useAppearance();
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [contentHtml, setContentHtml] = useState<string | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
@@ -240,9 +242,9 @@ export const HandbookViewerPage: React.FC = () => {
                 };
 
                 return (
-                  <div className="prose max-w-none">
+                  <div className="prose max-w-none" style={{ backgroundColor: getColor('pageBackground') }}>
                     {selectedPage && (
-                      <h1 className="text-2xl font-bold mb-4">{selectedPage.title}</h1>
+                      <h1 className="text-2xl font-bold mb-4" style={{ color: getColor('headlines') }}>{selectedPage.title}</h1>
                     )}
                     {(effectiveViewedAt || effectiveSignedAt) && (
                       <div className="text-sm text-[#6b7280] mb-4 space-y-1">
@@ -261,12 +263,13 @@ export const HandbookViewerPage: React.FC = () => {
                       <EmptyState />
                     ) : (
                       <div
-                        className="border-t pt-4 handbook-content"
+                        className="border-t pt-4 handbook-content handbook-themed-content"
+                        style={{ borderColor: getColor('frameColor') }}
                         dangerouslySetInnerHTML={{ __html: contentHtml }}
                       />
                     )}
                     {showReceiptButton && (
-                      <div className="mt-6 pt-4 border-t border-[#e5e7eb]">
+                      <div className="mt-6 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>
                         <Button
                           onClick={async () => {
                             setSigningReceipt(true);
@@ -278,7 +281,8 @@ export const HandbookViewerPage: React.FC = () => {
                             }
                           }}
                           disabled={signingReceipt}
-                          className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[8px] px-4 py-2"
+                          className="rounded-[8px] px-4 py-2"
+                          style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
                         >
                           {signingReceipt ? (
                             <>

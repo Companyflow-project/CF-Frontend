@@ -131,7 +131,17 @@ export const EmployeesPage: React.FC = () => {
   };
 
   const handleSelectAll = (selected: boolean) => {
-    setSelectedIds(selected ? paginatedEmployees.map((emp) => emp.id) : []);
+    if (!selected) {
+      setSelectedIds([]);
+      return;
+    }
+    const selectable = paginatedEmployees.filter(
+      (emp) =>
+        emp.role !== 'company_admin' &&
+        emp.role !== 'ADMIN' &&
+        (!authUser?.email || emp.email.toLowerCase() !== authUser.email.toLowerCase())
+    );
+    setSelectedIds(selectable.map((emp) => emp.id));
   };
 
   const handleDeleteRequest = (id: string, name: string) => {

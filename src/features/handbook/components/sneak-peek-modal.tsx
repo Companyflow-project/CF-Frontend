@@ -11,6 +11,7 @@ import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
 import type { HandbookPageDetail } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
 import { handbookRoutes } from '../routes';
+import { useAppearance } from '@/context/appearance-context';
 
 interface SneakPeekModalProps {
     isOpen: boolean;
@@ -32,6 +33,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
     canEdit = false,
 }) => {
     const navigate = useNavigate();
+    const { getColor } = useAppearance();
     const [loading, setLoading] = useState(true);
     const [pageDetail, setPageDetail] = useState<HandbookPageDetail | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -128,7 +130,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                     )}
                                     {plainText && (
                                         <div className="flex-1">
-                                            <p className="text-sm text-[#0d0e0e] leading-relaxed whitespace-pre-wrap">
+                                            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
                                                 {plainText}
                                             </p>
                                         </div>
@@ -144,7 +146,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                             ) : (
                                 plainText && (
                                     <div className="mb-6">
-                                        <p className="text-sm text-[#0d0e0e] leading-relaxed whitespace-pre-wrap">
+                                        <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
                                             {plainText}
                                         </p>
                                     </div>
@@ -163,7 +165,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                                         href={doc.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-[#0d0e0e] underline hover:text-[#3d997d] text-sm inline-block"
+                                                        className="underline text-sm inline-block" style={{ color: getColor('links') }}
                                                     >
                                                         {doc.name || 'Document'}
                                                     </a>
@@ -190,7 +192,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                                         href={link.uri || link.url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-[#0d0e0e] underline hover:text-[#3d997d] text-sm inline-block"
+                                                        className="underline text-sm inline-block" style={{ color: getColor('links') }}
                                                     >
                                                         {link.title || link.uri || link.url}
                                                     </a>
@@ -256,7 +258,8 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                         navigate(handbookRoutes.publish(DEFAULT_HANDBOOK_PRINT_BID));
                                     }
                                 }}
-                                className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="rounded-[8px] px-5 py-2 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
                             >
                                 {isReady ? 'Print' : 'Publish'}
                             </Button>

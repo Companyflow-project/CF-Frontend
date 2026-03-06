@@ -1,4 +1,5 @@
 import { AuthProvider } from '@/context/auth-context';
+import { AppearanceProvider } from '@/context/appearance-context';
 import { AppRouter } from '@/router';
 import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -23,8 +24,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppRouter />
-        <Toaster position="top-right" richColors />
+        <AppearanceProvider>
+          <AppRouter />
+          <Toaster position="top-right" richColors />
+        </AppearanceProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

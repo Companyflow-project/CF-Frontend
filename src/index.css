@@ -61,3 +61,30 @@
   }
 }
 
+/* Handbook appearance — CSS variables are injected on :root by AppearanceProvider.
+   These styles apply company colors to handbook content rendering surfaces. */
+.handbook-themed-content h1,
+.handbook-themed-content h2,
+.handbook-themed-content h3,
+.handbook-themed-content h4,
+.handbook-themed-content h5,
+.handbook-themed-content h6 {
+  color: var(--hb-headlines);
+}
+
+.handbook-themed-content p,
+.handbook-themed-content li,
+.handbook-themed-content span,
+.handbook-themed-content td,
+.handbook-themed-content th {
+  color: var(--hb-body-text);
+}
+
+.handbook-themed-content a {
+  color: var(--hb-links);
+}
+
+.handbook-themed-content a:hover {
+  opacity: 0.8;
+}
+

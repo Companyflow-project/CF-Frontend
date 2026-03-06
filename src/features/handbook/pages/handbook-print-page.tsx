@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
+import { useAppearance } from '@/context/appearance-context';
 
 export const HandbookPrintPage: React.FC = () => {
+  const { getColor } = useAppearance();
   const [searchParams] = useSearchParams();
   const lang = searchParams.get('lang') || 'en';
   const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree(lang);
@@ -116,7 +118,8 @@ export const HandbookPrintPage: React.FC = () => {
           </Button>
           <Button
             onClick={handlePrint}
-            className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white gap-2"
+            className="gap-2"
+            style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
           >
             <Printer className="h-4 w-4" />
             Print Handbook
@@ -129,7 +132,7 @@ export const HandbookPrintPage: React.FC = () => {
           ) : (
             readyHandbookData.map((chapter) => (
               <React.Fragment key={chapter.id}>
-                <h2 className="text-xl font-bold text-[#1a5948] mt-8 mb-3 first:mt-0 print:text-lg">
+                <h2 className="text-xl font-bold mt-8 mb-3 first:mt-0 print:text-lg" style={{ color: getColor('headlines') }}>
                   {chapter.title}
                 </h2>
                 {chapter.pages?.map((page: any) => (
@@ -138,11 +141,12 @@ export const HandbookPrintPage: React.FC = () => {
                     className="mb-8 break-inside-avoid"
                     style={{ pageBreakInside: 'avoid' }}
                   >
-                    <h3 className="text-lg font-semibold text-[#0d0e0e] mb-2 print:text-base">
+                    <h3 className="text-lg font-semibold mb-2 print:text-base" style={{ color: getColor('headlines') }}>
                       {page.title}
                     </h3>
                     <div
-                      className="prose prose-sm max-w-none text-[#374151] handbook-print-body"
+                      className="prose prose-sm max-w-none handbook-print-body handbook-themed-content"
+                      style={{ color: getColor('bodyText') }}
                       dangerouslySetInnerHTML={{ __html: page.body || '' }}
                     />
                   </section>

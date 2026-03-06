@@ -14,6 +14,7 @@ import { useAuth } from '@/context/auth-context';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
+import { useAppearance } from '@/context/appearance-context';
 
 interface PreviewHandbookModalProps {
     isOpen: boolean;
@@ -30,6 +31,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     selectedPageIds = null,
     tree: treeProp,
 }) => {
+    const { getColor } = useAppearance();
     const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree('en');
     const tree = treeProp ?? treeFromHook;
     // When the parent provides the tree directly, we don't need to wait for the hook's fetch.
@@ -161,7 +163,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                     </p>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto px-6 py-6 bg-[#f8faf9]">
+                <div className="flex-1 overflow-y-auto px-6 py-6" style={{ backgroundColor: getColor('lightBackground') }}>
                     {loading && (
                         <div className="flex items-center justify-center py-12">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#3d997d]" />
@@ -200,10 +202,10 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                     )}
 
                     {!loading && !error && readyHandbookData.length > 0 && (
-                        <div className="bg-white rounded-[16px] border border-[#e5efea] shadow-sm px-8 py-8 space-y-10">
+                        <div className="rounded-[16px] border shadow-sm px-8 py-8 space-y-10" style={{ backgroundColor: getColor('pageBackground'), borderColor: getColor('frameColor') }}>
                             {readyHandbookData.map((chapter) => (
                                 <div key={chapter.id}>
-                                    <h2 className="text-lg font-bold text-[#1a5948] mb-4 pb-2 border-b border-[#d4ede5]">
+                                    <h2 className="text-lg font-bold mb-4 pb-2 border-b" style={{ color: getColor('headlines'), borderColor: getColor('frameColor') }}>
                                         {chapter.title}
                                     </h2>
 
@@ -212,12 +214,13 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                             const detail = pageDetails.get(page.id);
                                             return (
                                             <div key={page.id} className="space-y-2">
-                                                <h3 className="text-base font-semibold text-[#374151]">
+                                                <h3 className="text-base font-semibold" style={{ color: getColor('headlines') }}>
                                                     {page.title}
                                                 </h3>
                                                 {page.body ? (
                                                     <div
-                                                        className="prose prose-sm max-w-none text-[#111827] leading-relaxed"
+                                                        className="prose prose-sm max-w-none leading-relaxed handbook-themed-content"
+                                                        style={{ color: getColor('bodyText') }}
                                                         dangerouslySetInnerHTML={{ __html: page.body }}
                                                     />
                                                 ) : (
@@ -237,7 +240,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                             {detail.documents.map((doc, i) => (
                                                                 <div key={i}>
                                                                     {doc.url ? (
-                                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d0e0e] underline hover:text-[#3d997d]">
+                                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: getColor('links') }}>
                                                                             {doc.name || 'Document'}
                                                                         </a>
                                                                     ) : (
@@ -259,7 +262,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                         <div className="space-y-1">
                                                             {detail.links.map((link, i) => (
                                                                 <div key={i}>
-                                                                    <a href={link.uri || link.url} target="_blank" rel="noopener noreferrer" className="text-sm text-[#0d0e0e] underline hover:text-[#3d997d]">
+                                                                    <a href={link.uri || link.url} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: getColor('links') }}>
                                                                         {link.title || link.uri || link.url}
                                                                     </a>
                                                                 </div>

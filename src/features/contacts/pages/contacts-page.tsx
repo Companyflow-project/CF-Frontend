@@ -72,8 +72,10 @@ export const ContactsPage: React.FC = () => {
   // The /api/contacts endpoint returns only status=1 rows; employees not in contacts appear
   // as "emp-{id}" rows with an "Add as contact" button.
   const mergedContacts = useMemo(() => {
-    const employees = (apiEmployees as unknown as BackendEmployeeLike[] | undefined ?? [])
-      .map(transformEmployee)
+    const transformedEmployees = (apiEmployees as unknown as BackendEmployeeLike[] | undefined ?? [])
+      .map(transformEmployee);
+
+    const employees = transformedEmployees
       .map((emp) => ({
         id: `emp-${emp.id}`,
         accountId: emp.accountId,
@@ -83,9 +85,18 @@ export const ContactsPage: React.FC = () => {
         isPublic: emp.isPublic,
         isEmployeeContact: true,
         isExternalContact: false,
+        role: emp.role,
         status: emp.status,
         createdAt: emp.createdAt,
       }) satisfies import('@/types/models').Contact);
+
+    // Build a role lookup by email so we can propagate roles to real contacts
+    const roleByEmail = new Map<string, string>();
+    for (const emp of transformedEmployees) {
+      if (emp.email && emp.role) {
+        roleByEmail.set(emp.email.trim().toLowerCase(), emp.role);
+      }
+    }
 
     // De-duplicate raw contacts: the backend can return multiple nids for the same person
     // (e.g. if they were added as a contact more than once). Keep the first occurrence,
@@ -101,11 +112,12 @@ export const ContactsPage: React.FC = () => {
     // Build a set of employee names to distinguish employee contacts from external ones
     const employeeNames = new Set(employees.map((e) => e.name.trim().toLowerCase()));
 
-    // Mark real contacts as employee or external based on name match
+    // Mark real contacts as employee or external based on name match, and propagate role
     const markedContacts = dedupedContacts.map((c) => ({
       ...c,
       isEmployeeContact: employeeNames.has(c.name.trim().toLowerCase()),
       isExternalContact: !employeeNames.has(c.name.trim().toLowerCase()),
+      role: c.email ? roleByEmail.get(c.email.trim().toLowerCase()) : undefined,
     }));
 
     // De-duplicate: only append employees not already in contacts
@@ -169,7 +181,13 @@ export const ContactsPage: React.FC = () => {
       return employment ?? '';
     };
     return [...list].sort((a, b) => {
-      // "You" row (current user) always stays at the top regardless of sort field/direction.
+      // Admins/owners always pinned to the very top.
+      const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
+      const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
+
+      // "You" row (current user) stays right after admins.
       if (a.isCurrentUser && !b.isCurrentUser) return -1;
       if (!a.isCurrentUser && b.isCurrentUser) return 1;
 
@@ -208,7 +226,14 @@ export const ContactsPage: React.FC = () => {
   }, []);
 
   const handleSelectAll = useCallback((selected: boolean, contactList: Contact[]) => {
-    setSelectedIds(selected ? contactList.map((c) => c.id) : []);
+    if (!selected) {
+      setSelectedIds([]);
+      return;
+    }
+    const selectable = contactList.filter(
+      (c) => c.role !== 'company_admin' && c.role !== 'ADMIN' && !c.isCurrentUser
+    );
+    setSelectedIds(selectable.map((c) => c.id));
   }, []);
 
   const handleConfirmDelete = useCallback(async () => {
@@ -830,6 +855,7 @@ export const ContactsPage: React.FC = () => {
                   onEditEmployeeContact={isAdmin ? handleEditEmployeeContact : undefined}
                   currentUserEmail={user?.email ?? undefined}
                   currentUserName={user?.name ?? undefined}
+                  showActions={isAdmin}
                 />
               </div>
 
@@ -846,6 +872,7 @@ export const ContactsPage: React.FC = () => {
                     onAddAsContact={isAdmin ? handleAddAsContact : undefined}
                     onAddEmployeeAsContact={isAdmin ? handleOpenEmployeeContactModal : undefined}
                     onEditEmployeeContact={isAdmin ? handleEditEmployeeContact : undefined}
+                    showActions={isAdmin}
                   />
                 </div>
               )}
