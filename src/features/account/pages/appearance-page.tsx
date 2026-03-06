@@ -51,7 +51,9 @@ export const AppearancePage: React.FC = () => {
 
     useEffect(() => {
         if (appearanceData) {
-            setPictureType(appearanceData.pictureType as any || 'own');
+            const validTypes = ['own', 'small', 'photographs'] as const;
+            const loaded = appearanceData.pictureType;
+            setPictureType(validTypes.includes(loaded as any) ? loaded as typeof validTypes[number] : 'own');
 
             if (appearanceData.colors) {
                 setColors(prevColors => prevColors.map(color => ({

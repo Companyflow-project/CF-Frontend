@@ -67,8 +67,9 @@ export const accountApi = {
     if (!raw || !raw.pictureType) {
       return { pictureType: 'own', colors: {} };
     }
+    const validTypes = ['own', 'small', 'photographs'];
     return {
-      pictureType: raw.pictureType || 'own',
+      pictureType: validTypes.includes(raw.pictureType) ? raw.pictureType : 'own',
       colors: raw.colors || {},
     };
   },
