@@ -278,7 +278,22 @@ export const HandbookPagesPage: React.FC = () => {
     };
 
     const handlePublishHandbook = () => {
-        const bid = handbookBid || '21';
+        const bid = handbookBid;
+        if (!bid) {
+            toast.error('Handbook ID not found. Please try again.');
+            return;
+        }
+
+        // Check if any pages are marked as ready
+        const allReadyIds = pages
+            .filter((p: any) => p.status === 'ready')
+            .map((p: any) => p.id);
+
+        if (allReadyIds.length === 0) {
+            toast.error('No pages are marked as Ready. Please mark at least one page as Ready before publishing.');
+            return;
+        }
+
         // Collect IDs of pages that are both selected AND ready
         const readySelectedIds = pages
             .filter((p: any) => selectedPages.has(p.id) && p.status === 'ready')
@@ -314,8 +329,12 @@ export const HandbookPagesPage: React.FC = () => {
             });
             setSelectedPages(readyPageIds);
 
-            if (uniqueTree.length > 0 && uniqueTree[0].type === 'chapter') {
-                setActiveChapterId(uniqueTree[0].id);
+            // Only set active chapter if none is selected or current one no longer exists
+            const chapterIds = new Set(uniqueTree.filter(n => n.type === 'chapter').map(n => n.id));
+            if (!activeChapterId || !chapterIds.has(activeChapterId)) {
+                if (uniqueTree.length > 0 && uniqueTree[0].type === 'chapter') {
+                    setActiveChapterId(uniqueTree[0].id);
+                }
             }
         } catch (err: any) {
             console.error('Failed to refresh handbook tree:', err);
@@ -441,9 +460,11 @@ export const HandbookPagesPage: React.FC = () => {
             return;
         }
 
-        const pageIds = Array.from(selectedPages);
+        // Only apply to pages in the current chapter
+        const currentChapterPageIds = new Set(pages.map((p: any) => p.id));
+        const pageIds = Array.from(selectedPages).filter(id => currentChapterPageIds.has(id));
         if (pageIds.length === 0) {
-            toast.error('Select at least one page first.');
+            toast.error('Select at least one page in this chapter first.');
             return;
         }
 

@@ -21,10 +21,10 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
     emergencyName: emp.emergencyContactName ?? '',
     emergencyMobile: emp.emergencyContactMobile ?? '',
     makeEmergencyPublic: emp.isEmergencyPublic ?? false,
-    employmentType: emp.employmentType ?? 'none',
+    employmentType: emp.employmentTypeId != null ? String(emp.employmentTypeId) : 'none',
     status: emp.status === 'ACTIVE',
-    isSeniorEmployee: false,
-    isBusinessAdmin: false,
+    isSeniorEmployee: emp.isSeniorEmployee ?? false,
+    isBusinessAdmin: emp.isBusinessAdmin ?? false,
     sendEmail: 'no',
     userPictureFid: null,
   };
@@ -143,7 +143,13 @@ export const EditEmployeePage: React.FC = () => {
           isBusinessAdmin: formData.isBusinessAdmin,
           sendEmailType: formData.sendEmail,
         }),
-        ...(fidToSend != null && { userPictureFid: fidToSend }),
+        // Send userPictureFid: new fid to set, null to clear, or omit to leave unchanged
+        // Photo was cleared if ref is null AND formData fid is null AND employee originally had a photo
+        ...(fidToSend != null
+          ? { userPictureFid: fidToSend }
+          : uploadedFidRef.current === null && formData.userPictureFid === null && employee?.userPictureUri
+            ? { userPictureFid: null }
+            : {}),
       });
       setSuccessMessage('Employee updated successfully!');
       setTimeout(() => navigate(employeesRoutes.list), 1500);

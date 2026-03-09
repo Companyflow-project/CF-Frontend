@@ -13,6 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { ArrowLeft, Search, ArrowUpDown, ArrowDownWideNarrow, Edit } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EmptyState } from '@/components/common/empty-state';
 import { usePublicContacts } from '../hooks';
 import { contactsRoutes } from '../routes';
@@ -87,15 +88,22 @@ export const PublicContactsPage: React.FC = () => {
     <PageShell>
       {/* Page header — back button + title */}
       <div className="flex items-center gap-3 mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate(contactsRoutes.list)}
-          className="flex items-center gap-1.5 rounded-[10px] border-[rgba(15,23,42,0.12)] text-[#0d0e0e] h-9 px-3 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span className="text-[13px] font-medium">Back</span>
-        </Button>
+        <TooltipProvider delayDuration={300}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(contactsRoutes.list)}
+              className="flex items-center gap-1.5 rounded-[10px] border-[rgba(15,23,42,0.12)] text-[#0d0e0e] h-9 px-3 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="text-[13px] font-medium">Back</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Back to contacts</TooltipContent>
+        </Tooltip>
+        </TooltipProvider>
         <h1 className="text-2xl font-bold text-[#0d0e0e] tracking-tight">Public Contacts Information List</h1>
       </div>
 
@@ -127,35 +135,52 @@ export const PublicContactsPage: React.FC = () => {
 
           {/* Sort + search toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-3">
+            <TooltipProvider delayDuration={300}>
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
-                onClick={handleCycleSortField}
-              >
-                {sortLabel}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                aria-label="Toggle sort direction"
-                onClick={handleToggleDirection}
-              >
-                <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                aria-label="Advanced sort"
-                onClick={handleResetSort}
-              >
-                <ArrowDownWideNarrow className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                    onClick={handleCycleSortField}
+                  >
+                    {sortLabel}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Cycle sort field</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
+                    aria-label="Toggle sort direction"
+                    onClick={handleToggleDirection}
+                  >
+                    <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Toggle sort direction</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
+                    aria-label="Reset sort"
+                    onClick={handleResetSort}
+                  >
+                    <ArrowDownWideNarrow className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reset sort</TooltipContent>
+              </Tooltip>
             </div>
+            </TooltipProvider>
 
             {/* Search */}
             <div className="relative w-full sm:w-auto sm:min-w-[280px]">
@@ -238,15 +263,22 @@ export const PublicContactsPage: React.FC = () => {
                             : contact.functionTitle || <span className="text-[#9ca3af]">Not available</span>}
                         </TableCell>
                         <TableCell className="w-[10%] text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0] mx-auto"
-                            aria-label="Edit contact"
-                            onClick={() => navigate(`${contactsRoutes.list}?edit-contact-id=${contact.id}`)}
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
+                          <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0] mx-auto"
+                                aria-label="Edit contact"
+                                onClick={() => navigate(`${contactsRoutes.list}?edit-contact-id=${contact.id}`)}
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit contact</TooltipContent>
+                          </Tooltip>
+                          </TooltipProvider>
                         </TableCell>
                       </TableRow>
                     ))

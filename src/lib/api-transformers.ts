@@ -21,6 +21,7 @@ export type BackendEmployeeLike = {
   telephone?: string | null;
   alternateNumber?: string | null;
   employmentType?: string | null;
+  employmentTypeId?: number | string | null;
   employmentTitle?: string | null;
   role?: string | null;
   recentVisits?: string | null;
@@ -33,6 +34,10 @@ export type BackendEmployeeLike = {
   userPictureUri?: string | null;
   /** Taxonomy nids for areas of responsibility */
   responsibilityIds?: number[];
+  /** Whether the employee has the senior_employee role (boolean or 0|1) */
+  isSeniorEmployee?: number | string | boolean | null;
+  /** Whether the employee has the administrator role (boolean or 0|1) */
+  isBusinessAdmin?: number | string | boolean | null;
   [key: string]: unknown;
 };
 
@@ -104,6 +109,7 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
     alternateNumber: backend.alternateNumber ?? undefined,
     telephone: backend.telephone ?? undefined,
     employmentType: backend.employmentType ?? undefined,
+    employmentTypeId: backend.employmentTypeId != null ? Number(backend.employmentTypeId) : null,
     employmentTitle: backend.employmentTitle ?? undefined,
     recentVisitAt: backend.recentVisits ?? undefined,
     messagesCount: backend.messageCount != null ? Number(backend.messageCount) : 0,
@@ -128,6 +134,18 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
     responsibilityIds: Array.isArray(backend.responsibilityIds)
       ? backend.responsibilityIds.map(Number)
       : undefined,
+    isSeniorEmployee:
+      backend.isSeniorEmployee == null
+        ? false
+        : typeof backend.isSeniorEmployee === 'boolean'
+          ? backend.isSeniorEmployee
+          : Number(backend.isSeniorEmployee) === 1,
+    isBusinessAdmin:
+      backend.isBusinessAdmin == null
+        ? false
+        : typeof backend.isBusinessAdmin === 'boolean'
+          ? backend.isBusinessAdmin
+          : Number(backend.isBusinessAdmin) === 1,
   };
 };
 

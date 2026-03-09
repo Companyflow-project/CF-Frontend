@@ -13,6 +13,7 @@ import {
     Loader2,
 } from 'lucide-react';
 import { handbookRoutes } from '../routes';
+import { employeesRoutes } from '@/features/employees/routes';
 import { useAuth } from '@/context/auth-context';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { useHandbookTree } from '../hooks';
@@ -21,7 +22,7 @@ export const ManageHandbookPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
-    const { provisioning } = useHandbookTree();
+    const { bid, isPublished, provisioning } = useHandbookTree();
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -148,19 +149,19 @@ export const ManageHandbookPage: React.FC = () => {
                     actions={[
                         {
                             label: 'Publish →',
-                            onClick: () => navigate(handbookRoutes.publish('main')),
+                            onClick: () => navigate(handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'default',
                             adminOnly: true,
                         },
                         {
                             label: 'Add message to employees',
-                            onClick: () => navigate(handbookRoutes.publish('main')),
+                            onClick: () => navigate(isPublished ? employeesRoutes.messageLogs : handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'outline',
                             adminOnly: true,
                         },
                         {
                             label: 'Grant access to employees',
-                            onClick: () => navigate(handbookRoutes.publish('main')),
+                            onClick: () => navigate(isPublished ? employeesRoutes.messageLogs : handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'outline',
                             adminOnly: true,
                         },

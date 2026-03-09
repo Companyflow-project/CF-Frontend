@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/empty-state';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Contact } from '@/types/models';
 import { formatDanishPhone } from '@/lib/utils';
 
@@ -212,59 +213,79 @@ function ContactsTableInner({
                 </TableCell>
                 {showActions && (
                 <TableCell className="text-right">
+                  <TooltipProvider delayDuration={300}>
                   <div className="inline-flex items-center gap-2">
                     {/* Current-user placeholder row */}
                     {contact.isCurrentUser || contact.id === '0' ? (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
-                        onClick={() => onAddAsContact?.(contact)}
-                        aria-label="Add as contact"
-                        title="Add as contact"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
+                            onClick={() => onAddAsContact?.(contact)}
+                            aria-label="Add as contact"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add as contact</TooltipContent>
+                      </Tooltip>
                     ) : contact.id.startsWith('emp-') ? (
                       /* Employee-only row — not yet a real contact */
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
-                        onClick={() => onAddEmployeeAsContact?.(contact)}
-                        aria-label="Add as contact"
-                        title="Add as contact"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
+                            onClick={() => onAddEmployeeAsContact?.(contact)}
+                            aria-label="Add as contact"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add as contact</TooltipContent>
+                      </Tooltip>
                     ) : (
                       /* Real contact — edit only if handler provided; delete only if handler provided and not self */
                       <>
                         {onEditEmployeeContact && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
-                            onClick={() => onEditEmployeeContact(contact)}
-                            aria-label="Edit contact"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
+                                onClick={() => onEditEmployeeContact(contact)}
+                                aria-label="Edit contact"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit contact</TooltipContent>
+                          </Tooltip>
                         )}
                         {!isProtected && onDelete && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
-                            onClick={() => onDelete(contact)}
-                            aria-label="Delete contact"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
+                                onClick={() => onDelete(contact)}
+                                aria-label="Delete contact"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete contact</TooltipContent>
+                          </Tooltip>
                         )}
                       </>
                     )}
                   </div>
+                  </TooltipProvider>
                 </TableCell>
                 )}
               </TableRow>

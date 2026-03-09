@@ -13,7 +13,8 @@ import { employeesRoutes } from '../routes';
 import { accountRoutes } from '@/features/account/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { useSubscription } from '@/features/account/hooks';
-import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,8 @@ export const EmployeesPage: React.FC = () => {
   const { user: authUser } = useAuth();
   const companyId = authUser?.companyId ? String(authUser.companyId) : undefined;
   const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin' || authUser?.role === 'MANAGER';
+  const [viewAsEmployee, setViewAsEmployee] = useState(false);
+  const effectiveAdmin = isAdmin && !viewAsEmployee;
   const { data: subscriptionData } = useSubscription(companyId);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -249,17 +252,46 @@ export const EmployeesPage: React.FC = () => {
 
   return (
     <PageShell>
+      {/* Employee-view banner */}
+      {viewAsEmployee && (
+        <div className="mb-6 flex items-center justify-between bg-[#edf7f3] rounded-[16px] border border-[#3d997d] border-l-[6px] shadow-[0_18px_40px_rgba(28,91,72,0.10)] px-5 py-3">
+          <div className="flex items-center gap-2">
+            <Eye className="h-4 w-4 text-[#1a5948]" />
+            <span className="text-sm font-medium text-[#1a5948]">You are viewing this page as an employee</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setViewAsEmployee(false)}
+            className="border-[#3d997d] text-[#1a5948] hover:bg-[#d0ebe0] rounded-[10px] px-4 h-8 text-[13px]"
+          >
+            Exit
+          </Button>
+        </div>
+      )}
+
       <PageHeader
         title="Manage Employees"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {/* ordered to match mockup: View as an employee | View Information List | More licenses | Add employee */}
-            <Button
-              variant="outline"
-              className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
-            >
-              View as an employee
-            </Button>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setViewAsEmployee((v) => !v);
+                  setSelectedIds([]);
+                }}
+                className={`rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] flex items-center gap-2 ${
+                  viewAsEmployee
+                    ? 'border-[#3d997d] bg-[#e7f5ef] text-[#1a5948]'
+                    : 'border-[rgba(15,23,42,0.1)] text-[#0d0e0e] bg-white'
+                }`}
+              >
+                {viewAsEmployee ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                {viewAsEmployee ? 'Exit employee view' : 'View as an employee'}
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => navigate(employeesRoutes.informationList)}
@@ -267,13 +299,15 @@ export const EmployeesPage: React.FC = () => {
             >
               View Information List
             </Button>
-            <Button
-              variant="outline"
-              className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
-            >
-              More licenses
-            </Button>
-            {isAdmin && (
+            {effectiveAdmin && (
+              <Button
+                variant="outline"
+                className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
+              >
+                More licenses
+              </Button>
+            )}
+            {effectiveAdmin && (
               <Button
                 onClick={() => navigate(employeesRoutes.add)}
                 className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
@@ -368,62 +402,81 @@ export const EmployeesPage: React.FC = () => {
             <CardContent className="pt-5 pb-0 flex-1 flex flex-col overflow-hidden">
               {/* sort + set all bar */}
               <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1]">
+                <TooltipProvider delayDuration={300}>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
-                    onClick={() =>
-                      setSortField((prev) =>
-                        prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
-                      )
-                    }
-                  >
-                    {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                    aria-label="Toggle sort direction"
-                    onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-                  >
-                    <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                    aria-label="Advanced sort"
-                    onClick={() => {
-                      setSortField('name');
-                      setSortDirection('asc');
-                    }}
-                  >
-                    <ArrowDownWideNarrow className="h-4 w-4" />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                        onClick={() =>
+                          setSortField((prev) =>
+                            prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
+                          )
+                        }
+                      >
+                        {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Cycle sort field</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
+                        aria-label="Toggle sort direction"
+                        onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                      >
+                        <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Toggle sort direction</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
+                        aria-label="Reset sort"
+                        onClick={() => {
+                          setSortField('name');
+                          setSortDirection('asc');
+                        }}
+                      >
+                        <ArrowDownWideNarrow className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Reset sort</TooltipContent>
+                  </Tooltip>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isBulkBusy || employees.length === 0}
-                    onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), false)}
-                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
-                  >
-                    Set all to private
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={isBulkBusy || employees.length === 0}
-                    onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), true)}
-                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
-                  >
-                    Set all to public
-                  </Button>
-                </div>
+                </TooltipProvider>
+                {effectiveAdmin && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isBulkBusy || employees.length === 0}
+                      onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), false)}
+                      className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
+                    >
+                      Set all to private
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isBulkBusy || employees.length === 0}
+                      onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), true)}
+                      className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
+                    >
+                      Set all to public
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {!loading && !error && employees.length === 0 && (
@@ -448,8 +501,8 @@ export const EmployeesPage: React.FC = () => {
                   selectedIds={selectedIds}
                   onSelect={handleSelect}
                   onSelectAll={handleSelectAll}
-                  onDelete={isAdmin ? handleDeleteRequest : undefined}
-                  onEdit={isAdmin ? (id) => navigate(employeesRoutes.edit(id)) : undefined}
+                  onDelete={effectiveAdmin ? handleDeleteRequest : undefined}
+                  onEdit={effectiveAdmin ? (id) => navigate(employeesRoutes.edit(id)) : undefined}
                   onStatistics={(id) => navigate(employeesRoutes.statisticsDetail(id))}
                   onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
                   emptyStateTitle="No employees"
@@ -491,7 +544,7 @@ export const EmployeesPage: React.FC = () => {
             </CardContent>
 
             {/* bulk actions bar — inside the table card at the bottom (admin only) */}
-            {isAdmin && <div className="border-t border-[#e5efea] px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-b-[22px]">
+            {effectiveAdmin && <div className="border-t border-[#e5efea] px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-b-[22px]">
               <div
                 className="flex items-center gap-3 cursor-pointer h-9"
                 onClick={() => {

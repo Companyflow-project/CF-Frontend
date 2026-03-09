@@ -32,6 +32,7 @@ import { contactsApi } from '../api';
 import { contactsRoutes } from '@/features/contacts/routes';
 import type { Contact } from '@/types/models';
 import { ArrowDownWideNarrow, ArrowUpDown, Search } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const ContactsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -760,42 +761,59 @@ export const ContactsPage: React.FC = () => {
           <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)]">
             <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4 px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
               {/* Sort controls */}
+              <TooltipProvider delayDuration={300}>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
-                  onClick={() =>
-                    setSortField((prev) =>
-                      prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
-                    )
-                  }
-                >
-                  {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                  aria-label="Toggle sort direction"
-                  onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-                >
-                  <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                  aria-label="Reset sort"
-                  onClick={() => {
-                    setSortField('name');
-                    setSortDirection('asc');
-                  }}
-                >
-                  <ArrowDownWideNarrow className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
+                      onClick={() =>
+                        setSortField((prev) =>
+                          prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
+                        )
+                      }
+                    >
+                      {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Cycle sort field</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
+                      aria-label="Toggle sort direction"
+                      onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                    >
+                      <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Toggle sort direction</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
+                      aria-label="Reset sort"
+                      onClick={() => {
+                        setSortField('name');
+                        setSortDirection('asc');
+                      }}
+                    >
+                      <ArrowDownWideNarrow className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Reset sort</TooltipContent>
+                </Tooltip>
               </div>
+              </TooltipProvider>
 
               {/* Search + filters */}
               <div className="flex flex-1 flex-wrap items-center gap-3 lg:justify-end">

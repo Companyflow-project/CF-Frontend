@@ -12,6 +12,7 @@ const POLL_INTERVAL_MS = 5000;
 export const useHandbookTree = (lang: string = 'en') => {
   const [data, setData] = useState<HandbookNode[]>([]);
   const [bid, setBid] = useState<number | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [provisioning, setProvisioning] = useState(false);
@@ -32,6 +33,7 @@ export const useHandbookTree = (lang: string = 'en') => {
       console.log('Handbook tree fetched:', result);
       setData(result.chapters);
       setBid(result.bid);
+      setIsPublished(result.isPublished);
 
       if (result.chapters.length > 0) {
         setProvisioning(false);
@@ -64,7 +66,7 @@ export const useHandbookTree = (lang: string = 'en') => {
     return stopPolling;
   }, [provisioning, fetchTree, stopPolling]);
 
-  return { data, bid, loading, error, provisioning, refetch: () => fetchTree() };
+  return { data, bid, isPublished, loading, error, provisioning, refetch: () => fetchTree() };
 };
 
 /**

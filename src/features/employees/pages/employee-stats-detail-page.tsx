@@ -328,6 +328,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                 </div>
                 <Button
                   variant="outline"
+                  onClick={() => id && navigate(employeesRoutes.messageLogsDetail(id))}
                   className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
                 >
                   Send Follow Up
@@ -354,7 +355,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
         onOpenChange={setIsModalOpen}
         stats={modalStats}
         employeeName={employeeName}
-        onSendFollowUp={() => console.log('Send follow up for', employeeName)}
+        onSendFollowUp={() => id && navigate(employeesRoutes.messageLogsDetail(id))}
       />
 
       {isFetchingModalStats && (

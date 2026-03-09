@@ -29,6 +29,8 @@ export interface Employee {
   alternateNumber?: string;
   telephone?: string;
   employmentType?: string;
+  /** Taxonomy term ID for the employment type */
+  employmentTypeId?: number | null;
   employmentTitle?: string;
   recentVisitAt?: string | null;
   messagesCount?: number;
@@ -46,6 +48,10 @@ export interface Employee {
   userPictureUri?: string | null;
   /** Taxonomy nids for areas of responsibility assigned to this employee */
   responsibilityIds?: number[];
+  /** Whether the employee has the senior_employee role */
+  isSeniorEmployee?: boolean;
+  /** Whether the employee has the administrator (business admin) role */
+  isBusinessAdmin?: boolean;
 }
 
 export interface HandbookSection {

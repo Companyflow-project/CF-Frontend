@@ -26,7 +26,7 @@ export const PublishHandbookPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
 
-  const { data: tree, loading: treeLoading } = useHandbookTree('en');
+  const { data: tree, bid: treeBid, isPublished, loading: treeLoading } = useHandbookTree('en');
 
   // Parse selected page IDs from URL (passed from the pages screen)
   const selectedPageIds = useMemo(() => {
@@ -80,7 +80,14 @@ export const PublishHandbookPage: React.FC = () => {
   };
 
   const handlePublish = async () => {
-    const handbookId = id ? Number.parseInt(id, 10) || 21 : 21;
+    // Prefer the real bid from the handbook tree; fall back to URL param
+    const handbookId = treeBid ?? (id ? Number.parseInt(id, 10) || undefined : undefined);
+
+    if (!handbookId) {
+      toast.error('Handbook ID not found. Please try again.');
+      setSubmitting(false);
+      return;
+    }
 
     const effectiveChannels: Array<'email' | 'sms'> =
       channels.length > 0 ? channels : ['email'];
@@ -262,7 +269,12 @@ Greetings from your company.`;
                         {chapter.readyPages.map((page: any) => (
                           <div key={page.id} className="flex items-center gap-2 text-sm text-[#374151]">
                             <FileText className="h-3.5 w-3.5 text-[#2f946f] shrink-0" />
-                            {page.title}
+                            <span className="flex-1">{page.title}</span>
+                            {isPublished && (
+                              <span className="text-[11px] font-medium text-[#2f946f] bg-[#e8f5ef] border border-[#cde3da] rounded-full px-2 py-0.5 shrink-0">
+                                Published
+                              </span>
+                            )}
                           </div>
                         ))}
                       </div>

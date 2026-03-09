@@ -224,14 +224,15 @@ export const handbookApi = {
    * - 403: "Handbook not yet published" (for employees)
    * - 403: "User not assigned to a company"
    */
-  async getHandbookTree(lang: string = 'da'): Promise<{ bid: number | null; chapters: HandbookNode[] }> {
+  async getHandbookTree(lang: string = 'da'): Promise<{ bid: number | null; isPublished: boolean; chapters: HandbookNode[] }> {
     try {
-      const response = await axiosClient.get<{ bid?: number; chapters?: HandbookNode[] }>('/handbook', {
+      const response = await axiosClient.get<{ bid?: number; isPublished?: boolean; chapters?: HandbookNode[] }>('/handbook', {
         params: { lang },
       });
       const chapters = response.data?.chapters;
       const bid = response.data?.bid ?? null;
-      return { bid: bid ?? null, chapters: Array.isArray(chapters) ? chapters : [] };
+      const isPublished = response.data?.isPublished ?? false;
+      return { bid: bid ?? null, isPublished, chapters: Array.isArray(chapters) ? chapters : [] };
     } catch (error: any) {
       if (error.response?.status === 403) {
         const message = error.response?.data?.message || error.response?.data?.error;

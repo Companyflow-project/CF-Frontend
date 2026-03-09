@@ -142,8 +142,8 @@ export const employeesApi = {
       status?: boolean;
       isSeniorEmployee?: boolean;
       isBusinessAdmin?: boolean;
-      /** fid returned from POST /files — links the uploaded photo to the employee */
-      userPictureFid?: number;
+      /** fid returned from POST /files — links the uploaded photo to the employee. null = clear photo. */
+      userPictureFid?: number | null;
       /** Responsibility ids from GET /api/responsibilities */
       responsibilityIds?: number[];
       sendEmailType?: string;
@@ -166,7 +166,7 @@ export const employeesApi = {
     if (payload.status !== undefined) requestBody.status = payload.status;
     if (payload.isSeniorEmployee !== undefined) requestBody.isSeniorEmployee = payload.isSeniorEmployee;
     if (payload.isBusinessAdmin !== undefined) requestBody.isBusinessAdmin = payload.isBusinessAdmin;
-    if (payload.userPictureFid != null) requestBody.userPictureFid = payload.userPictureFid;
+    if (payload.userPictureFid !== undefined) requestBody.userPictureFid = payload.userPictureFid;
     if (payload.responsibilityIds !== undefined) {
       requestBody.responsibilityIds = payload.responsibilityIds;
     }
