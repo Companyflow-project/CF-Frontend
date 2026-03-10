@@ -31,7 +31,7 @@ import { useAuth } from '@/context/auth-context';
 import { contactsApi } from '../api';
 import { contactsRoutes } from '@/features/contacts/routes';
 import type { Contact } from '@/types/models';
-import { ArrowDownWideNarrow, ArrowUpDown, Search } from 'lucide-react';
+import { ArrowDownWideNarrow, ArrowUpDown, Search, Download } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const ContactsPage: React.FC = () => {
@@ -992,8 +992,28 @@ export const ContactsPage: React.FC = () => {
             <CardContent className="space-y-2 px-5 py-4">
               <h3 className="text-sm font-bold text-[#0d0e0e]">Help Guides</h3>
               <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    const headers = 'name,email,phone,role,status';
+                    const example = 'John Doe,john@example.com,12345678,Manager,1';
+                    const csv = `${headers}\n${example}\n`;
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'contacts-import-template.csv';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-[12px] border border-[#cce3da] bg-white text-sm text-[#0d0e0e] hover:bg-[#f0f7f5]"
+                >
+                  <span className="flex items-center gap-2">
+                    <Download className="h-4 w-4 text-[#3d997d]" />
+                    Download CSV Template
+                  </span>
+                  <span className="text-base text-[#0d0e0e]">⇢</span>
+                </button>
                 {[
-                  'How to add contacts',
                   'How to edit employee profiles',
                   'How to add relatives information',
                   'How to import contacts',
