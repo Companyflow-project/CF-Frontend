@@ -22,6 +22,7 @@ const EmployeeStatsAllPage = lazy(() => import('@/features/employees/pages/emplo
 const EmployeeStatsDetailPage = lazy(() => import('@/features/employees/pages/employee-stats-detail-page').then((m) => ({ default: m.EmployeeStatsDetailPage })));
 const EmployeeMessageLogsAllPage = lazy(() => import('@/features/employees/pages/employee-message-logs-all-page').then((m) => ({ default: m.EmployeeMessageLogsAllPage })));
 const EmployeeMessageLogsDetailPage = lazy(() => import('@/features/employees/pages/employee-message-logs-detail-page').then((m) => ({ default: m.EmployeeMessageLogsDetailPage })));
+const FollowUpPage = lazy(() => import('@/features/employees/pages/follow-up-page').then((m) => ({ default: m.FollowUpPage })));
 const InformationListPage = lazy(() => import('@/features/employees/pages/information-list-page').then((m) => ({ default: m.InformationListPage })));
 const InformationListLinksPage = lazy(() => import('@/features/employees/pages/information-list-links-page').then((m) => ({ default: m.InformationListLinksPage })));
 const ManageHandbookPage = lazy(() => import('@/features/handbook/pages/manage-handbook-page').then((m) => ({ default: m.ManageHandbookPage })));
@@ -216,6 +217,16 @@ export const AppRouter: React.FC = () => {
               <RequireAuth>
                 <AppLayout>
                   <EmployeeMessageLogsDetailPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/employees/:id/follow-up"
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <FollowUpPage />
                 </AppLayout>
               </RequireAuth>
             }

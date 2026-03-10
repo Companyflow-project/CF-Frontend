@@ -184,6 +184,7 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
             </div>
             <Button
               variant="outline"
+              onClick={() => id && navigate(employeesRoutes.followUp(id))}
               className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[10px] px-5 py-[11px] h-auto text-[13.3px] bg-white shadow-[0_6px_14px_rgba(0,0,0,0.02)]"
             >
               Send Follow Up

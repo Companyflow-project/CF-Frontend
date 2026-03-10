@@ -144,7 +144,7 @@ export const SignupPage: React.FC = () => {
                 type="submit"
                 className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px]"
               >
-                Prov gratis
+                Prøv gratis
               </Button>
               <div className="flex items-center gap-2">
                 <Checkbox

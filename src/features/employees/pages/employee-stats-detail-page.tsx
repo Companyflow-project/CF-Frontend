@@ -175,6 +175,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
   }, [filteredStats, sortField, sortDirection, user?.id]);
 
   const employeeName = statistics?.name || employee?.name || (loading ? 'Loading...' : 'Employee');
+  const isSelf = !!(user?.id && id === user.id);
 
   const licensesInSubscription = licenseUsage?.licensesInSubscription ?? 0;
   const licensesUsed = licenseUsage?.licensesUsed ?? 0;
@@ -326,23 +327,26 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                     <ArrowDownWideNarrow className="h-4 w-4" />
                   </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => id && navigate(employeesRoutes.messageLogsDetail(id))}
-                  className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
-                >
-                  Send Follow Up
-                </Button>
+                {!isSelf && (
+                  <Button
+                    variant="outline"
+                    onClick={() => id && navigate(employeesRoutes.followUp(id))}
+                    className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
+                  >
+                    Send Follow Up
+                  </Button>
+                )}
               </div>
 
               <div className="min-h-0 overflow-auto">
                 <EmployeeStatsTable
                   stats={sortedStats}
                   selectedIds={selectedIds}
+                  currentUserId={user?.id}
                   onSelect={(id) => setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])}
                   onSelectAll={(selected) => setSelectedIds(selected ? sortedStats.map(s => s.employeeId) : [])}
                   onViewStats={handleViewStats}
-                  onSendMessage={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
+                  onSendMessage={(id) => navigate(employeesRoutes.followUp(id))}
                 />
               </div>
             </CardContent>
@@ -355,7 +359,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
         onOpenChange={setIsModalOpen}
         stats={modalStats}
         employeeName={employeeName}
-        onSendFollowUp={() => id && navigate(employeesRoutes.messageLogsDetail(id))}
+        onSendFollowUp={isSelf ? undefined : () => id && navigate(employeesRoutes.followUp(id))}
       />
 
       {isFetchingModalStats && (

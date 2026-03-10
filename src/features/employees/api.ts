@@ -276,6 +276,19 @@ export const employeesApi = {
     return { fid, uri: response.data.uri ?? '' };
   },
 
+  async sendFollowUp(params: {
+    employeeIds: number[];
+    channels?: Array<'email' | 'sms'>;
+    customSubject?: string;
+    customMessage?: string;
+  }): Promise<{ success: boolean; count: number }> {
+    const response = await axiosClient.post<ApiResponse<{ success: boolean; count: number }>>(
+      '/employees/follow-up',
+      params,
+    );
+    return response.data?.data ?? { success: true, count: 0 };
+  },
+
   async generateMagicLink(employeeId: string): Promise<string> {
     const response = await axiosClient.post<ApiResponse<{ url: string }>>(`/employees/${employeeId}/magic-link`);
     const url = response.data?.data?.url;

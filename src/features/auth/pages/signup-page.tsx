@@ -224,7 +224,7 @@ export const SignupPage: React.FC = () => {
                 disabled={!canSubmit || submitting}
                 className="w-full bg-[#1a5948] hover:bg-[#143e33] active:bg-[#0f2e26] text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {submitting ? 'Opretter…' : 'Prov gratis'}
+                {submitting ? 'Opretter…' : 'Prøv gratis'}
               </Button>
             </div>
 

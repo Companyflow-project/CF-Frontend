@@ -12,6 +12,7 @@ import { accountRoutes } from '@/features/account/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { EmployeeSummaryStat } from '@/types/models';
 import { employeesApi } from '../api';
+import { useEmployees } from '../hooks';
 import { companiesApi, type LicenseUsage } from '@/features/companies/api';
 import { useAuth } from '@/context/auth-context';
 
@@ -27,6 +28,13 @@ export const EmployeeStatsAllPage: React.FC = () => {
   const [, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [licenseUsage, setLicenseUsage] = useState<LicenseUsage | null>(null);
+  const { data: employees } = useEmployees();
+
+  // Set of ACTIVE (licensed) employee IDs for filtering
+  const activeEmployeeIds = useMemo(
+    () => new Set(employees.filter((e) => e.status === 'ACTIVE').map((e) => e.id)),
+    [employees],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -75,8 +83,10 @@ export const EmployeeStatsAllPage: React.FC = () => {
   }, [companyId]);
 
   const filteredStats = useMemo(() => {
-    return stats.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
-  }, [stats, search]);
+    return stats
+      .filter((s) => activeEmployeeIds.size === 0 || activeEmployeeIds.has(s.employeeId))
+      .filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
+  }, [stats, search, activeEmployeeIds]);
 
   const sortedStats = useMemo(() => {
     return [...filteredStats].sort((a, b) => {
@@ -249,6 +259,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
             <EmployeeStatsTable
               stats={sortedStats}
               selectedIds={selectedIds}
+              currentUserId={user?.id}
               onSelect={(id) =>
                 setSelectedIds((prev) =>
                   prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
@@ -258,7 +269,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
                 setSelectedIds(selected ? sortedStats.map((s) => s.employeeId) : [])
               }
               onViewStats={(id) => navigate(employeesRoutes.statisticsDetail(id))}
-              onSendMessage={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
+              onSendMessage={(id) => navigate(employeesRoutes.followUp(id))}
             />
           )}
         </div>

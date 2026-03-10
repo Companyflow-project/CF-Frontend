@@ -8,4 +8,5 @@ export const employeesRoutes = {
   messageLogsDetail: (id: string) => `/employees/${id}/message-logs`,
   informationList: '/employees/information-list',
   informationListLinks: '/employees/information-list/links',
+  followUp: (id: string) => `/employees/${id}/follow-up`,
 } as const;

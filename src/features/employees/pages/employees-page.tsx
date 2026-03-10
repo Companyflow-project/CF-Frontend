@@ -359,44 +359,46 @@ export const EmployeesPage: React.FC = () => {
                   className="pl-11 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${showInactive
-                    ? 'border-[#2c7860] bg-white text-[#0f172a]'
-                    : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
-                    }`}
-                  onClick={() => setShowInactive((v) => !v)}
-                >
-                  <Checkbox
-                    checked={showInactive}
-                    onChange={(event) => {
-                      event.stopPropagation();
-                      setShowInactive(event.target.checked);
-                    }}
-                    className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
-                  />
-                  <span className="text-xs font-medium">Show inactive</span>
-                </button>
-                <button
-                  type="button"
-                  className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${publicOnly
-                    ? 'border-[#2c7860] bg-white text-[#0f172a]'
-                    : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
-                    }`}
-                  onClick={() => setPublicOnly((v) => !v)}
-                >
-                  <Checkbox
-                    checked={publicOnly}
-                    onChange={(event) => {
-                      event.stopPropagation();
-                      setPublicOnly(event.target.checked);
-                    }}
-                    className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
-                  />
-                  <span className="text-xs font-medium">Public only</span>
-                </button>
-              </div>
+              {isAdmin && (
+                <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+                  <button
+                    type="button"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${showInactive
+                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                      }`}
+                    onClick={() => setShowInactive((v) => !v)}
+                  >
+                    <Checkbox
+                      checked={showInactive}
+                      onChange={(event) => {
+                        event.stopPropagation();
+                        setShowInactive(event.target.checked);
+                      }}
+                      className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
+                    />
+                    <span className="text-xs font-medium">Show inactive</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-[999px] border transition-colors ${publicOnly
+                      ? 'border-[#2c7860] bg-white text-[#0f172a]'
+                      : 'border-transparent bg-[#e9f3ef] text-[#7b8a85]'
+                      }`}
+                    onClick={() => setPublicOnly((v) => !v)}
+                  >
+                    <Checkbox
+                      checked={publicOnly}
+                      onChange={(event) => {
+                        event.stopPropagation();
+                        setPublicOnly(event.target.checked);
+                      }}
+                      className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
+                    />
+                    <span className="text-xs font-medium">Public only</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             <CardContent className="pt-5 pb-0 flex-1 flex flex-col overflow-hidden">

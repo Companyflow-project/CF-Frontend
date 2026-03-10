@@ -121,16 +121,8 @@ export const ContactsPage: React.FC = () => {
       role: c.email ? roleByEmail.get(c.email.trim().toLowerCase()) : undefined,
     }));
 
-    // De-duplicate: only append employees not already in contacts
-    const existingKeys = new Set(dedupedContacts.map((c) =>
-      c.email?.trim().toLowerCase() || c.name.trim().toLowerCase()
-    ));
-    const newEmployees = employees.filter((emp) => {
-      const key = emp.email?.trim().toLowerCase() || emp.name.trim().toLowerCase();
-      return !existingKeys.has(key);
-    });
-
-    return [...markedContacts, ...newEmployees];
+    // Only show employees that have been explicitly added as contacts
+    return markedContacts;
   }, [contacts, apiEmployees]);
 
   const applyFilters = useCallback((list: Contact[]) => {
@@ -692,13 +684,6 @@ export const ContactsPage: React.FC = () => {
             </Button>
             {isAdmin && (
               <>
-                <Button
-                  onClick={() => setAddContactModalOpen(true)}
-                  variant="outline"
-                  className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
-                >
-                  Add contact
-                </Button>
                 <input
                   ref={importFileInputRef}
                   type="file"
@@ -720,13 +705,20 @@ export const ContactsPage: React.FC = () => {
                   disabled={exportLoading}
                   onClick={handleExport}
                 >
-                  {exportLoading ? 'Exporting…' : 'Export'}
+                  {exportLoading ? 'Exporting…' : 'Export CSV'}
                 </Button>
                 <Button
                   onClick={() => setAddExternalModalOpen(true)}
-                  className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                  variant="outline"
+                  className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-sm bg-white"
                 >
                   Add external contact
+                </Button>
+                <Button
+                  onClick={() => setAddContactModalOpen(true)}
+                  className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                >
+                  Add employee contact
                 </Button>
               </>
             )}
