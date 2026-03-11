@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { BookOpen, FileText, Link2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { useHandbookTree } from '../hooks';
@@ -31,8 +32,9 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     selectedPageIds = null,
     tree: treeProp,
 }) => {
+    const { t } = useTranslation('handbook');
     const { getColor } = useAppearance();
-    const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree('en');
+    const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree();
     const tree = treeProp ?? treeFromHook;
     // When the parent provides the tree directly, we don't need to wait for the hook's fetch.
     const [bodies, setBodies] = useState<Map<number, string>>(new Map());
@@ -141,25 +143,13 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                 <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#e5e7eb] flex-shrink-0 bg-white rounded-t-[22px]">
                     <DialogTitle className="text-xl font-bold text-[#0d0e0e] flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-[#3d997d]" />
-                        Preview Handbook
+                        {t('preview.title')}
                     </DialogTitle>
                     <p className="text-sm text-[#6b7280] font-normal mt-1">
-                        {isFiltered ? (
-                            <>
-                                Showing{' '}
-                                <span className="font-semibold">
-                                    {selectedPageIds!.length} selected page
-                                    {selectedPageIds!.length !== 1 ? 's' : ''}
-                                </span>
-                                . This is a filtered preview.
-                            </>
-                        ) : (
-                            <>
-                                Showing all pages marked as{' '}
-                                <span className="font-semibold">Ready</span>. This is
-                                what employees will see.
-                            </>
-                        )}
+                        {isFiltered
+                            ? t('preview.filteredDesc', { count: selectedPageIds!.length })
+                            : t('preview.allDesc')
+                        }
                     </p>
                 </DialogHeader>
 
@@ -180,12 +170,12 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                         <div className="text-center py-12 bg-white rounded-[16px] border border-[#e5efea] shadow-sm">
                             <BookOpen className="h-12 w-12 text-[#9ca3af] mx-auto mb-3 opacity-50" />
                             <h3 className="text-lg font-medium text-[#0d0e0e]">
-                                No ready pages found
+                                {t('preview.noReadyPages')}
                             </h3>
                             <p className="text-[#6b7280] mt-1 text-sm max-w-md mx-auto">
                                 {isFiltered
-                                    ? 'None of the selected pages are marked as Ready.'
-                                    : 'There are currently no handbook pages marked as "Ready".'}
+                                    ? t('preview.noReadyPagesFiltered')
+                                    : t('preview.noReadyPagesAll')}
                             </p>
                             {!isFiltered && (
                                 <Button
@@ -195,7 +185,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                     }}
                                     className="mt-4 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px]"
                                 >
-                                    Manage Pages
+                                    {t('preview.managePages')}
                                 </Button>
                             )}
                         </div>
@@ -225,7 +215,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                     />
                                                 ) : (
                                                     <p className="text-sm italic text-[#9ca3af]">
-                                                        No content available.
+                                                        {t('preview.noContent')}
                                                     </p>
                                                 )}
 
@@ -234,7 +224,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                     <div className="pt-3">
                                                         <h4 className="text-sm font-bold text-[#0d0e0e] mb-1.5 flex items-center gap-1.5">
                                                             <FileText className="h-3.5 w-3.5 text-[#7c5caa]" />
-                                                            Documents
+                                                            {t('preview.documents')}
                                                         </h4>
                                                         <div className="space-y-1">
                                                             {detail.documents.map((doc, i) => (
@@ -257,7 +247,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                     <div className="pt-3">
                                                         <h4 className="text-sm font-bold text-[#0d0e0e] mb-1.5 flex items-center gap-1.5">
                                                             <Link2 className="h-3.5 w-3.5 text-[#3d8b6e]" />
-                                                            Links
+                                                            {t('preview.links')}
                                                         </h4>
                                                         <div className="space-y-1">
                                                             {detail.links.map((link, i) => (
@@ -288,7 +278,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                         onClick={onClose}
                         className="rounded-[999px] px-6 h-10 border-[rgba(15,23,42,0.12)] text-[#0d0e0e] bg-white hover:bg-[#f8faf9]"
                     >
-                        Close
+                        {t('preview.close')}
                     </Button>
                     {canEditHandbook && (
                         <Button
@@ -297,7 +287,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                             disabled={loading || readyHandbookData.length === 0}
                             className="rounded-[999px] px-6 h-10 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            Print
+                            {t('preview.print')}
                         </Button>
                     )}
                 </DialogFooter>

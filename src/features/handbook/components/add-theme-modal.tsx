@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from 'react-i18next';
 import { handbookApi } from '../api';
 
 interface AddThemeModalProps {
@@ -26,6 +27,7 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
     onClose,
     onSuccess,
 }) => {
+    const { t } = useTranslation('handbook');
     const [chapterName, setChapterName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!chapterName.trim()) {
-            setError('Please enter a theme / chapter name.');
+            setError(t('addTheme.errorNoName'));
             return;
         }
 
@@ -65,7 +67,7 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
             onClose();
         } catch (err: any) {
             console.error('Failed to create theme:', err);
-            setError(err.message || 'Failed to create theme. Please try again.');
+            setError(err.message || t('addTheme.errorFailed'));
         } finally {
             setIsSubmitting(false);
         }
@@ -76,14 +78,14 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
             <DialogContent className="w-[420px] max-w-none">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-[#0d0e0e]">
-                        Add New Theme
+                        {t('addTheme.title')}
                     </DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-5 mt-4">
                     <div className="space-y-2">
                         <Label htmlFor="theme-name" className="text-sm font-medium text-[#0d0e0e]">
-                            Theme / Chapter Name
+                            {t('addTheme.nameLabel')}
                         </Label>
                         <Input
                             id="theme-name"
@@ -93,13 +95,13 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
                                 setChapterName(e.target.value);
                                 setError(null);
                             }}
-                            placeholder="e.g., Company Policies"
+                            placeholder={t('addTheme.namePlaceholder')}
                             className="h-10 rounded-[8px] border-[#e5e7eb]"
                             disabled={isSubmitting}
                             autoFocus
                         />
                         <p className="text-xs text-[#7b8a85]">
-                            A new theme will be created with this name. You can rename its pages later.
+                            {t('addTheme.description')}
                         </p>
                     </div>
 
@@ -117,14 +119,14 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
                             disabled={isSubmitting}
                             className="rounded-[8px] px-5 py-2 h-auto text-sm"
                         >
-                            Cancel
+                            {t('common:cancel')}
                         </Button>
                         <Button
                             type="submit"
                             disabled={isSubmitting}
                             className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white"
                         >
-                            {isSubmitting ? 'Creating...' : 'Create Theme'}
+                            {isSubmitting ? t('addTheme.creating') : t('addTheme.create')}
                         </Button>
                     </DialogFooter>
                 </form>

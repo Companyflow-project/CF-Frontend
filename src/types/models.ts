@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "MANAGER" | "EMPLOYEE" | "company_admin";
+export type Role = "ADMIN" | "MANAGER" | "EMPLOYEE" | "company_admin" | "administrator";
 
 export interface User {
   id: string;
@@ -7,6 +7,8 @@ export interface User {
   role: Role;
   createdAt: string;
   companyId?: string;
+  preferredLangcode?: string;
+  companyLanguages?: string[];
 }
 
 export interface Account {

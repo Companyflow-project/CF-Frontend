@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,9 +18,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { EmptyState } from '@/components/common/empty-state';
 import { usePublicContacts } from '../hooks';
 import { contactsRoutes } from '../routes';
+import { useAuth } from '@/context/auth-context';
 
 export const PublicContactsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('contacts');
+  const { t: tCommon } = useTranslation('common');
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -66,10 +72,10 @@ export const PublicContactsPage: React.FC = () => {
   }, [filteredContacts, sortField, sortDirection]);
 
   const sortLabel = useMemo(() => {
-    if (sortField === 'name') return 'Name';
-    if (sortField === 'email') return 'Email';
-    return 'Employment';
-  }, [sortField]);
+    if (sortField === 'name') return t('publicContacts.sort.name');
+    if (sortField === 'email') return t('publicContacts.sort.email');
+    return t('publicContacts.sort.employment');
+  }, [sortField, t]);
 
   const handleCycleSortField = () => {
     setSortField((prev) => (prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name'));
@@ -98,18 +104,18 @@ export const PublicContactsPage: React.FC = () => {
               className="flex items-center gap-1.5 rounded-[10px] border-[rgba(15,23,42,0.12)] text-[#0d0e0e] h-9 px-3 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="text-[13px] font-medium">Back</span>
+              <span className="text-[13px] font-medium">{t('publicContacts.back')}</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Back to contacts</TooltipContent>
+          <TooltipContent>{t('publicContacts.backToContacts')}</TooltipContent>
         </Tooltip>
         </TooltipProvider>
-        <h1 className="text-2xl font-bold text-[#0d0e0e] tracking-tight">Public Contacts Information List</h1>
+        <h1 className="text-2xl font-bold text-[#0d0e0e] tracking-tight">{t('publicContacts.title')}</h1>
       </div>
 
       {error && (
         <div className="mb-4 rounded-[12px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          Failed to load public contacts: {error.message}
+          {t('publicContacts.error.load', { message: error.message })}
         </div>
       )}
 
@@ -117,15 +123,15 @@ export const PublicContactsPage: React.FC = () => {
       <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-sm text-[#0d0e0e]">
-            <span className="font-bold">Help.</span>{' '}
-            This list shows contacts that are marked as public and can be surfaced on handbook pages and information lists.
+            <span className="font-bold">{tCommon('help')}</span>{' '}
+            {t('publicContacts.helpBanner')}
           </p>
           <Button
             variant="outline"
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
           >
-            User manual
+            {tCommon('userManual')}
           </Button>
         </div>
       </div>
@@ -137,7 +143,7 @@ export const PublicContactsPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <TooltipProvider delayDuration={300}>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
+              <span className="text-sm font-semibold text-[#0d0e0e]">{t('publicContacts.sort')}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -149,7 +155,7 @@ export const PublicContactsPage: React.FC = () => {
                     {sortLabel}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Cycle sort field</TooltipContent>
+                <TooltipContent>{t('publicContacts.cycleSortField')}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -157,13 +163,13 @@ export const PublicContactsPage: React.FC = () => {
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                    aria-label="Toggle sort direction"
+                    aria-label={t('publicContacts.toggleSortDirection')}
                     onClick={handleToggleDirection}
                   >
                     <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Toggle sort direction</TooltipContent>
+                <TooltipContent>{t('publicContacts.toggleSortDirection')}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -171,13 +177,13 @@ export const PublicContactsPage: React.FC = () => {
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                    aria-label="Reset sort"
+                    aria-label={t('publicContacts.resetSort')}
                     onClick={handleResetSort}
                   >
                     <ArrowDownWideNarrow className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Reset sort</TooltipContent>
+                <TooltipContent>{t('publicContacts.resetSort')}</TooltipContent>
               </Tooltip>
             </div>
             </TooltipProvider>
@@ -186,7 +192,7 @@ export const PublicContactsPage: React.FC = () => {
             <div className="relative w-full sm:w-auto sm:min-w-[280px]">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
               <Input
-                placeholder="Search contacts (name, email, phone)"
+                placeholder={t('publicContacts.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 h-10 rounded-[999px] border border-[#c8d8d3] bg-white text-sm w-full"
@@ -197,7 +203,7 @@ export const PublicContactsPage: React.FC = () => {
           {/* Table */}
           {loading ? (
             <div className="flex items-center justify-center py-12 text-sm text-[#6b7475]">
-              Loading public contacts…
+              {t('publicContacts.loading')}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -206,22 +212,24 @@ export const PublicContactsPage: React.FC = () => {
                   <TableRow className="border-b border-[#dbe8e1]">
                     <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[25%]">
                       <div className="flex items-center gap-1">
-                        Name
+                        {t('publicContacts.table.name')}
                         <span className="text-[#f77c19] text-xs">↑</span>
                       </div>
                     </TableHead>
                     <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[25%]">
-                      Email
+                      {t('publicContacts.table.email')}
                     </TableHead>
                     <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[20%]">
-                      Telephone
+                      {t('publicContacts.table.telephone')}
                     </TableHead>
                     <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[20%]">
-                      Function / areas
+                      {t('publicContacts.table.functionAreas')}
                     </TableHead>
-                    <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[10%] text-center">
-                      Actions
-                    </TableHead>
+                    {isAdmin && (
+                      <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[10%] text-center">
+                        {t('publicContacts.table.actions')}
+                      </TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -229,8 +237,8 @@ export const PublicContactsPage: React.FC = () => {
                     <TableRow>
                       <TableCell colSpan={5}>
                         <EmptyState
-                          title="No contacts found"
-                          description="Try adjusting your search."
+                          title={t('publicContacts.empty.title')}
+                          description={t('publicContacts.empty.description')}
                         />
                       </TableCell>
                     </TableRow>
@@ -247,39 +255,41 @@ export const PublicContactsPage: React.FC = () => {
                         </TableCell>
                         <TableCell className="w-[25%] text-[#111b18] break-words">
                           <div className="line-clamp-2" title={contact.email}>
-                            {contact.email || <span className="text-[#9fa4a4]">Not available</span>}
+                            {contact.email || <span className="text-[#9fa4a4]">{t('publicContacts.notAvailable')}</span>}
                           </div>
                         </TableCell>
                         <TableCell className="w-[20%]">
                           {contact.telephone ? (
                             <span className="text-[#111b18]">{contact.telephone}</span>
                           ) : (
-                            <span className="text-[#9fa4a4]">Not available</span>
+                            <span className="text-[#9fa4a4]">{t('publicContacts.notAvailable')}</span>
                           )}
                         </TableCell>
                         <TableCell className="w-[20%] text-[#111b18]">
                           {contact.areas && contact.areas.length > 0
                             ? contact.areas.join(', ')
-                            : contact.functionTitle || <span className="text-[#9ca3af]">Not available</span>}
+                            : contact.functionTitle || <span className="text-[#9ca3af]">{t('publicContacts.notAvailable')}</span>}
                         </TableCell>
-                        <TableCell className="w-[10%] text-center">
-                          <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0] mx-auto"
-                                aria-label="Edit contact"
-                                onClick={() => navigate(`${contactsRoutes.list}?edit-contact-id=${contact.id}`)}
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit contact</TooltipContent>
-                          </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
+                        {isAdmin && (
+                          <TableCell className="w-[10%] text-center">
+                            <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0] mx-auto"
+                                  aria-label={t('publicContacts.editContact')}
+                                  onClick={() => navigate(`${contactsRoutes.list}?edit-contact-id=${contact.id}`)}
+                                >
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t('publicContacts.editContact')}</TooltipContent>
+                            </Tooltip>
+                            </TooltipProvider>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))
                   )}
@@ -291,15 +301,16 @@ export const PublicContactsPage: React.FC = () => {
       </Card>
 
       {/* Footer actions */}
-      <div className="mt-5 flex items-center justify-end gap-2">
-        <Button
-          onClick={() => navigate(contactsRoutes.list)}
-          className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
-        >
-          Edit Contacts
-        </Button>
-      </div>
+      {isAdmin && (
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <Button
+            onClick={() => navigate(contactsRoutes.list)}
+            className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
+          >
+            {t('publicContacts.editContacts')}
+          </Button>
+        </div>
+      )}
     </PageShell>
   );
 };
-

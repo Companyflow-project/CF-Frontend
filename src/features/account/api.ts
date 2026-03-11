@@ -85,5 +85,29 @@ export const accountApi = {
     );
     return response.data.data;
   },
+
+  async updateCompanyLanguages(languages: string[]): Promise<{ success: boolean; languages: string[] }> {
+    const response = await axiosClient.put<{ data: { success: boolean; languages: string[] }; error: null }>(
+      '/company/languages',
+      { languages }
+    );
+    return response.data.data;
+  },
+
+  async addLicenses(licensesToAdd: number): Promise<{ success: boolean; licensesAdded: number; newTotal: number }> {
+    const response = await axiosClient.post<{ data: { success: boolean; licensesAdded: number; newTotal: number }; error: null }>(
+      '/company/licenses',
+      { licensesToAdd }
+    );
+    return response.data.data;
+  },
+
+  async addSmsCredits(smsCreditsToAdd: number): Promise<{ success: boolean; smsCreditsAdded: number; newTotal: number }> {
+    const response = await axiosClient.post<{ data: { success: boolean; smsCreditsAdded: number; newTotal: number }; error: null }>(
+      '/company/sms-credits',
+      { smsCreditsToAdd }
+    );
+    return response.data.data;
+  },
 };
 

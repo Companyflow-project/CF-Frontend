@@ -77,9 +77,6 @@ export interface HandbookViewerPageMeta {
 /** Fixed NID for CompanyFlow template content when in CompanyFlow mode */
 export const COMPANY_FLOW_CONTENT_NID = 20134;
 
-/** Default handbook book id for print (main handbook). */
-export const DEFAULT_HANDBOOK_PRINT_BID = 21;
-
 /** Single page in handbook print response (book order). */
 export interface HandbookPrintPageItem {
   title: string;
@@ -444,9 +441,11 @@ export const handbookApi = {
    * Get all links across handbook pages
    * GET /api/handbook/resources/links
    */
-  async getResourceLinks(): Promise<import('@/types/models').HandbookResourceLink[]> {
+  async getResourceLinks(lang: string = 'da'): Promise<import('@/types/models').HandbookResourceLink[]> {
     try {
-      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceLink[] }>('/handbook/resources/links');
+      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceLink[] }>('/handbook/resources/links', {
+        params: { lang },
+      });
       return response.data.data;
     } catch (error: any) {
       console.error('Error fetching handbook links:', error);
@@ -458,9 +457,11 @@ export const handbookApi = {
    * Get all notes across handbook pages
    * GET /api/handbook/resources/notes
    */
-  async getResourceNotes(): Promise<import('@/types/models').HandbookResourceNote[]> {
+  async getResourceNotes(lang: string = 'da'): Promise<import('@/types/models').HandbookResourceNote[]> {
     try {
-      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceNote[] }>('/handbook/resources/notes');
+      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceNote[] }>('/handbook/resources/notes', {
+        params: { lang },
+      });
       return response.data.data;
     } catch (error: any) {
       console.error('Error fetching handbook notes:', error);
@@ -472,9 +473,11 @@ export const handbookApi = {
    * Get all documents across handbook pages
    * GET /api/handbook/resources/documents
    */
-  async getResourceDocuments(): Promise<import('@/types/models').HandbookResourceDocument[]> {
+  async getResourceDocuments(lang: string = 'da'): Promise<import('@/types/models').HandbookResourceDocument[]> {
     try {
-      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceDocument[] }>('/handbook/resources/documents');
+      const response = await axiosClient.get<{ data: import('@/types/models').HandbookResourceDocument[] }>('/handbook/resources/documents', {
+        params: { lang },
+      });
       return response.data.data;
     } catch (error: any) {
       console.error('Error fetching handbook documents:', error);

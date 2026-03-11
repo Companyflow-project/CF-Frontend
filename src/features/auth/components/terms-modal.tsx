@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -12,6 +13,7 @@ interface TermsModalProps {
 export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [hasReadAll, setHasReadAll] = useState(false);
+    const { t } = useTranslation('auth');
 
     // Reset every time the modal is opened so short-cutting isn't possible
     useEffect(() => {
@@ -69,11 +71,11 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                 {/* Header */}
                 <div className="flex items-center justify-between px-8 pt-7 pb-4 border-b border-[#e5e7eb] flex-shrink-0">
                     <h2 id="terms-title" className="text-xl font-bold text-[#1a5948]">
-                        Vilkår og betingelser
+                        {t('terms.title')}
                     </h2>
                     <button
                         onClick={onClose}
-                        aria-label="Luk"
+                        aria-label={t('terms.closeAria')}
                         className="p-1.5 rounded-lg text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] transition-colors"
                     >
                         <X className="w-5 h-5" />
@@ -86,11 +88,11 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                         <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
-                        Scroll til bunden for at acceptere
+                        {t('terms.scrollHint')}
                     </div>
                 )}
 
-                {/* Scrollable body */}
+                {/* Scrollable body — legal content stays in Danish regardless of language */}
                 <div
                     ref={scrollRef}
                     onScroll={handleScroll}
@@ -448,8 +450,8 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                 <div className="flex items-center justify-between px-8 py-5 border-t border-[#e5e7eb] flex-shrink-0">
                     <p className="text-xs text-[#9ca3af]">
                         {hasReadAll
-                            ? '✓ Du har læst dokumentet'
-                            : 'Scroll til bunden for at aktivere knappen'}
+                            ? t('terms.readComplete')
+                            : t('terms.scrollToActivate')}
                     </p>
                     <Button
                         onClick={handleLuk}
@@ -459,7 +461,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ open, onClose, onAccept 
                                 : 'bg-[#e5e7eb] text-[#9ca3af] cursor-not-allowed'
                             }`}
                     >
-                        Luk
+                        {t('terms.close')}
                     </Button>
                 </div>
             </div>

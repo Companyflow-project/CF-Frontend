@@ -14,17 +14,18 @@ import {
 } from 'lucide-react';
 import { handbookRoutes } from '../routes';
 import { employeesRoutes } from '@/features/employees/routes';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/auth-context';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { useHandbookTree } from '../hooks';
-import { useHandbookLang } from '../components/language-toggle';
 
 export const ManageHandbookPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t, i18n } = useTranslation('handbook');
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
     const { bid, isPublished, provisioning } = useHandbookTree();
-    const [lang] = useHandbookLang();
+    const lang = i18n.language as 'da' | 'en';
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -58,7 +59,7 @@ export const ManageHandbookPage: React.FC = () => {
                     return (
                         <div
                             key={index}
-                            title={isLocked ? 'Only admins can perform this action' : undefined}
+                            title={isLocked ? t('manage.adminOnly') : undefined}
                             className={isLocked ? 'cursor-not-allowed' : undefined}
                         >
                             <button
@@ -89,13 +90,13 @@ export const ManageHandbookPage: React.FC = () => {
         <PageShell>
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">Manage Handbook</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">{t('manage.title')}</h1>
                 <div className="flex flex-wrap items-center gap-2">
                     <Button
                         onClick={() => setPreviewModalOpen(true)}
                         className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
                     >
-                        Preview Handbook
+                        {t('manage.previewHandbook')}
                     </Button>
                 </div>
             </div>
@@ -105,9 +106,9 @@ export const ManageHandbookPage: React.FC = () => {
                 <div className="mb-6 bg-[#fef3c7] border border-[#fde68a] rounded-[14px] px-5 py-4 flex items-center gap-3">
                     <Loader2 className="h-5 w-5 text-[#d97706] animate-spin flex-shrink-0" />
                     <div>
-                        <p className="text-sm font-semibold text-[#92400e]">Setting up your handbook...</p>
+                        <p className="text-sm font-semibold text-[#92400e]">{t('manage.provisioningTitle')}</p>
                         <p className="text-sm text-[#a16207] mt-0.5">
-                            We're preparing your handbook template. This usually takes a minute or two. The page will update automatically.
+                            {t('manage.provisioningDesc')}
                         </p>
                     </div>
                 </div>
@@ -117,24 +118,24 @@ export const ManageHandbookPage: React.FC = () => {
             <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${provisioning ? 'opacity-50 pointer-events-none' : ''}`}>
                 {/* Handbook Card */}
                 <ActionCard
-                    title="Handbook"
-                    description="Add people, set roles, and manage access."
+                    title={t('manage.handbookTitle')}
+                    description={t('manage.handbookDesc')}
                     icon={<BookOpen className="h-5 w-5 text-[#1a5948]" />}
                     iconBg="bg-[#d4f4e6]"
                     actions={[
                         {
-                            label: 'View All Pages →',
+                            label: t('manage.viewAllPages'),
                             onClick: () => navigate('/handbook/pages'),
                             variant: 'default',
                         },
                         {
-                            label: 'Add theme',
+                            label: t('manage.addTheme'),
                             onClick: () => navigate(handbookRoutes.addTheme),
                             variant: 'outline',
                             adminOnly: true,
                         },
                         {
-                            label: 'Add page',
+                            label: t('manage.addPage'),
                             onClick: () => navigate(handbookRoutes.pages),
                             variant: 'outline',
                             adminOnly: true,
@@ -144,25 +145,25 @@ export const ManageHandbookPage: React.FC = () => {
 
                 {/* Publish Handbook Card */}
                 <ActionCard
-                    title="Publish Handbook"
-                    description="This is where you publish and grant access to the handbook."
+                    title={t('manage.publishTitle')}
+                    description={t('manage.publishDesc')}
                     icon={<Send className="h-5 w-5 text-[#1e40af]" />}
                     iconBg="bg-[#dbeafe]"
                     actions={[
                         {
-                            label: 'Publish →',
+                            label: t('manage.publish'),
                             onClick: () => navigate(handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'default',
                             adminOnly: true,
                         },
                         {
-                            label: 'Add message to employees',
+                            label: t('manage.addMessage'),
                             onClick: () => navigate(isPublished ? employeesRoutes.messageLogs : handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'outline',
                             adminOnly: true,
                         },
                         {
-                            label: 'Grant access to employees',
+                            label: t('manage.grantAccess'),
                             onClick: () => navigate(isPublished ? employeesRoutes.messageLogs : handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'outline',
                             adminOnly: true,
@@ -172,23 +173,23 @@ export const ManageHandbookPage: React.FC = () => {
 
                 {/* Print Handbook Card */}
                 <ActionCard
-                    title="Print Handbook"
-                    description="View and print the handbook."
+                    title={t('manage.printTitle')}
+                    description={t('manage.printDesc')}
                     icon={<Printer className="h-5 w-5 text-[#7c3aed]" />}
                     iconBg="bg-[#ede9fe]"
                     actions={[
                         {
-                            label: 'Print Handbook →',
+                            label: t('manage.printHandbook'),
                             onClick: () => navigate(handbookRoutes.printView({ lang })),
                             variant: 'default',
                         },
                         {
-                            label: 'View printer-friendly version',
+                            label: t('manage.viewPrinterFriendly'),
                             onClick: () => navigate(handbookRoutes.printView({ lang })),
                             variant: 'outline',
                         },
                         {
-                            label: 'View table of contents',
+                            label: t('manage.viewToc'),
                             onClick: () => navigate(handbookRoutes.tableOfContents),
                             variant: 'outline',
                         },
@@ -197,29 +198,29 @@ export const ManageHandbookPage: React.FC = () => {
 
                 {/* Others Card */}
                 <ActionCard
-                    title="Others"
-                    description="View other actions."
+                    title={t('manage.othersTitle')}
+                    description={t('manage.othersDesc')}
                     icon={<MoreHorizontal className="h-5 w-5 text-[#d97706]" />}
                     iconBg="bg-[#fef3c7]"
                     actions={[
                         {
-                            label: 'Appearance',
+                            label: t('manage.appearance'),
                             onClick: () => navigate('/account/appearance'),
                             variant: 'outline',
                             adminOnly: true,
                         },
                         {
-                            label: 'View Documents',
+                            label: t('manage.viewDocuments'),
                             onClick: () => navigate('/handbook/documents'),
                             variant: 'outline',
                         },
                         {
-                            label: 'View Notes',
+                            label: t('manage.viewNotes'),
                             onClick: () => navigate('/handbook/notes'),
                             variant: 'outline',
                         },
                         {
-                            label: 'View Links',
+                            label: t('manage.viewLinks'),
                             onClick: () => navigate('/handbook/links'),
                             variant: 'outline',
                         },

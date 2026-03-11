@@ -1,23 +1,18 @@
 import React from 'react';
-import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 
-const STORAGE_KEY = 'handbook-lang';
-
-function getStoredLang(): 'da' | 'en' {
-    try {
-        const v = localStorage.getItem(STORAGE_KEY);
-        if (v === 'en') return 'en';
-    } catch { /* SSR / private browsing */ }
-    return 'da';
-}
-
+/**
+ * @deprecated Use `useTranslation()` from react-i18next instead.
+ * This hook now wraps i18next so existing callers keep working
+ * while the whole app shares one language setting.
+ */
 export function useHandbookLang() {
-    const [lang, setLangState] = useState<'da' | 'en'>(getStoredLang);
+    const { i18n } = useTranslation();
+    const lang = i18n.language || 'da';
 
-    const setLang = (next: 'da' | 'en') => {
-        setLangState(next);
-        try { localStorage.setItem(STORAGE_KEY, next); } catch { /* ignore */ }
+    const setLang = (next: string) => {
+        i18n.changeLanguage(next);
     };
 
     return [lang, setLang] as const;

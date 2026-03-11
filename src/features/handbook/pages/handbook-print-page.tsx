@@ -6,23 +6,16 @@ import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import { useAppearance } from '@/context/appearance-context';
-import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
+import { useHandbookLang } from '../components/language-toggle';
+import { useTranslation } from 'react-i18next';
 import type { HandbookPageDetail } from '@/types/models';
 
 export const HandbookPrintPage: React.FC = () => {
+  const { t } = useTranslation('handbook');
   const { getColor } = useAppearance();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [storedLang, setStoredLang] = useHandbookLang();
+  const [searchParams] = useSearchParams();
+  const [storedLang] = useHandbookLang();
   const lang = searchParams.get('lang') || storedLang;
-
-  const handleLangChange = (next: 'da' | 'en') => {
-    setStoredLang(next);
-    setSearchParams((prev) => {
-      const p = new URLSearchParams(prev);
-      p.set('lang', next);
-      return p;
-    });
-  };
   const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree(lang);
   const [bodies, setBodies] = useState<Map<number, string>>(new Map());
   const [pageDetails, setPageDetails] = useState<Map<number, HandbookPageDetail>>(new Map());
@@ -106,7 +99,7 @@ export const HandbookPrintPage: React.FC = () => {
       <PageShell>
         <div className="flex items-center justify-center py-12 text-[#6b7280]">
           <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          Loading handbook…
+          {t('print.loading')}
         </div>
       </PageShell>
     );
@@ -119,7 +112,7 @@ export const HandbookPrintPage: React.FC = () => {
           <p className="text-red-600 mb-4">{error}</p>
           <Button variant="outline" onClick={() => window.history.back()}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {t('common:back')}
           </Button>
         </div>
       </PageShell>
@@ -138,9 +131,8 @@ export const HandbookPrintPage: React.FC = () => {
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t('common:back')}
             </Button>
-            <LanguageToggle value={lang as 'da' | 'en'} onChange={handleLangChange} disabled={loading} />
           </div>
           <Button
             onClick={handlePrint}
@@ -148,13 +140,13 @@ export const HandbookPrintPage: React.FC = () => {
             style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
           >
             <Printer className="h-4 w-4" />
-            Print Handbook
+            {t('print.printHandbook')}
           </Button>
         </div>
 
         <div ref={printRef} className="handbook-print-content">
           {readyHandbookData.length === 0 ? (
-            <p className="text-[#6b7280] py-8">No pages to print.</p>
+            <p className="text-[#6b7280] py-8">{t('print.noPages')}</p>
           ) : (
             readyHandbookData.map((chapter) => (
               <React.Fragment key={chapter.id}>
@@ -179,7 +171,7 @@ export const HandbookPrintPage: React.FC = () => {
                     />
                     {detail?.internalNote && (
                       <div className="mt-3 pt-3 border-t-2 border-[#f59e0b]">
-                        <h4 className="text-sm font-bold text-[#f59e0b] mb-1">Note</h4>
+                        <h4 className="text-sm font-bold text-[#f59e0b] mb-1">{t('print.note')}</h4>
                         <p className="text-sm text-[#0d0e0e] leading-relaxed">
                           {detail.internalNote}
                         </p>

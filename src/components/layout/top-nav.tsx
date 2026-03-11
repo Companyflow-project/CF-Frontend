@@ -1,25 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Lock } from 'lucide-react';
+import { useViewAsEmployee } from '@/context/view-as-employee-context';
 import logoUrl from '/assets/Logo.svg';
+
+/** All languages that can be purchased as add-ons. */
+const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDefault?: boolean }[] = [
+  { code: 'da', label: 'Danish', flag: '🇩🇰', isDefault: true },
+  { code: 'en', label: 'English (US)', flag: '🇺🇸' },
+  { code: 'en-uk', label: 'English (UK)', flag: '🇬🇧' },
+  { code: 'nl', label: 'Dutch', flag: '🇳🇱' },
+  { code: 'fr', label: 'French', flag: '🇫🇷' },
+  { code: 'de', label: 'German', flag: '🇩🇪' },
+];
 
 export const TopNav: React.FC = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, updateLanguage } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+  const { viewAsEmployee } = useViewAsEmployee();
+  const { t, i18n } = useTranslation('common');
   const isStrictAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+  const companyLanguages = user?.companyLanguages ?? ['da'];
+  const currentLang = i18n.language || 'da';
+  const currentFlag = ALL_LANGUAGES.find(l => l.code === currentLang)?.flag ?? '🇩🇰';
+  const showEmployeeView = !isStrictAdmin || viewAsEmployee;
 
-  const navItems = [
-    { path: '/', label: 'Console' },
-    { path: '/employees', label: 'Employees' },
-    { path: '/handbook', label: 'Manage Handbook' },
-    { path: '/contacts', label: 'Contacts' },
-    ...(isStrictAdmin ? [{ path: '/account', label: 'Account' }] : []),
-  ];
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+    if (isLangOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isLangOpen]);
+
+  const navItems = showEmployeeView
+    ? [{ path: '/', label: t('nav.console') }]
+    : [
+        { path: '/', label: t('nav.console') },
+        { path: '/employees', label: t('nav.employees') },
+        { path: '/handbook', label: t('nav.manageHandbook') },
+        { path: '/contacts', label: t('nav.contacts') },
+        { path: '/account', label: t('nav.account') },
+      ];
 
   const getInitials = (name: string) => {
     return name
@@ -42,10 +76,10 @@ export const TopNav: React.FC = () => {
         </Link>
         <div className="hidden lg:flex items-center gap-1 absolute left-1/2 transform -translate-x-1/2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || 
+            const isActive = location.pathname === item.path ||
               (item.path === '/' && location.pathname === '/') ||
               (item.path !== '/' && location.pathname.startsWith(item.path));
-            
+
               return (
                 <Link
                   key={item.path}
@@ -71,13 +105,62 @@ export const TopNav: React.FC = () => {
               size="icon"
               className="border-white/20 bg-transparent text-white hover:bg-white/10"
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-label={isMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
           {user && (
             <div className="flex items-center gap-2">
+              {/* Language switcher dropdown */}
+              <div className="relative hidden sm:block" ref={langRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsLangOpen(prev => !prev)}
+                  className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-lg hover:bg-white/20 transition-colors"
+                  title={t('nav.language', 'Language')}
+                >
+                  {currentFlag}
+                </button>
+                {isLangOpen && (
+                  <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50">
+                    {ALL_LANGUAGES.map((lang) => {
+                      const isEnabled = companyLanguages.includes(lang.code);
+                      const isActive = currentLang === lang.code;
+                      return (
+                        <button
+                          key={lang.code}
+                          type="button"
+                          disabled={!isEnabled}
+                          onClick={() => {
+                            if (isEnabled) {
+                              updateLanguage(lang.code);
+                              setIsLangOpen(false);
+                            }
+                          }}
+                          className={cn(
+                            'w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-left',
+                            isEnabled && isActive && 'bg-gray-50 font-medium text-gray-900',
+                            isEnabled && !isActive && 'text-gray-700 hover:bg-gray-50',
+                            !isEnabled && 'text-gray-400 cursor-not-allowed'
+                          )}
+                        >
+                          <span className="text-lg leading-none">{lang.flag}</span>
+                          <span className="flex-1">
+                            {lang.label}
+                            {lang.isDefault && isEnabled && (
+                              <span className="text-gray-400 text-xs ml-1">(default)</span>
+                            )}
+                          </span>
+                          {!isEnabled && (
+                            <Lock className="h-3.5 w-3.5 text-gray-300" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               <div className="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-sm font-medium text-white">
                 {getInitials(user.name)}
               </div>
@@ -88,7 +171,7 @@ export const TopNav: React.FC = () => {
                 className="border-white/20 bg-transparent text-white hover:bg-white/10 text-sm"
                 onClick={() => logout()}
               >
-                Log ud
+                {t('logOut')}
               </Button>
             </div>
           )}
@@ -125,4 +208,3 @@ export const TopNav: React.FC = () => {
     </nav>
   );
 };
-

@@ -7,9 +7,10 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { handbookApi, DEFAULT_HANDBOOK_PRINT_BID } from '../api';
+import { handbookApi } from '../api';
 import type { HandbookPageDetail } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { useAppearance } from '@/context/appearance-context';
 
@@ -21,6 +22,7 @@ interface SneakPeekModalProps {
     pageTitle: string;
     lang?: string;
     canEdit?: boolean;
+    handbookBid?: number | null;
 }
 
 export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
@@ -31,8 +33,10 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
     pageTitle,
     lang = 'da',
     canEdit = false,
+    handbookBid,
 }) => {
     const navigate = useNavigate();
+    const { t } = useTranslation('handbook');
     const { getColor } = useAppearance();
     const [loading, setLoading] = useState(true);
     const [pageDetail, setPageDetail] = useState<HandbookPageDetail | null>(null);
@@ -104,7 +108,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
 
                 {loading && (
                     <div className="py-8 text-center text-gray-400">
-                        Loading...
+                        {t('sneakPeek.loading')}
                     </div>
                 )}
 
@@ -156,7 +160,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                             {/* Documents Section */}
                             {pageDetail.documents && pageDetail.documents.length > 0 && (
                                 <div className="mb-6">
-                                    <h3 className="text-base font-bold text-[#0d0e0e] mb-3">Document</h3>
+                                    <h3 className="text-base font-bold text-[#0d0e0e] mb-3">{t('sneakPeek.document')}</h3>
                                     <div className="space-y-2">
                                         {pageDetail.documents.map((doc, index) => (
                                             <div key={index}>
@@ -183,7 +187,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                             {/* Links Section */}
                             {pageDetail.links && pageDetail.links.length > 0 && (
                                 <div className="mb-6">
-                                    <h3 className="text-base font-bold text-[#0d0e0e] mb-3">Links</h3>
+                                    <h3 className="text-base font-bold text-[#0d0e0e] mb-3">{t('sneakPeek.links')}</h3>
                                     <div className="space-y-2">
                                         {pageDetail.links.map((link, index) => (
                                             <div key={index}>
@@ -219,11 +223,11 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                         onClick={onClose}
                         className="rounded-[8px] px-5 py-2 h-auto text-sm"
                     >
-                        Close
+                        {t('sneakPeek.close')}
                     </Button>
                     <div className="flex items-center gap-2">
                         <div
-                            title={!canEdit ? 'Only admins can edit handbook pages' : undefined}
+                            title={!canEdit ? t('sneakPeek.adminOnly') : undefined}
                             className={!canEdit ? 'cursor-not-allowed' : undefined}
                         >
                             <Button
@@ -232,7 +236,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                 disabled={!canEdit}
                                 className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#f3f4f6] hover:bg-[#e5e7eb] text-[#111827] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Edit page
+                                {t('sneakPeek.editPage')}
                             </Button>
                         </div>
                         {canEdit && (
@@ -246,13 +250,13 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                         navigate(handbookRoutes.printView());
                                     } else {
                                         // Page is not ready — open publish flow for main handbook
-                                        navigate(handbookRoutes.publish(DEFAULT_HANDBOOK_PRINT_BID));
+                                        if (handbookBid != null) navigate(handbookRoutes.publish(handbookBid));
                                     }
                                 }}
                                 className="rounded-[8px] px-5 py-2 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
                             >
-                                {isReady ? 'Print' : 'Publish'}
+                                {isReady ? t('sneakPeek.print') : t('sneakPeek.publish')}
                             </Button>
                         )}
                     </div>

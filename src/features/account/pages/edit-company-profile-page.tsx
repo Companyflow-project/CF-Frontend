@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ import { HelpBanner } from '@/components/ui/help-banner';
 import { axiosClient } from '@/lib/axios-client';
 export const EditCompanyProfilePage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation('account');
     const { user, loading: authLoading } = useAuth();
     const companyId = user?.companyId ? Number(user.companyId) : undefined;
 
@@ -29,7 +31,7 @@ export const EditCompanyProfilePage: React.FC = () => {
 
         const allowed = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png'];
         if (!allowed.includes(file.type)) {
-            toast.error('Only jpg, jpeg, gif, png files are allowed');
+            toast.error(t('companyProfile.logo.invalidFormat'));
             return;
         }
 
@@ -42,9 +44,9 @@ export const EditCompanyProfilePage: React.FC = () => {
             });
             setLogoFid(res.data.fid);
             setFormData((prev) => ({ ...prev, logoUrl: res.data.uri }));
-            toast.success('Logo uploaded');
+            toast.success(t('companyProfile.logo.uploaded'));
         } catch {
-            toast.error('Failed to upload logo');
+            toast.error(t('companyProfile.logo.uploadFailed'));
         } finally {
             setUploadingLogo(false);
             if (logoInputRef.current) logoInputRef.current.value = '';
@@ -83,33 +85,17 @@ export const EditCompanyProfilePage: React.FC = () => {
         e.preventDefault();
 
         if (!companyId) {
-            toast.error('Company ID not found');
+            toast.error(t('companyProfile.error.noCompanyId'));
             return;
         }
 
         // Validate required fields
         if (!formData.businessName.trim()) {
-            toast.error('Business name is required');
+            toast.error(t('companyProfile.error.businessNameRequired'));
             return;
         }
         if (!formData.cvrNumber.trim()) {
-            toast.error('CVR number is required');
-            return;
-        }
-        if (!formData.street.trim()) {
-            toast.error('Street/road number is required');
-            return;
-        }
-        if (!formData.town.trim()) {
-            toast.error('Town is required');
-            return;
-        }
-        if (!formData.zipCode.trim()) {
-            toast.error('Zip code is required');
-            return;
-        }
-        if (!formData.mobile.trim()) {
-            toast.error('Mobile is required');
+            toast.error(t('companyProfile.error.cvrRequired'));
             return;
         }
 
@@ -127,17 +113,17 @@ export const EditCompanyProfilePage: React.FC = () => {
                     ...(logoFid !== null ? { logoFid } : {}),
                 },
             });
-            toast.success('Company profile updated successfully');
+            toast.success(t('companyProfile.success.updated'));
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to update company profile';
+            const errorMessage = error instanceof Error ? error.message : t('companyProfile.error.updateFailed');
             toast.error(errorMessage);
         }
     };
 
-    const renderField = (label: string, id: keyof typeof formData, value: string, disabled = false, note?: string) => (
+    const renderField = (labelKey: string, id: keyof typeof formData, value: string, disabled = false, noteKey?: string) => (
         <div key={id} className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 items-center">
             <Label htmlFor={id} className="text-[15px] font-bold text-[#0d0e0e]">
-                {label}
+                {t(labelKey)}
             </Label>
             <div className="w-full">
                 <Input
@@ -147,7 +133,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                     className={`h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e] ${disabled ? 'bg-[#f3f4f6] text-gray-500' : ''}`}
                     disabled={disabled || isLoading}
                 />
-                {note && <p className="text-xs text-gray-500 mt-1.5 italic">{note}</p>}
+                {noteKey && <p className="text-xs text-gray-500 mt-1.5 italic">{t(noteKey)}</p>}
             </div>
         </div>
     );
@@ -167,7 +153,7 @@ export const EditCompanyProfilePage: React.FC = () => {
         return (
             <PageShell>
                 <div className="max-w-[1200px] mx-auto pb-20">
-                    <div className="text-center py-20 text-gray-500">Loading…</div>
+                    <div className="text-center py-20 text-gray-500">{t('companyProfile.loading')}</div>
                 </div>
             </PageShell>
         );
@@ -186,14 +172,14 @@ export const EditCompanyProfilePage: React.FC = () => {
                             className="h-[38px] px-4 bg-white hover:bg-gray-50 border-[#e5e7eb] text-[#0d0e0e] text-sm font-medium rounded-[8px] gap-2 shadow-sm"
                         >
                             <ArrowLeft className="h-4 w-4" />
-                            Back
+                            {t('companyProfile.back')}
                         </Button>
-                        <h1 className="text-[28px] font-bold text-[#0d0e0e]">Company Profile</h1>
+                        <h1 className="text-[28px] font-bold text-[#0d0e0e]">{t('companyProfile.title')}</h1>
                     </div>
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-                        <p className="text-yellow-800 font-medium text-lg mb-2">No Company Linked</p>
-                        <p className="text-yellow-600 mb-4">Your user account (ID: {user?.id}) is not linked to any company.</p>
-                        <p className="text-sm text-yellow-600">Please contact support or run the database setup script to link your user to a company.</p>
+                        <p className="text-yellow-800 font-medium text-lg mb-2">{t('companyProfile.noCompany.title')}</p>
+                        <p className="text-yellow-600 mb-4">{t('companyProfile.noCompany.description', { userId: user?.id })}</p>
+                        <p className="text-sm text-yellow-600">{t('companyProfile.noCompany.contactSupport')}</p>
                     </div>
                 </div>
             </PageShell>
@@ -212,12 +198,12 @@ export const EditCompanyProfilePage: React.FC = () => {
                             className="h-[38px] px-4 bg-white hover:bg-gray-50 border-[#e5e7eb] text-[#0d0e0e] text-sm font-medium rounded-[8px] gap-2 shadow-sm"
                         >
                             <ArrowLeft className="h-4 w-4" />
-                            Back
+                            {t('companyProfile.back')}
                         </Button>
-                        <h1 className="text-[28px] font-bold text-[#0d0e0e]">Company Profile</h1>
+                        <h1 className="text-[28px] font-bold text-[#0d0e0e]">{t('companyProfile.title')}</h1>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-                        <p className="text-red-600">Failed to load company profile. Please try again later.</p>
+                        <p className="text-red-600">{t('companyProfile.error.load')}</p>
                         <p className="text-sm text-red-400 mt-1">{error.message}</p>
                     </div>
                 </div>
@@ -237,14 +223,14 @@ export const EditCompanyProfilePage: React.FC = () => {
                         className="h-[38px] px-4 bg-white hover:bg-gray-50 border-[#e5e7eb] text-[#0d0e0e] text-sm font-medium rounded-[8px] gap-2 shadow-sm"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        Back
+                        {t('companyProfile.back')}
                     </Button>
-                    <h1 className="text-[28px] font-bold text-[#0d0e0e]">Company Profile</h1>
+                    <h1 className="text-[28px] font-bold text-[#0d0e0e]">{t('companyProfile.title')}</h1>
                 </div>
 
                 {/* Help Banner */}
                 <HelpBanner className="mb-8">
-                    Here you can enter and edit your company's master data. This is the data that is used in the handbook. This is the same data we use when we need to contact your company. This data is also used on the invoices we send.
+                    {t('companyProfile.helpBanner')}
                 </HelpBanner>
 
                 {/* Save Button */}
@@ -254,17 +240,17 @@ export const EditCompanyProfilePage: React.FC = () => {
                         disabled={isLoading || updateMutation.isPending}
                         className="bg-[#2f946f] hover:bg-[#257a5b] text-white h-[44px] px-8 rounded-[8px] text-[15px] font-medium shadow-sm transition-colors disabled:opacity-50"
                     >
-                        {updateMutation.isPending ? 'Saving...' : 'Save information'}
+                        {updateMutation.isPending ? t('companyProfile.saving') : t('companyProfile.save')}
                     </Button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-12">
                     {/* Company Information Section */}
                     <section>
-                        <h2 className="text-[20px] font-bold text-[#0d0e0e] mb-4">Company information</h2>
+                        <h2 className="text-[20px] font-bold text-[#0d0e0e] mb-4">{t('companyProfile.section.companyInfo')}</h2>
                         <div className="bg-white border border-[#e5e7eb] rounded-[16px] p-8 shadow-sm">
                             <p className="text-[15px] text-[#0d0e0e] mb-8">
-                                The primary contact can only be changed by Degoan.
+                                {t('companyProfile.primaryContactNote')}
                             </p>
 
                             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12">
@@ -282,7 +268,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                                         onClick={() => logoInputRef.current?.click()}
                                     >
                                         {uploadingLogo ? (
-                                            <span className="text-[15px] text-gray-500 font-medium">Uploading...</span>
+                                            <span className="text-[15px] text-gray-500 font-medium">{t('companyProfile.logo.uploading')}</span>
                                         ) : getLogoUrl() ? (
                                             <>
                                                 <img
@@ -297,11 +283,11 @@ export const EditCompanyProfilePage: React.FC = () => {
                                         ) : (
                                             <div className="flex flex-col items-center gap-3 relative z-10">
                                                 <Upload className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                                                <span className="text-[15px] text-gray-500 font-medium">Click to upload company logo</span>
+                                                <span className="text-[15px] text-gray-500 font-medium">{t('companyProfile.logo.upload')}</span>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-[13px] text-gray-400 italic">Only upload: jpg, jpeg, gif, png</p>
+                                    <p className="text-[13px] text-gray-400 italic">{t('companyProfile.logo.allowedFormats')}</p>
                                     {getLogoUrl() && (
                                         <button
                                             type="button"
@@ -312,7 +298,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                                             }}
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
-                                            Remove logo
+                                            {t('companyProfile.logo.remove')}
                                         </button>
                                     )}
                                 </div>
@@ -320,15 +306,15 @@ export const EditCompanyProfilePage: React.FC = () => {
                                 {/* Form Fields */}
                                 <div className="space-y-6 max-w-[700px]">
                                     {isLoading ? (
-                                        <div className="text-center py-8 text-gray-500">Loading company profile...</div>
+                                        <div className="text-center py-8 text-gray-500">{t('companyProfile.loading')}</div>
                                     ) : (
                                         <>
-                                            {renderField('Business', 'businessName', formData.businessName)}
-                                            {renderField('CVR Number', 'cvrNumber', formData.cvrNumber)}
-                                            {renderField('Street/road number', 'street', formData.street)}
-                                            {renderField('Town', 'town', formData.town)}
-                                            {renderField('Zip Code', 'zipCode', formData.zipCode)}
-                                            {renderField('Mobile', 'mobile', formData.mobile)}
+                                            {renderField('companyProfile.field.business', 'businessName', formData.businessName)}
+                                            {renderField('companyProfile.field.cvrNumber', 'cvrNumber', formData.cvrNumber)}
+                                            {renderField('companyProfile.field.street', 'street', formData.street)}
+                                            {renderField('companyProfile.field.town', 'town', formData.town)}
+                                            {renderField('companyProfile.field.zipCode', 'zipCode', formData.zipCode)}
+                                            {renderField('companyProfile.field.mobile', 'mobile', formData.mobile)}
                                         </>
                                     )}
                                 </div>
@@ -338,21 +324,21 @@ export const EditCompanyProfilePage: React.FC = () => {
 
                     {/* SMS Information Section */}
                     <section>
-                        <h2 className="text-[20px] font-bold text-[#0d0e0e] mb-4">SMS information</h2>
+                        <h2 className="text-[20px] font-bold text-[#0d0e0e] mb-4">{t('companyProfile.section.smsInfo')}</h2>
                         <div className="bg-white border border-[#e5e7eb] rounded-[16px] p-8 shadow-sm">
                             <div className="max-w-[700px] lg:ml-[348px]">
                                 <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 items-center">
-                                    <Label htmlFor="senderName" className="text-[15px] font-bold text-[#0d0e0e]">Sender name</Label>
+                                    <Label htmlFor="senderName" className="text-[15px] font-bold text-[#0d0e0e]">{t('companyProfile.field.senderName')}</Label>
                                     <div className="w-full">
                                         <Input
                                             id="senderName"
                                             value={formData.senderName}
                                             onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
-                                            maxLength={11}
+                                            maxLength={30}
                                             className="h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e]"
                                             disabled={isLoading}
                                         />
-                                        <p className="text-xs text-gray-500 mt-1.5 italic">Default is your business name. Max 11 characters.</p>
+                                        <p className="text-xs text-gray-500 mt-1.5 italic">{t('companyProfile.senderNameNote')}</p>
                                     </div>
                                 </div>
                             </div>

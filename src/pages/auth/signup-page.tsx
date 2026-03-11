@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,11 +19,12 @@ export const SignupPage: React.FC = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!termsAccepted) {
-      toast.error('Du skal acceptere vilkårene');
+      toast.error(t('signup.termsRequired'));
       return;
     }
     try {
@@ -31,16 +33,16 @@ export const SignupPage: React.FC = () => {
       navigate('/');
     } catch (error) {
       console.error('Signup failed:', error);
-      const raw = error instanceof Error ? error.message : 'Signup failed';
+      const raw = error instanceof Error ? error.message : t('errors.signupFailedRaw');
       const lower = raw.toLowerCase();
       if (lower.includes('email already') || lower.includes('duplicate') || lower.includes('already registered')) {
-        toast.error('This email is already registered. Please log in or use a different email.');
+        toast.error(t('errors.emailAlreadyRegistered'));
       } else if (lower.includes('network') || lower.includes('econnrefused') || lower.includes('failed to fetch')) {
-        toast.error('Unable to reach the server. Please check your internet connection.');
+        toast.error(t('errors.networkError'));
       } else if (!lower.includes('sql') && !lower.includes('er_') && raw.length < 200) {
         toast.error(raw);
       } else {
-        toast.error('Registration failed. Please try again or contact support.');
+        toast.error(t('errors.registrationFailed'));
       }
     }
   };
@@ -62,7 +64,7 @@ export const SignupPage: React.FC = () => {
           {/* Name Field */}
           <div className="flex flex-col gap-3">
             <Label htmlFor="name" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              Name <span className="text-red-500">*</span>
+              {t('signup.nameLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
@@ -79,7 +81,7 @@ export const SignupPage: React.FC = () => {
               htmlFor="companyName"
               className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]"
             >
-              Company Name <span className="text-red-500">*</span>
+              {t('signup.companyNameLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="companyName"
@@ -93,7 +95,7 @@ export const SignupPage: React.FC = () => {
           {/* CVR Field */}
           <div className="flex flex-col gap-3">
             <Label htmlFor="cvr" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              CVR <span className="text-red-500">*</span>
+              {t('signup.cvrLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="cvr"
@@ -107,7 +109,7 @@ export const SignupPage: React.FC = () => {
           {/* Email Field */}
           <div className="flex flex-col gap-3">
             <Label htmlFor="email" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              Email <span className="text-red-500">*</span>
+              {t('signup.emailLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
@@ -125,7 +127,7 @@ export const SignupPage: React.FC = () => {
               htmlFor="password"
               className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]"
             >
-              Password <span className="text-red-500">*</span>
+              {t('signup.passwordLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="password"
@@ -144,7 +146,7 @@ export const SignupPage: React.FC = () => {
                 type="submit"
                 className="w-full bg-[#1a5948] hover:bg-[#1a5948]/90 text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px]"
               >
-                Prøv gratis
+                {t('signup.submit')}
               </Button>
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -157,7 +159,7 @@ export const SignupPage: React.FC = () => {
                   htmlFor="terms"
                   className="text-[14px] font-normal text-[#0d0e0e] cursor-pointer underline"
                 >
-                  Vilkår og betingelser
+                  {t('signup.termsLink')}
                 </Label>
               </div>
             </div>
@@ -165,7 +167,7 @@ export const SignupPage: React.FC = () => {
             {/* Or Separator */}
             <div className="text-center">
               <p className="text-[18px] font-medium text-[#0d0e0e] leading-[25px] tracking-[0.18px]">
-                or
+                {t('signup.or')}
               </p>
             </div>
 
@@ -175,7 +177,7 @@ export const SignupPage: React.FC = () => {
                 to="/login"
                 className="text-[16px] font-medium text-[#0d0e0e] underline"
               >
-                Log ind
+                {t('signup.logIn')}
               </Link>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +19,7 @@ export const ResetPasswordPage: React.FC = () => {
   const [email, setEmail] = useState<string | null>(null);
   const [validating, setValidating] = useState(true);
   const [tokenValid, setTokenValid] = useState(true);
+  const { t } = useTranslation('auth');
 
   useEffect(() => {
     if (!token) {
@@ -49,7 +51,7 @@ export const ResetPasswordPage: React.FC = () => {
           <div className="flex items-center justify-center">
             <img src={loginLogoUrl} alt="CompanyFlow" className="h-auto w-[188px]" />
           </div>
-          <p className="text-[15px] text-[#6b7280]">Validating your reset link…</p>
+          <p className="text-[15px] text-[#6b7280]">{t('resetPassword.validating')}</p>
         </div>
       </div>
     );
@@ -64,10 +66,10 @@ export const ResetPasswordPage: React.FC = () => {
           </div>
           <div className="flex flex-col gap-2">
             <h2 className="text-[20px] font-semibold text-[#0d0e0e] leading-[28px]">
-              Invalid or expired link
+              {t('resetPassword.invalidTitle')}
             </h2>
             <p className="text-[14px] text-[#6b7280] leading-[20px]">
-              This password reset link is no longer valid. It may have expired or already been used.
+              {t('resetPassword.invalidDescription')}
             </p>
           </div>
           <div className="flex flex-col gap-3">
@@ -75,11 +77,11 @@ export const ResetPasswordPage: React.FC = () => {
               to={authRoutes.forgotPassword}
               className="w-full inline-flex items-center justify-center bg-[#1a5948] hover:bg-[#143e33] text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] transition-colors"
             >
-              Request a new link
+              {t('resetPassword.requestNewLink')}
             </Link>
             <div className="text-center">
               <Link to={authRoutes.login} className="text-[16px] font-medium text-[#0d0e0e] underline">
-                Back to login
+                {t('resetPassword.backToLogin')}
               </Link>
             </div>
           </div>
@@ -93,12 +95,12 @@ export const ResetPasswordPage: React.FC = () => {
     setError(null);
 
     if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t('resetPassword.passwordTooShort'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError(t('resetPassword.passwordsDoNotMatch'));
       return;
     }
 
@@ -108,7 +110,7 @@ export const ResetPasswordPage: React.FC = () => {
       toast.success(message);
       navigate(authRoutes.login, { replace: true });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      const msg = err instanceof Error ? err.message : t('errors.somethingWentWrong');
       setError(msg);
     } finally {
       setSubmitting(false);
@@ -129,19 +131,19 @@ export const ResetPasswordPage: React.FC = () => {
 
         <div className="flex flex-col gap-2">
           <h2 className="text-[20px] font-semibold text-[#0d0e0e] leading-[28px]">
-            Set a new password
+            {t('resetPassword.title')}
           </h2>
           <p className="text-[14px] text-[#6b7280] leading-[20px]">
             {email
-              ? <>Enter a new password for <strong>{email}</strong>. Must be at least 8 characters.</>
-              : 'Choose a new password for your account. Must be at least 8 characters.'}
+              ? t('resetPassword.descriptionWithEmail', { email })
+              : t('resetPassword.descriptionWithoutEmail')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-[12px] w-full">
           <div className="flex flex-col gap-[12px]">
             <Label htmlFor="newPassword" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              New password <span className="text-red-500">*</span>
+              {t('resetPassword.newPasswordLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="newPassword"
@@ -156,7 +158,7 @@ export const ResetPasswordPage: React.FC = () => {
 
           <div className="flex flex-col gap-[12px]">
             <Label htmlFor="confirmPassword" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              Confirm password <span className="text-red-500">*</span>
+              {t('resetPassword.confirmPasswordLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="confirmPassword"
@@ -180,7 +182,7 @@ export const ResetPasswordPage: React.FC = () => {
               disabled={submitting}
               className="w-full bg-[#1a5948] hover:bg-[#143e33] active:bg-[#0f2e26] text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {submitting ? 'Resetting…' : 'Reset password'}
+              {submitting ? t('resetPassword.submitting') : t('resetPassword.submit')}
             </Button>
 
             <div className="text-center">
@@ -188,7 +190,7 @@ export const ResetPasswordPage: React.FC = () => {
                 to={authRoutes.login}
                 className="text-[18px] font-medium text-[#0d0e0e] underline"
               >
-                Back to login
+                {t('resetPassword.backToLogin')}
               </Link>
             </div>
           </div>

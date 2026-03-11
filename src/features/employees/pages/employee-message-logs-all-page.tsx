@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { EmployeeMessageLogsTable } from '../components/employee-message-logs-table';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,8 @@ import type { EmployeeMessageLog } from '@/types/models';
 
 export const EmployeeMessageLogsAllPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('employees');
+  const { t: tCommon } = useTranslation('common');
   const [search, setSearch] = useState('');
   const { data: employees } = useEmployees();
 
@@ -58,7 +61,7 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
       } catch (err) {
         if (!isMounted) return;
         console.error('Failed to fetch all message logs:', err);
-        setError('Failed to load message logs');
+        setError('failedToLoad');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -106,18 +109,18 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
           className="bg-white border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[10px] px-3 py-2 h-auto flex items-center gap-2 shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {tCommon('back')}
         </Button>
         <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#0b0c0c] truncate">
-          Employee Message Logs - All Employees
+          {t('messageLogs.titleAll')}
         </h1>
       </div>
 
       {/* Help banner */}
       <div className="mb-5 bg-[#fff9f0] rounded-[12px] border border-[#f59e0b] border-l-[5px] px-4 py-3">
         <p className="text-[13px] text-[#0d0e0e]">
-          <span className="font-bold">Help.</span>{' '}
-          See which messages have been sent to your employees and when.
+          <span className="font-bold">{tCommon('help')}</span>{' '}
+          {t('messageLogs.helpAll')}
         </p>
       </div>
 
@@ -128,7 +131,7 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
             <Input
-              placeholder="Search messages (name, email, message)"
+              placeholder={t('messageLogs.searchAll')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 h-10 rounded-[999px] border border-[#c8d8d3] bg-white text-sm w-full"
@@ -140,21 +143,23 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
           {/* Sort bar + Send Follow Up */}
           <div className="flex flex-wrap items-center gap-3 justify-between pb-3 border-b border-dashed border-[#d5e7e1] mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-semibold text-[#0d0e0e]">Sort</span>
+              <span className="text-[13px] font-semibold text-[#0d0e0e]">{tCommon('sort')}</span>
               <Button
                 variant="outline"
                 size="sm"
+                title={t('manage.cycleSortField')}
                 onClick={() => {
                   const fields: typeof sortField[] = ['date', 'name', 'email'];
                   setSortField(fields[(fields.indexOf(sortField) + 1) % fields.length]);
                 }}
                 className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-3 py-2 h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)] text-[13px]"
               >
-                {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Date'}
+                {sortField === 'name' ? t('messageLogs.sortName') : sortField === 'email' ? t('messageLogs.sortEmail') : t('messageLogs.sortDate')}
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
+                title={t('manage.toggleSortDir')}
                 onClick={() => setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'))}
                 className="h-8 w-8 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
               >
@@ -163,6 +168,7 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="icon"
+                title={t('manage.resetSort')}
                 onClick={() => { setSortField('date'); setSortDirection('desc'); }}
                 className="h-8 w-8 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
               >
@@ -175,16 +181,16 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
               className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-4 py-2 h-auto text-[13px] shadow-[0_8px_16px_rgba(13,94,67,0.3)] gap-1.5"
             >
               <Send className="h-3.5 w-3.5" />
-              Send Follow Up
+              {t('messageLogs.sendFollowUp')}
             </Button>
           </div>
 
           {/* Table */}
           <div className="overflow-x-auto min-h-0">
             {loading ? (
-              <div className="py-12 text-center text-[#6b7280] text-sm">Loading messages...</div>
+              <div className="py-12 text-center text-[#6b7280] text-sm">{t('messageLogs.loading')}</div>
             ) : error ? (
-              <div className="py-12 text-center text-red-500 text-sm">{error}</div>
+              <div className="py-12 text-center text-red-500 text-sm">{t('messageLogs.failedToLoad')}</div>
             ) : (
               <EmployeeMessageLogsTable logs={paginatedLogs} />
             )}

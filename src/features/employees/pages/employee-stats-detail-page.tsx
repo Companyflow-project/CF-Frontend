@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 import { PageShell } from '@/components/layout/page-shell';
 import { EmployeeStatsTable } from '../components/employee-stats-table';
@@ -17,6 +18,8 @@ import { useAuth } from '@/context/auth-context';
 export const EmployeeStatsDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation('employees');
+  const { t: tCommon } = useTranslation('common');
   const { user } = useAuth();
   const companyId = user?.companyId ? Number(user.companyId) : undefined;
   const [search, setSearch] = useState('');
@@ -69,14 +72,14 @@ export const EmployeeStatsDetailPage: React.FC = () => {
         if (err instanceof AxiosError) {
           const status = err.response?.status;
           if (status === 404) {
-            setError('employee not found');
+            setError(t('stats.notFound'));
           } else if (status === 400) {
-            setError('invalid employee id');
+            setError(t('stats.invalidId'));
           } else {
             setError(`Error: ${err.message}`);
           }
         } else {
-          setError('Error: Failed to load employee statistics');
+          setError(t('stats.failedToLoad'));
         }
       } finally {
         if (isMounted) {
@@ -174,7 +177,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
     });
   }, [filteredStats, sortField, sortDirection, user?.id]);
 
-  const employeeName = statistics?.name || employee?.name || (loading ? 'Loading...' : 'Employee');
+  const employeeName = statistics?.name || employee?.name || (loading ? t('stats.loadingStats') : 'Employee');
   const isSelf = !!(user?.id && id === user.id);
 
   const licensesInSubscription = licenseUsage?.licensesInSubscription ?? 0;
@@ -188,46 +191,46 @@ export const EmployeeStatsDetailPage: React.FC = () => {
         <div className="space-y-4">
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader>
-              <CardTitle className="text-sm font-bold text-[#0f172a]">License usage</CardTitle>
+              <CardTitle className="text-sm font-bold text-[#0f172a]">{t('license.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses in subscription</span>
+                <span className="text-sm text-[#0f172a]">{t('license.inSubscription')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{licensesInSubscription}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses used</span>
+                <span className="text-sm text-[#0f172a]">{t('license.used')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{licensesUsed}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses left</span>
+                <span className="text-sm text-[#0f172a]">{t('license.left')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{licensesLeft}</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-[#0f172a]">SMS messages used</span>
+                <span className="text-sm text-[#0f172a]">{t('license.smsUsed')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{smsMessagesUsed}</span>
               </div>
             </CardContent>
             <CardFooter className="flex gap-2 pt-2 justify-end">
               <Button variant="outline" className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px]">
-                More licenses
+                {t('license.moreLicenses')}
               </Button>
               <Button variant="outline" className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px]">
-                Manage SMS
+                {t('license.manageSms')}
               </Button>
             </CardFooter>
           </Card>
 
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader>
-              <CardTitle className="text-sm font-bold text-[#0f172a]">Shortcuts</CardTitle>
+              <CardTitle className="text-sm font-bold text-[#0f172a]">{t('shortcuts.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {[
-                { label: 'Company settings', route: '/account' },
-                { label: 'Employment types', route: '/account/employment-types' },
-                { label: 'Departments', route: '/account/departments' },
-                { label: 'Import CSV', route: '#' },
+                { label: t('shortcuts.companySettings'), route: '/account' },
+                { label: t('shortcuts.employmentTypes'), route: '/account/employment-types' },
+                { label: t('shortcuts.departments'), route: '/account/departments' },
+                { label: t('shortcuts.importCsv'), route: '#' },
               ].map((item) => (
                 <button
                   key={item.label}
@@ -251,10 +254,10 @@ export const EmployeeStatsDetailPage: React.FC = () => {
           className="bg-white border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[10px] px-3.5 py-[9px] h-auto shadow-[0_6px_14px_rgba(15,23,42,0.05)] flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="font-semibold text-[13.3px]">Back</span>
+          <span className="font-semibold text-[13.3px]">{tCommon('back')}</span>
         </Button>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">
-          Employee Statistics - {employeeName}
+          {t('stats.title', { name: employeeName })}
         </h1>
       </div>
 
@@ -269,8 +272,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
           <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
             <div className="text-sm text-[#0d0e0e] max-w-3xl">
               <p className="text-sm">
-                <span className="font-bold">Help.</span>{' '}
-                See employee activities like when they last visited the employee handbook and what pages they viewed.
+                {t('stats.helpDetail')}
               </p>
             </div>
           </div>
@@ -280,7 +282,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
               <div className="relative w-full lg:max-w-2xl">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
                 <Input
-                  placeholder="Search employees (name, email, phone)"
+                  placeholder={t('stats.searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-11 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
@@ -290,14 +292,14 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                 onClick={() => navigate(employeesRoutes.statistics)}
                 className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)] lg:ml-auto"
               >
-                View All Employees
+                {t('stats.viewAll')}
               </Button>
             </div>
 
             <CardContent className="pt-6 flex-1 flex flex-col overflow-hidden">
               <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1] mb-6">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
+                  <span className="text-sm font-semibold text-[#0d0e0e]">{t('manage.cycleSortField')}</span>
                   <Button
                     variant="outline"
                     size="sm"
@@ -308,7 +310,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                     }}
                     className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
                   >
-                    {sortField === 'name' ? 'Name' : sortField === 'pageViews' ? 'Page Views' : sortField === 'lastVisit' ? 'Last Visit' : 'Messages'}
+                    {sortField === 'name' ? t('stats.sortName') : sortField === 'pageViews' ? t('stats.sortPageViews') : sortField === 'lastVisit' ? t('stats.sortLastVisit') : t('stats.sortMessages')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -333,7 +335,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
                     onClick={() => id && navigate(employeesRoutes.followUp(id))}
                     className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
                   >
-                    Send Follow Up
+                    {t('stats.sendFollowUp')}
                   </Button>
                 )}
               </div>
@@ -364,7 +366,7 @@ export const EmployeeStatsDetailPage: React.FC = () => {
 
       {isFetchingModalStats && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg">Loading stats...</div>
+          <div className="bg-white p-4 rounded-lg shadow-lg">{t('stats.loadingStats')}</div>
         </div>
       )}
     </PageShell>

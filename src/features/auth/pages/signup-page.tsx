@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,33 +13,33 @@ import { toast } from 'sonner';
 import loginLogoUrl from '/assets/Login-Logo.svg';
 
 /** Map raw backend/network error messages to user-friendly strings. */
-function friendlySignupError(raw: string): string {
+function friendlySignupError(raw: string, t: (key: string) => string): string {
   const lower = raw.toLowerCase();
 
   // Email already taken
   if (lower.includes('email already') || lower.includes('duplicate') || lower.includes('already registered')) {
-    return 'This email is already registered. Please log in or use a different email.';
+    return t('errors.emailAlreadyRegistered');
   }
   // Validation
   if (lower.includes('valid email') || lower.includes('format')) {
-    return 'Please enter a valid email address.';
+    return t('errors.invalidEmail');
   }
   if (lower.includes('password') && (lower.includes('short') || lower.includes('weak') || lower.includes('least'))) {
-    return 'Your password is too short. Please use at least 8 characters.';
+    return t('errors.passwordTooShort');
   }
   // Network / server
   if (lower.includes('network') || lower.includes('econnrefused') || lower.includes('failed to fetch')) {
-    return 'Unable to reach the server. Please check your internet connection and try again.';
+    return t('errors.networkErrorRetry');
   }
   if (lower.includes('timeout')) {
-    return 'The request timed out. Please try again.';
+    return t('errors.timeout');
   }
   if (lower.includes('internal') || lower.includes('500') || lower.includes('something went wrong')) {
-    return 'Something went wrong on our end. Please try again in a moment.';
+    return t('errors.serverError');
   }
   // Rate limiting
   if (lower.includes('rate') || lower.includes('too many')) {
-    return 'Too many attempts. Please wait a minute and try again.';
+    return t('errors.tooManyAttempts');
   }
 
   // If the message already looks user-friendly (no SQL, no stack trace), show it as-is
@@ -47,7 +48,7 @@ function friendlySignupError(raw: string): string {
   }
 
   // Fallback for any truly unrecognizable error
-  return 'Registration failed. Please try again or contact support.';
+  return t('errors.registrationFailed');
 }
 
 export const SignupPage: React.FC = () => {
@@ -62,6 +63,7 @@ export const SignupPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const { setUserFromRegister } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation('auth');
 
   // Button is only active when every required field has a value AND terms are ticked
   const canSubmit =
@@ -76,19 +78,19 @@ export const SignupPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     if (!termsAccepted) {
-      toast.error('Du skal acceptere vilkår og betingelser.');
+      toast.error(t('signup.termsRequired'));
       return;
     }
     setSubmitting(true);
     try {
       const user = await authApi.register({ name, companyName, cvr, email, password });
-      toast.success('Account created successfully!');
-      toast.info('Setting up your handbook — this may take a moment. Please don\'t refresh the page.', { duration: 10000 });
+      toast.success(t('signup.accountCreated'));
+      toast.info(t('signup.settingUpHandbook'), { duration: 10000 });
       setUserFromRegister(user);
       navigate('/');
     } catch (err) {
-      const raw = err instanceof Error ? err.message : 'Signup failed';
-      const friendly = friendlySignupError(raw);
+      const raw = err instanceof Error ? err.message : t('errors.signupFailedRaw');
+      const friendly = friendlySignupError(raw, t);
       setError(friendly);
       toast.error(friendly);
     } finally {
@@ -113,7 +115,7 @@ export const SignupPage: React.FC = () => {
           {/* Name Field */}
           <div className="flex flex-col gap-[12px]">
             <Label htmlFor="name" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              Name <span className="text-red-500">*</span>
+              {t('signup.nameLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
@@ -130,7 +132,7 @@ export const SignupPage: React.FC = () => {
               htmlFor="companyName"
               className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]"
             >
-              Company Name <span className="text-red-500">*</span>
+              {t('signup.companyNameLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="companyName"
@@ -144,7 +146,7 @@ export const SignupPage: React.FC = () => {
           {/* CVR Field */}
           <div className="flex flex-col gap-[12px]">
             <Label htmlFor="cvr" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              CVR <span className="text-red-500">*</span>
+              {t('signup.cvrLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="cvr"
@@ -158,7 +160,7 @@ export const SignupPage: React.FC = () => {
           {/* Email Field */}
           <div className="flex flex-col gap-[12px]">
             <Label htmlFor="email" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
-              Email <span className="text-red-500">*</span>
+              {t('signup.emailLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
@@ -176,7 +178,7 @@ export const SignupPage: React.FC = () => {
               htmlFor="password"
               className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]"
             >
-              Password <span className="text-red-500">*</span>
+              {t('signup.passwordLabel')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="password"
@@ -208,13 +210,13 @@ export const SignupPage: React.FC = () => {
                   htmlFor="terms"
                   className="text-[14px] font-normal text-[#0d0e0e] cursor-pointer"
                 >
-                  Jeg accepterer{' '}
+                  {t('signup.termsAccept')}{' '}
                   <button
                     type="button"
                     onClick={() => setTermsOpen(true)}
                     className="underline text-[#1a5948] hover:text-[#143e33] transition-colors font-medium"
                   >
-                    vilkår og betingelser
+                    {t('signup.termsLink')}
                   </button>
                 </Label>
               </div>
@@ -224,19 +226,19 @@ export const SignupPage: React.FC = () => {
                 disabled={!canSubmit || submitting}
                 className="w-full bg-[#1a5948] hover:bg-[#143e33] active:bg-[#0f2e26] text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {submitting ? 'Opretter…' : 'Prøv gratis'}
+                {submitting ? t('signup.submitting') : t('signup.submit')}
               </Button>
             </div>
 
             {/* Login Link */}
             <div className="text-center">
               <p className="text-[18px] font-medium text-[#0d0e0e] leading-[25px] tracking-[0.18px]">
-                or{' '}
+                {t('signup.or')}{' '}
                 <Link
                   to={authRoutes.login}
                   className="text-[18px] font-medium text-[#0d0e0e] underline"
                 >
-                  Log ind
+                  {t('signup.logIn')}
                 </Link>
               </p>
             </div>

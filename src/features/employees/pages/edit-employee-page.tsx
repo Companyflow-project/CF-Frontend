@@ -9,6 +9,7 @@ import { employeesApi } from '../api';
 import { employeesRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import type { Employee } from '@/types/models';
+import { useTranslation } from 'react-i18next';
 
 function employeeToFormData(emp: Employee): EmployeeFormData {
   return {
@@ -31,6 +32,8 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
 }
 
 export const EditEmployeePage: React.FC = () => {
+  const { t } = useTranslation('employees');
+  const { t: tCommon } = useTranslation('common');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
@@ -99,16 +102,16 @@ export const EditEmployeePage: React.FC = () => {
   const validateForm = (): boolean => {
     if (!formData) return false;
     const newErrors: Partial<Record<keyof EmployeeFormData, string>> = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
+    if (!formData.name.trim()) newErrors.name = t('form.validation.nameRequired');
+    if (!formData.email.trim()) newErrors.email = t('form.validation.emailRequired');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('form.validation.emailInvalid');
     if (!formData.mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile number is required';
+      newErrors.mobileNumber = t('form.validation.mobileRequired');
     } else if (parseInt(formData.mobileNumber, 10) > 2_147_483_647) {
-      newErrors.mobileNumber = 'Mobile number exceeds system limit';
+      newErrors.mobileNumber = t('form.validation.mobileExceeds');
     }
     if (formData.alternateNumber && parseInt(formData.alternateNumber, 10) > 2_147_483_647) {
-      newErrors.alternateNumber = 'Alternate number exceeds system limit';
+      newErrors.alternateNumber = t('form.validation.alternateExceeds');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -119,7 +122,7 @@ export const EditEmployeePage: React.FC = () => {
     setGeneralError(null);
     setSuccessMessage(null);
     if (!validateForm()) {
-      setGeneralError('Please fix the errors above before submitting');
+      setGeneralError(t('toast.fixErrors'));
       return;
     }
     setIsSubmitting(true);
@@ -151,7 +154,7 @@ export const EditEmployeePage: React.FC = () => {
             ? { userPictureFid: null }
             : {}),
       });
-      setSuccessMessage('Employee updated successfully!');
+      setSuccessMessage(t('toast.updated'));
       setTimeout(() => navigate(employeesRoutes.list), 1500);
     } catch (error: any) {
       console.error('Error updating employee:', error);
@@ -161,7 +164,7 @@ export const EditEmployeePage: React.FC = () => {
       const message =
         typeof apiError?.message === 'string' && apiError.message.trim()
           ? apiError.message.trim()
-          : 'Something went wrong while updating the employee.';
+          : t('toast.updateFailed');
 
       setGeneralError(message);
     } finally {
@@ -181,7 +184,7 @@ export const EditEmployeePage: React.FC = () => {
       const message =
         typeof apiError?.message === 'string' && apiError.message.trim()
           ? apiError.message.trim()
-          : 'Failed to generate magic link.';
+          : t('toast.magicLinkFailed');
       setGeneralError(message);
     } finally {
       setMagicLinkLoading(false);
@@ -202,7 +205,7 @@ export const EditEmployeePage: React.FC = () => {
       <PageShell>
         <div className="flex items-center justify-center py-12 text-gray-500">
           <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          Loading employee…
+          {t('edit.loading')}
         </div>
       </PageShell>
     );
@@ -212,9 +215,9 @@ export const EditEmployeePage: React.FC = () => {
     return (
       <PageShell>
         <div className="py-12 text-center text-gray-500">
-          Employee not found.
+          {t('edit.notFound')}
           <Button variant="link" onClick={handleBack} className="ml-2">
-            Back to list
+            {t('edit.backToList')}
           </Button>
         </div>
       </PageShell>
@@ -228,9 +231,9 @@ export const EditEmployeePage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={handleBack} className="h-9 px-3">
               <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
+              {tCommon('back')}
             </Button>
-            <h1 className="text-2xl font-bold text-[#0d0e0e]">Edit employee</h1>
+            <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('edit.title')}</h1>
           </div>
           <Button
             className="bg-teal-600 hover:bg-teal-700"
@@ -238,13 +241,13 @@ export const EditEmployeePage: React.FC = () => {
             disabled={isSubmitting}
           >
             <Save className="h-4 w-4 mr-2" />
-            {isSubmitting ? 'Saving...' : 'Save changes'}
+            {isSubmitting ? tCommon('saving') : t('edit.save')}
           </Button>
         </div>
 
         <HelpBanner
           title="Help."
-          description="Update employee details. Changes are saved to the company profile."
+          description={t('edit.helpDesc')}
           linkText="User manual"
           linkHref="#"
         />
@@ -272,9 +275,9 @@ export const EditEmployeePage: React.FC = () => {
 
         {!isSelf && (
           <div className="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
-            <h3 className="text-sm font-semibold text-gray-800 mb-2">Magic Link</h3>
+            <h3 className="text-sm font-semibold text-gray-800 mb-2">{t('edit.magicLink.title')}</h3>
             <p className="text-xs text-gray-500 mb-3">
-              Generate a one-time login link for this employee. The link expires after 24 hours and can only be used once.
+              {t('edit.magicLink.desc')}
             </p>
             <div className="flex items-center gap-3">
               <Button
@@ -288,7 +291,7 @@ export const EditEmployeePage: React.FC = () => {
                 ) : (
                   <Link2 className="h-4 w-4 mr-2" />
                 )}
-                {magicLinkLoading ? 'Generating...' : 'Generate magic link'}
+                {magicLinkLoading ? t('edit.magicLink.generating') : t('edit.magicLink.generate')}
               </Button>
               {magicLink && (
                 <Button
@@ -300,12 +303,12 @@ export const EditEmployeePage: React.FC = () => {
                   {magicLinkCopied ? (
                     <>
                       <Check className="h-4 w-4 mr-1" />
-                      Copied!
+                      {t('edit.magicLink.copied')}
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4 mr-1" />
-                      Copy link
+                      {t('edit.magicLink.copy')}
                     </>
                   )}
                 </Button>

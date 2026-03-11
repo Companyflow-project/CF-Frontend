@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/auth-context';
 
 export const MagicLinkPage: React.FC = () => {
@@ -7,10 +8,11 @@ export const MagicLinkPage: React.FC = () => {
   const { loginWithMagicLink } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation('auth');
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid magic link');
+      setError(t('magicLink.invalid'));
       return;
     }
 
@@ -25,7 +27,7 @@ export const MagicLinkPage: React.FC = () => {
       .catch((err) => {
         if (!cancelled) {
           setError(
-            err.message || 'This magic link is invalid or has expired. Please log in manually.'
+            err.message || t('magicLink.expiredOrInvalid')
           );
         }
       });
@@ -40,7 +42,7 @@ export const MagicLinkPage: React.FC = () => {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-red-600">{error}</p>
         <a href="/login" className="text-blue-600 underline">
-          Go to Login
+          {t('magicLink.goToLogin')}
         </a>
       </div>
     );
@@ -48,7 +50,7 @@ export const MagicLinkPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <span className="text-[#373b3b]">Signing you in…</span>
+      <span className="text-[#373b3b]">{t('magicLink.signingIn')}</span>
     </div>
   );
 };

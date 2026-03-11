@@ -12,6 +12,7 @@ import {
 import { Select } from '@/components/ui/select';
 import { ArrowLeft, ArrowUpDown, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useDepartments } from '@/features/departments/hooks';
 import { useAuth } from '@/context/auth-context';
@@ -24,6 +25,8 @@ export const ViewDepartmentsPage: React.FC = () => {
     const [sortBy, setSortBy] = useState('name');
     const { user } = useAuth();
     const companyId = user?.companyId ? String(user.companyId) : undefined;
+    const { t } = useTranslation('account');
+    const { t: tCommon } = useTranslation('common');
 
     const { data: departments, isLoading } = useDepartments(companyId);
 
@@ -47,31 +50,31 @@ export const ViewDepartmentsPage: React.FC = () => {
                             className="h-9 px-3"
                         >
                             <ArrowLeft className="h-4 w-4 mr-1" />
-                            Back
+                            {tCommon('back')}
                         </Button>
-                        <h1 className="text-2xl font-bold text-[#0d0e0e]">Departments - All Departments</h1>
+                        <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('departments.title')}</h1>
                     </div>
                     <Button
                         variant="link"
                         onClick={() => navigate('/account/departments/add')}
                         className="text-[#0d0e0e] underline"
                     >
-                        Add New Department
+                        {t('departments.addNew')}
                     </Button>
                 </div>
 
                 {/* Help Banner */}
                 <HelpBanner className="mb-6">
-                    Here you can view all departments in your organization. Click on a department to edit its details, or use the "Add New Department" button to create a new one.
+                    {t('departments.helpBanner')}
                 </HelpBanner>
 
                 {/* Sort Controls */}
                 <div className="flex items-center gap-4 mb-4">
-                    <span className="text-sm font-medium text-[#0d0e0e]">Sort</span>
+                    <span className="text-sm font-medium text-[#0d0e0e]">{tCommon('sort')}</span>
                     <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="w-[180px]">
-                        <option value="name">Name</option>
-                        <option value="managerName">Manager</option>
-                        <option value="email">Email</option>
+                        <option value="name">{t('departments.col.name')}</option>
+                        <option value="managerName">{t('departments.col.manager')}</option>
+                        <option value="email">{t('departments.col.email')}</option>
                     </Select>
                     <Button variant="ghost" size="sm" className="h-8 px-2">
                         <ArrowUpDown className="h-4 w-4" />
@@ -85,10 +88,10 @@ export const ViewDepartmentsPage: React.FC = () => {
                     <TableHeader>
                         <TableRow className="bg-gray-50">
                             <TableHead className="w-[60px]"></TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Name</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Manager</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Email</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Description</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('departments.col.name')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('departments.col.manager')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('departments.col.email')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('departments.col.description')}</TableHead>
                             <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -96,13 +99,13 @@ export const ViewDepartmentsPage: React.FC = () => {
                         {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                                    Loading departments...
+                                    {t('departments.loading')}
                                 </TableCell>
                             </TableRow>
                         ) : departmentRows.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                                    No departments found.
+                                    {t('departments.empty')}
                                 </TableCell>
                             </TableRow>
                         ) : (

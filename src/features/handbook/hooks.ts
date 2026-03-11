@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
 import { handbookApi } from './api';
 
@@ -9,7 +10,9 @@ const POLL_INTERVAL_MS = 5000;
  * When the tree comes back empty (no chapters) it auto-polls every 5s
  * until chapters appear — handles handbook provisioning after new signup.
  */
-export const useHandbookTree = (lang: string = 'en') => {
+export const useHandbookTree = (lang?: string) => {
+  const { i18n } = useTranslation();
+  const resolvedLang = lang ?? i18n.language;
   const [data, setData] = useState<HandbookNode[]>([]);
   const [bid, setBid] = useState<number | null>(null);
   const [isPublished, setIsPublished] = useState(false);
@@ -29,8 +32,7 @@ export const useHandbookTree = (lang: string = 'en') => {
     try {
       if (!isPolling) setLoading(true);
       setError(null);
-      const result = await handbookApi.getHandbookTree(lang);
-      console.log('Handbook tree fetched:', result);
+      const result = await handbookApi.getHandbookTree(resolvedLang);
       setData(result.chapters);
       setBid(result.bid);
       setIsPublished(result.isPublished);
@@ -50,7 +52,7 @@ export const useHandbookTree = (lang: string = 'en') => {
     } finally {
       if (!isPolling) setLoading(false);
     }
-  }, [lang, stopPolling]);
+  }, [resolvedLang, stopPolling]);
 
   useEffect(() => {
     fetchTree();
@@ -72,7 +74,9 @@ export const useHandbookTree = (lang: string = 'en') => {
 /**
  * Hook to fetch a specific handbook page for editing
  */
-export const useHandbookPage = (pageId?: number, lang: string = 'en') => {
+export const useHandbookPage = (pageId?: number, lang?: string) => {
+  const { i18n } = useTranslation();
+  const resolvedLang = lang ?? i18n.language;
   const [data, setData] = useState<HandbookPageDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -88,8 +92,7 @@ export const useHandbookPage = (pageId?: number, lang: string = 'en') => {
       try {
         setLoading(true);
         setError(null);
-        const result = await handbookApi.getPageDetail(pageId, lang);
-        console.log('Handbook page fetched:', result);
+        const result = await handbookApi.getPageDetail(pageId, resolvedLang);
         setData(result);
       } catch (err) {
         console.error('Error fetching handbook page:', err);
@@ -102,7 +105,7 @@ export const useHandbookPage = (pageId?: number, lang: string = 'en') => {
     };
 
     fetchPage();
-  }, [pageId, lang]);
+  }, [pageId, resolvedLang]);
 
   return { data, loading, error, refetch: () => { } };
 };

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,23 +19,36 @@ interface OtherLink {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PREDEFINED_LABELS: readonly { label: string; key: string; placeholder: string }[] = [
-    { label: 'Travel Allowance', key: 'travelAllowance', placeholder: 'https://example.com/travel-allowance' },
-    { label: 'Fire plan', key: 'firePlan', placeholder: 'https://example.com/fire-plan' },
-    { label: 'GDPR', key: 'gdpr', placeholder: 'https://example.com/gdpr' },
-    { label: 'Intranet', key: 'intranet', placeholder: 'https://example.com/intranet' },
-    { label: 'Worksheets', key: 'worksheets', placeholder: 'https://example.com/worksheet' },
-    { label: 'Homepage', key: 'homepage', placeholder: 'https://example.com' },
-];
+const PREDEFINED_KEYS = [
+    { key: 'travelAllowance', placeholder: 'https://example.com/travel-allowance' },
+    { key: 'firePlan', placeholder: 'https://example.com/fire-plan' },
+    { key: 'gdpr', placeholder: 'https://example.com/gdpr' },
+    { key: 'intranet', placeholder: 'https://example.com/intranet' },
+    { key: 'worksheets', placeholder: 'https://example.com/worksheet' },
+    { key: 'homepage', placeholder: 'https://example.com' },
+] as const;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const InformationListLinksPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation('employees');
+    const { t: tCommon } = useTranslation('common');
+
+    // Build translated labels using useMemo so they update on language change
+    const predefinedLabels = useMemo(
+        () =>
+            PREDEFINED_KEYS.map(({ key, placeholder }) => ({
+                label: t(`infoListLinks.${key}`),
+                key,
+                placeholder,
+            })),
+        [t],
+    );
 
     // Predefined links: keyed by slug, value is the URL string
     const [predefined, setPredefined] = useState<Record<string, string>>(
-        Object.fromEntries(PREDEFINED_LABELS.map((l) => [l.key, '']))
+        Object.fromEntries(PREDEFINED_KEYS.map((l) => [l.key, '']))
     );
 
     // Other / custom links
@@ -86,9 +100,9 @@ export const InformationListLinksPage: React.FC = () => {
             // TODO: wire to real API endpoint when available
             // await employeesApi.saveInfoListLinks(buildPayload());
             console.log('Saving info list links:', buildPayload());
-            setSuccessMessage('Links saved successfully.');
+            setSuccessMessage(t('infoListLinks.linksSaved'));
         } catch (err) {
-            setErrorMessage(err instanceof Error ? err.message : 'Failed to save links.');
+            setErrorMessage(err instanceof Error ? err.message : t('infoListLinks.failedToSave'));
         } finally {
             setSaving(false);
         }
@@ -113,9 +127,9 @@ export const InformationListLinksPage: React.FC = () => {
                     className="flex items-center gap-1.5 rounded-[10px] border-[rgba(15,23,42,0.12)] text-[#0d0e0e] h-9 px-3 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
                 >
                     <ArrowLeft className="h-3.5 w-3.5" />
-                    <span className="text-[13px] font-medium">Back</span>
+                    <span className="text-[13px] font-medium">{tCommon('back')}</span>
                 </Button>
-                <h1 className="text-2xl font-bold text-[#0d0e0e] tracking-tight">Links</h1>
+                <h1 className="text-2xl font-bold text-[#0d0e0e] tracking-tight">{t('infoListLinks.title')}</h1>
             </div>
 
             {/* Help banner */}
@@ -123,24 +137,21 @@ export const InformationListLinksPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <p className="text-sm text-[#0d0e0e] max-w-2xl">
                         <span className="font-bold">Help.</span>{' '}
-                        Select the pages to include, write or edit their content, and mark a page{' '}
-                        <em>Ready</em> when it matches exactly what you want. Only pages that are{' '}
-                        <strong>selected</strong> and <strong>Ready</strong> will be published. You can
-                        also create your own pages and themes.
+                        {t('infoListLinks.helpDesc')}
                     </p>
                     <Button
                         variant="outline"
                         size="sm"
                         className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
                     >
-                        Read full guide
+                        {t('infoListLinks.readFullGuide')}
                     </Button>
                 </div>
             </div>
 
             {/* Subtext */}
             <p className="text-sm text-[#374151] mb-4">
-                These links are all displayed in the info list.
+                {t('infoListLinks.subtext')}
             </p>
 
             {/* Success / error banners */}
@@ -161,7 +172,7 @@ export const InformationListLinksPage: React.FC = () => {
 
                     {/* Predefined links */}
                     <div className="divide-y divide-[#f0f4f2]">
-                        {PREDEFINED_LABELS.map(({ label, key, placeholder }) => (
+                        {predefinedLabels.map(({ label, key, placeholder }) => (
                             <div
                                 key={key}
                                 className="flex items-center gap-6 py-3 first:pt-0"
@@ -183,15 +194,15 @@ export const InformationListLinksPage: React.FC = () => {
 
                     {/* Other links section */}
                     <div className="pt-6">
-                        <p className="text-[13.5px] font-semibold text-[#111827] mb-3">Other links</p>
+                        <p className="text-[13.5px] font-semibold text-[#111827] mb-3">{t('infoListLinks.otherLinks')}</p>
 
                         {/* Column headers */}
                         <div className="flex items-center gap-3 mb-2 pl-0">
                             <span className="flex-1 text-xs font-semibold text-[#6b7280] uppercase tracking-wide">
-                                Text
+                                {t('infoListLinks.colText')}
                             </span>
                             <span className="flex-[2] text-xs font-semibold text-[#6b7280] uppercase tracking-wide">
-                                Link
+                                {t('infoListLinks.colLink')}
                             </span>
                             <span className="w-8" />
                         </div>
@@ -203,7 +214,7 @@ export const InformationListLinksPage: React.FC = () => {
                                     <Input
                                         id={`other-text-${link.id}`}
                                         type="text"
-                                        placeholder="Add link label here"
+                                        placeholder={t('infoListLinks.addLabelPlaceholder')}
                                         value={link.text}
                                         onChange={(e) => handleOtherChange(link.id, 'text', e.target.value)}
                                         className="flex-1 h-9 text-sm border-[#d1d5db] bg-[#f9fafb] rounded-lg focus:bg-white transition-colors"
@@ -211,7 +222,7 @@ export const InformationListLinksPage: React.FC = () => {
                                     <Input
                                         id={`other-url-${link.id}`}
                                         type="url"
-                                        placeholder="Add link here"
+                                        placeholder={t('infoListLinks.addLinkPlaceholder')}
                                         value={link.url}
                                         onChange={(e) => handleOtherChange(link.id, 'url', e.target.value)}
                                         className="flex-[2] h-9 text-sm border-[#d1d5db] bg-[#f9fafb] rounded-lg focus:bg-white transition-colors"
@@ -241,16 +252,14 @@ export const InformationListLinksPage: React.FC = () => {
                             className="mt-3 flex items-center gap-1.5 text-xs text-[#3d997d] hover:text-[#2c7860] font-medium"
                         >
                             <Plus className="h-3.5 w-3.5" />
-                            Add another link
+                            {t('infoListLinks.addAnother')}
                         </button>
                     </div>
 
                     {/* Note */}
                     <p className="pt-5 text-xs text-[#6b7280] leading-relaxed">
-                        <span className="font-semibold text-[#374151]">Note:</span>{' '}
-                        Add other links by entering text and link (URL). Delete links by simply deleting
-                        the text and link in the fields. Add more links by filling in the bottom and
-                        clicking Save and Add.
+                        <span className="font-semibold text-[#374151]">{t('infoListLinks.noteTitle')}</span>{' '}
+                        {t('infoListLinks.noteDesc')}
                     </p>
 
                     {/* Action buttons */}
@@ -268,7 +277,7 @@ export const InformationListLinksPage: React.FC = () => {
                             disabled={saving}
                             className="bg-[#3d997d] hover:bg-[#2c7860] text-white rounded-[999px] px-6 h-10 text-[13.3px] shadow-[0_8px_20px_rgba(23,102,79,0.32)]"
                         >
-                            Save and Add
+                            {t('infoListLinks.saveAndAdd')}
                         </Button>
                     </div>
 

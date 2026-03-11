@@ -1,9 +1,11 @@
 import React, { Suspense, lazy, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/layouts/app-layout';
 import { AuthLayout } from '@/layouts/auth-layout';
 import { authRoutes } from '@/features/auth/routes';
 import { useAuth } from '@/context/auth-context';
+import { ViewAsEmployeeProvider, useViewAsEmployee } from '@/context/view-as-employee-context';
 import { employeesRoutes } from '@/features/employees/routes';
 import { handbookRoutes } from '@/features/handbook/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
@@ -76,8 +78,9 @@ const ADMIN_ROLES = new Set(['ADMIN', 'company_admin', 'MANAGER']);
 
 const RequireAdminRole: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
+  const { viewAsEmployee } = useViewAsEmployee();
   if (loading) return <PageFallback />;
-  if (!user || !ADMIN_ROLES.has(user.role)) {
+  if (!user || !ADMIN_ROLES.has(user.role) || viewAsEmployee) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
@@ -87,10 +90,16 @@ const STRICT_ADMIN_ROLES = new Set(['ADMIN', 'company_admin']);
 
 const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
+  const { viewAsEmployee } = useViewAsEmployee();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const [dismissed, setDismissed] = useState(false);
 
   if (loading) return <PageFallback />;
+
+  if (viewAsEmployee) {
+    return <Navigate to="/" replace />;
+  }
 
   if (!user || !STRICT_ADMIN_ROLES.has(user.role)) {
     if (dismissed) return null;
@@ -103,10 +112,10 @@ const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children 
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
             </div>
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Access Restricted</h2>
+            <h2 className="text-lg font-bold text-[#0d0e0e]">{t('accessRestricted.title')}</h2>
           </div>
           <p className="text-sm text-[#6b7280] mb-6">
-            Only administrators can view this page. Please contact your company administrator if you need access.
+            {t('accessRestricted.message')}
           </p>
           <button
             onClick={() => {
@@ -115,7 +124,7 @@ const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children 
             }}
             className="w-full px-4 py-2.5 bg-[#0d0e0e] text-white text-sm font-medium rounded-[10px] hover:bg-[#0d0e0e]/90 transition-colors"
           >
-            Go back to home
+            {t('accessRestricted.goHome')}
           </button>
         </div>
       </div>
@@ -135,6 +144,7 @@ const RedirectIfAuth: React.FC<{ children: React.ReactNode }> = ({ children }) =
 export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ViewAsEmployeeProvider>
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route
@@ -215,9 +225,11 @@ export const AppRouter: React.FC = () => {
             path={employeesRoutes.list}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EmployeesPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <EmployeesPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -249,9 +261,11 @@ export const AppRouter: React.FC = () => {
             path={employeesRoutes.statistics}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EmployeeStatsAllPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <EmployeeStatsAllPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -259,9 +273,11 @@ export const AppRouter: React.FC = () => {
             path="/employees/:id/statistics"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EmployeeStatsDetailPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <EmployeeStatsDetailPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -269,9 +285,11 @@ export const AppRouter: React.FC = () => {
             path={employeesRoutes.messageLogs}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EmployeeMessageLogsAllPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <EmployeeMessageLogsAllPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -279,9 +297,11 @@ export const AppRouter: React.FC = () => {
             path="/employees/:id/message-logs"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EmployeeMessageLogsDetailPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <EmployeeMessageLogsDetailPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -289,9 +309,11 @@ export const AppRouter: React.FC = () => {
             path="/employees/:id/follow-up"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <FollowUpPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <FollowUpPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -309,9 +331,11 @@ export const AppRouter: React.FC = () => {
             path={employeesRoutes.informationListLinks}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <InformationListLinksPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <InformationListLinksPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -319,9 +343,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.manage}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <ManageHandbookPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <ManageHandbookPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -329,9 +355,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/print-view"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <HandbookPrintPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <HandbookPrintPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -339,9 +367,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.pages}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <HandbookPagesPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <HandbookPagesPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -419,9 +449,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.notes}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <HandbookNotesPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <HandbookNotesPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -449,9 +481,11 @@ export const AppRouter: React.FC = () => {
             path={contactsRoutes.list}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <ContactsPage />
-                </AppLayout>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <ContactsPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -615,6 +649,7 @@ export const AppRouter: React.FC = () => {
           />
         </Routes>
       </Suspense>
+      </ViewAsEmployeeProvider>
     </BrowserRouter>
   );
 };

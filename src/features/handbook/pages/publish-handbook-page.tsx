@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Check, BookOpen, FileText, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,8 @@ export const PublishHandbookPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('handbook');
+  const { t: tCommon } = useTranslation('common');
 
   const [messageType, setMessageType] = useState<MessageType>('standard');
   const [channels, setChannels] = useState<Array<'email' | 'sms'>>(['email']);
@@ -26,7 +29,7 @@ export const PublishHandbookPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
 
-  const { data: tree, bid: treeBid, isPublished, loading: treeLoading } = useHandbookTree('en');
+  const { data: tree, bid: treeBid, isPublished, loading: treeLoading } = useHandbookTree();
 
   // Parse selected page IDs from URL (passed from the pages screen)
   const selectedPageIds = useMemo(() => {
@@ -84,7 +87,7 @@ export const PublishHandbookPage: React.FC = () => {
     const handbookId = treeBid ?? (id ? Number.parseInt(id, 10) || undefined : undefined);
 
     if (!handbookId) {
-      toast.error('Handbook ID not found. Please try again.');
+      toast.error(t('publish.error.noHandbook'));
       setSubmitting(false);
       return;
     }
@@ -103,13 +106,11 @@ export const PublishHandbookPage: React.FC = () => {
         customMessage: messageType === 'custom' ? customMessage || undefined : undefined,
       });
 
-      toast.success(
-        `Published. ${response.count} employees will receive a notification.`,
-      );
+      toast.success(t('publish.success', { count: response.count }));
       navigate(handbookRoutes.manage);
     } catch (err: any) {
       console.error('Failed to publish handbook:', err);
-      toast.error(err?.message || 'Failed to publish handbook. Please try again.');
+      toast.error(err?.message || t('publish.error.failed'));
     } finally {
       setSubmitting(false);
     }
@@ -127,7 +128,7 @@ export const PublishHandbookPage: React.FC = () => {
     if (messageType === 'none' || !hasEmail) return null;
 
     if (messageType === 'custom') {
-      return customMessage ? previewPlaceholders(customMessage) : 'Write your custom email message...';
+      return customMessage ? previewPlaceholders(customMessage) : t('publish.customEmailPlaceholder');
     }
 
     return `Hello [recipient name],
@@ -144,7 +145,7 @@ Your Company`;
     if (messageType === 'none' || !hasSms) return null;
 
     if (messageType === 'custom') {
-      return customMessage ? previewPlaceholders(customMessage) : 'Write your custom SMS message...';
+      return customMessage ? previewPlaceholders(customMessage) : t('publish.customSmsPlaceholder');
     }
 
     return `[recipient name],
@@ -171,9 +172,9 @@ Greetings from your company.`;
             className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {tCommon('back')}
           </Button>
-          <h1 className="text-2xl font-bold text-[#0d0e0e]">Publish Handbook</h1>
+          <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('publish.title')}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -182,7 +183,11 @@ Greetings from your company.`;
             disabled={submitting || totalReadyPages === 0}
             className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[9px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.35)] disabled:opacity-50 disabled:shadow-none"
           >
-            {submitting ? 'Publishing...' : `Publish${totalReadyPages > 0 ? ` (${totalReadyPages})` : ''}`}
+            {submitting
+              ? t('publish.publishing')
+              : totalReadyPages > 0
+                ? t('publish.publishCount', { count: totalReadyPages })
+                : t('publish.publish')}
           </Button>
         </div>
       </div>
@@ -191,17 +196,15 @@ Greetings from your company.`;
       <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className="text-sm text-[#0d0e0e] max-w-3xl">
-            <span className="font-bold">Help.</span>{' '}
-            Here you can give employees access to your personnel handbook. It may be an advantage
-            not to do this while you are working on it. Only share it with them when it is
-            completely ready.
+            <span className="font-bold">{tCommon('help')}</span>{' '}
+            {t('publish.helpBanner')}
           </p>
           <Button
             variant="outline"
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
           >
-            Read full guide
+            {t('publish.readFullGuide')}
           </Button>
         </div>
       </div>
@@ -217,10 +220,10 @@ Greetings from your company.`;
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-[#2f946f]" />
               <span className="text-sm font-bold text-[#0d0e0e]">
-                Pages to publish
+                {t('publish.pagesToPublish')}
               </span>
               <span className="text-xs font-medium text-[#6b7280] bg-[#f3f4f6] rounded-full px-2 py-0.5">
-                {treeLoading ? '...' : `${totalReadyPages} page${totalReadyPages !== 1 ? 's' : ''} ready`}
+                {treeLoading ? '...' : t('publish.pageReady', { count: totalReadyPages })}
               </span>
             </div>
             {summaryExpanded ? (
@@ -238,24 +241,24 @@ Greetings from your company.`;
                   <Info className="h-4 w-4 text-[#6b7280] shrink-0 mt-0.5" />
                   <p className="text-xs text-[#6b7280]">
                     {isFiltered
-                      ? `Showing ${totalReadyPages} of ${allReadyCount} ready page${allReadyCount !== 1 ? 's' : ''} — only pages you selected and marked as Ready will be published.`
-                      : `All ${totalReadyPages} page${totalReadyPages !== 1 ? 's' : ''} marked as Ready will be published and visible to employees.`}
+                      ? t('publish.filteredInfo', { shown: totalReadyPages, total: allReadyCount })
+                      : t('publish.allReadyInfo', { count: totalReadyPages })}
                   </p>
                 </div>
               )}
 
               {treeLoading ? (
-                <p className="text-sm text-[#6b7280] py-3">Loading handbook pages...</p>
+                <p className="text-sm text-[#6b7280] py-3">{t('publish.loading')}</p>
               ) : readySummary.length === 0 ? (
                 <div className="py-4 text-center">
-                  <p className="text-sm text-[#6b7280]">No pages are marked as ready.</p>
+                  <p className="text-sm text-[#6b7280]">{t('publish.noPagesReady')}</p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => navigate(handbookRoutes.pages)}
                     className="mt-2 rounded-[999px] text-xs"
                   >
-                    Go to Pages
+                    {t('publish.goToPages')}
                   </Button>
                 </div>
               ) : (
@@ -272,7 +275,7 @@ Greetings from your company.`;
                             <span className="flex-1">{page.title}</span>
                             {isPublished && (
                               <span className="text-[11px] font-medium text-[#2f946f] bg-[#e8f5ef] border border-[#cde3da] rounded-full px-2 py-0.5 shrink-0">
-                                Published
+                                {t('publish.published')}
                               </span>
                             )}
                           </div>
@@ -295,29 +298,29 @@ Greetings from your company.`;
             <CardContent className="p-0">
               <div className="bg-[#2f946f] text-white px-4 py-3 flex items-center justify-between">
                 <span className="text-sm font-semibold">
-                  The default message shown will be sent automatically when you continue.
+                  {t('publish.defaultMessage')}
                 </span>
                 <div className="hidden sm:flex items-center gap-1 text-xs">
                   <Check className="h-4 w-4" />
-                  <span>Ready to publish</span>
+                  <span>{t('publish.readyToPublish')}</span>
                 </div>
               </div>
 
               <div className="p-4 space-y-6 bg-[#f5faf7]">
                 {noMessage ? (
                   <div className="text-sm text-[#4b5563] py-6 text-center">
-                    No message will be sent.
+                    {t('publish.noMessageSent')}
                   </div>
                 ) : (
                   <>
                     {hasEmail && (
                       <div className="border border-[#cde3da] rounded-[10px] overflow-hidden bg-white">
                         <div className="bg-[#1a5948] text-white px-4 py-2 text-sm font-semibold">
-                          Email
+                          {t('publish.email')}
                         </div>
                         {messageType === 'custom' && customSubject.trim() && (
                           <div className="px-4 pt-3 pb-0">
-                            <p className="text-xs font-medium text-[#6b7280]">Subject</p>
+                            <p className="text-xs font-medium text-[#6b7280]">{t('publish.subject')}</p>
                             <p className="text-sm font-semibold text-[#111827]">
                               {previewPlaceholders(customSubject)}
                             </p>
@@ -334,7 +337,7 @@ Greetings from your company.`;
                     {hasSms && (
                       <div className="border border-[#cde3da] rounded-[10px] overflow-hidden bg-white">
                         <div className="bg-[#1a5948] text-white px-4 py-2 text-sm font-semibold">
-                          SMS
+                          {t('publish.sms')}
                         </div>
                         <div className="p-4">
                           <p className="whitespace-pre-wrap text-sm text-[#111827]">
@@ -353,27 +356,27 @@ Greetings from your company.`;
             <Card className="border border-[#e5e7eb] rounded-[16px]">
               <CardContent className="p-4 space-y-3">
                 <div>
-                  <p className="text-sm font-semibold text-[#0d0e0e] mb-1.5">Subject</p>
+                  <p className="text-sm font-semibold text-[#0d0e0e] mb-1.5">{t('publish.subject')}</p>
                   <Input
                     value={customSubject}
                     onChange={(e) => setCustomSubject(e.target.value)}
-                    placeholder="e.g. The Staff Handbook for [Company Name]"
+                    placeholder={t('publish.subjectPlaceholder')}
                     className="rounded-[10px] border-[#c8d8d3] bg-white text-sm"
                   />
                 </div>
                 <p className="text-sm font-semibold text-[#0d0e0e]">
-                  Message body
+                  {t('publish.messageBody')}
                 </p>
                 <Textarea
                   rows={8}
                   value={customMessage}
                   onChange={(e) => setCustomMessage(e.target.value)}
-                  placeholder="Write your custom message to employees..."
+                  placeholder={t('publish.messagePlaceholder')}
                   className="rounded-[10px] border-[#c8d8d3] bg-white text-sm"
                 />
                 <div className="pt-1">
                   <p className="text-xs font-medium text-[#6b7280] mb-2">
-                    Insert placeholder — these will be replaced with real values when sent:
+                    {t('publish.insertPlaceholder')}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {[
@@ -408,7 +411,7 @@ Greetings from your company.`;
           {/* message to employees */}
           <Card className="bg-white border border-[#e5efea] rounded-[16px]">
             <CardContent className="p-4 space-y-3">
-              <p className="text-sm font-bold text-[#0d0e0e]">Message to employees</p>
+              <p className="text-sm font-bold text-[#0d0e0e]">{t('publish.messageToEmployees')}</p>
               <div className="space-y-2 text-sm text-[#0d0e0e]">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -419,7 +422,7 @@ Greetings from your company.`;
                     onChange={() => setMessageType('none')}
                     className="accent-[#2f946f]"
                   />
-                  <span>No</span>
+                  <span>{t('publish.no')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -430,7 +433,7 @@ Greetings from your company.`;
                     onChange={() => setMessageType('standard')}
                     className="accent-[#2f946f]"
                   />
-                  <span>Standard</span>
+                  <span>{t('publish.standard')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -441,7 +444,7 @@ Greetings from your company.`;
                     onChange={() => setMessageType('custom')}
                     className="accent-[#2f946f]"
                   />
-                  <span>Customized</span>
+                  <span>{t('publish.customized')}</span>
                 </label>
               </div>
             </CardContent>
@@ -450,7 +453,7 @@ Greetings from your company.`;
           {/* message type */}
           <Card className="bg-white border border-[#e5efea] rounded-[16px]">
             <CardContent className="p-4 space-y-3">
-              <p className="text-sm font-bold text-[#0d0e0e]">Message type</p>
+              <p className="text-sm font-bold text-[#0d0e0e]">{t('publish.messageType')}</p>
               <div className="space-y-2 text-sm text-[#0d0e0e]">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -459,7 +462,7 @@ Greetings from your company.`;
                     onChange={() => toggleChannel('email')}
                     className="accent-[#2f946f]"
                   />
-                  <span>Email</span>
+                  <span>{t('publish.email')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -468,7 +471,7 @@ Greetings from your company.`;
                     onChange={() => toggleChannel('sms')}
                     className="accent-[#2f946f]"
                   />
-                  <span>SMS</span>
+                  <span>{t('publish.sms')}</span>
                 </label>
               </div>
             </CardContent>
@@ -477,7 +480,7 @@ Greetings from your company.`;
           {/* more actions */}
           <Card className="bg-white border border-[#e5efea] rounded-[16px]">
             <CardContent className="p-4 space-y-3">
-              <p className="text-sm font-bold text-[#0d0e0e]">More actions</p>
+              <p className="text-sm font-bold text-[#0d0e0e]">{t('publish.moreActions')}</p>
               <div className="space-y-2">
                 <Button
                   variant="outline"
@@ -485,7 +488,7 @@ Greetings from your company.`;
                   onClick={() => navigate(employeesRoutes.messageLogs)}
                   className="w-full justify-between border-[#e5e7eb] text-[#0d0e0e] rounded-[999px] h-9 text-sm"
                 >
-                  <span>Send follow up</span>
+                  <span>{t('publish.sendFollowUp')}</span>
                   <ArrowLeft className="h-4 w-4 rotate-180" />
                 </Button>
                 <Button
@@ -494,7 +497,7 @@ Greetings from your company.`;
                   onClick={() => navigate(handbookRoutes.pages)}
                   className="w-full justify-between border-[#e5e7eb] text-[#0d0e0e] rounded-[999px] h-9 text-sm"
                 >
-                  <span>Edit handbook</span>
+                  <span>{t('publish.editHandbook')}</span>
                   <ArrowLeft className="h-4 w-4 rotate-180" />
                 </Button>
               </div>
@@ -505,4 +508,3 @@ Greetings from your company.`;
     </PageShell>
   );
 };
-

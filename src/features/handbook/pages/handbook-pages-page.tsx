@@ -12,7 +12,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Search, ArrowLeft, GripVertical, AlertTriangle, Loader2 } from 'lucide-react';
-import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
+import { useHandbookLang } from '../components/language-toggle';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
@@ -22,10 +22,12 @@ import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import type { HandbookNode } from '@/types/models';
 import { useAuth } from '@/context/auth-context';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 export const HandbookPagesPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation('handbook');
     const { user } = useAuth();
     const [search, setSearch] = useState('');
     const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
@@ -39,7 +41,7 @@ export const HandbookPagesPage: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
-    const [lang, setLang] = useHandbookLang();
+    const [lang] = useHandbookLang();
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -129,7 +131,7 @@ export const HandbookPagesPage: React.FC = () => {
                     setProvisioning(true);
                     setError(null);
                 } else {
-                    setError(msg || 'Failed to load handbook data');
+                    setError(msg || t('pages.failedToLoad'));
                 }
             }
         } finally {
@@ -229,19 +231,19 @@ export const HandbookPagesPage: React.FC = () => {
             case 'ready':
                 return (
                     <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-3 py-1 text-xs font-medium">
-                        Ready
+                        {t('status.ready')}
                     </Badge>
                 );
             case 'not_ready':
                 return (
                     <Badge className="bg-[#fef3d6] text-[#8b6914] border-0 rounded-[6px] px-3 py-1 text-xs font-medium">
-                        Not ready
+                        {t('status.notReady')}
                     </Badge>
                 );
             case 'opted_out':
                 return (
                     <Badge className="bg-[#ffe5e7] text-[#a02530] border-0 rounded-[6px] px-3 py-1 text-xs font-medium">
-                        Opted out
+                        {t('status.optedOut')}
                     </Badge>
                 );
             default:
@@ -268,10 +270,10 @@ export const HandbookPagesPage: React.FC = () => {
 
             const response = await handbookApi.saveProgress(payload);
 
-            toast.success(response.message || 'Progress saved successfully!');
+            toast.success(response.message || t('pages.progressSaved'));
         } catch (err: any) {
             console.error('Failed to save progress:', err);
-            toast.error(err.message || 'Failed to save progress. Please try again.');
+            toast.error(err.message || t('pages.failedToSave'));
         } finally {
             setIsSaving(false);
         }
@@ -280,7 +282,7 @@ export const HandbookPagesPage: React.FC = () => {
     const handlePublishHandbook = () => {
         const bid = handbookBid;
         if (!bid) {
-            toast.error('Handbook ID not found. Please try again.');
+            toast.error(t('pages.handbookIdNotFound'));
             return;
         }
 
@@ -290,7 +292,7 @@ export const HandbookPagesPage: React.FC = () => {
             .map((p: any) => p.id);
 
         if (allReadyIds.length === 0) {
-            toast.error('No pages are marked as Ready. Please mark at least one page as Ready before publishing.');
+            toast.error(t('pages.noPagesReady'));
             return;
         }
 
@@ -338,7 +340,7 @@ export const HandbookPagesPage: React.FC = () => {
             }
         } catch (err: any) {
             console.error('Failed to refresh handbook tree:', err);
-            setError(err.message || 'Failed to refresh handbook data');
+            setError(err.message || t('pages.failedToRefresh'));
         } finally {
             setLoading(false);
         }
@@ -367,7 +369,7 @@ export const HandbookPagesPage: React.FC = () => {
             await handbookApi.reorderHandbook(handbookBid, updates);
         } catch (err: any) {
             console.error('Failed to reorder pages:', err);
-            toast.error(err.message || 'Failed to reorder pages. Changes were reverted.');
+            toast.error(err.message || t('pages.reorderPagesFailed'));
             await refreshHandbookTree();
         }
     };
@@ -407,7 +409,7 @@ export const HandbookPagesPage: React.FC = () => {
         });
 
         if (!handbookBid) {
-            toast.error('Handbook not fully loaded yet. Please wait and try again.');
+            toast.error(t('pages.notLoaded'));
             await refreshHandbookTree();
             return;
         }
@@ -422,7 +424,7 @@ export const HandbookPagesPage: React.FC = () => {
             await handbookApi.reorderHandbook(handbookBid, updates);
         } catch (err: any) {
             console.error('Failed to reorder themes:', err);
-            toast.error(err.message || 'Failed to reorder themes. Changes were reverted.');
+            toast.error(err.message || t('pages.reorderThemesFailed'));
             await refreshHandbookTree();
         }
     };
@@ -456,7 +458,7 @@ export const HandbookPagesPage: React.FC = () => {
 
     const handleBulkAction = async (action: 'mark_ready' | 'mark_not_ready' | 'opt_out' | 'include') => {
         if (!canEditHandbook) {
-            toast.error("You don't have permission to perform bulk actions.");
+            toast.error(t('pages.noPermissionBulk'));
             return;
         }
 
@@ -464,7 +466,7 @@ export const HandbookPagesPage: React.FC = () => {
         const currentChapterPageIds = new Set(pages.map((p: any) => p.id));
         const pageIds = Array.from(selectedPages).filter(id => currentChapterPageIds.has(id));
         if (pageIds.length === 0) {
-            toast.error('Select at least one page in this chapter first.');
+            toast.error(t('pages.selectAtLeastOne'));
             return;
         }
 
@@ -475,7 +477,7 @@ export const HandbookPagesPage: React.FC = () => {
             await refreshHandbookTree();
         } catch (err: any) {
             console.error('Failed to perform bulk action:', err);
-            toast.error(err.message || 'Failed to update pages. Please try again.');
+            toast.error(err.message || t('pages.failedToUpdate'));
         } finally {
             setIsBulkUpdating(false);
         }
@@ -483,7 +485,7 @@ export const HandbookPagesPage: React.FC = () => {
 
     const handleAddPage = () => {
         if (!canEditHandbook) {
-            toast.error("You don't have permission to create handbook pages.");
+            toast.error(t('pages.noPermissionCreate'));
             return;
         }
         setIsAddPageModalOpen(true);
@@ -501,30 +503,29 @@ export const HandbookPagesPage: React.FC = () => {
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        Back
+                        {t('common:back')}
                     </Button>
-                    <h1 className="text-2xl font-bold text-[#0d0e0e]">View All Pages</h1>
-                    <LanguageToggle value={lang} onChange={setLang} disabled={loading} />
+                    <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('pages.title')}</h1>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <Button
                         onClick={() => setPreviewModalOpen(true)}
                         className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-4 py-2 h-auto text-sm"
                     >
-                        Preview handbook
+                        {t('pages.previewHandbook')}
                     </Button>
                     <Button
                         variant="outline"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
                         onClick={() => {
                             if (!canEditHandbook) {
-                                toast.error("You don't have permission to create handbook themes.");
+                                toast.error(t('pages.noPermissionCreateTheme'));
                                 return;
                             }
                             navigate(handbookRoutes.addTheme);
                         }}
                     >
-                        Add theme
+                        {t('pages.addTheme')}
                     </Button>
                 </div>
             </div>
@@ -533,18 +534,14 @@ export const HandbookPagesPage: React.FC = () => {
             <div className="mb-6 bg-[#fffbf0] rounded-[8px] border-l-4 border-[#f59e0b] px-5 py-4">
                 <div className="flex items-start justify-between gap-4">
                     <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">Help.</span> Select the pages to include, write or edit their
-                        content, and mark a page <span className="italic">Ready</span> when it matches exactly what
-                        you want. Only pages that are <span className="font-bold">selected</span> and{' '}
-                        <span className="font-bold">Ready</span> will be published. You can also create your own
-                        pages and themes.
+                        {t('resources.helpDesc')} <span className="italic">{t('resources.helpReady')}</span>. {t('resources.helpOnlyPages')} <span className="font-bold">{t('resources.helpSelected')}</span> {t('resources.helpWillBePublished')}
                     </p>
                     <Button
                         variant="outline"
                         size="sm"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm whitespace-nowrap"
                     >
-                        Read full guide
+                        {t('pages.readFullGuide')}
                     </Button>
                 </div>
             </div>
@@ -558,7 +555,7 @@ export const HandbookPagesPage: React.FC = () => {
                         <div className="relative w-[240px]">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             <Input
-                                placeholder="Search pages"
+                                placeholder={t('pages.searchPages')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-10 h-10 rounded-[8px] border-[#e5e7eb]"
@@ -570,13 +567,13 @@ export const HandbookPagesPage: React.FC = () => {
                             onClick={() => setStatusFilter(null)}
                             className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 h-10"
                         >
-                            Show Your Pages
+                            {t('pages.showYourPages')}
                         </Button>
                         <div className="flex items-center gap-4 ml-auto">
                             {[
-                                { label: 'Ready', color: '#10b981', value: 'ready' },
-                                { label: 'Not ready', color: '#f59e0b', value: 'not_ready' },
-                                { label: 'Opted out', color: '#ef4444', value: 'opted_out' },
+                                { label: t('status.ready'), color: '#10b981', value: 'ready' },
+                                { label: t('status.notReady'), color: '#f59e0b', value: 'not_ready' },
+                                { label: t('status.optedOut'), color: '#ef4444', value: 'opted_out' },
                             ].map((status) => (
                                 <button
                                     key={status.value}
@@ -673,19 +670,19 @@ export const HandbookPagesPage: React.FC = () => {
 
                     {/* Pages List */}
                     {loading && (
-                        <div className="text-center py-12 text-gray-400">Loading handbook...</div>
+                        <div className="text-center py-12 text-gray-400">{t('pages.loading')}</div>
                     )}
 
                     {provisioning && !error && (
                         <div className="flex flex-col items-center justify-center py-16 gap-4">
                             <Loader2 className="h-8 w-8 text-[#d97706] animate-spin" />
                             <div className="text-center">
-                                <p className="text-base font-semibold text-[#92400e]">Setting up your handbook...</p>
+                                <p className="text-base font-semibold text-[#92400e]">{t('pages.provisioningTitle')}</p>
                                 <p className="text-sm text-[#a16207] mt-1">
-                                    We're preparing your handbook template. This usually takes a minute or two.
+                                    {t('pages.provisioningDesc')}
                                 </p>
                                 <p className="text-sm text-[#a16207] mt-0.5">
-                                    The page will refresh automatically when it's ready.
+                                    {t('pages.provisioningRefresh')}
                                 </p>
                             </div>
                         </div>
@@ -763,7 +760,7 @@ export const HandbookPagesPage: React.FC = () => {
                                                     }
                                                     setSelectedPages(newSelected);
                                                 }}
-                                                title={page.isDeletable === false ? 'This page cannot be deleted' : undefined}
+                                                title={page.isDeletable === false ? t('pages.cannotDelete') : undefined}
                                                 className="flex-shrink-0 cursor-pointer"
                                             >
                                                 <div
@@ -818,20 +815,19 @@ export const HandbookPagesPage: React.FC = () => {
                                                 <span className="font-medium text-[#0d0e0e] truncate">{page.title}</span>
                                                 {page.badge && (
                                                     <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
-                                                        {page.badge === 'custom' ? (lang === 'da' ? 'Egen side' : 'Custom') : 'Premade'}
+                                                        {page.badge === 'custom' ? t('badge.custom') : t('badge.premade')}
                                                     </Badge>
                                                 )}
                                                 {/* Recent activity summary */}
                                                 {(() => {
-                                                    const isDa = lang === 'da';
                                                     const activities: string[] = [];
-                                                    if (page.badge === 'custom') activities.push(isDa ? 'Egen side' : 'Custom page');
-                                                    if (page.hasCustomBody) activities.push(isDa ? 'Tilføjet tekst' : 'Added text');
-                                                    if (page.hasReceipt) activities.push(isDa ? 'Kvittering' : 'Receipt');
-                                                    if (page.hasNote) activities.push(isDa ? 'Noter' : 'Notes');
-                                                    if (page.hasDocuments) activities.push(isDa ? 'Dokument' : 'Documents');
-                                                    if (page.hasLinks) activities.push('Links');
-                                                    if (page.hasImage) activities.push(isDa ? 'Billede' : 'Image');
+                                                    if (page.badge === 'custom') activities.push(t('tag.customPage'));
+                                                    if (page.hasCustomBody) activities.push(t('tag.addedText'));
+                                                    if (page.hasReceipt) activities.push(t('tag.receipt'));
+                                                    if (page.hasNote) activities.push(t('tag.notes'));
+                                                    if (page.hasDocuments) activities.push(t('tag.documents'));
+                                                    if (page.hasLinks) activities.push(t('tag.links'));
+                                                    if (page.hasImage) activities.push(t('tag.image'));
                                                     return activities.length > 0 ? (
                                                         <span className="text-xs italic text-gray-400 flex-shrink-0 whitespace-nowrap">
                                                             ({activities.join(', ')})
@@ -839,7 +835,7 @@ export const HandbookPagesPage: React.FC = () => {
                                                     ) : null;
                                                 })()}
                                                 {isExpanded && (
-                                                    <span className="text-xs text-gray-400 italic flex-shrink-0">No text - Editing draft...</span>
+                                                    <span className="text-xs text-gray-400 italic flex-shrink-0">{t('pages.noTextDraft')}</span>
                                                 )}
                                             </div>
 
@@ -851,7 +847,7 @@ export const HandbookPagesPage: React.FC = () => {
                                             {/* Action Buttons */}
                                             <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                                 <div
-                                                    title={!canEditHandbook ? 'Only admins can edit handbook pages' : undefined}
+                                                    title={!canEditHandbook ? t('pages.adminOnlyEdit') : undefined}
                                                     className={!canEditHandbook ? 'cursor-not-allowed' : undefined}
                                                 >
                                                     <Button
@@ -861,7 +857,7 @@ export const HandbookPagesPage: React.FC = () => {
                                                         disabled={!canEditHandbook}
                                                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-1.5 h-auto text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
-                                                        Edit
+                                                        {t('pages.edit')}
                                                     </Button>
                                                 </div>
                                                 <Button
@@ -870,7 +866,7 @@ export const HandbookPagesPage: React.FC = () => {
                                                     onClick={() => openSneakPeek(page.id, page.title)}
                                                     className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-1.5 h-auto text-sm"
                                                 >
-                                                    Sneak peek
+                                                    {t('pages.sneakPeek')}
                                                 </Button>
                                             </div>
                                         </div>
@@ -896,7 +892,7 @@ export const HandbookPagesPage: React.FC = () => {
                             {/* Empty State */}
                             {filteredPages.length === 0 && (
                                 <div className="text-center py-12 text-gray-400">
-                                    No pages found in this chapter.
+                                    {t('pages.noPagesInChapter')}
                                 </div>
                             )}
 
@@ -933,7 +929,7 @@ export const HandbookPagesPage: React.FC = () => {
                                         }}
                                         className="border-[#fca5a5] text-[#b91c1c] rounded-[8px] px-4 py-2 h-auto text-sm bg-[#fef2f2] hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        Delete page{checkedInViewIds.length > 1 ? ` (${checkedInViewIds.length})` : ''}
+                                        {t('pages.deletePage')}{checkedInViewIds.length > 1 ? ` (${checkedInViewIds.length})` : ''}
                                     </Button>
                                 )}
                                 <Button
@@ -941,7 +937,7 @@ export const HandbookPagesPage: React.FC = () => {
                                     onClick={handleAddPage}
                                     disabled={!canEditHandbook}
                                 >
-                                    Add Page
+                                    {t('pages.addPage')}
                                 </Button>
                             </div>
                         </div>
@@ -953,22 +949,22 @@ export const HandbookPagesPage: React.FC = () => {
                     {/* Your Progress */}
                     <Card className="bg-white border border-[#e5e7eb] rounded-[8px]">
                         <CardContent className="pt-6">
-                            <h3 className="text-base font-bold text-[#0d0e0e] mb-4">Your progress</h3>
+                            <h3 className="text-base font-bold text-[#0d0e0e] mb-4">{t('pages.yourProgress')}</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">Pages selected</span>
+                                    <span className="text-gray-600">{t('pages.pagesSelected')}</span>
                                     <span className="font-bold text-[#0d0e0e]">{progressStats.selected}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">Ready</span>
+                                    <span className="text-gray-600">{t('status.ready')}</span>
                                     <span className="font-bold text-[#0d0e0e]">{progressStats.ready}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">Not ready</span>
+                                    <span className="text-gray-600">{t('status.notReady')}</span>
                                     <span className="font-bold text-[#0d0e0e]">{progressStats.notReady}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-gray-600">Opted out</span>
+                                    <span className="text-gray-600">{t('status.optedOut')}</span>
                                     <span className="font-bold text-[#0d0e0e]">{progressStats.optedOut}</span>
                                 </div>
                             </div>
@@ -978,7 +974,7 @@ export const HandbookPagesPage: React.FC = () => {
                     {/* Bulk Actions */}
                     <Card className="bg-white border border-[#e5e7eb] rounded-[8px]">
                         <CardContent className="pt-6">
-                            <h3 className="text-base font-bold text-[#0d0e0e] mb-4">Bulk actions</h3>
+                            <h3 className="text-base font-bold text-[#0d0e0e] mb-4">{t('pages.bulkActions')}</h3>
                             <div className="space-y-2">
                                 <Button
                                     variant="outline"
@@ -986,7 +982,7 @@ export const HandbookPagesPage: React.FC = () => {
                                     onClick={() => handleBulkAction('mark_ready')}
                                     disabled={!canEditHandbook || isBulkUpdating}
                                 >
-                                    Mark as Ready
+                                    {t('pages.markReady')}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -994,7 +990,7 @@ export const HandbookPagesPage: React.FC = () => {
                                     onClick={() => handleBulkAction('mark_not_ready')}
                                     disabled={!canEditHandbook || isBulkUpdating}
                                 >
-                                    Mark as Not ready
+                                    {t('pages.markNotReady')}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -1002,7 +998,7 @@ export const HandbookPagesPage: React.FC = () => {
                                     onClick={() => handleBulkAction('opt_out')}
                                     disabled={!canEditHandbook || isBulkUpdating}
                                 >
-                                    Opt out
+                                    {t('pages.optOut')}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -1010,7 +1006,7 @@ export const HandbookPagesPage: React.FC = () => {
                                     onClick={() => handleBulkAction('include')}
                                     disabled={!canEditHandbook || isBulkUpdating}
                                 >
-                                    Include
+                                    {t('pages.include')}
                                 </Button>
                             </div>
                         </CardContent>
@@ -1020,14 +1016,13 @@ export const HandbookPagesPage: React.FC = () => {
                     <Card className="bg-white border border-[#e5e7eb] rounded-[8px]">
                         <CardContent className="pt-6 space-y-4">
                             <div>
-                                <p className="text-sm font-bold text-[#0d0e0e] mb-2">Remember:</p>
+                                <p className="text-sm font-bold text-[#0d0e0e] mb-2">{t('pages.remember')}</p>
                                 <p className="text-sm text-gray-600">
-                                    Only pages that are <strong>selected</strong> and marked <strong>Ready</strong>{' '}
-                                    will be visible to employees after you publish. You can always edit later.
+                                    {t('pages.rememberDesc')}
                                 </p>
                             </div>
                             <div className="border-t border-gray-200 pt-4">
-                                <p className="text-sm font-medium text-[#0d0e0e] mb-3">Ready to share changes?</p>
+                                <p className="text-sm font-medium text-[#0d0e0e] mb-3">{t('pages.readyToShare')}</p>
                                 <div className="flex flex-col gap-2">
                                     <Button
                                         size="sm"
@@ -1035,7 +1030,7 @@ export const HandbookPagesPage: React.FC = () => {
                                         disabled={!canEditHandbook || isSaving || isBulkUpdating}
                                         className="w-full bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] h-9"
                                     >
-                                        Publish handbook
+                                        {t('pages.publishHandbook')}
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -1044,7 +1039,7 @@ export const HandbookPagesPage: React.FC = () => {
                                         disabled={!canEditHandbook || isSaving || isBulkUpdating}
                                         className="w-full border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] h-9"
                                     >
-                                        {isSaving ? 'Saving...' : 'Save progress'}
+                                        {isSaving ? t('common:saving') : t('pages.saveProgress')}
                                     </Button>
                                 </div>
                             </div>
@@ -1057,11 +1052,9 @@ export const HandbookPagesPage: React.FC = () => {
             <div className="mt-6 bg-[#fffbf0] border-l-4 border-[#f59e0b] rounded-[8px] p-4">
                 <div className="flex items-start justify-between gap-4">
                     <div>
-                        <p className="font-bold text-sm mb-1">Tip.</p>
+                        <p className="font-bold text-sm mb-1">{t('pages.tip')}</p>
                         <p className="text-sm text-[#0d0e0e]">
-                            Want to target pages to specific job types or departments? Create them first under{' '}
-                            <span className="font-semibold italic">Settings</span>, then return here to assign
-                            visibility.
+                            {t('pages.tipDesc')}
                         </p>
                     </div>
                     <Button
@@ -1069,7 +1062,7 @@ export const HandbookPagesPage: React.FC = () => {
                         size="sm"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm whitespace-nowrap"
                     >
-                        Open Settings
+                        {t('pages.openSettings')}
                     </Button>
                 </div>
             </div>
@@ -1087,6 +1080,7 @@ export const HandbookPagesPage: React.FC = () => {
                     pageTitle={sneakPeekPage.title}
                     lang={lang}
                     canEdit={canEditHandbook}
+                    handbookBid={handbookBid}
                 />
             )}
 
@@ -1122,16 +1116,14 @@ export const HandbookPagesPage: React.FC = () => {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-[#0d0e0e]">
                             <AlertTriangle className="h-5 w-5 text-[#b91c1c]" />
-                            Delete handbook pages?
+                            {t('pages.deleteTitle')}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="py-4">
                         {pendingDelete && (
                             <>
                                 <p className="text-sm text-[#374151] mb-3">
-                                    You are about to delete {pendingDelete.ids.length} page
-                                    {pendingDelete.ids.length !== 1 ? 's' : ''}. This cannot be
-                                    undone.
+                                    {t('pages.deleteConfirm', { count: pendingDelete.ids.length })}
                                 </p>
                                 <ul className="list-disc list-inside text-sm text-[#374151] space-y-1">
                                     {pendingDelete.names.map((name) => (
@@ -1147,7 +1139,7 @@ export const HandbookPagesPage: React.FC = () => {
                             onClick={() => setDeleteConfirmOpen(false)}
                             className="rounded-[8px]"
                         >
-                            Cancel
+                            {t('common:cancel')}
                         </Button>
                         <Button
                             className="rounded-[8px] bg-[#b91c1c] hover:bg-[#991b1b] text-white"
@@ -1161,8 +1153,8 @@ export const HandbookPagesPage: React.FC = () => {
                                     }
                                     toast.success(
                                         pendingDelete.ids.length === 1
-                                            ? 'Page deleted'
-                                            : `${pendingDelete.ids.length} pages deleted`
+                                            ? t('pages.pageDeleted')
+                                            : t('pages.pagesDeleted', { count: pendingDelete.ids.length })
                                     );
                                     setFocusedPageId((current) =>
                                         current && pendingDelete.ids.includes(current)
@@ -1182,13 +1174,13 @@ export const HandbookPagesPage: React.FC = () => {
                                             apiError.message.trim()
                                             ? apiError.message.trim()
                                             : err?.message ||
-                                            'Failed to delete page(s). Please try again.';
+                                            t('pages.failedToDelete');
                                     toast.error(message);
                                 }
                                 setPendingDelete(null);
                             }}
                         >
-                            Delete
+                            {t('common:delete')}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

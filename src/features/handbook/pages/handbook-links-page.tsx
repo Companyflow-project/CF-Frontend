@@ -4,12 +4,20 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Search, ExternalLink, Edit } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
+import { useAuth } from '@/context/auth-context';
+import { useViewAsEmployee } from '@/context/view-as-employee-context';
 import type { HandbookResourceLink } from '@/types/models';
 
 export const HandbookLinksPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation('handbook');
+    const { user } = useAuth();
+    const { viewAsEmployee } = useViewAsEmployee();
+    const isAdmin = !viewAsEmployee && (user?.role === 'ADMIN' || user?.role === 'company_admin');
+    const lang = i18n.language || 'da';
     const [links, setLinks] = useState<HandbookResourceLink[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -20,7 +28,7 @@ export const HandbookLinksPage: React.FC = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const data = await handbookApi.getResourceLinks();
+                const data = await handbookApi.getResourceLinks(lang);
                 setLinks(data);
             } catch (err: any) {
                 console.error('Failed to fetch links:', err);
@@ -31,7 +39,7 @@ export const HandbookLinksPage: React.FC = () => {
         };
 
         fetchLinks();
-    }, []);
+    }, [lang]);
 
     const filteredLinks = links.filter((link) => {
         const searchLower = search.toLowerCase();
@@ -65,20 +73,16 @@ export const HandbookLinksPage: React.FC = () => {
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        Back
+                        {t('common:back')}
                     </Button>
-                    <h1 className="text-2xl font-bold text-[#0d0e0e]">Links</h1>
+                    <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('resources.links')}</h1>
                 </div>
             </div>
 
             {/* Help Banner */}
             <div className="mb-6 bg-[#fffbf0] rounded-[8px] border-l-4 border-[#f59e0b] px-5 py-4">
                 <p className="text-sm text-[#0d0e0e]">
-                    <span className="font-bold">Help.</span> Select the pages to include, write or edit their
-                    content, and mark a page <span className="italic">Ready</span> when it matches exactly what
-                    you want. Only pages that are <span className="font-bold">selected</span> and{' '}
-                    <span className="font-bold">Ready</span> will be published. You can also create your own
-                    pages and themes.
+                    {t('resources.helpDesc')} <span className="italic">{t('resources.helpReady')}</span>. {t('resources.helpOnlyPages')} <span className="font-bold">{t('resources.helpSelected')}</span> {t('resources.helpWillBePublished')}
                 </p>
             </div>
 
@@ -87,7 +91,7 @@ export const HandbookLinksPage: React.FC = () => {
                 <div className="relative w-[320px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="Search links..."
+                        placeholder={t('resources.searchLinks')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-10 h-10 rounded-[8px] border-[#e5e7eb]"
@@ -97,7 +101,7 @@ export const HandbookLinksPage: React.FC = () => {
 
             {/* Content */}
             {loading && (
-                <div className="text-center py-12 text-gray-400">Loading links...</div>
+                <div className="text-center py-12 text-gray-400">{t('resources.loadingLinks')}</div>
             )}
 
             {error && (
@@ -108,7 +112,7 @@ export const HandbookLinksPage: React.FC = () => {
                 <div className="space-y-6">
                     {Object.keys(groupedLinks).length === 0 ? (
                         <div className="text-center py-12 text-gray-400">
-                            No links found.
+                            {t('resources.noLinks')}
                         </div>
                     ) : (
                         Object.entries(groupedLinks).map(([bookTitle, bookLinks]) => (
@@ -124,17 +128,19 @@ export const HandbookLinksPage: React.FC = () => {
                                         <thead>
                                             <tr className="border-b border-[#e5e7eb] bg-[#fafafa]">
                                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7475] uppercase tracking-wide">
-                                                    Page
+                                                    {t('resources.page')}
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7475] uppercase tracking-wide">
-                                                    Book
+                                                    {t('resources.book')}
                                                 </th>
                                                 <th className="px-6 py-3 text-left text-xs font-semibold text-[#6b7475] uppercase tracking-wide">
-                                                    URL
+                                                    {t('resources.url')}
                                                 </th>
-                                                <th className="px-6 py-3 text-right text-xs font-semibold text-[#6b7475] uppercase tracking-wide">
-                                                    Actions
-                                                </th>
+                                                {isAdmin && (
+                                                    <th className="px-6 py-3 text-right text-xs font-semibold text-[#6b7475] uppercase tracking-wide">
+                                                        {t('resources.actions')}
+                                                    </th>
+                                                )}
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -164,16 +170,18 @@ export const HandbookLinksPage: React.FC = () => {
                                                             <span className="text-gray-400">—</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => navigate(handbookRoutes.editPage(link.pageId))}
-                                                            className="text-[#3d997d] hover:bg-[#f4fbf8] rounded-[6px] px-3 py-1.5 h-auto"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                    </td>
+                                                    {isAdmin && (
+                                                        <td className="px-6 py-4 text-right">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => navigate(handbookRoutes.editPage(link.pageId))}
+                                                                className="text-[#3d997d] hover:bg-[#f4fbf8] rounded-[6px] px-3 py-1.5 h-auto"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                             ))}
                                         </tbody>

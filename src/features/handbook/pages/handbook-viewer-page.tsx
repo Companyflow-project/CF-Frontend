@@ -1,308 +1,351 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
-import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
 import { Button } from '@/components/ui/button';
-import { useHandbookPages } from '@/lib/api-hooks';
-import type { HandbookPage } from '@/lib/api-types';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
-import { Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAppearance } from '@/context/appearance-context';
 
-interface HandbookPageWithChildren extends HandbookPage {
-  children: HandbookPageWithChildren[];
-}
-
-function findPageByNid(nodes: HandbookPageWithChildren[], nid: number): HandbookPageWithChildren | null {
-  for (const node of nodes) {
-    if (node.nid === nid) return node;
-    if (node.children?.length) {
-      const found = findPageByNid(node.children, nid);
-      if (found) return found;
-    }
-  }
-  return null;
+interface FlatPage {
+  id: number;
+  title: string;
+  chapterTitle: string;
+  html: string;
 }
 
 export const HandbookViewerPage: React.FC = () => {
-  const { handbookId } = useParams<{ handbookId: string }>();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation('handbook');
   const { getColor } = useAppearance();
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
-  const [contentHtml, setContentHtml] = useState<string | null>(null);
-  const [contentLoading, setContentLoading] = useState(false);
-  const [contentError, setContentError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [flatPages, setFlatPages] = useState<FlatPage[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [viewerMeta, setViewerMeta] = useState<HandbookViewerPageMeta | null>(null);
+  const [metaLoading, setMetaLoading] = useState(false);
   const [signingReceipt, setSigningReceipt] = useState(false);
   const [signedAt, setSignedAt] = useState<string | null>(null);
   const trackedViewNids = useRef<Set<number>>(new Set());
-  const limit = 50;
-  const langcode = 'da';
 
-  const { data: pages, loading: pagesLoading, error: pagesError } = useHandbookPages(
-    handbookId ? { handbookId, page: 1, limit, langcode } : null
-  );
-
-  const fetchContent = useCallback(async (nid: number) => {
-    setContentLoading(true);
-    setContentError(null);
-    setViewerMeta(null);
-    setSignedAt(null);
-    try {
-      const [html, meta] = await Promise.all([
-        handbookApi.getHandbookContent(nid),
-        handbookApi.getHandbookViewerPageMeta(nid).catch(() => null),
-      ]);
-      setContentHtml(html);
-      setViewerMeta(meta ?? null);
-    } catch (err) {
-      setContentError(err instanceof Error ? err : new Error('Failed to load page content'));
-      setContentHtml(null);
-    } finally {
-      setContentLoading(false);
-    }
-  }, []);
-
+  // Fetch handbook tree, then pre-fetch content for all ready pages, keep only those with content
   useEffect(() => {
-    if (!selectedPageId) {
-      setContentHtml(null);
-      setContentError(null);
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { chapters } = await handbookApi.getHandbookTree(i18n.language);
+
+        // Collect all ready pages from chapters
+        const candidates: { id: number; title: string; chapterTitle: string }[] = [];
+        for (const chapter of chapters) {
+          if (chapter.type !== 'chapter') continue;
+          const chapterPages = (chapter.pages || []).filter(
+            (p) => (p.status as string) === 'ready'
+          );
+          for (const page of chapterPages) {
+            candidates.push({ id: page.id, title: page.title, chapterTitle: chapter.title });
+          }
+        }
+
+        // Pre-fetch content for all pages in parallel
+        const results = await Promise.all(
+          candidates.map(async (page) => {
+            try {
+              const html = await handbookApi.getHandbookContent(page.id);
+              return { ...page, html: html || '' };
+            } catch {
+              return { ...page, html: '' };
+            }
+          })
+        );
+
+        setFlatPages(results);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load handbook');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
+  }, [i18n.language]);
+
+  const totalPages = flatPages.length;
+  const currentPageData = flatPages[currentPage - 1] ?? null;
+
+  // Fetch viewer meta (receipt/tracking) when page changes
+  useEffect(() => {
+    if (!currentPageData) {
       setViewerMeta(null);
       setSignedAt(null);
       return;
     }
-    const nid = Number(selectedPageId);
-    if (!Number.isFinite(nid)) return;
-    fetchContent(nid);
-  }, [selectedPageId, fetchContent]);
+    setMetaLoading(true);
+    setSignedAt(null);
+    handbookApi.getHandbookViewerPageMeta(currentPageData.id)
+      .then((meta) => setViewerMeta(meta ?? null))
+      .catch(() => setViewerMeta(null))
+      .finally(() => setMetaLoading(false));
+  }, [currentPageData?.id]);
 
-  // Track view once per page per session (avoids excessive DB writes on quick toggles)
+  // Track view once per page per session
   useEffect(() => {
-    if (!selectedPageId || contentLoading) return;
-    const nid = Number(selectedPageId);
-    if (!Number.isFinite(nid) || trackedViewNids.current.has(nid)) return;
+    if (!currentPageData) return;
+    const nid = currentPageData.id;
+    if (trackedViewNids.current.has(nid)) return;
     trackedViewNids.current.add(nid);
     handbookApi.trackHandbookView(nid).catch(() => {
       trackedViewNids.current.delete(nid);
     });
-  }, [selectedPageId, contentLoading]);
+  }, [currentPageData?.id]);
 
-  // Build tree structure from pages (handle missing parentId/weight gracefully)
-  const buildTree = (pagesList: HandbookPage[]): HandbookPageWithChildren[] => {
-    if (pagesList.some((p) => (p as HandbookPage & { parentId?: number }).parentId !== undefined)) {
-      const pageMap = new Map<number, HandbookPageWithChildren>();
-      const roots: HandbookPageWithChildren[] = [];
-      pagesList.forEach((page) => {
-        pageMap.set(page.nid, { ...page, children: [] });
-      });
-      pagesList.forEach((page) => {
-        const pageWithChildren = pageMap.get(page.nid)!;
-        const parentId = (page as HandbookPage & { parentId?: number }).parentId ?? null;
-        if (parentId === null || !pageMap.has(parentId)) {
-          roots.push(pageWithChildren);
-        } else {
-          pageMap.get(parentId)!.children.push(pageWithChildren);
-        }
-      });
-      const sortPages = (nodes: HandbookPageWithChildren[]): HandbookPageWithChildren[] =>
-        nodes
-          .sort((a, b) => {
-            const wa = (a as HandbookPage & { weight?: number }).weight ?? 0;
-            const wb = (b as HandbookPage & { weight?: number }).weight ?? 0;
-            if (wa !== wb) return wa - wb;
-            return a.title.localeCompare(b.title);
-          })
-          .map((node) => ({ ...node, children: sortPages(node.children) }));
-      return sortPages(roots);
-    }
-    return pagesList.map((page) => ({ ...page, children: [] }));
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const pagesArray = Array.isArray(pages) ? pages : [];
-  const treePages = pagesArray.length > 0 ? buildTree(pagesArray) : [];
-
-  if (!handbookId) {
-    return (
-      <PageShell>
-        <PageHeader title="Handbook Viewer" />
-        <div className="text-red-500">Handbook ID is required</div>
-      </PageShell>
-    );
-  }
-
-  if (pagesLoading) {
-    return (
-      <PageShell>
-        <PageHeader title="Handbook Viewer" />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-gray-500">Loading handbook pages...</div>
-        </div>
-      </PageShell>
-    );
-  }
-
-  if (pagesError) {
-    return (
-      <PageShell>
-        <PageHeader title="Handbook Viewer" />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-red-500">Error: {pagesError.message}</div>
-        </div>
-      </PageShell>
-    );
-  }
-
-  const renderTree = (nodes: HandbookPageWithChildren[], depth = 0): React.ReactNode => {
-    if (!nodes || nodes.length === 0) {
-      return (
-        <div className="text-sm text-gray-500 py-4">No pages found</div>
-      );
+  // Build pagination numbers with ellipsis
+  const paginationItems = useMemo(() => {
+    if (totalPages <= 9) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    return nodes.map((node) => (
-      <div key={node.nid} className="mb-1">
-        <button
-          onClick={() => setSelectedPageId(String(node.nid))}
-          className={`w-full text-left p-2 rounded hover:bg-gray-100 transition-colors ${selectedPageId === String(node.nid)
-            ? 'bg-gray-200 font-semibold border-l-2 border-blue-500'
-            : 'border-l-2 border-transparent'
-            }`}
-          style={{ paddingLeft: `${depth * 1.5 + 0.5}rem` }}
+    const items: (number | '...')[] = [];
+    const current = currentPage;
+
+    items.push(1, 2, 3);
+
+    if (current > 5) {
+      items.push('...');
+    }
+
+    const start = Math.max(4, current - 1);
+    const end = Math.min(totalPages - 3, current + 1);
+    for (let i = start; i <= end; i++) {
+      if (!items.includes(i)) items.push(i);
+    }
+
+    if (current < totalPages - 4) {
+      items.push('...');
+    }
+
+    for (let i = Math.max(totalPages - 2, 4); i <= totalPages; i++) {
+      if (!items.includes(i)) items.push(i);
+    }
+
+    return items;
+  }, [totalPages, currentPage]);
+
+  const formatDate = (value: string | number) => {
+    try {
+      const date = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch {
+      return String(value);
+    }
+  };
+
+  if (loading) {
+    return (
+      <PageShell>
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-5 w-5 animate-spin text-[#6b7475] mr-2" />
+          <span className="text-[#6b7475] text-sm">{t('viewer.loading')}</span>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageShell>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="mb-6 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2 w-fit"
         >
-          <div className="font-medium text-sm">{node.title}</div>
-          {node.status !== undefined && (
-            <div className="text-xs text-gray-500 mt-1">
-              Status: {node.status === 1 ? 'Active' : 'Inactive'}
-            </div>
-          )}
-        </button>
-        {node.children.length > 0 && (
-          <div className="ml-2">
-            {renderTree(node.children, depth + 1)}
-          </div>
-        )}
-      </div>
-    ));
-  };
+          <ArrowLeft className="h-4 w-4" />
+          {t('common:back')}
+        </Button>
+        <div className="flex items-center justify-center py-24">
+          <div className="text-red-500 text-sm">{error}</div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (totalPages === 0) {
+    return (
+      <PageShell>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="mb-6 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2 w-fit"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t('common:back')}
+        </Button>
+        <EmptyState title={t('viewer.noPages')} description={t('viewer.noPagesDesc')} />
+      </PageShell>
+    );
+  }
+
+  const effectiveSignedAt = signedAt ?? viewerMeta?.trackingStatus?.signedAt ?? viewerMeta?.signedAt ?? null;
+  const effectiveViewedAt = viewerMeta?.trackingStatus?.viewedAt ?? viewerMeta?.viewedAt ?? null;
+  const showReceiptButton = viewerMeta?.field_receipt_value === 1 && effectiveSignedAt === null;
 
   return (
     <PageShell>
-      <PageHeader title="Handbook Viewer" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sidebar Tree */}
-        <div className="lg:col-span-1 border-r pr-4">
-          <h2 className="font-semibold mb-4">
-            Pages {pagesArray.length > 0 && `(${pagesArray.length})`}
-          </h2>
-          <div className="space-y-1 max-h-[600px] overflow-y-auto">
-            {pagesArray.length === 0 ? (
-              <div className="text-sm text-gray-500 py-4 text-center">
-                No pages found
+      {/* Back button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate('/')}
+        className="mb-6 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2 w-fit"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
+      {/* Content card */}
+      <div
+        className="bg-white border border-[#e5e7eb] rounded-[18px] shadow-sm px-8 py-8 sm:px-12 sm:py-10 min-h-[400px]"
+        style={{ backgroundColor: getColor('pageBackground') }}
+      >
+        {currentPageData && (
+          <>
+            <h2
+              className="text-xl font-bold mb-1"
+              style={{ color: getColor('headlines') }}
+            >
+              {currentPageData.chapterTitle}
+            </h2>
+
+            {!metaLoading && (effectiveViewedAt || effectiveSignedAt) && (
+              <div className="text-sm text-[#6b7280] mb-4 space-y-1">
+                {effectiveViewedAt && (
+                  <p>{t('viewer.lastViewed', { date: formatDate(effectiveViewedAt) })}</p>
+                )}
+                {effectiveSignedAt && (
+                  <p className="flex items-center gap-1.5 text-[#0d9488]">
+                    <Check className="h-4 w-4 shrink-0" />
+                    {t('viewer.signedOn', { date: formatDate(effectiveSignedAt) })}
+                  </p>
+                )}
               </div>
-            ) : (
-              renderTree(treePages)
             )}
+
+            {currentPageData.html.trim().length > 0 ? (
+              <div
+                className="prose max-w-none handbook-content handbook-themed-content mt-4"
+                dangerouslySetInnerHTML={{ __html: currentPageData.html }}
+              />
+            ) : (
+              <p className="text-sm text-[#9ca3af] italic mt-4">
+                {t('viewer.emptyContent')}
+              </p>
+            )}
+
+            {showReceiptButton && (
+              <div className="mt-8 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>
+                <Button
+                  onClick={async () => {
+                    setSigningReceipt(true);
+                    try {
+                      await handbookApi.signHandbookReceipt(currentPageData.id);
+                      setSignedAt(new Date().toISOString());
+                    } finally {
+                      setSigningReceipt(false);
+                    }
+                  }}
+                  disabled={signingReceipt}
+                  className="rounded-[8px] px-4 py-2"
+                  style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
+                >
+                  {signingReceipt ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin shrink-0" />
+                      {t('viewer.signing')}
+                    </>
+                  ) : (
+                    t('viewer.iHaveReadThis')
+                  )}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-1 mt-10 pt-6 border-t border-[#f0f0f0] flex-wrap">
+            <button
+              onClick={() => goToPage(1)}
+              disabled={currentPage === 1}
+              className="h-9 w-9 flex items-center justify-center rounded-[8px] text-sm text-[#6b7475] hover:bg-[#f3f4f6] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label={t('viewer.firstPage')}
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </button>
+
+            <button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="h-9 w-9 flex items-center justify-center rounded-[8px] text-sm text-[#6b7475] hover:bg-[#f3f4f6] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label={t('viewer.previousPage')}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            {paginationItems.map((item, index) =>
+              item === '...' ? (
+                <span key={`ellipsis-${index}`} className="h-9 w-9 flex items-center justify-center text-sm text-[#9ca3af]">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={item}
+                  onClick={() => goToPage(item)}
+                  className={`h-9 min-w-[36px] px-2 flex items-center justify-center rounded-[8px] text-sm font-medium transition-colors ${
+                    currentPage === item
+                      ? 'bg-[#1a5948] text-white'
+                      : 'text-[#374151] hover:bg-[#f3f4f6]'
+                  }`}
+                >
+                  {item}
+                </button>
+              )
+            )}
+
+            <button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="h-9 w-9 flex items-center justify-center rounded-[8px] text-sm text-[#6b7475] hover:bg-[#f3f4f6] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label={t('viewer.nextPage')}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            <button
+              onClick={() => goToPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="h-9 w-9 flex items-center justify-center rounded-[8px] text-sm text-[#6b7475] hover:bg-[#f3f4f6] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label={t('viewer.lastPage')}
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </button>
           </div>
-        </div>
-
-        {/* Content Panel */}
-        <div className="lg:col-span-2">
-          {!selectedPageId ? (
-            <div className="text-center py-12 text-gray-500">
-              Select a page from the sidebar to view its content
-            </div>
-          ) : contentLoading ? (
-            <div className="text-center py-12 text-gray-500">Loading page content...</div>
-          ) : contentError ? (
-            <div className="text-center py-12 text-red-500">Error: {contentError.message}</div>
-          ) : (
-            <>
-              {selectedPageId && (() => {
-                const nid = Number(selectedPageId);
-                const selectedPage = findPageByNid(treePages, nid);
-                const effectiveSignedAt =
-                  signedAt ?? viewerMeta?.trackingStatus?.signedAt ?? viewerMeta?.signedAt ?? null;
-                const effectiveViewedAt =
-                  viewerMeta?.trackingStatus?.viewedAt ?? viewerMeta?.viewedAt ?? null;
-                const showReceiptButton =
-                  viewerMeta?.field_receipt_value === 1 && effectiveSignedAt === null;
-
-                const formatDate = (value: string | number) => {
-                  try {
-                    const date = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
-                    if (Number.isNaN(date.getTime())) return String(value);
-                    return date.toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    });
-                  } catch {
-                    return String(value);
-                  }
-                };
-
-                return (
-                  <div className="prose max-w-none" style={{ backgroundColor: getColor('pageBackground') }}>
-                    {selectedPage && (
-                      <h1 className="text-2xl font-bold mb-4" style={{ color: getColor('headlines') }}>{selectedPage.title}</h1>
-                    )}
-                    {(effectiveViewedAt || effectiveSignedAt) && (
-                      <div className="text-sm text-[#6b7280] mb-4 space-y-1">
-                        {effectiveViewedAt && (
-                          <p>You last viewed this page on {formatDate(effectiveViewedAt)}</p>
-                        )}
-                        {effectiveSignedAt && (
-                          <p className="flex items-center gap-1.5 text-[#0d9488]">
-                            <Check className="h-4 w-4 shrink-0" />
-                            Signed on {formatDate(effectiveSignedAt)}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {contentHtml === '' || contentHtml === null ? (
-                      <EmptyState />
-                    ) : (
-                      <div
-                        className="border-t pt-4 handbook-content handbook-themed-content"
-                        style={{ borderColor: getColor('frameColor') }}
-                        dangerouslySetInnerHTML={{ __html: contentHtml }}
-                      />
-                    )}
-                    {showReceiptButton && (
-                      <div className="mt-6 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>
-                        <Button
-                          onClick={async () => {
-                            setSigningReceipt(true);
-                            try {
-                              await handbookApi.signHandbookReceipt(nid);
-                              setSignedAt(new Date().toISOString());
-                            } finally {
-                              setSigningReceipt(false);
-                            }
-                          }}
-                          disabled={signingReceipt}
-                          className="rounded-[8px] px-4 py-2"
-                          style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
-                        >
-                          {signingReceipt ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin shrink-0" />
-                              Signing…
-                            </>
-                          ) : (
-                            'I have read this'
-                          )}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            </>
-          )}
-        </div>
+        )}
       </div>
     </PageShell>
   );
 };
-

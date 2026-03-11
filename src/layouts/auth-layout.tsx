@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import signupBackgroundUrl from '/assets/Sign-Up-Asset2.png';
 import signupShapeUrl from '/assets/Sign-Up-Asset1.png';
 
@@ -10,9 +11,13 @@ interface AuthLayoutProps {
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({
   children,
-  heroTitle = 'Tillid fra virksomheder over hele Danmark',
-  heroSubtitle = 'Virksomheder over hele landet bruger allerede vores digitale medarbejderhåndbog til at gøre onboarding og HR-processer lettere og mere effektive.',
+  heroTitle,
+  heroSubtitle,
 }) => {
+  const { t } = useTranslation('auth');
+  const displayTitle = heroTitle ?? t('authLayout.heroTitle');
+  const displaySubtitle = heroSubtitle ?? t('authLayout.heroSubtitle');
+
   return (
     <div className="min-h-screen flex bg-white">
       {/* Left Column — Form panel */}
@@ -64,10 +69,10 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="relative z-10 w-full h-full flex flex-col items-center justify-center px-8">
           <div className="w-full max-w-[700px] flex flex-col items-center gap-4 text-center">
             <h1 className="text-[38px] font-bold text-[#1a5948] leading-tight">
-              {heroTitle}
+              {displayTitle}
             </h1>
             <p className="text-[20px] font-normal text-[#374151] leading-relaxed max-w-[580px]">
-              {heroSubtitle}
+              {displaySubtitle}
             </p>
           </div>
         </div>

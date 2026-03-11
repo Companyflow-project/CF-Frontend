@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface EmptyStateProps {
   title?: string;
@@ -6,12 +7,14 @@ interface EmptyStateProps {
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  title = 'No data yet.',
+  title,
   description,
 }) => {
+  const { t } = useTranslation('common');
+  const displayTitle = title ?? t('emptyState.title');
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <p className="text-lg font-medium text-muted-foreground">{title}</p>
+      <p className="text-lg font-medium text-muted-foreground">{displayTitle}</p>
       {description && (
         <p className="text-sm text-muted-foreground mt-2">{description}</p>
       )}

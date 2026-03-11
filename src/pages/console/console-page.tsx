@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,8 @@ import { accountRoutes } from '@/features/account/routes';
 import { useAuth } from '@/context/auth-context';
 import { RolesPermissionsModal } from '@/features/employees/components/roles-permissions-modal';
 import { useSubscription } from '@/features/account/hooks';
+import { useViewAsEmployee } from '@/context/view-as-employee-context';
+import { EmployeeDashboardPage } from './employee-dashboard-page';
 
 /** Returns the number of whole days between now and an ISO date string, or null if not available. */
 function getDaysRemaining(isoEnd: string | null | undefined): number | null {
@@ -43,7 +46,9 @@ const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
   iconBg,
   actions,
   canEdit,
-}) => (
+}) => {
+  const { t } = useTranslation('console');
+  return (
   <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
     <CardHeader className="pb-3">
       <div className="flex items-center gap-3 mb-1">
@@ -60,7 +65,7 @@ const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
         return (
           <div
             key={index}
-            title={isLocked ? 'Only admins can perform this action' : undefined}
+            title={isLocked ? t('adminOnly') : undefined}
             className={isLocked ? 'cursor-not-allowed' : undefined}
           >
             <button
@@ -85,16 +90,23 @@ const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
       })}
     </CardContent>
   </Card>
-);
+  );
+};
 
 export const ConsolePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('console');
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+  const { viewAsEmployee } = useViewAsEmployee();
   const [rolesModalOpen, setRolesModalOpen] = useState(false);
-
   const companyId = user?.companyId ? String(user.companyId) : undefined;
   const { data: subscription } = useSubscription(companyId);
+
+  // Non-admin users or admin in "View as Employee" mode → employee dashboard
+  if (!isAdmin || viewAsEmployee) {
+    return <EmployeeDashboardPage />;
+  }
 
   const daysRemaining = getDaysRemaining(subscription?.subscriptionEnd);
   // Show the trial banner only when we have an end date (and it hasn't fully expired beyond 0)
@@ -108,13 +120,13 @@ export const ConsolePage: React.FC = () => {
           <div>
             <p className="text-sm font-semibold text-[#1a5948]">
               {daysRemaining !== null && daysRemaining > 0
-                ? 'Your free trial is active.'
-                : 'Your free trial has ended.'}
+                ? t('trial.active')
+                : t('trial.ended')}
             </p>
             <p className="text-sm text-[#6b7280] mt-0.5">
               {daysRemaining !== null && daysRemaining > 0
-                ? `You have ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining.`
-                : 'Upgrade your plan to continue using all features.'}
+                ? t('trial.daysRemaining', { count: daysRemaining })
+                : t('trial.upgradePrompt')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -122,14 +134,14 @@ export const ConsolePage: React.FC = () => {
               onClick={() => navigate(employeesRoutes.add)}
               className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-2 h-auto text-sm shadow-[0_8px_16px_rgba(23,102,79,0.3)]"
             >
-              Invite Employees
+              {t('trial.inviteEmployees')}
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate(accountRoutes.account)}
               className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-2 h-auto text-sm bg-white"
             >
-              Manage Billing
+              {t('trial.manageBilling')}
             </Button>
           </div>
         </div>
@@ -137,33 +149,33 @@ export const ConsolePage: React.FC = () => {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">Dashboard</h1>
-        <p className="text-sm text-[#6b7280] mt-1">Manage your company from one place.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">{t('dashboard.title')}</h1>
+        <p className="text-sm text-[#6b7280] mt-1">{t('dashboard.subtitle')}</p>
       </div>
 
       {/* Top row — 2 cols */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <ConsoleCard
           canEdit={isAdmin}
-          title="Employees"
-          description="Add people, set roles, and manage access."
+          title={t('card.employees.title')}
+          description={t('card.employees.desc')}
           icon={<Users className="h-5 w-5 text-[#1a5948]" />}
           iconBg="bg-[#d4f4e6]"
           actions={[
-            { label: 'Go to Employees →', onClick: () => navigate(employeesRoutes.list), variant: 'primary' },
-            { label: 'Invite employees', onClick: () => navigate(employeesRoutes.add), adminOnly: true },
-            { label: 'Roles & permissions', onClick: () => setRolesModalOpen(true), adminOnly: true },
+            { label: t('card.employees.goTo'), onClick: () => navigate(employeesRoutes.list), variant: 'primary' },
+            { label: t('card.employees.invite'), onClick: () => navigate(employeesRoutes.add), adminOnly: true },
+            { label: t('card.employees.roles'), onClick: () => setRolesModalOpen(true), adminOnly: true },
           ]}
         />
         <ConsoleCard
           canEdit={isAdmin}
-          title="Manage Handbook"
-          description="Create and publish your company handbook for employees."
+          title={t('card.handbook.title')}
+          description={t('card.handbook.desc')}
           icon={<BookOpen className="h-5 w-5 text-[#1a5948]" />}
           iconBg="bg-[#d4f4e6]"
           actions={[
-            { label: 'Open Handbook →', onClick: () => navigate(handbookRoutes.manage), variant: 'primary' },
-            { label: 'New handbook page', onClick: () => navigate(`${handbookRoutes.pages}?open=add`), adminOnly: true },
+            { label: t('card.handbook.open'), onClick: () => navigate(handbookRoutes.manage), variant: 'primary' },
+            { label: t('card.handbook.newPage'), onClick: () => navigate(`${handbookRoutes.pages}?open=add`), adminOnly: true },
           ]}
         />
       </div>
@@ -172,19 +184,19 @@ export const ConsolePage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         <ConsoleCard
           canEdit={isAdmin}
-          title="Contacts"
-          description="Store vendors, clients, and emergency contacts."
+          title={t('card.contacts.title')}
+          description={t('card.contacts.desc')}
           icon={<Phone className="h-5 w-5 text-[#1e40af]" />}
           iconBg="bg-[#dbeafe]"
           actions={[
-            { label: 'Manage Contacts →', onClick: () => navigate(contactsRoutes.list), variant: 'primary' },
+            { label: t('card.contacts.manage'), onClick: () => navigate(contactsRoutes.list), variant: 'primary' },
             {
-              label: 'Add contact',
+              label: t('card.contacts.add'),
               adminOnly: true,
               onClick: () => navigate(`${contactsRoutes.list}?open=add`),
             },
             {
-              label: 'Import CSV',
+              label: t('card.contacts.importCsv'),
               adminOnly: true,
               onClick: () => navigate(`${contactsRoutes.list}?open=import`),
             },
@@ -192,25 +204,25 @@ export const ConsolePage: React.FC = () => {
         />
         <ConsoleCard
           canEdit={isAdmin}
-          title="Account"
-          description="Profile, security, and billing preferences."
+          title={t('card.account.title')}
+          description={t('card.account.desc')}
           icon={<Settings className="h-5 w-5 text-[#7c3aed]" />}
           iconBg="bg-[#ede9fe]"
           actions={[
-            { label: 'Open Account →', onClick: () => navigate(accountRoutes.account), variant: 'primary' },
-            { label: 'Company profile', onClick: () => navigate(accountRoutes.editCompanyProfile) },
-            { label: 'Appearance', onClick: () => navigate(accountRoutes.appearance) },
+            { label: t('card.account.open'), onClick: () => navigate(accountRoutes.account), variant: 'primary' },
+            { label: t('card.account.companyProfile'), onClick: () => navigate(accountRoutes.editCompanyProfile) },
+            { label: t('card.account.appearance'), onClick: () => navigate(accountRoutes.appearance) },
           ]}
         />
         <ConsoleCard
           canEdit={isAdmin}
-          title="Get Started"
-          description="Recommended next steps to make the most of your trial."
+          title={t('card.getStarted.title')}
+          description={t('card.getStarted.desc')}
           icon={<Star className="h-5 w-5 text-[#d97706]" />}
           iconBg="bg-[#fef3c7]"
           actions={[
-            { label: 'Invite your team', onClick: () => navigate(employeesRoutes.add) },
-            { label: 'Publish a handbook section', onClick: () => navigate(handbookRoutes.pages) },
+            { label: t('card.getStarted.inviteTeam'), onClick: () => navigate(employeesRoutes.add) },
+            { label: t('card.getStarted.publishSection'), onClick: () => navigate(handbookRoutes.pages) },
           ]}
         />
       </div>

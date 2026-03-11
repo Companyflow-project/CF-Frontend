@@ -8,16 +8,20 @@ import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { useAuth } from '@/context/auth-context';
+import { useViewAsEmployee } from '@/context/view-as-employee-context';
 import { toast } from 'sonner';
 import type { HandbookNode } from '@/types/models';
-import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
+import { useTranslation } from 'react-i18next';
+import { useHandbookLang } from '../components/language-toggle';
 
 export const HandbookTableOfContentsPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
+    const { viewAsEmployee } = useViewAsEmployee();
+    const canEditHandbook = !viewAsEmployee && (user?.role === 'ADMIN' || user?.role === 'company_admin');
 
-    const [lang, setLang] = useHandbookLang();
+    const { t } = useTranslation('handbook');
+    const [lang] = useHandbookLang();
     const [tree, setTree] = useState<HandbookNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -64,7 +68,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
         setTree([...orderedChapters, ...others]);
 
         if (!handbookBid) {
-            toast.error('Handbook not fully loaded yet. Please wait and try again.');
+            toast.error(t('toc.notLoaded'));
             return;
         }
 
@@ -78,7 +82,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             await handbookApi.reorderHandbook(handbookBid, updates);
         } catch (err: any) {
             console.error('Failed to reorder themes:', err);
-            toast.error(err.message || 'Failed to reorder themes. Changes were reverted.');
+            toast.error(err.message || t('toc.reorderFailed'));
             try {
                 const { chapters: data } = await handbookApi.getHandbookTree();
                 const unique = Array.from(new Map(data.map((n) => [n.id, n])).values());
@@ -103,16 +107,27 @@ export const HandbookTableOfContentsPage: React.FC = () => {
         void applyChapterOrder(reordered);
     };
 
-    const filteredChapters = useMemo(() => {
-        if (!search.trim()) return chapters;
-        const q = search.toLowerCase();
+    const visibleChapters = useMemo(() => {
+        if (canEditHandbook) return chapters;
+        // Non-admin: only show chapters that have at least one ready page
         return chapters
+            .map((ch) => ({
+                ...ch,
+                pages: (ch.pages || []).filter((p) => (p.status as string) === 'ready'),
+            }))
+            .filter((ch) => (ch.pages?.length ?? 0) > 0);
+    }, [chapters, canEditHandbook]);
+
+    const filteredChapters = useMemo(() => {
+        if (!search.trim()) return visibleChapters;
+        const q = search.toLowerCase();
+        return visibleChapters
             .map((ch) => ({
                 ...ch,
                 pages: (ch.pages || []).filter((p) => p.title.toLowerCase().includes(q)),
             }))
             .filter((ch) => ch.title.toLowerCase().includes(q) || (ch.pages?.length ?? 0) > 0);
-    }, [chapters, search]);
+    }, [visibleChapters, search]);
 
     const toggleChapter = (id: number) => {
         setCollapsedChapters((prev) => {
@@ -152,9 +167,9 @@ export const HandbookTableOfContentsPage: React.FC = () => {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'ready': return 'Ready';
-            case 'not_ready': return 'Not ready';
-            case 'opted_out': return 'Opted out';
+            case 'ready': return t('status.ready');
+            case 'not_ready': return t('status.notReady');
+            case 'opted_out': return t('status.optedOut');
             default: return status;
         }
     };
@@ -174,10 +189,9 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        Back
+                        {t('common:back')}
                     </Button>
-                    <h1 className="text-2xl font-bold text-[#0d0e0e]">Table of Contents</h1>
-                    <LanguageToggle value={lang} onChange={setLang} disabled={loading} />
+                    <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('toc.title')}</h1>
                 </div>
                 <Button
                     variant="outline"
@@ -186,7 +200,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
                 >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    View All Pages
+                    {t('toc.viewAllPages')}
                 </Button>
             </div>
 
@@ -199,7 +213,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-[#0d0e0e]">{chapters.length}</p>
-                            <p className="text-xs text-[#6b7475] mt-0.5">Chapters</p>
+                            <p className="text-xs text-[#6b7475] mt-0.5">{t('toc.chapters')}</p>
                         </div>
                     </div>
                     <div className="bg-white border border-[#e5efea] rounded-[14px] px-5 py-4 flex items-center gap-4 shadow-[0_2px_8px_rgba(14,51,38,0.05)]">
@@ -208,7 +222,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-[#0d0e0e]">{totalPages}</p>
-                            <p className="text-xs text-[#6b7475] mt-0.5">Total pages</p>
+                            <p className="text-xs text-[#6b7475] mt-0.5">{t('toc.totalPages')}</p>
                         </div>
                     </div>
                     <div className="bg-white border border-[#e5efea] rounded-[14px] px-5 py-4 flex items-center gap-4 shadow-[0_2px_8px_rgba(14,51,38,0.05)]">
@@ -217,7 +231,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-[#0d0e0e]">{readyPages}</p>
-                            <p className="text-xs text-[#6b7475] mt-0.5">Ready</p>
+                            <p className="text-xs text-[#6b7475] mt-0.5">{t('toc.ready')}</p>
                         </div>
                     </div>
                 </div>
@@ -229,7 +243,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     <div className="relative w-[320px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
-                            placeholder="Search chapters or pages…"
+                            placeholder={t('toc.searchPlaceholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-10 h-10 rounded-[8px] border-[#e5e7eb] bg-white text-sm"
@@ -271,15 +285,15 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     <div className="h-16 w-16 rounded-[18px] bg-[#d4f4e6] flex items-center justify-center">
                         <BookOpen className="h-8 w-8 text-[#1a5948]" />
                     </div>
-                    <p className="text-lg font-semibold text-[#0d0e0e]">No chapters yet</p>
+                    <p className="text-lg font-semibold text-[#0d0e0e]">{t('toc.noChapters')}</p>
                     <p className="text-sm text-[#6b7475] max-w-sm text-center">
-                        Your handbook has no chapters or pages yet. Add some from the pages view.
+                        {t('toc.noChaptersDesc')}
                     </p>
                     <Button
                         onClick={() => navigate(handbookRoutes.pages)}
                         className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-6 py-2 h-auto text-sm mt-2"
                     >
-                        Go to pages
+                        {t('toc.goToPages')}
                     </Button>
                 </div>
             )}
@@ -287,7 +301,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             {/* No search results */}
             {!loading && !error && chapters.length > 0 && filteredChapters.length === 0 && (
                 <div className="text-center py-16 text-[#9ca3af] text-sm">
-                    No chapters or pages match "<span className="font-medium text-[#0d0e0e]">{search}</span>".
+                    {t('toc.noSearchResults')} "<span className="font-medium text-[#0d0e0e]">{search}</span>".
                 </div>
             )}
 
@@ -331,7 +345,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                             {chapter.title}
                                         </p>
                                         <p className="text-xs text-[#6b7475] mt-0.5">
-                                            {chapterPages.length} page{chapterPages.length !== 1 ? 's' : ''}
+                                            {t('toc.pageCount', { count: chapterPages.length })}
                                         </p>
                                         {canEditHandbook && (
                                             <div
@@ -393,7 +407,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                     <div className="border-t border-[#f0f5f3]">
                                         {chapterPages.length === 0 ? (
                                             <div className="px-6 py-5 text-sm text-[#9ca3af] italic">
-                                                No pages in this chapter.
+                                                {t('toc.noPagesInChapter')}
                                             </div>
                                         ) : (
                                             chapterPages.map((page, pageIndex) => {
@@ -427,15 +441,14 @@ export const HandbookTableOfContentsPage: React.FC = () => {
 
                                                         {/* Content indicators */}
                                                         {(() => {
-                                                            const isDa = lang === 'da';
                                                             const tags: string[] = [];
-                                                            if (page.badge === 'custom') tags.push(isDa ? 'Egen side' : 'Custom page');
-                                                            if (page.hasCustomBody) tags.push(isDa ? 'Tilføjet tekst' : 'Added text');
-                                                            if (page.hasReceipt) tags.push(isDa ? 'Kvittering' : 'Receipt');
-                                                            if (page.hasNote) tags.push(isDa ? 'Noter' : 'Notes');
-                                                            if (page.hasDocuments) tags.push(isDa ? 'Dokument' : 'Documents');
-                                                            if (page.hasLinks) tags.push('Links');
-                                                            if (page.hasImage) tags.push(isDa ? 'Billede' : 'Image');
+                                                            if (page.badge === 'custom') tags.push(t('tag.customPage'));
+                                                            if (page.hasCustomBody) tags.push(t('tag.addedText'));
+                                                            if (page.hasReceipt) tags.push(t('tag.receipt'));
+                                                            if (page.hasNote) tags.push(t('tag.notes'));
+                                                            if (page.hasDocuments) tags.push(t('tag.documents'));
+                                                            if (page.hasLinks) tags.push(t('tag.links'));
+                                                            if (page.hasImage) tags.push(t('tag.image'));
                                                             if (tags.length > 0) {
                                                                 return (
                                                                     <span className="flex-shrink-0 text-[11px] text-[#6b7475] italic truncate max-w-[260px]">
@@ -449,7 +462,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         {/* Badge (custom/premade) */}
                                                         {page.badge && (
                                                             <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
-                                                                {page.badge === 'custom' ? 'Custom' : 'Premade'}
+                                                                {page.badge === 'custom' ? t('badge.custom') : t('badge.premade')}
                                                             </span>
                                                         )}
 
@@ -484,6 +497,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     pageId={sneakPeekPage.id}
                     pageTitle={sneakPeekPage.title}
                     canEdit={canEditHandbook}
+                    handbookBid={handbookBid}
                 />
             )}
         </PageShell>

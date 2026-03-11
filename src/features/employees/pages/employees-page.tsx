@@ -13,7 +13,8 @@ import { employeesRoutes } from '../routes';
 import { accountRoutes } from '@/features/account/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 import { useSubscription } from '@/features/account/hooks';
-import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowDownWideNarrow, AlertTriangle } from 'lucide-react';
+import { useViewAsEmployee } from '@/context/view-as-employee-context';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
@@ -26,6 +27,7 @@ import {
 import { employeesApi } from '../api';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
+import { useTranslation } from 'react-i18next';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -33,7 +35,8 @@ export const EmployeesPage: React.FC = () => {
   const companyId = authUser?.companyId ? String(authUser.companyId) : undefined;
   const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin' || authUser?.role === 'MANAGER';
   const isStrictAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin';
-  const [viewAsEmployee, setViewAsEmployee] = useState(false);
+  const { viewAsEmployee, toggleViewAsEmployee } = useViewAsEmployee();
+  const { t } = useTranslation('employees');
   const effectiveAdmin = isAdmin && !viewAsEmployee;
   const { data: subscriptionData } = useSubscription(companyId);
   const [search, setSearch] = useState('');
@@ -175,7 +178,7 @@ export const EmployeesPage: React.FC = () => {
       refetch();
     } catch (err) {
       console.error('Failed to delete employee:', err);
-      toast.error('Failed to delete employee');
+      toast.error(t('toast.deleteFailed'));
     } finally {
       setIsDeleting(false);
     }
@@ -189,10 +192,10 @@ export const EmployeesPage: React.FC = () => {
     setIsBulkBusy(true);
     try {
       await Promise.all(ids.map((id) => employeesApi.updateEmployee(id, { isPublic })));
-      toast.success(`${ids.length} employee${ids.length > 1 ? 's' : ''} set to ${isPublic ? 'public' : 'private'}`);
+      toast.success(t('toast.visibilitySuccess', { count: ids.length, visibility: isPublic ? 'public' : 'private' }));
       refetch();
     } catch {
-      toast.error('Some updates failed. Please try again.');
+      toast.error(t('toast.updatesFailed'));
     } finally {
       setIsBulkBusy(false);
     }
@@ -204,11 +207,11 @@ export const EmployeesPage: React.FC = () => {
     setIsBulkBusy(true);
     try {
       await Promise.all(selectedIds.map((id) => employeesApi.updateEmployee(id, { status: false })));
-      toast.success(`${selectedIds.length} employee${selectedIds.length > 1 ? 's' : ''} deactivated`);
+      toast.success(t('toast.deactivated', { count: selectedIds.length }));
       setSelectedIds([]);
       refetch();
     } catch {
-      toast.error('Some updates failed. Please try again.');
+      toast.error(t('toast.updatesFailed'));
     } finally {
       setIsBulkBusy(false);
     }
@@ -218,7 +221,7 @@ export const EmployeesPage: React.FC = () => {
   const handleDeleteSelected = async () => {
     if (selectedIds.length === 0) return;
     // Confirm via simple window confirm for bulk delete
-    if (!window.confirm(`Delete ${selectedIds.length} selected employee${selectedIds.length > 1 ? 's' : ''}? This cannot be undone.`)) return;
+    if (!window.confirm(t('toast.bulkDeleteConfirm', { count: selectedIds.length }))) return;
     setIsBulkBusy(true);
     let failed = 0;
     for (const id of selectedIds) {
@@ -228,8 +231,8 @@ export const EmployeesPage: React.FC = () => {
         failed++;
       }
     }
-    if (failed > 0) toast.error(`${failed} deletion${failed > 1 ? 's' : ''} failed.`);
-    else toast.success(`${selectedIds.length} employee${selectedIds.length > 1 ? 's' : ''} deleted`);
+    if (failed > 0) toast.error(t('toast.deletionsFailed', { count: failed }));
+    else toast.success(t('toast.bulkDeleted', { count: selectedIds.length }));
     setSelectedIds([]);
     setIsBulkBusy(false);
     refetch();
@@ -240,9 +243,9 @@ export const EmployeesPage: React.FC = () => {
   if (loading) {
     return (
       <PageShell>
-        <PageHeader title="Manage Employees" />
+        <PageHeader title={t('manage.title')} />
         <div className="flex items-center justify-center py-12">
-          <div className="text-gray-500">Loading employees...</div>
+          <div className="text-gray-500">{t('manage.loading')}</div>
         </div>
       </PageShell>
     );
@@ -251,9 +254,9 @@ export const EmployeesPage: React.FC = () => {
   if (error) {
     return (
       <PageShell>
-        <PageHeader title="Manage Employees" />
+        <PageHeader title={t('manage.title')} />
         <div className="flex items-center justify-center py-12">
-          <div className="text-red-500">Error: {error.message}</div>
+          <div className="text-red-500">{t('manage.error', { message: error.message })}</div>
         </div>
       </PageShell>
     );
@@ -261,44 +264,17 @@ export const EmployeesPage: React.FC = () => {
 
   return (
     <PageShell>
-      {/* Employee-view banner */}
-      {viewAsEmployee && (
-        <div className="mb-6 flex items-center justify-between bg-[#edf7f3] rounded-[16px] border border-[#3d997d] border-l-[6px] shadow-[0_18px_40px_rgba(28,91,72,0.10)] px-5 py-3">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-[#1a5948]" />
-            <span className="text-sm font-medium text-[#1a5948]">You are viewing this page as an employee</span>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setViewAsEmployee(false)}
-            className="border-[#3d997d] text-[#1a5948] hover:bg-[#d0ebe0] rounded-[10px] px-4 h-8 text-[13px]"
-          >
-            Exit
-          </Button>
-        </div>
-      )}
-
       <PageHeader
-        title="Manage Employees"
+        title={t('manage.title')}
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {/* ordered to match mockup: View as an employee | View Information List | More licenses | Add employee */}
-            {isAdmin && (
+            {isStrictAdmin && !viewAsEmployee && (
               <Button
                 variant="outline"
-                onClick={() => {
-                  setViewAsEmployee((v) => !v);
-                  setSelectedIds([]);
-                }}
-                className={`rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] flex items-center gap-2 ${
-                  viewAsEmployee
-                    ? 'border-[#3d997d] bg-[#e7f5ef] text-[#1a5948]'
-                    : 'border-[rgba(15,23,42,0.1)] text-[#0d0e0e] bg-white'
-                }`}
+                onClick={() => { toggleViewAsEmployee(); navigate('/'); }}
+                className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
               >
-                {viewAsEmployee ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                {viewAsEmployee ? 'Exit employee view' : 'View as an employee'}
+                {t('manage.viewAsEmployee')}
               </Button>
             )}
             <Button
@@ -306,14 +282,14 @@ export const EmployeesPage: React.FC = () => {
               onClick={() => navigate(employeesRoutes.informationList)}
               className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
             >
-              View Information List
+              {t('manage.viewInfoList')}
             </Button>
             {effectiveAdmin && (
               <Button
                 variant="outline"
                 className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
               >
-                More licenses
+                {t('manage.moreLicenses')}
               </Button>
             )}
             {effectiveAdmin && (
@@ -321,7 +297,7 @@ export const EmployeesPage: React.FC = () => {
                 onClick={() => navigate(employeesRoutes.add)}
                 className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
               >
-                Add employee
+                {t('manage.addEmployee')}
               </Button>
             )}
           </div>
@@ -333,14 +309,15 @@ export const EmployeesPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="text-sm text-[#0d0e0e] max-w-3xl">
             <p className="text-sm mb-1">
-              <span className="font-bold">Help.</span>{' '}
-              Create, edit, and remove employees. Send a message with a handbook link, and re-send
-              when needed. Choose which profiles are{' '}
-              <span className="font-bold">Public</span> (visible in the info list) per employee or
-              use the bulk visibility buttons.
+              <span className="font-bold">{t('manage.helpLabel')}</span>{' '}
+              {t('manage.helpLine1').split('<bold>').map((part, i) => {
+                if (i === 0) return part;
+                const [bold, rest] = part.split('</bold>');
+                return <React.Fragment key={i}><span className="font-bold">{bold}</span>{rest}</React.Fragment>;
+              })}
             </p>
             <p className="text-sm">
-              Use work emails/phones where possible so notifications arrive reliably.
+              {t('manage.helpLine2')}
             </p>
           </div>
           <Button
@@ -348,7 +325,7 @@ export const EmployeesPage: React.FC = () => {
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
           >
-            User manual
+            {t('manage.userManual')}
           </Button>
         </div>
       </div>
@@ -362,7 +339,7 @@ export const EmployeesPage: React.FC = () => {
               <div className={`relative w-full ${isStrictAdmin ? 'lg:max-w-sm' : ''}`}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
                 <Input
-                  placeholder="Search employees (name, email, phone)"
+                  placeholder={t('manage.searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-11 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
@@ -386,7 +363,7 @@ export const EmployeesPage: React.FC = () => {
                       }}
                       className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
                     />
-                    <span className="text-xs font-medium">Show inactive</span>
+                    <span className="text-xs font-medium">{t('manage.showInactive')}</span>
                   </button>
                   <button
                     type="button"
@@ -404,7 +381,7 @@ export const EmployeesPage: React.FC = () => {
                       }}
                       className="h-3 w-3 rounded-[2.5px] border-[#3d997d]"
                     />
-                    <span className="text-xs font-medium">Public only</span>
+                    <span className="text-xs font-medium">{t('manage.publicOnly')}</span>
                   </button>
                 </div>
               )}
@@ -415,7 +392,7 @@ export const EmployeesPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1]">
                 <TooltipProvider delayDuration={300}>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
+                  <span className="text-sm font-semibold text-[#0d0e0e]">{t('manage.sort')}</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -428,10 +405,10 @@ export const EmployeesPage: React.FC = () => {
                           )
                         }
                       >
-                        {sortField === 'name' ? 'Name' : sortField === 'email' ? 'Email' : 'Employment'}
+                        {sortField === 'name' ? t('manage.sortName') : sortField === 'email' ? t('manage.sortEmail') : t('manage.sortEmployment')}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Cycle sort field</TooltipContent>
+                    <TooltipContent>{t('manage.cycleSortField')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -445,7 +422,7 @@ export const EmployeesPage: React.FC = () => {
                         <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Toggle sort direction</TooltipContent>
+                    <TooltipContent>{t('manage.toggleSortDir')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -462,7 +439,7 @@ export const EmployeesPage: React.FC = () => {
                         <ArrowDownWideNarrow className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Reset sort</TooltipContent>
+                    <TooltipContent>{t('manage.resetSort')}</TooltipContent>
                   </Tooltip>
                 </div>
                 </TooltipProvider>
@@ -475,7 +452,7 @@ export const EmployeesPage: React.FC = () => {
                       onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), false)}
                       className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
                     >
-                      Set all to private
+                      {t('manage.setAllPrivate')}
                     </Button>
                     <Button
                       variant="outline"
@@ -484,7 +461,7 @@ export const EmployeesPage: React.FC = () => {
                       onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), true)}
                       className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
                     >
-                      Set all to public
+                      {t('manage.setAllPublic')}
                     </Button>
                   </div>
                 )}
@@ -493,7 +470,7 @@ export const EmployeesPage: React.FC = () => {
               {!loading && !error && employees.length === 0 && (
                 <div className="flex flex-col items-center gap-3 py-6">
                   <p className="text-sm text-[#6b7475]">
-                    No employees yet. Try refetching or add your first employee.
+                    {t('manage.noEmployees')}
                   </p>
                   <Button
                     variant="outline"
@@ -501,7 +478,7 @@ export const EmployeesPage: React.FC = () => {
                     onClick={() => refetch()}
                     className="border-[#c8d8d3] text-[#0d0e0e] rounded-[10px]"
                   >
-                    Refetch
+                    {t('manage.refetch')}
                   </Button>
                 </div>
               )}
@@ -516,8 +493,8 @@ export const EmployeesPage: React.FC = () => {
                   onEdit={effectiveAdmin ? (id) => navigate(employeesRoutes.edit(id)) : undefined}
                   onStatistics={(id) => navigate(employeesRoutes.statisticsDetail(id))}
                   onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
-                  emptyStateTitle="No employees"
-                  emptyStateDescription="Try refetching or add your first employee."
+                  emptyStateTitle={t('manage.noEmployeesTitle')}
+                  emptyStateDescription={t('manage.noEmployeesDesc')}
                   currentUserEmail={authUser?.email ?? undefined}
                 />
               </div>
@@ -525,7 +502,7 @@ export const EmployeesPage: React.FC = () => {
               {filteredEmployees.length > itemsPerPage && (
                 <div className="flex items-center justify-between pt-4 mt-2 border-t border-[#d5e7e1] px-2 pb-2">
                   <div className="text-sm text-[#6b7475]">
-                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredEmployees.length)} of {filteredEmployees.length} employees
+                    {t('manage.showing', { from: ((currentPage - 1) * itemsPerPage) + 1, to: Math.min(currentPage * itemsPerPage, filteredEmployees.length), total: filteredEmployees.length })}
                   </div>
                   <div className="flex items-center gap-3">
                     <Button
@@ -535,10 +512,10 @@ export const EmployeesPage: React.FC = () => {
                       disabled={currentPage === 1}
                       className="border-[#c8d8d3] text-[#0d0e0e] rounded-[10px] px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Previous
+                      {t('manage.previous')}
                     </Button>
                     <span className="px-4 py-2 text-sm text-[#0d0e0e] font-medium">
-                      Page {currentPage} of {totalPages}
+                      {t('manage.pageOf', { current: currentPage, total: totalPages })}
                     </span>
                     <Button
                       variant="outline"
@@ -547,7 +524,7 @@ export const EmployeesPage: React.FC = () => {
                       disabled={currentPage >= totalPages}
                       className="border-[#c8d8d3] text-[#0d0e0e] rounded-[10px] px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Next
+                      {t('manage.next')}
                     </Button>
                   </div>
                 </div>
@@ -574,7 +551,7 @@ export const EmployeesPage: React.FC = () => {
                   className={`text-sm whitespace-nowrap ${hasSelection ? 'text-[#484b4b]' : 'text-[#9fa4a4]'
                     }`}
                 >
-                  {selectedIds.length} selected
+                  {t('manage.selected', { count: selectedIds.length })}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
@@ -584,7 +561,7 @@ export const EmployeesPage: React.FC = () => {
                   disabled={!hasSelection || isBulkBusy}
                   className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
                 >
-                  Send message
+                  {t('manage.sendMessage')}
                 </Button>
                 <Button
                   variant="outline"
@@ -593,7 +570,7 @@ export const EmployeesPage: React.FC = () => {
                   onClick={() => handleSetVisibility(selectedIds, true)}
                   className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
                 >
-                  Set selected public
+                  {t('manage.setSelectedPublic')}
                 </Button>
                 <Button
                   variant="outline"
@@ -602,7 +579,7 @@ export const EmployeesPage: React.FC = () => {
                   onClick={() => handleSetVisibility(selectedIds, false)}
                   className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
                 >
-                  Set selected private
+                  {t('manage.setSelectedPrivate')}
                 </Button>
                 <Button
                   variant="outline"
@@ -611,7 +588,7 @@ export const EmployeesPage: React.FC = () => {
                   onClick={handleDeactivateSelected}
                   className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
                 >
-                  Deactivate
+                  {t('manage.deactivate')}
                 </Button>
                 <Button
                   variant="outline"
@@ -620,7 +597,7 @@ export const EmployeesPage: React.FC = () => {
                   onClick={handleDeleteSelected}
                   className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white text-red-600 hover:bg-red-50 disabled:opacity-50"
                 >
-                  Delete
+                  {t('manage.delete')}
                 </Button>
               </div>
             </div>}
@@ -631,23 +608,23 @@ export const EmployeesPage: React.FC = () => {
           {/* license usage card — values from GET /companies/{id}/subscription */}
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold text-[#0f172a]">License usage</CardTitle>
+              <CardTitle className="text-sm font-bold text-[#0f172a]">{t('license.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0 px-6 pb-0">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses in subscription</span>
+                <span className="text-sm text-[#0f172a]">{t('license.inSubscription')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">
                   {subscriptionData?.licensesTotal ?? '–'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses used</span>
+                <span className="text-sm text-[#0f172a]">{t('license.used')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">
                   {subscriptionData?.licensesUsed ?? '–'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses left</span>
+                <span className="text-sm text-[#0f172a]">{t('license.left')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">
                   {subscriptionData
                     ? subscriptionData.licensesTotal - subscriptionData.licensesUsed
@@ -655,7 +632,7 @@ export const EmployeesPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-[#0f172a]">SMS messages used</span>
+                <span className="text-sm text-[#0f172a]">{t('license.smsUsed')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">
                   {subscriptionData?.smsUsed ?? '–'}
                 </span>
@@ -668,7 +645,7 @@ export const EmployeesPage: React.FC = () => {
                 onClick={() => navigate(accountRoutes.subscription)}
                 className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px] text-xs px-4"
               >
-                More licenses
+                {t('license.moreLicenses')}
               </Button>
               <Button
                 variant="outline"
@@ -676,7 +653,7 @@ export const EmployeesPage: React.FC = () => {
                 onClick={() => navigate(accountRoutes.subscription)}
                 className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px] text-xs px-4"
               >
-                Manage SMS
+                {t('license.manageSms')}
               </Button>
             </CardFooter>
           </Card>
@@ -684,14 +661,14 @@ export const EmployeesPage: React.FC = () => {
           {/* shortcuts card */}
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold text-[#0f172a]">Shortcuts</CardTitle>
+              <CardTitle className="text-sm font-bold text-[#0f172a]">{t('shortcuts.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 px-6 pb-5">
               {([
-                { label: 'Company settings', route: accountRoutes.editCompanyProfile },
-                { label: 'Employment types', route: accountRoutes.employmentTypes },
-                { label: 'Departments', route: accountRoutes.departments },
-                { label: 'Import CSV', route: `${contactsRoutes.list}?open=import` },
+                { label: t('shortcuts.companySettings'), route: accountRoutes.editCompanyProfile },
+                { label: t('shortcuts.employmentTypes'), route: accountRoutes.employmentTypes },
+                { label: t('shortcuts.departments'), route: accountRoutes.departments },
+                { label: t('shortcuts.importCsv'), route: `${contactsRoutes.list}?open=import` },
               ] as { label: string; route: string | null }[]).map(({ label, route }) => (
                 <button
                   key={label}
@@ -717,12 +694,9 @@ export const EmployeesPage: React.FC = () => {
           <DialogHeader>
             <div className="flex items-center gap-2 text-amber-600 mb-2">
               <AlertTriangle className="h-5 w-5" />
-              <DialogTitle className="text-amber-600">Delete Employee</DialogTitle>
+              <DialogTitle className="text-amber-600">{t('deleteDialog.title')}</DialogTitle>
             </div>
-            <DialogDescription className="py-4">
-              Are you sure you want to delete <strong>{deleteDialog.employeeName}</strong>? This action cannot be undone.
-              The employee will be moved to the trash and their access will be revoked.
-            </DialogDescription>
+            <DialogDescription className="py-4" dangerouslySetInnerHTML={{ __html: t('deleteDialog.confirm', { name: deleteDialog.employeeName }).replace('<bold>', '<strong>').replace('</bold>', '</strong>') }} />
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -730,7 +704,7 @@ export const EmployeesPage: React.FC = () => {
               onClick={() => setDeleteDialog({ isOpen: false, employeeId: null, employeeName: '' })}
               disabled={isDeleting}
             >
-              Cancel
+              {t('deleteDialog.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -738,7 +712,7 @@ export const EmployeesPage: React.FC = () => {
               onClick={handleConfirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? t('deleteDialog.deleting') : t('deleteDialog.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

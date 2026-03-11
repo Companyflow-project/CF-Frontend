@@ -76,16 +76,25 @@ function getErrorMessage(err: unknown): string {
 
 const AUTH_COMPANY_KEY = 'auth_user_company';
 
-function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number }): User {
+function normalizeRole(role?: string): User['role'] {
+  if (!role) return 'EMPLOYEE';
+  // Backend may return 'administrator' — treat it the same as 'company_admin'
+  if (role === 'administrator') return 'company_admin';
+  return role as User['role'];
+}
+
+function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number; preferredLangcode?: string; companyLanguages?: string[] }): User {
   const id = raw.id ?? String(raw.uid ?? '');
   const companyId = raw.companyId != null ? String(raw.companyId) : undefined;
   return {
     id,
     name: raw.name ?? '',
     email: raw.email ?? '',
-    role: (raw.role as User['role']) ?? 'EMPLOYEE',
+    role: normalizeRole(raw.role),
     createdAt: '',
     companyId,
+    preferredLangcode: raw.preferredLangcode ?? 'da',
+    companyLanguages: raw.companyLanguages ?? ['da'],
   };
 }
 
@@ -230,6 +239,14 @@ export const authApi = {
     try {
       const response = await axiosClient.post<{ data: { message: string } }>('/auth/reset-password', { token, newPassword });
       return response.data?.data?.message ?? 'Password has been reset successfully.';
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  async updateLanguage(langcode: string): Promise<void> {
+    try {
+      await axiosClient.patch('/auth/language', { langcode });
     } catch (err) {
       throw new Error(getErrorMessage(err));
     }

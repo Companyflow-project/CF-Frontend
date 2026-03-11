@@ -4,16 +4,18 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
-import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
+import { useHandbookLang } from '../components/language-toggle';
+import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { handbookApi } from '../api';
 
 export const HandbookPageEditPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('handbook');
   const { id } = useParams<{ id: string }>();
   const [pageTitle, setPageTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [lang, setLang] = useHandbookLang();
+  const [lang] = useHandbookLang();
 
   const pageId = id ? Number.parseInt(id, 10) : NaN;
 
@@ -41,14 +43,14 @@ export const HandbookPageEditPage: React.FC = () => {
     return (
       <PageShell>
         <div className="py-8">
-          <p className="text-sm text-red-500">Invalid handbook page id.</p>
+          <p className="text-sm text-red-500">{t('editPage.invalidId')}</p>
           <Button
             variant="outline"
             className="mt-4"
             onClick={() => navigate(handbookRoutes.pages)}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to pages
+            {t('editPage.backToPages')}
           </Button>
         </div>
       </PageShell>
@@ -66,19 +68,18 @@ export const HandbookPageEditPage: React.FC = () => {
             className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('common:back')}
           </Button>
           <h1 className="text-2xl font-bold text-[#0d0e0e]">
             {loading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Loading...
+                {t('editPage.loading')}
               </span>
             ) : (
-              `Edit ${pageTitle || 'handbook page'}`
+              pageTitle ? t('editPage.title', { title: pageTitle }) : t('editPage.titleFallback')
             )}
           </h1>
-          <LanguageToggle value={lang} onChange={setLang} disabled={loading} />
         </div>
       </div>
 

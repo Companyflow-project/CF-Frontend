@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,8 @@ export const FollowUpPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation('employees');
+  const { t: tCommon } = useTranslation('common');
 
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [loadingEmployee, setLoadingEmployee] = useState(true);
@@ -107,11 +110,11 @@ export const FollowUpPage: React.FC = () => {
 
   const handleSend = async () => {
     if (selectedEmployeeIds.size === 0) {
-      toast.error('Please select at least one employee.');
+      toast.error(t('followUp.toast.selectEmployee'));
       return;
     }
     if (!emailEnabled && !smsEnabled) {
-      toast.error('Please enable at least one message channel.');
+      toast.error(t('followUp.toast.enableChannel'));
       return;
     }
     try {
@@ -128,12 +131,12 @@ export const FollowUpPage: React.FC = () => {
       });
 
       toast.success(
-        `Follow-up sent to ${selectedEmployeeIds.size} employee${selectedEmployeeIds.size !== 1 ? 's' : ''}.`,
+        t('followUp.toast.sent', { count: selectedEmployeeIds.size }),
       );
       navigate(-1);
     } catch (err: any) {
       console.error('Failed to send follow-up:', err);
-      toast.error(err?.message || 'Failed to send follow-up message.');
+      toast.error(err?.message || t('followUp.toast.failed'));
     } finally {
       setSending(false);
     }
@@ -169,14 +172,14 @@ export const FollowUpPage: React.FC = () => {
           {/* Message type */}
           <Card className="bg-white border border-[#e5efea] rounded-[12px]">
             <CardContent className="px-4 py-3 space-y-2.5">
-              <p className="text-[13px] font-bold text-[#0f172a]">Message type</p>
+              <p className="text-[13px] font-bold text-[#0f172a]">{t('followUp.messageType')}</p>
               <label className="flex items-center gap-2 cursor-pointer">
                 <Checkbox
                   checked={emailEnabled}
                   onChange={(e) => setEmailEnabled(e.target.checked)}
                   className="rounded-[4px] border-[#3d997d] h-4 w-4"
                 />
-                <span className="text-[13px] text-[#0d0e0e]">Email</span>
+                <span className="text-[13px] text-[#0d0e0e]">{t('followUp.email')}</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <Checkbox
@@ -184,7 +187,7 @@ export const FollowUpPage: React.FC = () => {
                   onChange={(e) => setSmsEnabled(e.target.checked)}
                   className="rounded-[4px] border-[#3d997d] h-4 w-4"
                 />
-                <span className="text-[13px] text-[#0d0e0e]">SMS</span>
+                <span className="text-[13px] text-[#0d0e0e]">{t('followUp.sms')}</span>
               </label>
             </CardContent>
           </Card>
@@ -193,15 +196,15 @@ export const FollowUpPage: React.FC = () => {
           <Card className="bg-white border border-[#e5efea] rounded-[12px]">
             <CardContent className="px-4 py-3 space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-[13px] font-bold text-[#0f172a]">Send to</p>
+                <p className="text-[13px] font-bold text-[#0f172a]">{t('followUp.sendTo')}</p>
                 <span className="text-[11px] text-[#3d997d] font-medium">
-                  {selectedEmployeeIds.size} selected
+                  {t('followUp.selected', { count: selectedEmployeeIds.size })}
                 </span>
               </div>
               {loadingEmployees ? (
-                <p className="text-xs text-[#6b7280] py-2">Loading...</p>
+                <p className="text-xs text-[#6b7280] py-2">{t('followUp.loadingEmployees')}</p>
               ) : selectableEmployees.length === 0 ? (
-                <p className="text-xs text-[#6b7280] py-1">No licensed employees found.</p>
+                <p className="text-xs text-[#6b7280] py-1">{t('followUp.noLicensedEmployees')}</p>
               ) : (
                 <>
                   <label className="flex items-center gap-2 cursor-pointer py-1 border-b border-dashed border-[rgba(88,172,146,0.35)]">
@@ -210,7 +213,7 @@ export const FollowUpPage: React.FC = () => {
                       onChange={() => handleSelectAll(!selectAll)}
                       className="rounded-[4px] border-[#3d997d] h-4 w-4"
                     />
-                    <span className="text-[13px] font-semibold text-[#0d0e0e]">All employees</span>
+                    <span className="text-[13px] font-semibold text-[#0d0e0e]">{t('followUp.allEmployees')}</span>
                   </label>
                   <div className="max-h-[240px] overflow-y-auto space-y-0.5 -mr-1 pr-1">
                     {selectableEmployees.map((emp) => (
@@ -237,7 +240,7 @@ export const FollowUpPage: React.FC = () => {
           {/* Short codes */}
           <Card className="bg-white border border-[#e5efea] rounded-[12px]">
             <CardContent className="px-4 py-3 space-y-2">
-              <p className="text-[13px] font-bold text-[#0f172a]">Short codes</p>
+              <p className="text-[13px] font-bold text-[#0f172a]">{t('followUp.shortCodes')}</p>
               <div className="space-y-1.5">
                 {SHORT_CODES.map((sc) => (
                   <div key={sc.code} className="flex items-center gap-1.5">
@@ -263,10 +266,10 @@ export const FollowUpPage: React.FC = () => {
             className="bg-white border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[10px] px-3 py-2 h-auto flex items-center gap-2 shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {tCommon('back')}
           </Button>
           <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#0b0c0c] truncate">
-            Follow Up{!loadingEmployee && employee ? ` - ${employeeName}` : ''}
+            {!loadingEmployee && employee ? t('followUp.titleWithName', { name: employeeName }) : t('followUp.title')}
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -277,7 +280,7 @@ export const FollowUpPage: React.FC = () => {
             className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-4 py-2 h-auto text-[13px] gap-1.5"
           >
             {showPreview ? <Pencil className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-            {showPreview ? 'Edit Message' : 'Preview Message'}
+            {showPreview ? t('followUp.editMessage') : t('followUp.previewMessage')}
           </Button>
           <Button
             size="sm"
@@ -286,7 +289,7 @@ export const FollowUpPage: React.FC = () => {
             className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-4 py-2 h-auto text-[13px] shadow-[0_8px_16px_rgba(13,94,67,0.3)] disabled:opacity-50 disabled:shadow-none gap-1.5"
           >
             <Send className="h-3.5 w-3.5" />
-            {sending ? 'Sending...' : 'Send Message'}
+            {sending ? t('followUp.sending') : t('followUp.sendMessage')}
           </Button>
         </div>
       </div>
@@ -295,7 +298,7 @@ export const FollowUpPage: React.FC = () => {
       <div className="mb-5 bg-[#fff9f0] rounded-[12px] border border-[#f59e0b] border-l-[5px] px-4 py-3">
         <p className="text-[13px] text-[#0d0e0e]">
           <span className="font-bold">Help.</span>{' '}
-          Send employees a follow-up message with access to the personnel handbook via email and/or SMS.
+          {t('followUp.helpDesc')}
         </p>
       </div>
 
@@ -305,11 +308,11 @@ export const FollowUpPage: React.FC = () => {
             {emailEnabled && (
               <div>
                 <div className="bg-[#1a5948] text-white px-4 py-2.5 text-[13px] font-semibold">
-                  Email Preview
+                  {t('followUp.emailPreview')}
                 </div>
                 {emailSubject.trim() && (
                   <div className="px-4 pt-3 pb-2 border-b border-[#e5efea] bg-[#fafcfb]">
-                    <p className="text-[11px] font-medium text-[#6b7280] uppercase tracking-wide">Subject</p>
+                    <p className="text-[11px] font-medium text-[#6b7280] uppercase tracking-wide">{t('followUp.subject')}</p>
                     <p className="text-sm font-semibold text-[#111827]">{previewReplace(emailSubject)}</p>
                   </div>
                 )}
@@ -322,7 +325,7 @@ export const FollowUpPage: React.FC = () => {
             {smsEnabled && (
               <div>
                 <div className="bg-[#1a5948] text-white px-4 py-2.5 text-[13px] font-semibold">
-                  SMS Preview
+                  {t('followUp.smsPreview')}
                 </div>
                 <div className="px-4 py-4">
                   <p className="whitespace-pre-wrap text-sm text-[#111827]">{previewReplace(smsBody)}</p>
@@ -331,7 +334,7 @@ export const FollowUpPage: React.FC = () => {
             )}
             {!emailEnabled && !smsEnabled && (
               <div className="py-10 text-center text-[#6b7280] text-sm">
-                Enable at least one channel (Email or SMS) to preview.
+                {t('followUp.enableChannelPreview')}
               </div>
             )}
           </CardContent>
@@ -343,24 +346,24 @@ export const FollowUpPage: React.FC = () => {
             {emailEnabled && (
               <div className={smsEnabled ? 'border-b border-[#e5efea]' : ''}>
                 <div className="bg-[#1a5948] text-white px-4 py-2.5 text-[13px] font-semibold">
-                  Email
+                  {t('followUp.email')}
                 </div>
                 <div className="p-4 space-y-3">
                   <div>
-                    <label className="text-[13px] font-semibold text-[#0d0e0e] mb-1 block">Subject</label>
+                    <label className="text-[13px] font-semibold text-[#0d0e0e] mb-1 block">{t('followUp.subject')}</label>
                     <Input
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
-                      placeholder="e.g. Your Staff Handbook"
+                      placeholder={t('followUp.subjectPlaceholder')}
                       className="rounded-[8px] border-[#c8d8d3] bg-white text-sm h-9"
                     />
                   </div>
                   <div>
-                    <label className="text-[13px] font-semibold text-[#0d0e0e] mb-1 block">Message</label>
+                    <label className="text-[13px] font-semibold text-[#0d0e0e] mb-1 block">{t('followUp.message')}</label>
                     <RichTextEditor content={emailBody} onChange={setEmailBody} />
                   </div>
                   <div>
-                    <p className="text-[11px] font-medium text-[#6b7280] mb-1.5">Insert short code:</p>
+                    <p className="text-[11px] font-medium text-[#6b7280] mb-1.5">{t('followUp.insertShortCode')}</p>
                     <ShortCodeButtons onInsert={(code) => setEmailBody((prev) => prev + ` ${code}`)} />
                   </div>
                 </div>
@@ -371,21 +374,21 @@ export const FollowUpPage: React.FC = () => {
             {smsEnabled && (
               <div>
                 <div className="bg-[#1a5948] text-white px-4 py-2.5 text-[13px] font-semibold">
-                  SMS
+                  {t('followUp.sms')}
                 </div>
                 <div className="p-4 space-y-3">
                   <div>
-                    <label className="text-[13px] font-semibold text-[#0d0e0e] mb-1 block">Message</label>
+                    <label className="text-[13px] font-semibold text-[#0d0e0e] mb-1 block">{t('followUp.message')}</label>
                     <Textarea
                       rows={3}
                       value={smsBody}
                       onChange={(e) => setSmsBody(e.target.value)}
-                      placeholder="Write your SMS message..."
+                      placeholder={t('followUp.smsPlaceholder')}
                       className="rounded-[8px] border-[#c8d8d3] bg-white text-sm"
                     />
                   </div>
                   <div>
-                    <p className="text-[11px] font-medium text-[#6b7280] mb-1.5">Insert short code:</p>
+                    <p className="text-[11px] font-medium text-[#6b7280] mb-1.5">{t('followUp.insertShortCode')}</p>
                     <ShortCodeButtons
                       onInsert={(code) =>
                         setSmsBody((prev) => {
@@ -401,7 +404,7 @@ export const FollowUpPage: React.FC = () => {
 
             {!emailEnabled && !smsEnabled && (
               <div className="py-10 text-center text-[#6b7280] text-sm">
-                Enable at least one channel (Email or SMS) from the sidebar.
+                {t('followUp.enableChannelSidebar')}
               </div>
             )}
           </CardContent>

@@ -16,6 +16,7 @@ import {
     SelectContent,
     SelectItem,
 } from '@/components/ui/select-new';
+import { useTranslation } from 'react-i18next';
 import { handbookApi } from '../api';
 import type { HandbookNode } from '@/types/models';
 
@@ -37,6 +38,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
     onSuccess,
     initialMode = 'page',
 }) => {
+    const { t } = useTranslation('handbook');
     const getDefaultSelectedChapterId = (): number | 'new' => {
         if (initialMode === 'chapter') {
             return 'new';
@@ -65,13 +67,13 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
 
         // Validate title
         if (!title.trim()) {
-            setError('Please enter a page title.');
+            setError(t('addPage.errorNoTitle'));
             return;
         }
 
         // Validate new chapter name if creating new chapter
         if (selectedChapterId === 'new' && !newChapterName.trim()) {
-            setError('Please enter a chapter name.');
+            setError(t('addPage.errorNoChapter'));
             return;
         }
 
@@ -96,7 +98,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
             onClose();
         } catch (err: any) {
             console.error('Failed to create page:', err);
-            setError(err.message || 'Failed to create page. Please try again.');
+            setError(err.message || t('addPage.errorFailed'));
         } finally {
             setIsSubmitting(false);
         }
@@ -117,7 +119,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
             <DialogContent className="w-[480px] max-w-none">
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold text-[#0d0e0e]">
-                        Add New Page
+                        {t('addPage.title')}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -125,7 +127,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                     {/* Page Title Input */}
                     <div className="space-y-2">
                         <Label htmlFor="page-title" className="text-sm font-medium text-[#0d0e0e]">
-                            Page Title
+                            {t('addPage.pageTitle')}
                         </Label>
                         <Input
                             id="page-title"
@@ -135,7 +137,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                 setTitle(e.target.value);
                                 setError(null);
                             }}
-                            placeholder="e.g., Office Rules"
+                            placeholder={t('addPage.pageTitlePlaceholder')}
                             className="h-10 rounded-[8px] border-[#e5e7eb]"
                             disabled={isSubmitting}
                             autoFocus
@@ -145,7 +147,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                     {/* Chapter Selection */}
                     <div className="space-y-2">
                         <Label htmlFor="chapter-select" className="text-sm font-medium text-[#0d0e0e]">
-                            Theme / Chapter
+                            {t('addPage.chapter')}
                         </Label>
                         <SelectRoot
                             value={selectedChapterId === 'new' ? 'new' : String(selectedChapterId)}
@@ -156,11 +158,11 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                             disabled={isSubmitting}
                         >
                             <SelectTrigger className="h-10 rounded-[8px] border-[#e5e7eb]">
-                                <SelectValue placeholder="Select a chapter" />
+                                <SelectValue placeholder={t('addPage.selectChapter')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {/* Option to create new chapter */}
-                                <SelectItem value="new">Create New Chapter</SelectItem>
+                                <SelectItem value="new">{t('addPage.createNewChapter')}</SelectItem>
 
                                 {/* Existing chapters */}
                                 {chapters.map((chapter) => (
@@ -172,7 +174,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                         </SelectRoot>
                         {selectedChapter && (
                             <p className="text-xs text-[#7b8a85]">
-                                This page will be added to the {selectedChapter.title} handbook.
+                                {t('addPage.addToChapter', { chapter: selectedChapter.title })}
                             </p>
                         )}
                     </div>
@@ -181,7 +183,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                     {selectedChapterId === 'new' && (
                         <div className="space-y-2">
                             <Label htmlFor="chapter-name" className="text-sm font-medium text-[#0d0e0e]">
-                                Chapter Name
+                                {t('addPage.chapterName')}
                             </Label>
                             <Input
                                 id="chapter-name"
@@ -191,12 +193,12 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                                     setNewChapterName(e.target.value);
                                     setError(null);
                                 }}
-                                placeholder="e.g., Company Policies"
+                                placeholder={t('addPage.chapterNamePlaceholder')}
                                 className="h-10 rounded-[8px] border-[#e5e7eb]"
                                 disabled={isSubmitting}
                             />
                             <p className="text-xs text-[#7b8a85]">
-                                A new chapter will be created with this name.
+                                {t('addPage.newChapterDesc')}
                             </p>
                         </div>
                     )}
@@ -217,14 +219,14 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                             disabled={isSubmitting}
                             className="rounded-[8px] px-5 py-2 h-auto text-sm"
                         >
-                            Cancel
+                            {t('common:cancel')}
                         </Button>
                         <Button
                             type="submit"
                             disabled={isSubmitting}
                             className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white"
                         >
-                            {isSubmitting ? 'Creating...' : 'Create & Edit'}
+                            {isSubmitting ? t('addPage.creating') : t('addPage.createAndEdit')}
                         </Button>
                     </DialogFooter>
                 </form>

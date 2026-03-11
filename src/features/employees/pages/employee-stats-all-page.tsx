@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { HelpBanner } from '@/components/common/help-banner';
 import { EmployeeStatsTable } from '../components/employee-stats-table';
@@ -18,6 +19,8 @@ import { useAuth } from '@/context/auth-context';
 
 export const EmployeeStatsAllPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('employees');
+  const { t: tCommon } = useTranslation('common');
   const { user } = useAuth();
   const companyId = user?.companyId ? Number(user.companyId) : undefined;
   const [search, setSearch] = useState('');
@@ -63,7 +66,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
         if (!isMounted) return;
         // eslint-disable-next-line no-console
         console.error('failed to load employee statistics', err);
-        setError('failed to load employee statistics');
+        setError(t('stats.failedToLoad'));
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -121,46 +124,46 @@ export const EmployeeStatsAllPage: React.FC = () => {
         <div className="space-y-4">
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader>
-              <CardTitle className="text-sm font-bold text-[#0f172a]">License usage</CardTitle>
+              <CardTitle className="text-sm font-bold text-[#0f172a]">{t('license.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-0">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses in subscription</span>
+                <span className="text-sm text-[#0f172a]">{t('license.inSubscription')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{licensesInSubscription}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses used</span>
+                <span className="text-sm text-[#0f172a]">{t('license.used')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{licensesUsed}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-[rgba(88,172,146,0.5)]">
-                <span className="text-sm text-[#0f172a]">Licenses left</span>
+                <span className="text-sm text-[#0f172a]">{t('license.left')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{licensesLeft}</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-sm text-[#0f172a]">SMS messages used</span>
+                <span className="text-sm text-[#0f172a]">{t('license.smsUsed')}</span>
                 <span className="text-sm font-bold text-[#0f172a]">{smsMessagesUsed}</span>
               </div>
             </CardContent>
             <CardFooter className="flex gap-2 pt-2 justify-end">
               <Button variant="outline" className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px]">
-                More licenses
+                {t('license.moreLicenses')}
               </Button>
               <Button variant="outline" className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] rounded-[10px]">
-                Manage SMS
+                {t('license.manageSms')}
               </Button>
             </CardFooter>
           </Card>
 
           <Card className="bg-white border border-[rgba(15,23,42,0.08)] shadow-[0_12px_30px_rgba(15,23,42,0.08)] rounded-[12px]">
             <CardHeader>
-              <CardTitle className="text-sm font-bold text-[#0f172a]">Shortcuts</CardTitle>
+              <CardTitle className="text-sm font-bold text-[#0f172a]">{t('shortcuts.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 px-6 pb-5">
               {([
-                { label: 'Company settings', route: accountRoutes.editCompanyProfile },
-                { label: 'Employment types', route: accountRoutes.employmentTypes },
-                { label: 'Departments', route: accountRoutes.departments },
-                { label: 'Import CSV', route: `${contactsRoutes.list}?open=import` },
+                { label: t('shortcuts.companySettings'), route: accountRoutes.editCompanyProfile },
+                { label: t('shortcuts.employmentTypes'), route: accountRoutes.employmentTypes },
+                { label: t('shortcuts.departments'), route: accountRoutes.departments },
+                { label: t('shortcuts.importCsv'), route: `${contactsRoutes.list}?open=import` },
               ] as { label: string; route: string | null }[]).map(({ label, route }) => (
                 <button
                   key={label}
@@ -184,16 +187,16 @@ export const EmployeeStatsAllPage: React.FC = () => {
           className="bg-white border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[10px] px-3 py-2 h-auto flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {tCommon('back')}
         </Button>
         <h1 className="text-2xl font-bold text-[#0f172a]">
-          Employee Statistics - All
+          {t('stats.titleAll')}
         </h1>
       </div>
 
           <HelpBanner
         title="Help."
-        description="See employee activities like when they last visited the employee handbook and what pages they viewed for all employees."
+        description={t('stats.helpAll')}
       />
 
           <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] mb-6">
@@ -201,7 +204,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
           <div className="relative flex-1 w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
             <Input
-              placeholder="Search employees (name, email, phone)"
+              placeholder={t('stats.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-11 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
@@ -212,7 +215,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
         <div className="p-6">
           <div className="flex flex-wrap items-center gap-3 justify-between pb-4 border-b border-dashed border-[#d5e7e1] mb-6">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[#0d0e0e]">Sort</span>
+              <span className="text-sm font-semibold text-[#0d0e0e]">{t('manage.cycleSortField')}</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -223,7 +226,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
                 }}
                 className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
               >
-                {sortField === 'name' ? 'Name' : sortField === 'pageViews' ? 'Page Views' : sortField === 'lastVisit' ? 'Last Visit' : 'Messages'}
+                {sortField === 'name' ? t('stats.sortName') : sortField === 'pageViews' ? t('stats.sortPageViews') : sortField === 'lastVisit' ? t('stats.sortLastVisit') : t('stats.sortMessages')}
               </Button>
               <Button
                 variant="ghost"
@@ -247,7 +250,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
               className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-6 py-2 h-auto"
               onClick={() => navigate(employeesRoutes.messageLogs)}
             >
-              Send Follow Up
+              {t('stats.sendFollowUp')}
             </Button>
           </div>
 

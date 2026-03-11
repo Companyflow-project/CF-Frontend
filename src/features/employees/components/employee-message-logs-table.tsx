@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Table,
   TableHeader,
@@ -17,15 +18,17 @@ interface EmployeeMessageLogsTableProps {
 export const EmployeeMessageLogsTable: React.FC<EmployeeMessageLogsTableProps> = ({
   logs,
 }) => {
+  const { t } = useTranslation('employees');
+
   return (
     <div className="w-full">
       <Table className="w-full table-fixed text-[13px]">
         <TableHeader className="bg-[#f5fbf8]">
           <TableRow className="border-b border-[#dbe8e1]">
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 w-[180px] pl-6">Date</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 w-[180px]">Name</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 w-[220px]">Email</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">Message</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 w-[180px] pl-6">{t('messageLogs.colDate')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 w-[180px]">{t('messageLogs.colName')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 w-[220px]">{t('messageLogs.colEmail')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">{t('messageLogs.colMessage')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr]:last:border-b">

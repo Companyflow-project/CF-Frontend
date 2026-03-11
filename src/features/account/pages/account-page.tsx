@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -30,9 +31,10 @@ interface AccountCardProps {
   iconBg: string;
   actions: AccountAction[];
   canEdit: boolean;
+  adminOnlyLabel: string;
 }
 
-const AccountCard: React.FC<AccountCardProps> = ({ title, description, icon, iconBg, actions, canEdit }) => (
+const AccountCard: React.FC<AccountCardProps> = ({ title, description, icon, iconBg, actions, canEdit, adminOnlyLabel }) => (
   <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
     <CardHeader className="pb-3">
       <div className="flex items-center gap-3 mb-1">
@@ -49,7 +51,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ title, description, icon, ico
         return (
           <div
             key={index}
-            title={isLocked ? 'Only admins can perform this action' : undefined}
+            title={isLocked ? adminOnlyLabel : undefined}
             className={isLocked ? 'cursor-not-allowed' : undefined}
           >
             <button
@@ -78,49 +80,50 @@ const AccountCard: React.FC<AccountCardProps> = ({ title, description, icon, ico
 
 export const AccountPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('account');
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
   const [isAddEmploymentTypeDialogOpen, setIsAddEmploymentTypeDialogOpen] = useState(false);
 
-  const cards: Omit<AccountCardProps, 'canEdit'>[] = [
+  const cards: Omit<AccountCardProps, 'canEdit' | 'adminOnlyLabel'>[] = [
     {
-      title: 'Company Profile',
-      description: 'Update your company information and SMS sender name.',
+      title: t('card.companyProfile.title'),
+      description: t('card.companyProfile.desc'),
       icon: <Building2 className="h-5 w-5 text-[#1a5948]" />,
       iconBg: 'bg-[#d4f4e6]',
       actions: [
         {
-          label: 'Edit Company Profile →',
+          label: t('card.companyProfile.edit'),
           onClick: () => navigate(accountRoutes.editCompanyProfile),
           variant: 'primary',
           adminOnly: true,
         },
         {
-          label: 'Update SMS sender name',
+          label: t('card.companyProfile.sms'),
           onClick: () => navigate(accountRoutes.editCompanyProfile),
           adminOnly: true,
         },
       ],
     },
     {
-      title: 'Subscriptions',
-      description: 'Manage licenses and billing for your plan.',
+      title: t('card.subscriptions.title'),
+      description: t('card.subscriptions.desc'),
       icon: <CreditCard className="h-5 w-5 text-[#1e40af]" />,
       iconBg: 'bg-[#dbeafe]',
       actions: [
         {
-          label: 'Update Subscription →',
+          label: t('card.subscriptions.upgrade'),
           onClick: () =>
             window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer'),
           variant: 'primary',
           adminOnly: true,
         },
         {
-          label: 'View subscription',
+          label: t('card.subscriptions.view'),
           onClick: () => navigate(accountRoutes.subscription),
         },
         {
-          label: 'Add more licenses',
+          label: t('card.subscriptions.moreLicenses'),
           onClick: () =>
             window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer'),
           adminOnly: true,
@@ -128,49 +131,49 @@ export const AccountPage: React.FC = () => {
       ],
     },
     {
-      title: 'Department',
-      description: 'Add and manage departments within your company.',
+      title: t('card.department.title'),
+      description: t('card.department.desc'),
       icon: <LayoutList className="h-5 w-5 text-[#7c3aed]" />,
       iconBg: 'bg-[#ede9fe]',
       actions: [
         {
-          label: 'Add Department →',
+          label: t('card.department.add'),
           onClick: () => navigate(accountRoutes.addDepartment),
           variant: 'primary',
           adminOnly: true,
         },
         {
-          label: 'View departments',
+          label: t('card.department.view'),
           onClick: () => navigate(accountRoutes.departments),
         },
       ],
     },
     {
-      title: 'Employment Types',
-      description: 'Define and manage employment categories.',
+      title: t('card.employmentTypes.title'),
+      description: t('card.employmentTypes.desc'),
       icon: <Briefcase className="h-5 w-5 text-[#d97706]" />,
       iconBg: 'bg-[#fef3c7]',
       actions: [
         {
-          label: 'Add Employment Type →',
+          label: t('card.employmentTypes.add'),
           onClick: () => setIsAddEmploymentTypeDialogOpen(true),
           variant: 'primary',
           adminOnly: true,
         },
         {
-          label: 'View employment types',
+          label: t('card.employmentTypes.view'),
           onClick: () => navigate(accountRoutes.employmentTypes),
         },
       ],
     },
     {
-      title: 'Appearance',
-      description: 'Update the look and feel of your handbook.',
+      title: t('card.appearance.title'),
+      description: t('card.appearance.desc'),
       icon: <Palette className="h-5 w-5 text-[#db2777]" />,
       iconBg: 'bg-[#fce7f3]',
       actions: [
         {
-          label: 'Edit Appearance →',
+          label: t('card.appearance.edit'),
           onClick: () => navigate(accountRoutes.appearance),
           variant: 'primary',
           adminOnly: true,
@@ -178,12 +181,12 @@ export const AccountPage: React.FC = () => {
       ],
     },
     {
-      title: 'Others',
-      description: 'Additional settings and compliance tools.',
+      title: t('card.others.title'),
+      description: t('card.others.desc'),
       icon: <MoreHorizontal className="h-5 w-5 text-[#6b7280]" />,
       iconBg: 'bg-[#f3f4f6]',
       actions: [
-        { label: 'Setup whistleblower system', onClick: () => window.open('https://companyflow.digibida.com/whistleblowerordning/', '_blank', 'noopener,noreferrer') },
+        { label: t('card.others.whistleblower'), onClick: () => window.open('https://companyflow.digibida.com/whistleblowerordning/', '_blank', 'noopener,noreferrer') },
       ],
     },
   ];
@@ -193,8 +196,8 @@ export const AccountPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">Account</h1>
-          <p className="text-sm text-[#6b7280] mt-1">Manage your company profile, billing, and settings.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">{t('page.title')}</h1>
+          <p className="text-sm text-[#6b7280] mt-1">{t('page.subtitle')}</p>
         </div>
       </div>
 
@@ -209,6 +212,7 @@ export const AccountPage: React.FC = () => {
             iconBg={card.iconBg}
             actions={card.actions}
             canEdit={isAdmin}
+            adminOnlyLabel={t('adminOnly')}
           />
         ))}
       </div>

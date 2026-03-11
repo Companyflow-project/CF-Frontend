@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,6 +79,7 @@ function resolvePhotoUrl(uri: string | null | undefined): string | null {
 }
 
 export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors, isEditMode = false, isSelf = false, existingPhotoUri, onFidRefReady }) => {
+  const { t } = useTranslation('employees');
   const { user } = useAuth();
   const companyId = user?.companyId ? String(user.companyId) : undefined;
   const { data: employmentTypes, isLoading: employmentTypesLoading } = useEmploymentTypes(companyId);
@@ -167,7 +169,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
       {/* Employee Contact Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Employee contact information</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('form.contactInfo')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex gap-8">
@@ -178,7 +180,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                   <>
                     <img
                       src={photoPreview}
-                      alt="Profile preview"
+                      alt={t('form.profilePreview')}
                       className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
                     />
                     {!photoUploading && (
@@ -186,7 +188,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                         type="button"
                         onClick={handleClearPhoto}
                         className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
-                        aria-label="Remove photo"
+                        aria-label={t('form.removePhoto')}
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -210,7 +212,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                     ) : (
                       <>
                         <Upload className="h-6 w-6 text-gray-400 mb-1" />
-                        <span className="text-xs text-gray-500 text-center px-2">Click to upload</span>
+                        <span className="text-xs text-gray-500 text-center px-2">{t('form.clickToUpload')}</span>
                       </>
                     )}
                   </label>
@@ -224,9 +226,9 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                 disabled={photoUploading}
                 onChange={handlePhotoUpload}
               />
-              <p className="text-xs text-gray-500 mt-2 text-center">Only .jpg, .jpeg, .png</p>
+              <p className="text-xs text-gray-500 mt-2 text-center">{t('form.photoFormats')}</p>
               {formData.userPictureFid != null && !photoUploading && (
-                <p className="text-xs text-teal-600 mt-1">✓ Photo uploaded</p>
+                <p className="text-xs text-teal-600 mt-1">✓ {t('form.photoUploaded')}</p>
               )}
               {photoError && (
                 <p className="text-xs text-red-600 mt-1 text-center">{photoError}</p>
@@ -238,11 +240,11 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label htmlFor="name" className="text-sm font-medium">
-                    Name <span className="text-red-500">*</span>
+                    {t('form.name')} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="name"
-                    placeholder="John Doe"
+                    placeholder={t('form.namePlaceholder')}
                     value={formData.name}
                     onChange={(e) => onChange({ ...formData, name: e.target.value })}
                     className="mt-1"
@@ -252,20 +254,20 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
 
                 <div className="col-span-2">
                   <Label htmlFor="email" className="text-sm font-medium">
-                    Email {!isEditMode && <span className="text-red-500">*</span>}
+                    {t('form.email')} {!isEditMode && <span className="text-red-500">*</span>}
                   </Label>
                   <div className="relative mt-1">
                     <Input
                       id="email"
                       type="email"
-                      placeholder="jd@sample.com"
+                      placeholder={t('form.emailPlaceholder')}
                       value={formData.email}
                       onChange={(e) => !isEditMode && onChange({ ...formData, email: e.target.value })}
                       readOnly={isEditMode}
                       className={isEditMode ? 'bg-gray-50 text-gray-500 cursor-not-allowed select-none' : ''}
                     />
                     {isEditMode && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">Locked</span>
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">{t('form.locked')}</span>
                     )}
                   </div>
                   {!isEditMode && errors?.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
@@ -273,19 +275,19 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
 
                 <div className="col-span-2">
                   <Label htmlFor="mobileNumber" className="text-sm font-medium">
-                    Mobile number <span className="text-red-500">*</span>
+                    {t('form.mobileNumber')} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="mobileNumber"
                     type="text"
                     inputMode="numeric"
-                    placeholder="e.g. 71143360"
+                    placeholder={t('form.phonePlaceholder')}
                     value={formatDanishPhone(formData.mobileNumber)}
                     onChange={handlePhoneChange('mobileNumber')}
                     className={`mt-1 ${exceedsIntMax(formData.mobileNumber) ? 'border-red-500 focus-visible:ring-red-400' : ''}`}
                   />
                   {exceedsIntMax(formData.mobileNumber) && (
-                    <p className="text-xs text-red-600 mt-1">Number exceeds system limit (max 2 147 483 647).</p>
+                    <p className="text-xs text-red-600 mt-1">{t('form.numberExceeds')}</p>
                   )}
                   {errors?.mobileNumber && !exceedsIntMax(formData.mobileNumber) && (
                     <p className="text-xs text-red-600 mt-1">{errors.mobileNumber}</p>
@@ -294,22 +296,22 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
 
                 <div className="col-span-2">
                   <Label htmlFor="alternateNumber" className="text-sm font-medium">
-                    Alternate number
+                    {t('form.alternateNumber')}
                   </Label>
                   <Input
                     id="alternateNumber"
                     type="text"
                     inputMode="numeric"
-                    placeholder="e.g. 71143360"
+                    placeholder={t('form.phonePlaceholder')}
                     value={formatDanishPhone(formData.alternateNumber)}
                     onChange={handlePhoneChange('alternateNumber')}
                     className={`mt-1 ${exceedsIntMax(formData.alternateNumber) ? 'border-red-500 focus-visible:ring-red-400' : ''}`}
                   />
                   {exceedsIntMax(formData.alternateNumber) && (
-                    <p className="text-xs text-red-600 mt-1">Number exceeds system limit (max 2 147 483 647).</p>
+                    <p className="text-xs text-red-600 mt-1">{t('form.numberExceeds')}</p>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
-                    SMS messages will be attempted to be sent to this number if Mobile number is not filled in.
+                    {t('form.alternateNumberDesc')}
                   </p>
                 </div>
               </div>
@@ -323,7 +325,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                   }
                 />
                 <Label htmlFor="public-info" className="text-sm font-normal cursor-pointer">
-                  Make information public. Once public, their information will be visible in the infolist.
+                  {t('form.makePublic')}
                 </Label>
               </div>
             </div>
@@ -334,43 +336,43 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
       {/* Emergency Contact Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Emergency contact information</CardTitle>
+          <CardTitle className="text-lg font-semibold">{t('form.emergency.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="emergencyName" className="text-sm font-medium">
-              Name
+              {t('form.name')}
             </Label>
             <Input
               id="emergencyName"
-              placeholder="John Doe"
+              placeholder={t('form.namePlaceholder')}
               value={formData.emergencyName}
               onChange={(e) => onChange({ ...formData, emergencyName: e.target.value })}
               className="mt-1"
             />
             <p className="text-xs text-gray-500 mt-1 italic">
-              Name of the person who we will contact in case of emergency.
+              {t('form.emergency.nameDesc')}
             </p>
           </div>
 
           <div>
             <Label htmlFor="emergencyMobile" className="text-sm font-medium">
-              Mobile number
+              {t('form.mobileNumber')}
             </Label>
             <Input
               id="emergencyMobile"
               type="text"
               inputMode="numeric"
-              placeholder="e.g. 71143360"
+              placeholder={t('form.phonePlaceholder')}
               value={formatDanishPhone(formData.emergencyMobile)}
               onChange={handlePhoneChange('emergencyMobile')}
               className={`mt-1 ${exceedsIntMax(formData.emergencyMobile) ? 'border-red-500 focus-visible:ring-red-400' : ''}`}
             />
             {exceedsIntMax(formData.emergencyMobile) && (
-              <p className="text-xs text-red-600 mt-1">Number exceeds system limit (max 2 147 483 647).</p>
+              <p className="text-xs text-red-600 mt-1">{t('form.numberExceeds')}</p>
             )}
             <p className="text-xs text-gray-500 mt-1 italic">
-              The number will be used to contact your relative in case of emergency.
+              {t('form.emergency.mobileDesc')}
             </p>
           </div>
 
@@ -383,7 +385,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
               }
             />
             <Label htmlFor="public-emergency" className="text-sm font-normal cursor-pointer">
-              Make information public. <span className="text-red-600 font-semibold">REMEMBER</span> to seek your relative's permission to make their contact details public. Once public, their information will be visible in the infolist.
+              {t('form.emergency.makePublicPrefix')} <span className="text-red-600 font-semibold">{t('form.emergency.remember')}</span> {t('form.emergency.makePublicSuffix')}
             </Label>
           </div>
         </CardContent>
@@ -393,13 +395,13 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
       {!isSelf && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Employment type, permissions &amp; notifications</CardTitle>
+            <CardTitle className="text-lg font-semibold">{t('form.employment.title')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Employment Type */}
             <div>
               <Label className="text-sm font-medium">
-                Employment type <span className="text-red-500">*</span>
+                {t('form.employment.type')} <span className="text-red-500">*</span>
               </Label>
               <div className="mt-2 space-y-2">
                 <RadioGroup
@@ -408,7 +410,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                   className="space-y-2"
                 >
                   <RadioGroupItem value="none" id="employment-none">
-                    No employment type
+                    {t('form.employment.noType')}
                   </RadioGroupItem>
                   {companyId &&
                     !employmentTypesLoading &&
@@ -424,19 +426,19 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                     ))}
                 </RadioGroup>
                 {companyId && employmentTypesLoading && (
-                  <p className="text-xs text-gray-500">Loading employment types…</p>
+                  <p className="text-xs text-gray-500">{t('form.employment.loading')}</p>
                 )}
                 {companyId &&
                   !employmentTypesLoading &&
                   uniqueEmploymentTypes.length === 0 && (
-                    <p className="text-xs text-gray-500">No employment types created yet.</p>
+                    <p className="text-xs text-gray-500">{t('form.employment.noTypes')}</p>
                   )}
               </div>
             </div>
 
             {/* Status */}
             <div className="flex flex-wrap items-center gap-3 py-2">
-              <Label className="text-sm font-medium">Status</Label>
+              <Label className="text-sm font-medium">{t('form.status')}</Label>
               <button
                 type="button"
                 onClick={() => onChange({ ...formData, status: !formData.status })}
@@ -444,35 +446,41 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                   }`}
               >
                 <span className={`w-2 h-2 rounded-full ${formData.status ? 'bg-green-500' : 'bg-gray-400'}`} />
-                <span className="text-sm font-medium">{formData.status ? 'ACTIVE' : 'INACTIVE'}</span>
+                <span className="text-sm font-medium">{formData.status ? t('form.statusActive') : t('form.statusInactive')}</span>
               </button>
               <span className="text-xs text-gray-600">
-                Untick to block access, but keep the employee in the list without the license counting.
+                {t('form.statusDesc')}
               </span>
             </div>
 
             {/* Permissions */}
             <div>
-              <Label className="text-sm font-medium mb-3 block">Permissions</Label>
+              <Label className="text-sm font-medium mb-3 block">{t('form.permissions')}</Label>
               <div className="space-y-3">
                 <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="senior"
-                    checked={formData.isSeniorEmployee}
-                    onChange={(e) => onChange({ ...formData, isSeniorEmployee: e.target.checked })}
+                  <input
+                    type="radio"
+                    id="perm-senior"
+                    name="permissions"
+                    checked={!formData.isBusinessAdmin}
+                    onChange={() => onChange({ ...formData, isSeniorEmployee: true, isBusinessAdmin: false })}
+                    className="mt-0.5 h-4 w-4 accent-[#0d0e0e] cursor-pointer"
                   />
-                  <Label htmlFor="senior" className="text-sm font-normal cursor-pointer">
-                    Senior employee. Allow the employee to view the management handbook.
+                  <Label htmlFor="perm-senior" className="text-sm font-normal cursor-pointer">
+                    {t('form.permSenior')}
                   </Label>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="admin"
+                  <input
+                    type="radio"
+                    id="perm-admin"
+                    name="permissions"
                     checked={formData.isBusinessAdmin}
-                    onChange={(e) => onChange({ ...formData, isBusinessAdmin: e.target.checked })}
+                    onChange={() => onChange({ ...formData, isSeniorEmployee: false, isBusinessAdmin: true })}
+                    className="mt-0.5 h-4 w-4 accent-[#0d0e0e] cursor-pointer"
                   />
-                  <Label htmlFor="admin" className="text-sm font-normal cursor-pointer">
-                    Business administrator. Allow the employee to edit and change the handbook.
+                  <Label htmlFor="perm-admin" className="text-sm font-normal cursor-pointer">
+                    {t('form.permAdmin')}
                   </Label>
                 </div>
               </div>
@@ -480,18 +488,18 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
 
             {/* Send Email to Employee */}
             <div>
-              <Label className="text-sm font-medium mb-2 block">Send email to employee</Label>
+              <Label className="text-sm font-medium mb-2 block">{t('form.sendEmail')}</Label>
               <RadioGroup
                 value={formData.sendEmail}
                 onValueChange={(value) => onChange({ ...formData, sendEmail: value })}
                 className="space-y-2"
               >
-                <RadioGroupItem value="no" id="email-no">No</RadioGroupItem>
-                <RadioGroupItem value="standard" id="email-standard">Standard</RadioGroupItem>
-                <RadioGroupItem value="customized" id="email-customized">Customized</RadioGroupItem>
+                <RadioGroupItem value="no" id="email-no">{t('form.sendEmailNo')}</RadioGroupItem>
+                <RadioGroupItem value="standard" id="email-standard">{t('form.sendEmailStandard')}</RadioGroupItem>
+                <RadioGroupItem value="customized" id="email-customized">{t('form.sendEmailCustomized')}</RadioGroupItem>
               </RadioGroup>
               <p className="text-xs text-gray-500 mt-2 italic">
-                Send a message with a link to the handbook.
+                {t('form.sendEmailDesc')}
               </p>
             </div>
           </CardContent>
