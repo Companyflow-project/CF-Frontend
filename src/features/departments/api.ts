@@ -21,6 +21,7 @@ export interface CreateDepartmentPayload {
     managerName?: string;
     managerId?: number | null;
     companyId: string | number;
+    logoFid?: number;
 }
 
 export interface UpdateDepartmentPayload {
@@ -30,6 +31,7 @@ export interface UpdateDepartmentPayload {
     telephone?: string;
     managerName?: string;
     managerId?: number | null;
+    logoFid?: number;
 }
 
 function normalizeDepartment(raw: Record<string, unknown>): Department {

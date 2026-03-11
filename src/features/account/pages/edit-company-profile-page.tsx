@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Upload } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/auth-context';
 import { useCompanyProfile, useUpdateCompanyProfile } from '@/features/companies/hooks';
 import { toast } from 'sonner';
 import { HelpBanner } from '@/components/ui/help-banner';
+import { axiosClient } from '@/lib/axios-client';
 export const EditCompanyProfilePage: React.FC = () => {
     const navigate = useNavigate();
     const { user, loading: authLoading } = useAuth();
@@ -18,6 +19,37 @@ export const EditCompanyProfilePage: React.FC = () => {
         !authLoading ? companyId : undefined
     );
     const updateMutation = useUpdateCompanyProfile();
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const [logoFid, setLogoFid] = useState<number | null>(null);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const allowed = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png'];
+        if (!allowed.includes(file.type)) {
+            toast.error('Only jpg, jpeg, gif, png files are allowed');
+            return;
+        }
+
+        setUploadingLogo(true);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await axiosClient.post<{ success: boolean; fid: number; uri: string }>('/files', fd, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setLogoFid(res.data.fid);
+            setFormData((prev) => ({ ...prev, logoUrl: res.data.uri }));
+            toast.success('Logo uploaded');
+        } catch {
+            toast.error('Failed to upload logo');
+        } finally {
+            setUploadingLogo(false);
+            if (logoInputRef.current) logoInputRef.current.value = '';
+        }
+    };
 
     const [formData, setFormData] = useState({
         businessName: '',
@@ -27,6 +59,7 @@ export const EditCompanyProfilePage: React.FC = () => {
         zipCode: '',
         mobile: '',
         logoUrl: null as string | null,
+        senderName: '',
     });
 
     // Populate form when profile loads
@@ -40,6 +73,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                 zipCode: profile.zipCode || '',
                 mobile: profile.mobile || '',
                 logoUrl: profile.logoUrl,
+                senderName: profile.senderName ? profile.senderName : (profile.businessName || ''),
             });
         }
     }, [profile]);
@@ -89,6 +123,8 @@ export const EditCompanyProfilePage: React.FC = () => {
                     town: formData.town.trim(),
                     zipCode: formData.zipCode.trim(),
                     mobile: formData.mobile.trim(),
+                    senderName: formData.senderName.trim(),
+                    ...(logoFid !== null ? { logoFid } : {}),
                 },
             });
             toast.success('Company profile updated successfully');
@@ -121,8 +157,8 @@ export const EditCompanyProfilePage: React.FC = () => {
         if (!formData.logoUrl) return null;
         // If it's already a full URL, return as-is
         if (formData.logoUrl.startsWith('http')) return formData.logoUrl;
-        // Otherwise, prepend the API base URL
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        // Static files are served at the server root, not under /api
+        const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
         return `${baseUrl}${formData.logoUrl}`;
     };
 
@@ -234,13 +270,30 @@ export const EditCompanyProfilePage: React.FC = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-12">
                                 {/* Logo Upload */}
                                 <div className="flex flex-col items-center">
-                                    <div className="w-[240px] h-[240px] rounded-full bg-[#f3f4f6] border border-[#e5e7eb] flex flex-col items-center justify-center cursor-pointer hover:border-[#d1d5db] transition-colors mb-3 group relative overflow-hidden">
-                                        {getLogoUrl() ? (
-                                            <img
-                                                src={getLogoUrl()!}
-                                                alt="Company logo"
-                                                className="w-full h-full object-cover rounded-full"
-                                            />
+                                    <input
+                                        ref={logoInputRef}
+                                        type="file"
+                                        accept=".jpg,.jpeg,.gif,.png"
+                                        className="hidden"
+                                        onChange={handleLogoUpload}
+                                    />
+                                    <div
+                                        className="w-[240px] h-[240px] rounded-full bg-[#f3f4f6] border border-[#e5e7eb] flex flex-col items-center justify-center cursor-pointer hover:border-[#d1d5db] transition-colors mb-3 group relative overflow-hidden"
+                                        onClick={() => logoInputRef.current?.click()}
+                                    >
+                                        {uploadingLogo ? (
+                                            <span className="text-[15px] text-gray-500 font-medium">Uploading...</span>
+                                        ) : getLogoUrl() ? (
+                                            <>
+                                                <img
+                                                    src={getLogoUrl()!}
+                                                    alt="Company logo"
+                                                    className="w-full h-full object-cover rounded-full"
+                                                />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                                                    <Upload className="h-6 w-6 text-white" />
+                                                </div>
+                                            </>
                                         ) : (
                                             <div className="flex flex-col items-center gap-3 relative z-10">
                                                 <Upload className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
@@ -249,6 +302,19 @@ export const EditCompanyProfilePage: React.FC = () => {
                                         )}
                                     </div>
                                     <p className="text-[13px] text-gray-400 italic">Only upload: jpg, jpeg, gif, png</p>
+                                    {getLogoUrl() && (
+                                        <button
+                                            type="button"
+                                            className="mt-2 flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 transition-colors"
+                                            onClick={() => {
+                                                setFormData((prev) => ({ ...prev, logoUrl: null }));
+                                                setLogoFid(-1);
+                                            }}
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                            Remove logo
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Form Fields */}
@@ -274,15 +340,20 @@ export const EditCompanyProfilePage: React.FC = () => {
                     <section>
                         <h2 className="text-[20px] font-bold text-[#0d0e0e] mb-4">SMS information</h2>
                         <div className="bg-white border border-[#e5e7eb] rounded-[16px] p-8 shadow-sm">
-                            <div className="max-w-[700px] lg:ml-[348px]"> {/* Align with input column above */}
-                                {/* Placeholders for now since API doesn't have these fields yet */}
+                            <div className="max-w-[700px] lg:ml-[348px]">
                                 <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 items-center">
-                                    <Label className="text-[15px] font-bold text-[#0d0e0e]">Sender name</Label>
-                                    <Input
-                                        value={formData.businessName || ''}
-                                        readOnly
-                                        className="h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e]"
-                                    />
+                                    <Label htmlFor="senderName" className="text-[15px] font-bold text-[#0d0e0e]">Sender name</Label>
+                                    <div className="w-full">
+                                        <Input
+                                            id="senderName"
+                                            value={formData.senderName}
+                                            onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
+                                            maxLength={11}
+                                            className="h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e]"
+                                            disabled={isLoading}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1.5 italic">Default is your business name. Max 11 characters.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

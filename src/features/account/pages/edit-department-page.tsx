@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import type { Department } from '@/features/departments/api';
 import { useAuth } from '@/context/auth-context';
 import { useEmployees } from '@/lib/api-hooks';
 import { HelpBanner } from '@/components/ui/help-banner';
+import { axiosClient } from '@/lib/axios-client';
 
 export const EditDepartmentPage: React.FC = () => {
     const navigate = useNavigate();
@@ -28,6 +29,37 @@ export const EditDepartmentPage: React.FC = () => {
     const department = (departmentFromState || departmentFromApi) ?? null;
     const updateMutation = useUpdateDepartment();
     const deleteMutation = useDeleteDepartment();
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const [logoFid, setLogoFid] = useState<number | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const allowed = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png'];
+        if (!allowed.includes(file.type)) {
+            toast.error('Only jpg, jpeg, gif, png files are allowed');
+            return;
+        }
+        setUploadingLogo(true);
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await axiosClient.post<{ success: boolean; fid: number; uri: string }>('/files', fd, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setLogoFid(res.data.fid);
+            const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
+            setLogoPreview(`${baseUrl}${res.data.uri}`);
+            toast.success('Photo uploaded');
+        } catch {
+            toast.error('Failed to upload photo');
+        } finally {
+            setUploadingLogo(false);
+            if (logoInputRef.current) logoInputRef.current.value = '';
+        }
+    };
 
     // Fetch employees for manager dropdown
     const { user } = useAuth();
@@ -41,7 +73,6 @@ export const EditDepartmentPage: React.FC = () => {
         telephone: '',
         manager: '',
         managerId: null as number | null,
-        nameAndLogo: '',
     };
 
     const [formData, setFormData] = useState(emptyForm);
@@ -55,8 +86,12 @@ export const EditDepartmentPage: React.FC = () => {
                 telephone: department.telephone ?? '',
                 manager: department.managerName ?? '',
                 managerId: department.managerId ?? null,
-                nameAndLogo: '',
             });
+            if (department.logoUrl && !logoPreview) {
+                const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
+                const url = department.logoUrl.startsWith('http') ? department.logoUrl : `${baseUrl}${department.logoUrl}`;
+                setLogoPreview(url);
+            }
         }
     }, [department]);
 
@@ -78,6 +113,7 @@ export const EditDepartmentPage: React.FC = () => {
                     telephone: formData.telephone,
                     managerName: formData.manager,
                     managerId: formData.managerId,
+                    ...(logoFid ? { logoFid } : {}),
                 },
             });
 
@@ -183,9 +219,32 @@ export const EditDepartmentPage: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Logo Upload */}
                         <div className="flex flex-col items-center justify-center">
-                            <div className="w-48 h-48 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                <span className="text-sm text-gray-600">Click to upload photo</span>
+                            <input
+                                ref={logoInputRef}
+                                type="file"
+                                accept=".jpg,.jpeg,.gif,.png"
+                                className="hidden"
+                                onChange={handleLogoUpload}
+                            />
+                            <div
+                                className="w-48 h-48 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors group relative overflow-hidden"
+                                onClick={() => logoInputRef.current?.click()}
+                            >
+                                {uploadingLogo ? (
+                                    <span className="text-sm text-gray-500">Uploading...</span>
+                                ) : logoPreview ? (
+                                    <>
+                                        <img src={logoPreview} alt="Department logo" className="w-full h-full object-cover rounded-full" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                                            <Upload className="h-6 w-6 text-white" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                                        <span className="text-sm text-gray-600">Click to upload photo</span>
+                                    </>
+                                )}
                             </div>
                             <p className="text-xs text-gray-500 mt-2">Only upload: jpg, jpeg, gif, png</p>
                         </div>
@@ -236,6 +295,7 @@ export const EditDepartmentPage: React.FC = () => {
                                 </Label>
                                 <Input
                                     id="telephone"
+                                    type="tel"
                                     value={formData.telephone}
                                     onChange={(e) => setFormData({ ...formData, telephone: e.target.value })}
                                     className="mt-1"
@@ -267,18 +327,6 @@ export const EditDepartmentPage: React.FC = () => {
                                         </option>
                                     ))}
                                 </Select>
-                            </div>
-
-                            <div>
-                                <Label htmlFor="nameAndLogo" className="text-sm font-medium text-[#0d0e0e]">
-                                    Name and logo
-                                </Label>
-                                <Input
-                                    id="nameAndLogo"
-                                    value={formData.nameAndLogo}
-                                    onChange={(e) => setFormData({ ...formData, nameAndLogo: e.target.value })}
-                                    className="mt-1"
-                                />
                             </div>
                         </div>
                     </div>

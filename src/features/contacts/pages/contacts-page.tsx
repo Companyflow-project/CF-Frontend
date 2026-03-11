@@ -53,7 +53,6 @@ export const ContactsPage: React.FC = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
-  const [addingSelectedLoading, setAddingSelectedLoading] = useState(false);
   const [employeeContactModal, setEmployeeContactModal] = useState<{
     open: boolean;
     employee: EmployeeContactData | null;
@@ -67,7 +66,7 @@ export const ContactsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: contacts, error: contactsError, refetch: refetchContacts } = useContacts();
   const { data: apiEmployees } = useEmployees({ limit: 1000 });
-  const { data: potentialContacts } = usePotentialContacts();
+  usePotentialContacts();
 
   // Merge ALL company employees into the contacts list.
   // The /api/contacts endpoint returns only status=1 rows; employees not in contacts appear
@@ -149,11 +148,6 @@ export const ContactsPage: React.FC = () => {
   const externalContacts = useMemo(
     () => mergedContacts.filter((c) => c.isExternalContact),
     [mergedContacts],
-  );
-
-  const filteredContacts = useMemo(
-    () => applyFilters(mergedContacts),
-    [mergedContacts, applyFilters],
   );
 
   const filteredEmployeeContacts = useMemo(
@@ -567,45 +561,12 @@ export const ContactsPage: React.FC = () => {
     }
   }, [refetchContacts]);
 
-  const handleAddSelectedAsContacts = useCallback(() => {
-    if (selectedIds.length === 0) return;
-
-    const potentialByName = new Map(
-      potentialContacts.map((item) => [item.name.trim().toLowerCase(), item]),
-    );
-
-    const matchingContacts = filteredContacts.filter(
-      (contact) =>
-        selectedIds.includes(contact.id) &&
-        contact.isEmployeeContact &&
-        potentialByName.has(contact.name.trim().toLowerCase()),
-    );
-
-    if (matchingContacts.length === 0) {
-      toast.info('No employees to add as contacts.');
-      return;
-    }
-
-    const targets: BatchContactTarget[] = matchingContacts.map((contact) => {
-      const potential = potentialByName.get(contact.name.trim().toLowerCase())!;
-      return {
-        id: contact.id,
-        name: contact.name,
-        email: contact.email ?? undefined,
-        telephone: contact.telephone,
-        uid: potential.uid,
-      };
-    });
-    setAddSelectedTargets(targets);
-    setAddSelectedModalOpen(true);
-  }, [selectedIds, filteredContacts, potentialContacts]);
 
   const handleAddSelectedConfirm = useCallback(async (payload: {
     areaIds: number[];
     newAreas?: string[];
   }) => {
     if (addSelectedTargets.length === 0) return;
-    setAddingSelectedLoading(true);
     try {
       await Promise.all(
         addSelectedTargets.map((t) =>
@@ -636,7 +597,6 @@ export const ContactsPage: React.FC = () => {
             : 'Failed to add selected employees as contacts';
       toast.error(msg);
     } finally {
-      setAddingSelectedLoading(false);
     }
   }, [addSelectedTargets, refetchContacts]);
 
@@ -920,14 +880,6 @@ export const ContactsPage: React.FC = () => {
                   onClick={handleSetPublic}
                 >
                   Set selected to public
-                </Button>
-                <Button
-                  size="sm"
-                  className="rounded-[999px] text-sm px-5 bg-[#2f946f] text-white hover:bg-[#2f946f]/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={selectedIds.length === 0 || addingSelectedLoading}
-                  onClick={handleAddSelectedAsContacts}
-                >
-                  {addingSelectedLoading ? 'Adding…' : 'Add selected as contacts'}
                 </Button>
               </div>
             </div>

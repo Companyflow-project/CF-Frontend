@@ -208,15 +208,6 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                             )}
                         </div>
 
-                        {/* Sticky Note Section - Always visible at bottom */}
-                        {pageDetail.internalNote && (
-                            <div className="border-t-2 border-[#f59e0b] bg-white px-6 py-4 flex-shrink-0">
-                                <h3 className="text-base font-bold text-[#f59e0b] mb-2">Note</h3>
-                                <p className="text-sm text-[#0d0e0e] leading-relaxed">
-                                    {pageDetail.internalNote}
-                                </p>
-                            </div>
-                        )}
                     </>
                 )}
 

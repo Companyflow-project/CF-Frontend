@@ -15,6 +15,8 @@ export interface UpdateCompanyProfileRequest {
     town: string;
     zipCode: string;
     mobile: string;
+    logoFid?: number;
+    senderName?: string;
 }
 
 export interface UpdateCompanyProfileResponse {

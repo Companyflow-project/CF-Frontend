@@ -7,6 +7,7 @@ import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import { useAppearance } from '@/context/appearance-context';
 import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
+import type { HandbookPageDetail } from '@/types/models';
 
 export const HandbookPrintPage: React.FC = () => {
   const { getColor } = useAppearance();
@@ -24,6 +25,7 @@ export const HandbookPrintPage: React.FC = () => {
   };
   const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree(lang);
   const [bodies, setBodies] = useState<Map<number, string>>(new Map());
+  const [pageDetails, setPageDetails] = useState<Map<number, HandbookPageDetail>>(new Map());
   const [bodiesLoading, setBodiesLoading] = useState(false);
   const [bodiesError, setBodiesError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -45,16 +47,26 @@ export const HandbookPrintPage: React.FC = () => {
     let cancelled = false;
     setBodiesLoading(true);
     setBodiesError(null);
-    Promise.all(
-      readyPageIds.map((id) =>
-        handbookApi.getHandbookContent(id, lang).then((html) => ({ id, html }))
-      )
-    )
-      .then((results) => {
+    Promise.all([
+      Promise.all(
+        readyPageIds.map((id) =>
+          handbookApi.getHandbookContent(id, lang).then((html) => ({ id, html }))
+        )
+      ),
+      Promise.all(
+        readyPageIds.map((id) =>
+          handbookApi.getPageDetail(id, lang).then((detail) => ({ id, detail })).catch(() => ({ id, detail: null }))
+        )
+      ),
+    ])
+      .then(([bodyResults, detailResults]) => {
         if (cancelled) return;
         const map = new Map<number, string>();
-        results.forEach(({ id, html }) => map.set(id, html));
+        bodyResults.forEach(({ id, html }) => map.set(id, html));
         setBodies(map);
+        const detailMap = new Map<number, HandbookPageDetail>();
+        detailResults.forEach(({ id, detail }) => { if (detail) detailMap.set(id, detail); });
+        setPageDetails(detailMap);
       })
       .catch((err: any) => {
         if (!cancelled)
@@ -149,7 +161,9 @@ export const HandbookPrintPage: React.FC = () => {
                 <h2 className="text-xl font-bold mt-8 mb-3 first:mt-0 print:text-lg" style={{ color: getColor('headlines') }}>
                   {chapter.title}
                 </h2>
-                {chapter.pages?.map((page: any) => (
+                {chapter.pages?.map((page: any) => {
+                  const detail = pageDetails.get(page.id);
+                  return (
                   <section
                     key={page.id}
                     className="mb-8 break-inside-avoid"
@@ -163,8 +177,17 @@ export const HandbookPrintPage: React.FC = () => {
                       style={{ color: getColor('bodyText') }}
                       dangerouslySetInnerHTML={{ __html: page.body || '' }}
                     />
+                    {detail?.internalNote && (
+                      <div className="mt-3 pt-3 border-t-2 border-[#f59e0b]">
+                        <h4 className="text-sm font-bold text-[#f59e0b] mb-1">Note</h4>
+                        <p className="text-sm text-[#0d0e0e] leading-relaxed">
+                          {detail.internalNote}
+                        </p>
+                      </div>
+                    )}
                   </section>
-                ))}
+                  );
+                })}
               </React.Fragment>
             ))
           )}

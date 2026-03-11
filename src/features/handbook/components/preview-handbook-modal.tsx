@@ -7,7 +7,7 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { BookOpen, FileText, Link2, StickyNote } from 'lucide-react';
+import { BookOpen, FileText, Link2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
@@ -271,18 +271,6 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                     </div>
                                                 )}
 
-                                                {/* Internal Note */}
-                                                {detail?.internalNote && (
-                                                    <div className="pt-3 mt-2 border-t-2 border-[#f59e0b]">
-                                                        <h4 className="text-sm font-bold text-[#f59e0b] mb-1 flex items-center gap-1.5">
-                                                            <StickyNote className="h-3.5 w-3.5" />
-                                                            Note
-                                                        </h4>
-                                                        <p className="text-sm text-[#0d0e0e] leading-relaxed">
-                                                            {detail.internalNote}
-                                                        </p>
-                                                    </div>
-                                                )}
                                             </div>
                                             );
                                         })}

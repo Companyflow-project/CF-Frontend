@@ -229,6 +229,7 @@ export interface CompanyProfile {
   zipCode: string;
   mobile: string;
   logoUrl: string | null;
+  senderName: string;
 }
 
 // Handbook Resources
