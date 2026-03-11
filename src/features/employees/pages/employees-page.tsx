@@ -32,6 +32,7 @@ export const EmployeesPage: React.FC = () => {
   const { user: authUser } = useAuth();
   const companyId = authUser?.companyId ? String(authUser.companyId) : undefined;
   const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin' || authUser?.role === 'MANAGER';
+  const isStrictAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin';
   const [viewAsEmployee, setViewAsEmployee] = useState(false);
   const effectiveAdmin = isAdmin && !viewAsEmployee;
   const { data: subscriptionData } = useSubscription(companyId);
@@ -78,18 +79,26 @@ export const EmployeesPage: React.FC = () => {
   }, [apiEmployees]);
 
   const filteredEmployees = useMemo(() => {
+    const isCurrentUser = (emp: ReturnType<typeof transformEmployee>) =>
+      authUser?.email && emp.email.toLowerCase() === authUser.email.toLowerCase();
+
     let filtered = [...employees];
 
-    if (!showInactive) {
-      filtered = filtered.filter((emp) => emp.status !== 'INACTIVE');
-    }
-
-    if (publicOnly) {
-      filtered = filtered.filter((emp) => emp.isPublic);
+    if (isStrictAdmin) {
+      // Admins/company_admins see all by default; toggles narrow the list
+      if (showInactive) {
+        filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.status === 'INACTIVE');
+      }
+      if (publicOnly) {
+        filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.isPublic);
+      }
+    } else {
+      // Non-admins (including managers) only see active, public employees (+ themselves)
+      filtered = filtered.filter((emp) => isCurrentUser(emp) || (emp.status !== 'INACTIVE' && emp.isPublic));
     }
 
     return filtered;
-  }, [employees, showInactive, publicOnly]);
+  }, [employees, showInactive, publicOnly, authUser?.email, isStrictAdmin]);
 
   const sortedEmployees = useMemo(() => {
     const getKey = (emp: ReturnType<typeof transformEmployee>) => {
@@ -350,7 +359,7 @@ export const EmployeesPage: React.FC = () => {
           <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] flex flex-col overflow-hidden">
             {/* search + filter bar */}
             <div className="bg-[#f2f7f5] border border-[#d6e8e1] rounded-[16px] mx-4 mt-4 px-4 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
-              <div className="relative w-full lg:max-w-sm">
+              <div className={`relative w-full ${isStrictAdmin ? 'lg:max-w-sm' : ''}`}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
                 <Input
                   placeholder="Search employees (name, email, phone)"
@@ -359,7 +368,7 @@ export const EmployeesPage: React.FC = () => {
                   className="pl-11 h-12 rounded-[999px] border border-[#c8d8d3] bg-white text-sm"
                 />
               </div>
-              {isAdmin && (
+              {isStrictAdmin && (
                 <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
                   <button
                     type="button"
@@ -457,7 +466,7 @@ export const EmployeesPage: React.FC = () => {
                   </Tooltip>
                 </div>
                 </TooltipProvider>
-                {effectiveAdmin && (
+                {isStrictAdmin && effectiveAdmin && (
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"

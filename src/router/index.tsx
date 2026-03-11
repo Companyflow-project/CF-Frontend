@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React, { Suspense, lazy, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/layouts/app-layout';
 import { AuthLayout } from '@/layouts/auth-layout';
 import { authRoutes } from '@/features/auth/routes';
@@ -12,6 +12,8 @@ import { companiesRoutes } from '@/features/companies/routes';
 import { userManualRoutes } from '@/features/user-manual/routes';
 
 const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
+const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('@/features/auth/pages/reset-password-page').then((m) => ({ default: m.ResetPasswordPage })));
 const ConsolePage = lazy(() => import('@/pages/console/console-page').then((m) => ({ default: m.ConsolePage })));
 const LoginPage = lazy(() => import('@/features/auth/pages/login-page').then((m) => ({ default: m.LoginPage })));
 const SignupPage = lazy(() => import('@/features/auth/pages/signup-page').then((m) => ({ default: m.SignupPage })));
@@ -81,6 +83,48 @@ const RequireAdminRole: React.FC<{ children: React.ReactNode }> = ({ children })
   return <>{children}</>;
 };
 
+const STRICT_ADMIN_ROLES = new Set(['ADMIN', 'company_admin']);
+
+const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (loading) return <PageFallback />;
+
+  if (!user || !STRICT_ADMIN_ROLES.has(user.role)) {
+    if (dismissed) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="bg-white rounded-[18px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] max-w-md w-full mx-4 p-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-full bg-[#fef3c7] flex items-center justify-center flex-shrink-0">
+              <svg className="h-5 w-5 text-[#d97706]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-bold text-[#0d0e0e]">Access Restricted</h2>
+          </div>
+          <p className="text-sm text-[#6b7280] mb-6">
+            Only administrators can view this page. Please contact your company administrator if you need access.
+          </p>
+          <button
+            onClick={() => {
+              setDismissed(true);
+              navigate('/', { replace: true });
+            }}
+            className="w-full px-4 py-2.5 bg-[#0d0e0e] text-white text-sm font-medium rounded-[10px] hover:bg-[#0d0e0e]/90 transition-colors"
+          >
+            Go back to home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 const RedirectIfAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return null;
@@ -119,6 +163,26 @@ export const AppRouter: React.FC = () => {
               <AuthLayout>
                 <MagicLinkPage />
               </AuthLayout>
+            }
+          />
+          <Route
+            path={authRoutes.forgotPassword}
+            element={
+              <RedirectIfAuth>
+                <AuthLayout>
+                  <ForgotPasswordPage />
+                </AuthLayout>
+              </RedirectIfAuth>
+            }
+          />
+          <Route
+            path="/reset-password/:token"
+            element={
+              <RedirectIfAuth>
+                <AuthLayout>
+                  <ResetPasswordPage />
+                </AuthLayout>
+              </RedirectIfAuth>
             }
           />
           <Route
@@ -285,9 +349,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/publish/:id"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <PublishHandbookPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <PublishHandbookPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -295,9 +361,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.createPage}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <HandbookPageEditPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <HandbookPageEditPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -305,9 +373,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/pages/:id/edit"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <HandbookPageEditPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <HandbookPageEditPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -315,9 +385,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.addTheme}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <AddThemePage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <AddThemePage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -325,9 +397,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/edit-theme/:id"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EditThemePage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <EditThemePage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -395,9 +469,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.account}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <AccountPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <AccountPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -405,9 +481,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.editCompanyProfile}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EditCompanyProfilePage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <EditCompanyProfilePage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -415,9 +493,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.appearance}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <AppearancePage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <AppearancePage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -425,9 +505,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.departments}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <ViewDepartmentsPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <ViewDepartmentsPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -435,9 +517,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.addDepartment}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <AddDepartmentPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <AddDepartmentPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -445,9 +529,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.editDepartment}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <EditDepartmentPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <EditDepartmentPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -455,9 +541,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.subscription}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <SubscriptionPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <SubscriptionPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -465,9 +553,11 @@ export const AppRouter: React.FC = () => {
             path={accountRoutes.employmentTypes}
             element={
               <RequireAuth>
-                <AppLayout>
-                  <ViewEmploymentTypesPage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <ViewEmploymentTypesPage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />
@@ -475,9 +565,11 @@ export const AppRouter: React.FC = () => {
             path="/account/employment-types/:id/assign"
             element={
               <RequireAuth>
-                <AppLayout>
-                  <AssignEmploymentTypePage />
-                </AppLayout>
+                <RequireStrictAdmin>
+                  <AppLayout>
+                    <AssignEmploymentTypePage />
+                  </AppLayout>
+                </RequireStrictAdmin>
               </RequireAuth>
             }
           />

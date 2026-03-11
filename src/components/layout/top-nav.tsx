@@ -11,12 +11,14 @@ export const TopNav: React.FC = () => {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const isStrictAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+
   const navItems = [
     { path: '/', label: 'Console' },
     { path: '/employees', label: 'Employees' },
     { path: '/handbook', label: 'Manage Handbook' },
     { path: '/contacts', label: 'Contacts' },
-    { path: '/account', label: 'Account' },
+    ...(isStrictAdmin ? [{ path: '/account', label: 'Account' }] : []),
   ];
 
   const getInitials = (name: string) => {

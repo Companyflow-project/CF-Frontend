@@ -208,6 +208,33 @@ export const authApi = {
     }
   },
 
+  async validateResetToken(token: string): Promise<string | null> {
+    try {
+      const response = await axiosClient.get<{ data: { email: string } }>(`/auth/validate-reset-token/${token}`);
+      return response.data?.data?.email ?? null;
+    } catch {
+      return null;
+    }
+  },
+
+  async forgotPassword(email: string): Promise<string> {
+    try {
+      const response = await axiosClient.post<{ data: { message: string } }>('/auth/forgot-password', { email });
+      return response.data?.data?.message ?? 'If an account with that email exists, a password reset link has been sent.';
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<string> {
+    try {
+      const response = await axiosClient.post<{ data: { message: string } }>('/auth/reset-password', { token, newPassword });
+      return response.data?.data?.message ?? 'Password has been reset successfully.';
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
   /** POST /auth/logout – requires Bearer token. Client removes token after call (JWT is stateless). */
   async logout(): Promise<void> {
     try {

@@ -10,12 +10,14 @@ import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { useAuth } from '@/context/auth-context';
 import { toast } from 'sonner';
 import type { HandbookNode } from '@/types/models';
+import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
 
 export const HandbookTableOfContentsPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
+    const [lang, setLang] = useHandbookLang();
     const [tree, setTree] = useState<HandbookNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const { bid, chapters: data } = await handbookApi.getHandbookTree();
+                const { bid, chapters: data } = await handbookApi.getHandbookTree(lang);
                 // Deduplicate
                 const unique = Array.from(new Map(data.map((n) => [n.id, n])).values());
                 setTree(unique);
@@ -50,7 +52,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             }
         };
         fetch();
-    }, []);
+    }, [lang]);
 
     const chapters = useMemo(
         () => tree.filter((n) => n.type === 'chapter'),
@@ -175,6 +177,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                         Back
                     </Button>
                     <h1 className="text-2xl font-bold text-[#0d0e0e]">Table of Contents</h1>
+                    <LanguageToggle value={lang} onChange={setLang} disabled={loading} />
                 </div>
                 <Button
                     variant="outline"

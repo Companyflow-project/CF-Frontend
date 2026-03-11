@@ -17,12 +17,14 @@ import { employeesRoutes } from '@/features/employees/routes';
 import { useAuth } from '@/context/auth-context';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { useHandbookTree } from '../hooks';
+import { useHandbookLang } from '../components/language-toggle';
 
 export const ManageHandbookPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
     const { bid, isPublished, provisioning } = useHandbookTree();
+    const [lang] = useHandbookLang();
 
     const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
 
@@ -177,12 +179,12 @@ export const ManageHandbookPage: React.FC = () => {
                     actions={[
                         {
                             label: 'Print Handbook →',
-                            onClick: () => navigate(handbookRoutes.printView()),
+                            onClick: () => navigate(handbookRoutes.printView({ lang })),
                             variant: 'default',
                         },
                         {
                             label: 'View printer-friendly version',
-                            onClick: () => navigate(handbookRoutes.printView()),
+                            onClick: () => navigate(handbookRoutes.printView({ lang })),
                             variant: 'outline',
                         },
                         {

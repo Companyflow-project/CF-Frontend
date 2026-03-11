@@ -100,6 +100,16 @@ export const LoginPage: React.FC = () => {
             />
           </div>
 
+          {/* Forgot password */}
+          <div className="flex justify-end">
+            <Link
+              to={authRoutes.forgotPassword}
+              className="text-[14px] text-[#1a5948] hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           {/* Button Section */}
           <div className="flex flex-col gap-6 mt-6">
             {error && (

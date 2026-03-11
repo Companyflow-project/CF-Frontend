@@ -6,11 +6,22 @@ import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import { useAppearance } from '@/context/appearance-context';
+import { LanguageToggle, useHandbookLang } from '../components/language-toggle';
 
 export const HandbookPrintPage: React.FC = () => {
   const { getColor } = useAppearance();
-  const [searchParams] = useSearchParams();
-  const lang = searchParams.get('lang') || 'en';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [storedLang, setStoredLang] = useHandbookLang();
+  const lang = searchParams.get('lang') || storedLang;
+
+  const handleLangChange = (next: 'da' | 'en') => {
+    setStoredLang(next);
+    setSearchParams((prev) => {
+      const p = new URLSearchParams(prev);
+      p.set('lang', next);
+      return p;
+    });
+  };
   const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree(lang);
   const [bodies, setBodies] = useState<Map<number, string>>(new Map());
   const [bodiesLoading, setBodiesLoading] = useState(false);
@@ -36,7 +47,7 @@ export const HandbookPrintPage: React.FC = () => {
     setBodiesError(null);
     Promise.all(
       readyPageIds.map((id) =>
-        handbookApi.getHandbookContent(id).then((html) => ({ id, html }))
+        handbookApi.getHandbookContent(id, lang).then((html) => ({ id, html }))
       )
     )
       .then((results) => {
@@ -53,7 +64,7 @@ export const HandbookPrintPage: React.FC = () => {
         if (!cancelled) setBodiesLoading(false);
       });
     return () => { cancelled = true; };
-  }, [readyPageIds.join(',')]);
+  }, [readyPageIds.join(','), lang]);
 
   const readyHandbookData = useMemo(() => {
     if (!Array.isArray(tree)) return [];
@@ -107,15 +118,18 @@ export const HandbookPrintPage: React.FC = () => {
     <PageShell>
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between gap-4 mb-6 print:hidden">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.history.back()}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.history.back()}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <LanguageToggle value={lang as 'da' | 'en'} onChange={handleLangChange} disabled={loading} />
+          </div>
           <Button
             onClick={handlePrint}
             className="gap-2"

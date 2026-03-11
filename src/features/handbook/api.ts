@@ -106,10 +106,11 @@ export const handbookApi = {
    * Response is plain text/HTML, not JSON. Returns empty string when no content.
    * CompanyFlow: use COMPANY_FLOW_CONTENT_NID (20134). Custom: use current page's nid.
    */
-  async getHandbookContent(nid: number): Promise<string> {
+  async getHandbookContent(nid: number, lang?: string): Promise<string> {
     requireValidNid(nid);
     try {
       const response = await axiosClient.get<string>(`/handbook/content/${nid}`, {
+        params: lang ? { lang } : undefined,
         responseType: 'text',
         transformResponse: [(data) => data],
       });
