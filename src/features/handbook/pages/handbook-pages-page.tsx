@@ -818,17 +818,20 @@ export const HandbookPagesPage: React.FC = () => {
                                                 <span className="font-medium text-[#0d0e0e] truncate">{page.title}</span>
                                                 {page.badge && (
                                                     <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
-                                                        {page.badge === 'custom' ? 'Custom' : 'Premade'}
+                                                        {page.badge === 'custom' ? (lang === 'da' ? 'Egen side' : 'Custom') : 'Premade'}
                                                     </Badge>
                                                 )}
                                                 {/* Recent activity summary */}
                                                 {(() => {
+                                                    const isDa = lang === 'da';
                                                     const activities: string[] = [];
-                                                    if (page.hasCustomBody) activities.push('Edited text');
-                                                    if (page.hasNote) activities.push('Note added');
-                                                    if (page.hasDocuments) activities.push('Documents attached');
-                                                    if (page.hasLinks) activities.push('Links added');
-                                                    if (page.hasImage) activities.push('Image added');
+                                                    if (page.badge === 'custom') activities.push(isDa ? 'Egen side' : 'Custom page');
+                                                    if (page.hasCustomBody) activities.push(isDa ? 'Tilføjet tekst' : 'Added text');
+                                                    if (page.hasReceipt) activities.push(isDa ? 'Kvittering' : 'Receipt');
+                                                    if (page.hasNote) activities.push(isDa ? 'Noter' : 'Notes');
+                                                    if (page.hasDocuments) activities.push(isDa ? 'Dokument' : 'Documents');
+                                                    if (page.hasLinks) activities.push('Links');
+                                                    if (page.hasImage) activities.push(isDa ? 'Billede' : 'Image');
                                                     return activities.length > 0 ? (
                                                         <span className="text-xs italic text-gray-400 flex-shrink-0 whitespace-nowrap">
                                                             ({activities.join(', ')})

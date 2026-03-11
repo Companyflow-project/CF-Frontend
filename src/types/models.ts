@@ -128,6 +128,7 @@ export interface HandbookNode {
   hasLinks?: boolean;
   hasImage?: boolean;
   hasCustomBody?: boolean;
+  hasReceipt?: boolean;
   isDeletable: boolean;
   pages?: HandbookNode[];
 }

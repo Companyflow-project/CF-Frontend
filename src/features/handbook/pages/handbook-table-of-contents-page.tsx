@@ -425,6 +425,27 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                             {page.title}
                                                         </button>
 
+                                                        {/* Content indicators */}
+                                                        {(() => {
+                                                            const isDa = lang === 'da';
+                                                            const tags: string[] = [];
+                                                            if (page.badge === 'custom') tags.push(isDa ? 'Egen side' : 'Custom page');
+                                                            if (page.hasCustomBody) tags.push(isDa ? 'Tilføjet tekst' : 'Added text');
+                                                            if (page.hasReceipt) tags.push(isDa ? 'Kvittering' : 'Receipt');
+                                                            if (page.hasNote) tags.push(isDa ? 'Noter' : 'Notes');
+                                                            if (page.hasDocuments) tags.push(isDa ? 'Dokument' : 'Documents');
+                                                            if (page.hasLinks) tags.push('Links');
+                                                            if (page.hasImage) tags.push(isDa ? 'Billede' : 'Image');
+                                                            if (tags.length > 0) {
+                                                                return (
+                                                                    <span className="flex-shrink-0 text-[11px] text-[#6b7475] italic truncate max-w-[260px]">
+                                                                        ({tags.join(', ')})
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })()}
+
                                                         {/* Badge (custom/premade) */}
                                                         {page.badge && (
                                                             <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
