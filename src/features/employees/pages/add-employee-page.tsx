@@ -29,6 +29,7 @@ export const AddEmployeePage: React.FC = () => {
     status: true,
     isSeniorEmployee: false,
     isBusinessAdmin: false,
+    languages: ['da'],
     sendEmail: 'no',
     userPictureFid: null,
   });
@@ -48,12 +49,6 @@ export const AddEmployeePage: React.FC = () => {
 
     if (!formData.mobileNumber.trim()) {
       newErrors.mobileNumber = t('form.validation.mobileRequired');
-    } else if (parseInt(formData.mobileNumber, 10) > 2_147_483_647) {
-      newErrors.mobileNumber = t('form.validation.mobileExceeds');
-    }
-
-    if (formData.alternateNumber && parseInt(formData.alternateNumber, 10) > 2_147_483_647) {
-      newErrors.alternateNumber = t('form.validation.alternateExceeds');
     }
 
     setErrors(newErrors);
@@ -84,6 +79,7 @@ export const AddEmployeePage: React.FC = () => {
         status: formData.status,
         isSeniorEmployee: formData.isSeniorEmployee,
         isBusinessAdmin: formData.isBusinessAdmin,
+        languages: formData.languages,
         sendEmailType: formData.sendEmail,
         ...(formData.userPictureFid != null && { userPictureFid: formData.userPictureFid }),
       };

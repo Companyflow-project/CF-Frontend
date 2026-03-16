@@ -74,7 +74,7 @@ const RequireAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-const ADMIN_ROLES = new Set(['ADMIN', 'company_admin', 'MANAGER']);
+const ADMIN_ROLES = new Set(['administrator', 'account_owner', 'company_admin']);
 
 const RequireAdminRole: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -86,7 +86,19 @@ const RequireAdminRole: React.FC<{ children: React.ReactNode }> = ({ children })
   return <>{children}</>;
 };
 
-const STRICT_ADMIN_ROLES = new Set(['ADMIN', 'company_admin']);
+const STRICT_ADMIN_ROLES = new Set(['administrator', 'account_owner', 'company_admin']);
+
+const SENIOR_ROLES = new Set(['administrator', 'account_owner', 'company_admin', 'senior_employee']);
+
+const RequireSeniorRole: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  const { viewAsEmployee } = useViewAsEmployee();
+  if (loading) return <PageFallback />;
+  if (!user || !SENIOR_ROLES.has(user.role) || viewAsEmployee) {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
 
 const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -343,11 +355,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.manage}
             element={
               <RequireAuth>
-                <RequireAdminRole>
+                <RequireSeniorRole>
                   <AppLayout>
                     <ManageHandbookPage />
                   </AppLayout>
-                </RequireAdminRole>
+                </RequireSeniorRole>
               </RequireAuth>
             }
           />
@@ -355,11 +367,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/print-view"
             element={
               <RequireAuth>
-                <RequireAdminRole>
+                <RequireSeniorRole>
                   <AppLayout>
                     <HandbookPrintPage />
                   </AppLayout>
-                </RequireAdminRole>
+                </RequireSeniorRole>
               </RequireAuth>
             }
           />
@@ -367,23 +379,23 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.pages}
             element={
               <RequireAuth>
-                <RequireAdminRole>
+                <RequireSeniorRole>
                   <AppLayout>
                     <HandbookPagesPage />
                   </AppLayout>
-                </RequireAdminRole>
+                </RequireSeniorRole>
               </RequireAuth>
             }
           />
           <Route
-            path="/handbook/publish/:id"
+            path="/handbook/publish/:id?"
             element={
               <RequireAuth>
-                <RequireStrictAdmin>
+                <RequireAdminRole>
                   <AppLayout>
                     <PublishHandbookPage />
                   </AppLayout>
-                </RequireStrictAdmin>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -391,11 +403,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.createPage}
             element={
               <RequireAuth>
-                <RequireStrictAdmin>
+                <RequireAdminRole>
                   <AppLayout>
                     <HandbookPageEditPage />
                   </AppLayout>
-                </RequireStrictAdmin>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -403,11 +415,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/pages/:id/edit"
             element={
               <RequireAuth>
-                <RequireStrictAdmin>
+                <RequireAdminRole>
                   <AppLayout>
                     <HandbookPageEditPage />
                   </AppLayout>
-                </RequireStrictAdmin>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -415,11 +427,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.addTheme}
             element={
               <RequireAuth>
-                <RequireStrictAdmin>
+                <RequireAdminRole>
                   <AppLayout>
                     <AddThemePage />
                   </AppLayout>
-                </RequireStrictAdmin>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -427,11 +439,11 @@ export const AppRouter: React.FC = () => {
             path="/handbook/edit-theme/:id"
             element={
               <RequireAuth>
-                <RequireStrictAdmin>
+                <RequireAdminRole>
                   <AppLayout>
                     <EditThemePage />
                   </AppLayout>
-                </RequireStrictAdmin>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />
@@ -449,11 +461,11 @@ export const AppRouter: React.FC = () => {
             path={handbookRoutes.notes}
             element={
               <RequireAuth>
-                <RequireAdminRole>
+                <RequireSeniorRole>
                   <AppLayout>
                     <HandbookNotesPage />
                   </AppLayout>
-                </RequireAdminRole>
+                </RequireSeniorRole>
               </RequireAuth>
             }
           />

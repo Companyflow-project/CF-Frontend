@@ -9,6 +9,7 @@ import { handbookRoutes } from '../routes';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { useAuth } from '@/context/auth-context';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
+import { isAdminRole, canViewAllPagesRole } from '@/lib/utils';
 import { toast } from 'sonner';
 import type { HandbookNode } from '@/types/models';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +19,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { viewAsEmployee } = useViewAsEmployee();
-    const canEditHandbook = !viewAsEmployee && (user?.role === 'ADMIN' || user?.role === 'company_admin');
+    const canEditHandbook = !viewAsEmployee && isAdminRole(user?.role);
+    const canViewAllPages = !viewAsEmployee && canViewAllPagesRole(user?.role);
 
     const { t } = useTranslation('handbook');
     const [lang] = useHandbookLang();
@@ -108,15 +110,15 @@ export const HandbookTableOfContentsPage: React.FC = () => {
     };
 
     const visibleChapters = useMemo(() => {
-        if (canEditHandbook) return chapters;
-        // Non-admin: only show chapters that have at least one ready page
+        if (canViewAllPages) return chapters;
+        // Non-admin/non-senior: only show chapters that have at least one ready page
         return chapters
             .map((ch) => ({
                 ...ch,
                 pages: (ch.pages || []).filter((p) => (p.status as string) === 'ready'),
             }))
             .filter((ch) => (ch.pages?.length ?? 0) > 0);
-    }, [chapters, canEditHandbook]);
+    }, [chapters, canViewAllPages]);
 
     const filteredChapters = useMemo(() => {
         if (!search.trim()) return visibleChapters;
@@ -274,8 +276,21 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                 </div>
             )}
 
+            {/* Not published state */}
+            {error === 'HANDBOOK_NOT_PUBLISHED' && (
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                    <div className="h-16 w-16 rounded-[18px] bg-[#d4f4e6] flex items-center justify-center">
+                        <BookOpen className="h-8 w-8 text-[#1a5948]" />
+                    </div>
+                    <p className="text-lg font-semibold text-[#0d0e0e]">{t('toc.notPublished')}</p>
+                    <p className="text-sm text-[#6b7475] max-w-sm text-center">
+                        {t('toc.notPublishedDesc')}
+                    </p>
+                </div>
+            )}
+
             {/* Error */}
-            {error && (
+            {error && error !== 'HANDBOOK_NOT_PUBLISHED' && (
                 <div className="text-center py-16 text-red-500">{error}</div>
             )}
 
@@ -443,20 +458,18 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         {(() => {
                                                             const tags: string[] = [];
                                                             if (page.badge === 'custom') tags.push(t('tag.customPage'));
-                                                            if (page.hasCustomBody) tags.push(t('tag.addedText'));
+                                                            if (page.hasCustomBody && page.badge !== 'custom') tags.push(t('tag.addedText'));
                                                             if (page.hasReceipt) tags.push(t('tag.receipt'));
                                                             if (page.hasNote) tags.push(t('tag.notes'));
                                                             if (page.hasDocuments) tags.push(t('tag.documents'));
                                                             if (page.hasLinks) tags.push(t('tag.links'));
                                                             if (page.hasImage) tags.push(t('tag.image'));
-                                                            if (tags.length > 0) {
-                                                                return (
-                                                                    <span className="flex-shrink-0 text-[11px] text-[#6b7475] italic truncate max-w-[260px]">
-                                                                        ({tags.join(', ')})
-                                                                    </span>
-                                                                );
-                                                            }
-                                                            return null;
+                                                            if (tags.length === 0 && page.badge !== 'custom') tags.push(t('tag.noText'));
+                                                            return (
+                                                                <span className="flex-shrink-0 text-[11px] text-[#6b7475] italic truncate max-w-[260px]">
+                                                                    ({tags.join(', ')})
+                                                                </span>
+                                                            );
                                                         })()}
 
                                                         {/* Badge (custom/premade) */}

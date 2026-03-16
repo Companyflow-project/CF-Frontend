@@ -22,6 +22,7 @@ import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import type { HandbookNode } from '@/types/models';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole, canViewAllPagesRole } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
@@ -45,7 +46,8 @@ export const HandbookPagesPage: React.FC = () => {
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [searchParams, setSearchParams] = useSearchParams();
-    const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
+    const canEditHandbook = isAdminRole(user?.role);
+    const canViewAllPages = canViewAllPagesRole(user?.role);
 
     // The actual bid comes from the API — it differs per company and must NOT be hardcoded to 21.
     const [handbookBid, setHandbookBid] = useState<number | null>(null);
@@ -182,13 +184,13 @@ export const HandbookPagesPage: React.FC = () => {
 
     const filteredPages = useMemo(() => {
         const currentUserId = user?.id;
-        const isAdmin = canEditHandbook;
+        const showAll = canViewAllPages;
 
         return pages.filter((page: any) => {
             const status = page.status as string;
 
-            // For non-admins: only show non-ready pages to their owners
-            if (!isAdmin) {
+            // For non-admins/non-senior: only show non-ready pages to their owners
+            if (!showAll) {
                 const isReady = status === 'ready';
                 const owners: unknown = page.owners;
                 const ownerIds: string[] = Array.isArray(owners)
@@ -205,7 +207,7 @@ export const HandbookPagesPage: React.FC = () => {
             if (search && !page.title.toLowerCase().includes(search.toLowerCase())) return false;
             return true;
         });
-    }, [pages, search, statusFilter, user?.id, canEditHandbook]);
+    }, [pages, search, statusFilter, user?.id, canViewAllPages]);
 
     // Pages in the current chapter view that are checked — used for delete/preview actions.
     // Non-deletable pages are excluded even if visually checked.
@@ -822,12 +824,13 @@ export const HandbookPagesPage: React.FC = () => {
                                                 {(() => {
                                                     const activities: string[] = [];
                                                     if (page.badge === 'custom') activities.push(t('tag.customPage'));
-                                                    if (page.hasCustomBody) activities.push(t('tag.addedText'));
+                                                    if (page.hasCustomBody && page.badge !== 'custom') activities.push(t('tag.addedText'));
                                                     if (page.hasReceipt) activities.push(t('tag.receipt'));
                                                     if (page.hasNote) activities.push(t('tag.notes'));
                                                     if (page.hasDocuments) activities.push(t('tag.documents'));
                                                     if (page.hasLinks) activities.push(t('tag.links'));
                                                     if (page.hasImage) activities.push(t('tag.image'));
+                                                    if (activities.length === 0 && page.badge !== 'custom') activities.push(t('tag.noText'));
                                                     return activities.length > 0 ? (
                                                         <span className="text-xs italic text-gray-400 flex-shrink-0 whitespace-nowrap">
                                                             ({activities.join(', ')})

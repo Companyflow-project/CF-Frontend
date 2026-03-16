@@ -38,6 +38,8 @@ export type BackendEmployeeLike = {
   isSeniorEmployee?: number | string | boolean | null;
   /** Whether the employee has the administrator role (boolean or 0|1) */
   isBusinessAdmin?: number | string | boolean | null;
+  /** Language codes assigned to this employee */
+  languages?: string[];
   [key: string]: unknown;
 };
 
@@ -146,6 +148,7 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
         : typeof backend.isBusinessAdmin === 'boolean'
           ? backend.isBusinessAdmin
           : Number(backend.isBusinessAdmin) === 1,
+    languages: Array.isArray(backend.languages) ? backend.languages : undefined,
   };
 };
 

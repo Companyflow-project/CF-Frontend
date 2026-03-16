@@ -23,13 +23,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const { i18n } = useTranslation();
 
-  /** Sync i18n language — company languages are the source of truth.
-   *  If the user's preference isn't in the company's enabled list, fall back to 'da'. */
+  /** Sync i18n language — employee's assigned languages are the source of truth.
+   *  If the user's preference isn't in their assigned list, fall back to 'da'. */
   const syncLanguage = useCallback((userData: User | null) => {
     if (!userData) return;
-    const companyLangs = userData.companyLanguages ?? ['da'];
+    const availableLangs = userData.employeeLanguages ?? userData.companyLanguages ?? ['da'];
     const preferred = userData.preferredLangcode ?? 'da';
-    const lang = companyLangs.includes(preferred) ? preferred : 'da';
+    const lang = availableLangs.includes(preferred) ? preferred : 'da';
     i18n.changeLanguage(lang);
   }, [i18n]);
 
@@ -67,8 +67,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const updateLanguage = async (langcode: string) => {
-    const companyLangs = user?.companyLanguages ?? ['da'];
-    if (!companyLangs.includes(langcode)) return;
+    const availableLangs = user?.employeeLanguages ?? user?.companyLanguages ?? ['da'];
+    if (!availableLangs.includes(langcode)) return;
     await authApi.updateLanguage(langcode);
     i18n.changeLanguage(langcode);
     if (user) {

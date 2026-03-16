@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks';
-import { cn } from '@/lib/utils';
+import { cn, isAdminRole } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Lock } from 'lucide-react';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
@@ -26,11 +26,12 @@ export const TopNav: React.FC = () => {
   const langRef = useRef<HTMLDivElement>(null);
   const { viewAsEmployee } = useViewAsEmployee();
   const { t, i18n } = useTranslation('common');
-  const isStrictAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
-  const companyLanguages = user?.companyLanguages ?? ['da'];
+  const isAdmin = isAdminRole(user?.role);
+  const isSenior = user?.role === 'senior_employee';
+  const employeeLanguages = user?.employeeLanguages ?? user?.employeeLanguages ?? ['da'];
   const currentLang = i18n.language || 'da';
   const currentFlag = ALL_LANGUAGES.find(l => l.code === currentLang)?.flag ?? '🇩🇰';
-  const showEmployeeView = !isStrictAdmin || viewAsEmployee;
+  const showEmployeeView = (!isAdmin && !isSenior) || viewAsEmployee;
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -45,15 +46,27 @@ export const TopNav: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isLangOpen]);
 
-  const navItems = showEmployeeView
-    ? [{ path: '/', label: t('nav.console') }]
-    : [
+  const getNavItems = () => {
+    if (showEmployeeView) {
+      return [{ path: '/', label: t('nav.console') }];
+    }
+    if (isSenior) {
+      return [
         { path: '/', label: t('nav.console') },
-        { path: '/employees', label: t('nav.employees') },
         { path: '/handbook', label: t('nav.manageHandbook') },
-        { path: '/contacts', label: t('nav.contacts') },
-        { path: '/account', label: t('nav.account') },
       ];
+    }
+    // administrator / company_admin — full nav
+    return [
+      { path: '/', label: t('nav.console') },
+      { path: '/employees', label: t('nav.employees') },
+      { path: '/handbook', label: t('nav.manageHandbook') },
+      { path: '/contacts', label: t('nav.contacts') },
+      { path: '/account', label: t('nav.account') },
+    ];
+  };
+
+  const navItems = getNavItems();
 
   const getInitials = (name: string) => {
     return name
@@ -125,7 +138,7 @@ export const TopNav: React.FC = () => {
                 {isLangOpen && (
                   <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50">
                     {ALL_LANGUAGES.map((lang) => {
-                      const isEnabled = companyLanguages.includes(lang.code);
+                      const isEnabled = employeeLanguages.includes(lang.code);
                       const isActive = currentLang === lang.code;
                       return (
                         <button

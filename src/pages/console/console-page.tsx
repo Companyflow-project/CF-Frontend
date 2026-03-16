@@ -13,6 +13,7 @@ import { useAuth } from '@/context/auth-context';
 import { RolesPermissionsModal } from '@/features/employees/components/roles-permissions-modal';
 import { useSubscription } from '@/features/account/hooks';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
+import { isAdminRole } from '@/lib/utils';
 import { EmployeeDashboardPage } from './employee-dashboard-page';
 
 /** Returns the number of whole days between now and an ISO date string, or null if not available. */
@@ -97,7 +98,7 @@ export const ConsolePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('console');
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+  const isAdmin = isAdminRole(user?.role);
   const { viewAsEmployee } = useViewAsEmployee();
   const [rolesModalOpen, setRolesModalOpen] = useState(false);
   const companyId = user?.companyId ? String(user.companyId) : undefined;

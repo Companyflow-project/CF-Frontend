@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { useAppearance } from '@/context/appearance-context';
+import { resolveBackendUrl } from '@/lib/utils';
 
 interface SneakPeekModalProps {
     isOpen: boolean;
@@ -124,29 +125,64 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                         <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
                             {/* Optional Image + Content Layout */}
                             {firstPicture && firstPicture.url && placement !== 'none' ? (
-                                <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start">
-                                    {placement === 'left' && (
-                                        <img
-                                            src={firstPicture.url}
-                                            alt={firstPicture.name || 'Image'}
-                                            className="w-full sm:w-1/3 max-h-48 object-contain rounded-md"
-                                        />
-                                    )}
-                                    {plainText && (
-                                        <div className="flex-1">
-                                            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
-                                                {plainText}
-                                            </p>
+                                <>
+                                    {/* Before: image above text */}
+                                    {placement === 'before' && (
+                                        <div className="mb-6">
+                                            <img
+                                                src={resolveBackendUrl(firstPicture.url)}
+                                                alt={firstPicture.name || 'Image'}
+                                                className="w-full max-h-64 object-contain rounded-md mb-4"
+                                            />
+                                            {plainText && (
+                                                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
+                                                    {plainText}
+                                                </p>
+                                            )}
                                         </div>
                                     )}
-                                    {placement === 'right' && (
-                                        <img
-                                            src={firstPicture.url}
-                                            alt={firstPicture.name || 'Image'}
-                                            className="w-full sm:w-1/3 max-h-48 object-contain rounded-md"
-                                        />
+                                    {/* Left / Right: side by side */}
+                                    {(placement === 'left' || placement === 'right') && (
+                                        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start">
+                                            {placement === 'left' && (
+                                                <img
+                                                    src={resolveBackendUrl(firstPicture.url)}
+                                                    alt={firstPicture.name || 'Image'}
+                                                    className="w-full sm:w-1/3 max-h-48 object-contain rounded-md"
+                                                />
+                                            )}
+                                            {plainText && (
+                                                <div className="flex-1">
+                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
+                                                        {plainText}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {placement === 'right' && (
+                                                <img
+                                                    src={resolveBackendUrl(firstPicture.url)}
+                                                    alt={firstPicture.name || 'Image'}
+                                                    className="w-full sm:w-1/3 max-h-48 object-contain rounded-md"
+                                                />
+                                            )}
+                                        </div>
                                     )}
-                                </div>
+                                    {/* After: image below text */}
+                                    {placement === 'after' && (
+                                        <div className="mb-6">
+                                            {plainText && (
+                                                <p className="text-sm leading-relaxed whitespace-pre-wrap mb-4" style={{ color: getColor('bodyText') }}>
+                                                    {plainText}
+                                                </p>
+                                            )}
+                                            <img
+                                                src={resolveBackendUrl(firstPicture.url)}
+                                                alt={firstPicture.name || 'Image'}
+                                                className="w-full max-h-64 object-contain rounded-md"
+                                            />
+                                        </div>
+                                    )}
+                                </>
                             ) : (
                                 plainText && (
                                     <div className="mb-6">
@@ -166,7 +202,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                             <div key={index}>
                                                 {doc.url ? (
                                                     <a
-                                                        href={doc.url}
+                                                        href={resolveBackendUrl(doc.url)}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="underline text-sm inline-block" style={{ color: getColor('links') }}

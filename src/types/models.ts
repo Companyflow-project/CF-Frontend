@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "MANAGER" | "EMPLOYEE" | "company_admin" | "administrator";
+export type Role = "administrator" | "account_owner" | "company_admin" | "senior_employee" | "EMPLOYEE";
 
 export interface User {
   id: string;
@@ -9,6 +9,7 @@ export interface User {
   companyId?: string;
   preferredLangcode?: string;
   companyLanguages?: string[];
+  employeeLanguages?: string[];
 }
 
 export interface Account {
@@ -54,6 +55,8 @@ export interface Employee {
   isSeniorEmployee?: boolean;
   /** Whether the employee has the administrator (business admin) role */
   isBusinessAdmin?: boolean;
+  /** Language codes assigned to this employee (e.g. ['da', 'en']) */
+  languages?: string[];
 }
 
 export interface HandbookSection {

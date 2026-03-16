@@ -16,6 +16,7 @@ import {
 import { accountRoutes } from '../routes';
 import { AddEmploymentTypeDialog } from '@/features/employment-types/pages';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole } from '@/lib/utils';
 
 interface AccountAction {
   label: string;
@@ -82,7 +83,7 @@ export const AccountPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('account');
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+  const isAdmin = isAdminRole(user?.role);
   const [isAddEmploymentTypeDialogOpen, setIsAddEmploymentTypeDialogOpen] = useState(false);
 
   const cards: Omit<AccountCardProps, 'canEdit' | 'adminOnlyLabel'>[] = [

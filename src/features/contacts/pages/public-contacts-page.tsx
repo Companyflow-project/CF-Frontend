@@ -19,13 +19,14 @@ import { EmptyState } from '@/components/common/empty-state';
 import { usePublicContacts } from '../hooks';
 import { contactsRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole } from '@/lib/utils';
 
 export const PublicContactsPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('contacts');
   const { t: tCommon } = useTranslation('common');
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+  const isAdmin = isAdminRole(user?.role);
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');

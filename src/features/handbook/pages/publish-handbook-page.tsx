@@ -273,11 +273,13 @@ Greetings from your company.`;
                           <div key={page.id} className="flex items-center gap-2 text-sm text-[#374151]">
                             <FileText className="h-3.5 w-3.5 text-[#2f946f] shrink-0" />
                             <span className="flex-1">{page.title}</span>
-                            {isPublished && (
-                              <span className="text-[11px] font-medium text-[#2f946f] bg-[#e8f5ef] border border-[#cde3da] rounded-full px-2 py-0.5 shrink-0">
-                                {t('publish.published')}
-                              </span>
-                            )}
+                            <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0 ${
+                              isPublished
+                                ? 'text-[#2f946f] bg-[#e8f5ef] border border-[#cde3da]'
+                                : 'text-[#b45309] bg-[#fef3c7] border border-[#fcd34d]'
+                            }`}>
+                              {isPublished ? t('publish.published') : t('publish.ready')}
+                            </span>
                           </div>
                         ))}
                       </div>

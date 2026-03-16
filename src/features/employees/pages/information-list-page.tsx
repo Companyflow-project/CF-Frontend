@@ -19,13 +19,14 @@ import { employeesRoutes } from '../routes';
 import { ArrowLeft, Search, ArrowUpDown, ArrowDownWideNarrow, Edit } from 'lucide-react';
 import { EmptyState } from '@/components/common/empty-state';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole, isAdminEmployeeRole } from '@/lib/utils';
 
 export const InformationListPage: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation('employees');
     const { t: tCommon } = useTranslation('common');
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin';
+    const isAdmin = isAdminRole(user?.role);
     const [search, setSearch] = useState('');
     const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -59,8 +60,8 @@ export const InformationListPage: React.FC = () => {
         };
         return [...filteredEmployees].sort((a, b) => {
             // Admins/owners always stay at the top, regardless of sort direction or field.
-            const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
-            const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+            const aIsAdmin = isAdminEmployeeRole(a.role);
+            const bIsAdmin = isAdminEmployeeRole(b.role);
             if (aIsAdmin && !bIsAdmin) return -1;
             if (!aIsAdmin && bIsAdmin) return 1;
 

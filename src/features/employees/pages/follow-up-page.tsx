@@ -28,7 +28,7 @@ const DEFAULT_EMAIL_BODY = `<p>Hello [recipient name],</p>
 <p>[login]</p>
 <p>Greetings,<br/>[company name]</p>`;
 
-const DEFAULT_SMS_BODY = `[recipient name], you now have access to the Staff Handbook. [login] - Greetings from [company name].`;
+const DEFAULT_SMS_BODY = `[recipient name], you now have access to the [title] handbook!\n\n- Greetings from [company name]`;
 
 export const FollowUpPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -123,16 +123,31 @@ export const FollowUpPage: React.FC = () => {
       if (emailEnabled) channels.push('email');
       if (smsEnabled) channels.push('sms');
 
-      await employeesApi.sendFollowUp({
+      const result = await employeesApi.sendFollowUp({
         employeeIds: Array.from(selectedEmployeeIds).map(Number),
         channels,
         customSubject: emailSubject.trim() || undefined,
         customMessage: emailBody || undefined,
+        smsMessage: smsEnabled ? smsBody.trim() || undefined : undefined,
       });
 
-      toast.success(
-        t('followUp.toast.sent', { count: selectedEmployeeIds.size }),
-      );
+      // Show SMS errors if any
+      if (result.smsErrors && result.smsErrors.length > 0) {
+        const errorList = result.smsErrors.join('\n');
+        toast.error(`SMS failed for:\n${errorList}`, { duration: 8000 });
+      }
+
+      // Show success for what did go through
+      const parts: string[] = [];
+      if (emailEnabled) parts.push(t('followUp.toast.emailSent', { count: result.count }));
+      if (smsEnabled && (result.smsSent ?? 0) > 0) parts.push(t('followUp.toast.smsSent', { count: result.smsSent }));
+
+      if (parts.length > 0) {
+        toast.success(parts.join(' | '));
+      } else if (!result.smsErrors?.length) {
+        toast.success(t('followUp.toast.sent', { count: selectedEmployeeIds.size }));
+      }
+
       navigate(-1);
     } catch (err: any) {
       console.error('Failed to send follow-up:', err);

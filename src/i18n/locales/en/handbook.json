@@ -34,6 +34,8 @@
   "toc.searchPlaceholder": "Search chapters or pages…",
   "toc.noChapters": "No chapters yet",
   "toc.noChaptersDesc": "Your handbook has no chapters or pages yet. Add some from the pages view.",
+  "toc.notPublished": "No handbook published yet",
+  "toc.notPublishedDesc": "Your company administrator has not yet published a handbook. Please contact them for more information.",
   "toc.goToPages": "Go to pages",
   "toc.noSearchResults": "No chapters or pages match",
   "toc.pageCount_one": "{{count}} page",
@@ -47,10 +49,11 @@
   "status.optedOut": "Opted out",
 
   "badge.custom": "Custom",
-  "badge.premade": "Premade",
+  "badge.premade": "CompanyFlow text",
 
   "tag.customPage": "Custom page",
   "tag.addedText": "Added text",
+  "tag.noText": "No text",
   "tag.receipt": "Receipt",
   "tag.notes": "Notes",
   "tag.documents": "Documents",
@@ -69,6 +72,8 @@
   "viewer.previousPage": "Previous page",
   "viewer.nextPage": "Next page",
   "viewer.lastPage": "Last page",
+  "viewer.notPublished": "No handbook published yet",
+  "viewer.notPublishedDesc": "Your company administrator has not yet published a handbook. Please contact them for more information.",
   "viewer.failedToLoad": "Failed to load handbook",
 
   "print.loading": "Loading handbook…",
@@ -94,6 +99,7 @@
   "addPage.newChapterDesc": "A new chapter will be created with this name.",
   "addPage.errorNoTitle": "Please enter a page title.",
   "addPage.errorNoChapter": "Please enter a chapter name.",
+  "addPage.errorDuplicateTitle": "A page with this title already exists in \"{{chapter}}\".",
   "addPage.errorFailed": "Failed to create page. Please try again.",
   "addPage.creating": "Creating...",
   "addPage.createAndEdit": "Create & Edit",
@@ -245,6 +251,7 @@
   "publish.publishCount": "Publish ({{count}})",
   "publish.publish": "Publish",
   "publish.published": "Published",
+  "publish.ready": "Ready",
   "publish.error.noHandbook": "Handbook ID not found. Please try again.",
   "publish.error.failed": "Failed to publish handbook. Please try again.",
   "publish.success": "Published. {{count}} employees will receive a notification."

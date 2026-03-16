@@ -153,7 +153,7 @@
   "subscription.languages.modal.success": "Languages updated successfully",
   "subscription.languages.modal.error": "Failed to update languages",
   "subscription.languages.default": "default",
-  "subscription.languages.wip": "Work in progress",
+  "subscription.languages.wip": "Coming soon",
   "subscription.licenses.modal.title": "Add more licenses",
   "subscription.licenses.modal.description": "Additional licenses will be added to your account billing.",
   "subscription.licenses.modal.add": "Add Licenses",

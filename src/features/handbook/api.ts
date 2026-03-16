@@ -233,14 +233,16 @@ export const handbookApi = {
       return { bid: bid ?? null, isPublished, chapters: Array.isArray(chapters) ? chapters : [] };
     } catch (error: any) {
       if (error.response?.status === 403) {
-        const message = error.response?.data?.message || error.response?.data?.error;
+        const rawError = error.response?.data?.error;
+        const message = error.response?.data?.message
+          || (typeof rawError === 'string' ? rawError : rawError?.message);
         if (message === 'Handbook not yet published') {
-          throw new Error('Your handbook is not published yet.');
+          throw new Error('HANDBOOK_NOT_PUBLISHED');
         }
         if (message === 'User not assigned to a company') {
           throw new Error('Your user is not linked to a company. Please contact support.');
         }
-        throw new Error(message || 'Access denied');
+        throw new Error(typeof message === 'string' ? message : 'Access denied');
       }
       console.error('Error fetching handbook tree:', error);
       throw error;

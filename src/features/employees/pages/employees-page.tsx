@@ -27,14 +27,15 @@ import {
 import { employeesApi } from '../api';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole, isAdminEmployeeRole } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
   const companyId = authUser?.companyId ? String(authUser.companyId) : undefined;
-  const isAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin' || authUser?.role === 'MANAGER';
-  const isStrictAdmin = authUser?.role === 'ADMIN' || authUser?.role === 'company_admin';
+  const isAdmin = isAdminRole(authUser?.role);
+  const isStrictAdmin = isAdminRole(authUser?.role);
   const { viewAsEmployee, toggleViewAsEmployee } = useViewAsEmployee();
   const { t } = useTranslation('employees');
   const effectiveAdmin = isAdmin && !viewAsEmployee;
@@ -112,8 +113,8 @@ export const EmployeesPage: React.FC = () => {
 
     return [...filteredEmployees].sort((a, b) => {
       // Admins/owners always stay at the top, regardless of sort direction or field.
-      const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
-      const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+      const aIsAdmin = isAdminEmployeeRole(a.role);
+      const bIsAdmin = isAdminEmployeeRole(b.role);
       if (aIsAdmin && !bIsAdmin) return -1;
       if (!aIsAdmin && bIsAdmin) return 1;
 
@@ -152,8 +153,7 @@ export const EmployeesPage: React.FC = () => {
     }
     const selectable = paginatedEmployees.filter(
       (emp) =>
-        emp.role !== 'company_admin' &&
-        emp.role !== 'ADMIN' &&
+        !isAdminEmployeeRole(emp.role) &&
         (!authUser?.email || emp.email.toLowerCase() !== authUser.email.toLowerCase())
     );
     setSelectedIds(selectable.map((emp) => emp.id));
@@ -236,6 +236,15 @@ export const EmployeesPage: React.FC = () => {
     setSelectedIds([]);
     setIsBulkBusy(false);
     refetch();
+  };
+
+  const handleUpdateLanguages = async (id: string, languages: string[]) => {
+    try {
+      await employeesApi.updateEmployee(id, { languages });
+      refetch();
+    } catch {
+      toast.error(t('toast.updatesFailed'));
+    }
   };
 
   const hasSelection = selectedIds.length > 0;
@@ -443,28 +452,6 @@ export const EmployeesPage: React.FC = () => {
                   </Tooltip>
                 </div>
                 </TooltipProvider>
-                {isStrictAdmin && effectiveAdmin && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isBulkBusy || employees.length === 0}
-                      onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), false)}
-                      className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
-                    >
-                      {t('manage.setAllPrivate')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isBulkBusy || employees.length === 0}
-                      onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), true)}
-                      className="border-[rgba(88,172,146,0.5)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[12px] bg-white disabled:opacity-50"
-                    >
-                      {t('manage.setAllPublic')}
-                    </Button>
-                  </div>
-                )}
               </div>
 
               {!loading && !error && employees.length === 0 && (
@@ -493,6 +480,8 @@ export const EmployeesPage: React.FC = () => {
                   onEdit={effectiveAdmin ? (id) => navigate(employeesRoutes.edit(id)) : undefined}
                   onStatistics={(id) => navigate(employeesRoutes.statisticsDetail(id))}
                   onMessageLogs={(id) => navigate(employeesRoutes.messageLogsDetail(id))}
+                  onUpdateLanguages={effectiveAdmin ? handleUpdateLanguages : undefined}
+                  companyLanguages={authUser?.companyLanguages ?? ['da']}
                   emptyStateTitle={t('manage.noEmployeesTitle')}
                   emptyStateDescription={t('manage.noEmployeesDesc')}
                   currentUserEmail={authUser?.email ?? undefined}
@@ -601,6 +590,33 @@ export const EmployeesPage: React.FC = () => {
                 </Button>
               </div>
             </div>}
+
+            {/* "Set everyone" bulk actions row — admin only */}
+            {isStrictAdmin && effectiveAdmin && (
+              <div className="border-t border-[#e5efea] px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white rounded-b-[22px]">
+                <span className="text-sm font-medium text-[#484b4b]">{t('manage.bulkActions')}</span>
+                <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isBulkBusy || employees.length === 0}
+                    onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), false)}
+                    className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
+                  >
+                    {t('manage.setAllPrivate')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isBulkBusy || employees.length === 0}
+                    onClick={() => handleSetVisibility(filteredEmployees.map((e) => e.id), true)}
+                    className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
+                  >
+                    {t('manage.setAllPublic')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         </div>
 

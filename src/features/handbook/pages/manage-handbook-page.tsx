@@ -16,6 +16,7 @@ import { handbookRoutes } from '../routes';
 import { employeesRoutes } from '@/features/employees/routes';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole } from '@/lib/utils';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { useHandbookTree } from '../hooks';
 
@@ -27,7 +28,7 @@ export const ManageHandbookPage: React.FC = () => {
     const { bid, isPublished, provisioning } = useHandbookTree();
     const lang = i18n.language as 'da' | 'en';
 
-    const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
+    const canEditHandbook = isAdminRole(user?.role);
 
     const ActionCard: React.FC<{
         title: string;

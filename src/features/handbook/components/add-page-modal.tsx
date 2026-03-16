@@ -77,6 +77,18 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
             return;
         }
 
+        // Check for duplicate page title across all chapters
+        const normalizedTitle = title.trim().toLowerCase();
+        for (const chapter of chapters) {
+            const duplicate = chapter.pages?.find(
+                p => p.title.trim().toLowerCase() === normalizedTitle
+            );
+            if (duplicate) {
+                setError(t('addPage.errorDuplicateTitle', { chapter: chapter.title }));
+                return;
+            }
+        }
+
         setIsSubmitting(true);
         setError(null);
 

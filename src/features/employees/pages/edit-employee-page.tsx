@@ -26,6 +26,7 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
     status: emp.status === 'ACTIVE',
     isSeniorEmployee: emp.isSeniorEmployee ?? false,
     isBusinessAdmin: emp.isBusinessAdmin ?? false,
+    languages: emp.languages ?? ['da'],
     sendEmail: 'no',
     userPictureFid: null,
   };
@@ -107,11 +108,6 @@ export const EditEmployeePage: React.FC = () => {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('form.validation.emailInvalid');
     if (!formData.mobileNumber.trim()) {
       newErrors.mobileNumber = t('form.validation.mobileRequired');
-    } else if (parseInt(formData.mobileNumber, 10) > 2_147_483_647) {
-      newErrors.mobileNumber = t('form.validation.mobileExceeds');
-    }
-    if (formData.alternateNumber && parseInt(formData.alternateNumber, 10) > 2_147_483_647) {
-      newErrors.alternateNumber = t('form.validation.alternateExceeds');
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -144,6 +140,7 @@ export const EditEmployeePage: React.FC = () => {
           status: formData.status,
           isSeniorEmployee: formData.isSeniorEmployee,
           isBusinessAdmin: formData.isBusinessAdmin,
+          languages: formData.languages,
           sendEmailType: formData.sendEmail,
         }),
         // Send userPictureFid: new fid to set, null to clear, or omit to leave unchanged
@@ -269,6 +266,7 @@ export const EditEmployeePage: React.FC = () => {
           errors={errors}
           isEditMode
           isSelf={isSelf}
+          isAccountOwner={employee.role === 'account_owner'}
           existingPhotoUri={employee.userPictureUri ?? null}
           onFidRefReady={handleFidRefReady}
         />

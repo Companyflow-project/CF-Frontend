@@ -28,6 +28,7 @@ import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole, isAdminEmployeeRole } from '@/lib/utils';
 import { contactsApi } from '../api';
 import { contactsRoutes } from '@/features/contacts/routes';
 import type { Contact } from '@/types/models';
@@ -38,7 +39,7 @@ import { useTranslation } from 'react-i18next';
 export const ContactsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'ADMIN' || user?.role === 'company_admin' || user?.role === 'MANAGER';
+  const isAdmin = isAdminRole(user?.role);
   const { t } = useTranslation('contacts');
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
@@ -171,8 +172,8 @@ export const ContactsPage: React.FC = () => {
     };
     return [...list].sort((a, b) => {
       // Admins/owners always pinned to the very top.
-      const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
-      const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+      const aIsAdmin = isAdminEmployeeRole(a.role);
+      const bIsAdmin = isAdminEmployeeRole(b.role);
       if (aIsAdmin && !bIsAdmin) return -1;
       if (!aIsAdmin && bIsAdmin) return 1;
 
@@ -220,7 +221,7 @@ export const ContactsPage: React.FC = () => {
       return;
     }
     const selectable = contactList.filter(
-      (c) => c.role !== 'company_admin' && c.role !== 'ADMIN' && !c.isCurrentUser
+      (c) => !isAdminEmployeeRole(c.role) && !c.isCurrentUser
     );
     setSelectedIds(selectable.map((c) => c.id));
   }, []);

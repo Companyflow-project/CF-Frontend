@@ -78,12 +78,10 @@ const AUTH_COMPANY_KEY = 'auth_user_company';
 
 function normalizeRole(role?: string): User['role'] {
   if (!role) return 'EMPLOYEE';
-  // Backend may return 'administrator' — treat it the same as 'company_admin'
-  if (role === 'administrator') return 'company_admin';
   return role as User['role'];
 }
 
-function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number; preferredLangcode?: string; companyLanguages?: string[] }): User {
+function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number; preferredLangcode?: string; companyLanguages?: string[]; employeeLanguages?: string[] }): User {
   const id = raw.id ?? String(raw.uid ?? '');
   const companyId = raw.companyId != null ? String(raw.companyId) : undefined;
   return {
@@ -95,6 +93,7 @@ function toUser(raw: { uid?: number; id?: string; name?: string; email?: string;
     companyId,
     preferredLangcode: raw.preferredLangcode ?? 'da',
     companyLanguages: raw.companyLanguages ?? ['da'],
+    employeeLanguages: raw.employeeLanguages ?? ['da'],
   };
 }
 

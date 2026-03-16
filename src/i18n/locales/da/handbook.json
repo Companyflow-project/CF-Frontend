@@ -34,6 +34,8 @@
   "toc.searchPlaceholder": "Søg i kapitler eller sider…",
   "toc.noChapters": "Ingen kapitler endnu",
   "toc.noChaptersDesc": "Din håndbog har ingen kapitler eller sider endnu. Tilføj nogle fra sidevisningen.",
+  "toc.notPublished": "Ingen håndbog udgivet endnu",
+  "toc.notPublishedDesc": "Din virksomhedsadministrator har endnu ikke udgivet en håndbog. Kontakt dem venligst for mere information.",
   "toc.goToPages": "Gå til sider",
   "toc.noSearchResults": "Ingen kapitler eller sider matcher",
   "toc.pageCount_one": "{{count}} side",
@@ -47,10 +49,11 @@
   "status.optedOut": "Fravalgt",
 
   "badge.custom": "Brugerdefineret",
-  "badge.premade": "Forudlavet",
+  "badge.premade": "CompanyFlow tekst",
 
   "tag.customPage": "Egen side",
   "tag.addedText": "Tilføjet tekst",
+  "tag.noText": "Ingen tekst",
   "tag.receipt": "Kvittering",
   "tag.notes": "Noter",
   "tag.documents": "Dokument",
@@ -69,6 +72,8 @@
   "viewer.previousPage": "Forrige side",
   "viewer.nextPage": "Næste side",
   "viewer.lastPage": "Sidste side",
+  "viewer.notPublished": "Ingen håndbog udgivet endnu",
+  "viewer.notPublishedDesc": "Din virksomhedsadministrator har endnu ikke udgivet en håndbog. Kontakt dem venligst for mere information.",
   "viewer.failedToLoad": "Kunne ikke indlæse håndbog",
 
   "print.loading": "Indlæser håndbog…",
@@ -94,6 +99,7 @@
   "addPage.newChapterDesc": "Et nyt kapitel oprettes med dette navn.",
   "addPage.errorNoTitle": "Indtast venligst en sidetitel.",
   "addPage.errorNoChapter": "Indtast venligst et kapitelnavn.",
+  "addPage.errorDuplicateTitle": "En side med denne titel findes allerede i \"{{chapter}}\".",
   "addPage.errorFailed": "Kunne ikke oprette side. Prøv venligst igen.",
   "addPage.creating": "Opretter...",
   "addPage.createAndEdit": "Opret og rediger",
@@ -245,6 +251,7 @@
   "publish.publishCount": "Udgiv ({{count}})",
   "publish.publish": "Udgiv",
   "publish.published": "Udgivet",
+  "publish.ready": "Klar",
   "publish.error.noHandbook": "Håndbog-ID ikke fundet. Prøv venligst igen.",
   "publish.error.failed": "Kunne ikke udgive håndbog. Prøv venligst igen.",
   "publish.success": "Udgivet. {{count}} medarbejdere vil modtage en notifikation."

@@ -20,6 +20,7 @@ import { handbookApi } from '../api';
 import { useEmployees } from '@/features/employees/hooks';
 import { useAuth } from '@/context/auth-context';
 import type { HandbookPageDetail, UpdatePagePayload } from '@/types/models';
+import { resolveBackendUrl } from '@/lib/utils';
 
 interface HandbookPageEditorProps {
     pageId?: number;
@@ -103,7 +104,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     const firstPicture = data.pictures && data.pictures.length > 0 ? data.pictures[0] : undefined;
                     if (firstPicture) {
                         setImageId(firstPicture.id ?? data.imageId ?? null);
-                        setImageUrl(firstPicture.url || null);
+                        setImageUrl(resolveBackendUrl(firstPicture.url) || null);
                         setImageName(firstPicture.name || null);
                     } else {
                         setImageId(data.imageId ?? null);
@@ -447,6 +448,23 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                                 {imageName}
                                             </p>
                                         )}
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setImageId(null);
+                                                setImageUrl(null);
+                                                setImageName(null);
+                                                setImagePlacement(null);
+                                            }}
+                                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs gap-1"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                            Remove image
+                                        </Button>
                                     </div>
                                 )}
                             </label>

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
 import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAppearance } from '@/context/appearance-context';
+import { resolveHtmlUrls } from '@/lib/utils';
 
 interface FlatPage {
   id: number;
@@ -163,6 +164,26 @@ export const HandbookViewerPage: React.FC = () => {
     );
   }
 
+  if (error === 'HANDBOOK_NOT_PUBLISHED') {
+    return (
+      <PageShell>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="mb-6 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2 w-fit"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t('common:back')}
+        </Button>
+        <EmptyState
+          title={t('viewer.notPublished')}
+          description={t('viewer.notPublishedDesc')}
+        />
+      </PageShell>
+    );
+  }
+
   if (error) {
     return (
       <PageShell>
@@ -247,7 +268,7 @@ export const HandbookViewerPage: React.FC = () => {
             {currentPageData.html.trim().length > 0 ? (
               <div
                 className="prose max-w-none handbook-content handbook-themed-content mt-4"
-                dangerouslySetInnerHTML={{ __html: currentPageData.html }}
+                dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(currentPageData.html) }}
               />
             ) : (
               <p className="text-sm text-[#9ca3af] italic mt-4">

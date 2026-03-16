@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole, resolveBackendUrl, resolveHtmlUrls } from '@/lib/utils';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
@@ -44,7 +45,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    const canEditHandbook = user?.role === 'ADMIN' || user?.role === 'company_admin';
+    const canEditHandbook = isAdminRole(user?.role);
 
     const selectedSet = useMemo(
         () =>
@@ -211,7 +212,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                     <div
                                                         className="prose prose-sm max-w-none leading-relaxed handbook-themed-content"
                                                         style={{ color: getColor('bodyText') }}
-                                                        dangerouslySetInnerHTML={{ __html: page.body }}
+                                                        dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(page.body) }}
                                                     />
                                                 ) : (
                                                     <p className="text-sm italic text-[#9ca3af]">
@@ -230,7 +231,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                             {detail.documents.map((doc, i) => (
                                                                 <div key={i}>
                                                                     {doc.url ? (
-                                                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: getColor('links') }}>
+                                                                        <a href={resolveBackendUrl(doc.url)} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: getColor('links') }}>
                                                                             {doc.name || 'Document'}
                                                                         </a>
                                                                     ) : (

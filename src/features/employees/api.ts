@@ -93,6 +93,8 @@ export const employeesApi = {
     userPictureFid?: number;
     /** Responsibility ids from GET /api/responsibilities */
     responsibilityIds?: number[];
+    /** Language codes assigned to this employee */
+    languages?: string[];
   }): Promise<Employee> {
     const requestBody = {
       name: payload.name,
@@ -113,6 +115,7 @@ export const employeesApi = {
         responsibilityIds: payload.responsibilityIds,
       }),
       ...(payload.sendEmailType && payload.sendEmailType !== 'no' && { sendEmailType: payload.sendEmailType }),
+      ...(payload.languages && payload.languages.length > 0 && { languages: payload.languages }),
     };
 
     const response = await axiosClient.post<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>('/employees', requestBody);
@@ -146,6 +149,8 @@ export const employeesApi = {
       userPictureFid?: number | null;
       /** Responsibility ids from GET /api/responsibilities */
       responsibilityIds?: number[];
+      /** Language codes assigned to this employee */
+      languages?: string[];
       sendEmailType?: string;
     }
   ): Promise<Employee> {
@@ -169,6 +174,9 @@ export const employeesApi = {
     if (payload.userPictureFid !== undefined) requestBody.userPictureFid = payload.userPictureFid;
     if (payload.responsibilityIds !== undefined) {
       requestBody.responsibilityIds = payload.responsibilityIds;
+    }
+    if (payload.languages !== undefined) {
+      requestBody.languages = payload.languages;
     }
     if (payload.sendEmailType && payload.sendEmailType !== 'no') {
       requestBody.sendEmailType = payload.sendEmailType;
@@ -281,8 +289,9 @@ export const employeesApi = {
     channels?: Array<'email' | 'sms'>;
     customSubject?: string;
     customMessage?: string;
-  }): Promise<{ success: boolean; count: number }> {
-    const response = await axiosClient.post<ApiResponse<{ success: boolean; count: number }>>(
+    smsMessage?: string;
+  }): Promise<{ success: boolean; count: number; smsSent?: number; smsErrors?: string[] }> {
+    const response = await axiosClient.post<ApiResponse<{ success: boolean; count: number; smsSent?: number; smsErrors?: string[] }>>(
       '/employees/follow-up',
       params,
     );

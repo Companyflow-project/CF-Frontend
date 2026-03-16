@@ -13,7 +13,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Contact } from '@/types/models';
-import { formatDanishPhone } from '@/lib/utils';
+import { formatDanishPhone, isAdminEmployeeRole } from '@/lib/utils';
 
 interface ContactsTableProps {
   contacts: Contact[];
@@ -54,8 +54,8 @@ function ContactsTableInner({
     const name = currentUserName?.trim().toLowerCase();
     return [...contacts].sort((a, b) => {
       // Admins/owners always first
-      const aIsAdmin = a.role === 'company_admin' || a.role === 'ADMIN';
-      const bIsAdmin = b.role === 'company_admin' || b.role === 'ADMIN';
+      const aIsAdmin = isAdminEmployeeRole(a.role);
+      const bIsAdmin = isAdminEmployeeRole(b.role);
       if (aIsAdmin && !bIsAdmin) return -1;
       if (!aIsAdmin && bIsAdmin) return 1;
 
@@ -79,7 +79,7 @@ function ContactsTableInner({
   const selfEmail = currentUserEmail?.toLowerCase();
   const selfName = currentUserName?.trim().toLowerCase();
   const selectableContacts = sortedContacts.filter((c) => {
-    if (c.role === 'company_admin' || c.role === 'ADMIN') return false;
+    if (isAdminEmployeeRole(c.role)) return false;
     if (c.isCurrentUser) return false;
     const cEmail = (c.email ?? '').toLowerCase();
     const cName = c.name.trim().toLowerCase();
@@ -132,7 +132,7 @@ function ContactsTableInner({
             const isSelf =
               (!!email && contactEmail === email) ||
               (!contactEmail && !!name && contactName === name);
-            const isAdminRow = contact.role === 'company_admin' || contact.role === 'ADMIN';
+            const isAdminRow = isAdminEmployeeRole(contact.role);
             const isProtected = isSelf || isAdminRow;
             return (
               <TableRow key={contact.id} className={`border-b border-[#ebf3ef] hover:bg-[#f6fbf9] ${isSelf ? 'bg-[#f6fbf9]' : ''}`}>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Table,
   TableHeader,
@@ -10,10 +10,23 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/empty-state';
-import { Edit, MessageSquare, BarChart3, Trash2 } from 'lucide-react';
+import { Edit, MessageSquare, BarChart3, Trash2, Plus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Employee } from '@/types/models';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, isAdminEmployeeRole } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+
+/** All languages that can be assigned to employees. */
+const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDefault?: boolean }[] = [
+  { code: 'da', label: 'Danish', flag: '\u{1F1E9}\u{1F1F0}', isDefault: true },
+  { code: 'en', label: 'English (US)', flag: '\u{1F1FA}\u{1F1F8}' },
+  { code: 'en-uk', label: 'English (UK)', flag: '\u{1F1EC}\u{1F1E7}' },
+  { code: 'nl', label: 'Dutch', flag: '\u{1F1F3}\u{1F1F1}' },
+  { code: 'fr', label: 'French', flag: '\u{1F1EB}\u{1F1F7}' },
+  { code: 'de', label: 'German', flag: '\u{1F1E9}\u{1F1EA}' },
+];
+
+const LANG_FLAG_MAP = Object.fromEntries(ALL_LANGUAGES.map(l => [l.code, l.flag]));
 
 const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
 function resolvePhotoUrl(uri: string | null | undefined): string | null {
@@ -54,6 +67,87 @@ const EmployeeAvatar: React.FC<{ name: string; photoUri?: string | null }> = ({ 
   );
 };
 
+/** Inline language quick-add dropdown */
+const LanguageQuickAdd: React.FC<{
+  employeeId: string;
+  currentLangs: string[];
+  companyLangs: string[];
+  onSave: (id: string, languages: string[]) => void;
+}> = ({ employeeId, currentLangs, companyLangs, onSave }) => {
+  const [open, setOpen] = useState(false);
+  const [langs, setLangs] = useState(currentLangs);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setLangs(currentLangs);
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open, currentLangs]);
+
+  const handleToggle = (code: string) => {
+    if (code === 'da') return;
+    const next = langs.includes(code) ? langs.filter(l => l !== code) : [...langs, code];
+    setLangs(next);
+  };
+
+  const handleSave = () => {
+    onSave(employeeId, langs);
+    setOpen(false);
+  };
+
+  const available = ALL_LANGUAGES.filter(l => companyLangs.includes(l.code));
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="h-6 w-6 rounded-full border border-dashed border-[#3d997d] flex items-center justify-center text-[#3d997d] hover:bg-[#e7f5ef] transition-colors"
+        title="Add language"
+      >
+        <Plus className="h-3 w-3" />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-8 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1.5 z-50">
+          {available.map(lang => {
+            const checked = langs.includes(lang.code);
+            const isDa = lang.code === 'da';
+            return (
+              <label
+                key={lang.code}
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 ${isDa ? 'opacity-60 cursor-default' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={isDa}
+                  onChange={() => handleToggle(lang.code)}
+                  className="h-3.5 w-3.5 accent-[#3d997d]"
+                />
+                <span>{lang.flag}</span>
+                <span className="text-xs">{lang.label}</span>
+              </label>
+            );
+          })}
+          <div className="border-t border-gray-100 mt-1 pt-1 px-3">
+            <button
+              type="button"
+              onClick={handleSave}
+              className="w-full text-center text-xs font-medium text-white bg-[#3d997d] rounded-md py-1.5 hover:bg-[#348a6f] transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface EmployeesTableProps {
   employees: Employee[];
   selectedIds: string[];
@@ -63,6 +157,8 @@ interface EmployeesTableProps {
   onEdit?: (id: string) => void;
   onStatistics?: (id: string) => void;
   onMessageLogs?: (id: string) => void;
+  onUpdateLanguages?: (id: string, languages: string[]) => void;
+  companyLanguages?: string[];
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   /** Email of the currently logged-in user — used to lock self-row actions */
@@ -78,16 +174,18 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   onEdit,
   onStatistics,
   onMessageLogs,
+  onUpdateLanguages,
+  companyLanguages = ['da'],
   emptyStateTitle = 'No data yet.',
   emptyStateDescription,
   currentUserEmail,
 }) => {
+  const { t } = useTranslation('employees');
   // For the header checkbox: exclude self-row and admin rows so they can never be "all selected"
   const selectableEmployees = employees.filter(
     (e) =>
       (!currentUserEmail || e.email.toLowerCase() !== currentUserEmail.toLowerCase()) &&
-      e.role !== 'company_admin' &&
-      e.role !== 'ADMIN'
+      !isAdminEmployeeRole(e.role)
   );
   const allSelected = selectableEmployees.length > 0 && selectableEmployees.every((e) => selectedIds.includes(e.id));
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -122,6 +220,9 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[120px]">
               Employment
             </TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[100px]">
+              {t('table.colLanguages', 'Languages')}
+            </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[110px]">
               Recent visits
             </TableHead>
@@ -136,7 +237,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
         <TableBody className="[&_tr]:last:border-b">
           {employees.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8}>
+              <TableCell colSpan={9}>
                 <EmptyState title={emptyStateTitle} description={emptyStateDescription} />
               </TableCell>
             </TableRow>
@@ -145,7 +246,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
               const phone =
                 employee.telephone || employee.mobileNumber || employee.alternateNumber;
               const isSelf = !!(currentUserEmail && employee.email.toLowerCase() === currentUserEmail.toLowerCase());
-              const isAdminRow = employee.role === 'company_admin' || employee.role === 'ADMIN';
+              const isAdminRow = isAdminEmployeeRole(employee.role);
               const isProtected = isSelf || isAdminRow;
 
               return (
@@ -183,6 +284,23 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                   </TableCell>
                   <TableCell className="text-[#111b18]" title={employee.employmentTitle || employee.employmentType || '-'}>
                     <div className="truncate">{employee.employmentTitle || employee.employmentType || '-'}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {(isAdminRow ? companyLanguages : (employee.languages ?? ['da'])).map(code => (
+                        <span key={code} className="text-base leading-none" title={ALL_LANGUAGES.find(l => l.code === code)?.label ?? code}>
+                          {LANG_FLAG_MAP[code] ?? code}
+                        </span>
+                      ))}
+                      {onUpdateLanguages && !isAdminRow && (employee.languages ?? ['da']).length < companyLanguages.length && (
+                        <LanguageQuickAdd
+                          employeeId={employee.id}
+                          currentLangs={employee.languages ?? ['da']}
+                          companyLangs={companyLanguages}
+                          onSave={onUpdateLanguages}
+                        />
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-[#111b18] truncate" title={employee.recentVisitAt || 'Never'}>
                     {formatRelativeTime(employee.recentVisitAt)}

@@ -10,6 +10,16 @@ import { useAuth } from '@/context/auth-context';
 import { useEmploymentTypes } from '@/features/employment-types/hooks';
 import { employeesApi } from '../api';
 
+/** All languages that can be assigned to employees. */
+const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDefault?: boolean }[] = [
+  { code: 'da', label: 'Danish', flag: '🇩🇰', isDefault: true },
+  { code: 'en', label: 'English (US)', flag: '🇺🇸' },
+  { code: 'en-uk', label: 'English (UK)', flag: '🇬🇧' },
+  { code: 'nl', label: 'Dutch', flag: '🇳🇱' },
+  { code: 'fr', label: 'French', flag: '🇫🇷' },
+  { code: 'de', label: 'German', flag: '🇩🇪' },
+];
+
 export interface EmployeeFormData {
   name: string;
   email: string;
@@ -23,6 +33,7 @@ export interface EmployeeFormData {
   status: boolean;
   isSeniorEmployee: boolean;
   isBusinessAdmin: boolean;
+  languages: string[];
   sendEmail: string;
   /** fid returned from POST /files after the user picks a profile photo. null = no photo yet. */
   userPictureFid: number | null;
@@ -36,6 +47,8 @@ interface AddEmployeeFormProps {
   isEditMode?: boolean;
   /** True when the employee being edited is the currently logged-in user */
   isSelf?: boolean;
+  /** True when the employee being edited is the account owner (company registrant) — locks permissions */
+  isAccountOwner?: boolean;
   /** Existing profile photo URI from the backend — shown as initial preview in edit mode */
   existingPhotoUri?: string | null;
   /**
@@ -46,10 +59,10 @@ interface AddEmployeeFormProps {
   onFidRefReady?: (ref: React.MutableRefObject<number | null>) => void;
 }
 
-/** Strip non-digit characters and enforce the 10-digit INT max (2 147 483 647). */
+/** Strip non-digit characters; allow up to 15 digits (international E.164 max). */
 const sanitisePhone = (raw: string): string => {
   const digits = raw.replace(/\D/g, '');
-  return digits.slice(0, 10);
+  return digits.slice(0, 15);
 };
 
 /** Format 8-digit Danish numbers as "XX XX XX XX"; longer numbers left as-is. */
@@ -59,10 +72,6 @@ const formatDanishPhone = (digits: string): string => {
   }
   return digits;
 };
-
-/** Strip non-digits; validate against INT max (no schema change). Returns number or null if empty. Throws 400 if overflow. */
-const exceedsIntMax = (digits: string): boolean =>
-  digits.length > 0 && parseInt(digits, 10) > 2_147_483_647;
 
 /**
  * Drupal returns photo URIs as relative paths: /sites/default/files/2026-02/xxx.png
@@ -78,7 +87,7 @@ function resolvePhotoUrl(uri: string | null | undefined): string | null {
   return `${base}${uri}`;
 }
 
-export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors, isEditMode = false, isSelf = false, existingPhotoUri, onFidRefReady }) => {
+export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors, isEditMode = false, isSelf = false, isAccountOwner = false, existingPhotoUri, onFidRefReady }) => {
   const { t } = useTranslation('employees');
   const { user } = useAuth();
   const companyId = user?.companyId ? String(user.companyId) : undefined;
@@ -284,12 +293,10 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                     placeholder={t('form.phonePlaceholder')}
                     value={formatDanishPhone(formData.mobileNumber)}
                     onChange={handlePhoneChange('mobileNumber')}
-                    className={`mt-1 ${exceedsIntMax(formData.mobileNumber) ? 'border-red-500 focus-visible:ring-red-400' : ''}`}
+                    className="mt-1"
                   />
-                  {exceedsIntMax(formData.mobileNumber) && (
-                    <p className="text-xs text-red-600 mt-1">{t('form.numberExceeds')}</p>
-                  )}
-                  {errors?.mobileNumber && !exceedsIntMax(formData.mobileNumber) && (
+                  <p className="text-xs text-gray-500 mt-1">{t('form.phoneHint')}</p>
+                  {errors?.mobileNumber && (
                     <p className="text-xs text-red-600 mt-1">{errors.mobileNumber}</p>
                   )}
                 </div>
@@ -305,11 +312,8 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                     placeholder={t('form.phonePlaceholder')}
                     value={formatDanishPhone(formData.alternateNumber)}
                     onChange={handlePhoneChange('alternateNumber')}
-                    className={`mt-1 ${exceedsIntMax(formData.alternateNumber) ? 'border-red-500 focus-visible:ring-red-400' : ''}`}
+                    className="mt-1"
                   />
-                  {exceedsIntMax(formData.alternateNumber) && (
-                    <p className="text-xs text-red-600 mt-1">{t('form.numberExceeds')}</p>
-                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     {t('form.alternateNumberDesc')}
                   </p>
@@ -366,11 +370,8 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
               placeholder={t('form.phonePlaceholder')}
               value={formatDanishPhone(formData.emergencyMobile)}
               onChange={handlePhoneChange('emergencyMobile')}
-              className={`mt-1 ${exceedsIntMax(formData.emergencyMobile) ? 'border-red-500 focus-visible:ring-red-400' : ''}`}
+              className="mt-1"
             />
-            {exceedsIntMax(formData.emergencyMobile) && (
-              <p className="text-xs text-red-600 mt-1">{t('form.numberExceeds')}</p>
-            )}
             <p className="text-xs text-gray-500 mt-1 italic">
               {t('form.emergency.mobileDesc')}
             </p>
@@ -456,33 +457,80 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
             {/* Permissions */}
             <div>
               <Label className="text-sm font-medium mb-3 block">{t('form.permissions')}</Label>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-2">
-                  <input
-                    type="radio"
-                    id="perm-senior"
-                    name="permissions"
-                    checked={!formData.isBusinessAdmin}
-                    onChange={() => onChange({ ...formData, isSeniorEmployee: true, isBusinessAdmin: false })}
-                    className="mt-0.5 h-4 w-4 accent-[#0d0e0e] cursor-pointer"
-                  />
-                  <Label htmlFor="perm-senior" className="text-sm font-normal cursor-pointer">
-                    {t('form.permSenior')}
-                  </Label>
+              {isAccountOwner ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+                  <p className="text-sm text-amber-800 font-medium">{t('form.permAccountOwner')}</p>
                 </div>
-                <div className="flex items-start space-x-2">
-                  <input
-                    type="radio"
-                    id="perm-admin"
-                    name="permissions"
-                    checked={formData.isBusinessAdmin}
-                    onChange={() => onChange({ ...formData, isSeniorEmployee: false, isBusinessAdmin: true })}
-                    className="mt-0.5 h-4 w-4 accent-[#0d0e0e] cursor-pointer"
-                  />
-                  <Label htmlFor="perm-admin" className="text-sm font-normal cursor-pointer">
-                    {t('form.permAdmin')}
-                  </Label>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="perm-senior"
+                      checked={formData.isSeniorEmployee}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          onChange({ ...formData, isSeniorEmployee: true, isBusinessAdmin: false });
+                        } else {
+                          onChange({ ...formData, isSeniorEmployee: false });
+                        }
+                      }}
+                    />
+                    <Label htmlFor="perm-senior" className="text-sm font-normal cursor-pointer">
+                      {t('form.permSenior')}
+                    </Label>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="perm-admin"
+                      checked={formData.isBusinessAdmin}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          onChange({ ...formData, isBusinessAdmin: true, isSeniorEmployee: false });
+                        } else {
+                          onChange({ ...formData, isBusinessAdmin: false });
+                        }
+                      }}
+                    />
+                    <Label htmlFor="perm-admin" className="text-sm font-normal cursor-pointer">
+                      {t('form.permAdmin')}
+                    </Label>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            {/* Employee Languages */}
+            <div>
+              <Label className="text-sm font-medium mb-3 block">{t('form.languages')}</Label>
+              <p className="text-xs text-gray-500 mb-3">{t('form.languagesDesc')}</p>
+              <div className="space-y-2">
+                {ALL_LANGUAGES.map((lang) => {
+                  const isCompanyLang = (user?.companyLanguages ?? ['da']).includes(lang.code);
+                  if (!isCompanyLang) return null;
+                  const isChecked = formData.languages.includes(lang.code);
+                  const isDanish = lang.code === 'da';
+                  return (
+                    <div key={lang.code} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`lang-${lang.code}`}
+                        checked={isChecked}
+                        disabled={isDanish}
+                        onChange={(e) => {
+                          if (isDanish) return;
+                          const next = e.target.checked
+                            ? [...formData.languages, lang.code]
+                            : formData.languages.filter(l => l !== lang.code);
+                          onChange({ ...formData, languages: next });
+                        }}
+                      />
+                      <Label htmlFor={`lang-${lang.code}`} className={`text-sm font-normal cursor-pointer ${isDanish ? 'text-gray-500' : ''}`}>
+                        <span className="mr-1.5">{lang.flag}</span>
+                        {lang.label}
+                        {isDanish && <span className="text-gray-400 text-xs ml-1">({t('form.languageDefault')})</span>}
+                      </Label>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

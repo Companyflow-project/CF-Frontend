@@ -9,7 +9,7 @@
   "logOut": "Log ud",
   "banner.viewAsEmployee": "Vis som medarbejder er aktiv. Klik afslut for at vende tilbage til din admin-visning.",
   "banner.exitViewAsEmployee": "Afslut vis som medarbejder",
-  "footer.copyright": "© 2025 CompanyFlow. Alle rettigheder forbeholdes.",
+  "footer.copyright": "© 2025 {{companyName}}. Alle rettigheder forbeholdes. - Powered by CompanyFlow",
   "emptyState.title": "Ingen data endnu.",
   "back": "Tilbage",
   "cancel": "Annuller",

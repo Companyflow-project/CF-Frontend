@@ -9,6 +9,7 @@ import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
+import { isAdminRole } from '@/lib/utils';
 import type { HandbookResourceLink } from '@/types/models';
 
 export const HandbookLinksPage: React.FC = () => {
@@ -16,7 +17,7 @@ export const HandbookLinksPage: React.FC = () => {
     const { t, i18n } = useTranslation('handbook');
     const { user } = useAuth();
     const { viewAsEmployee } = useViewAsEmployee();
-    const isAdmin = !viewAsEmployee && (user?.role === 'ADMIN' || user?.role === 'company_admin');
+    const isAdmin = !viewAsEmployee && isAdminRole(user?.role);
     const lang = i18n.language || 'da';
     const [links, setLinks] = useState<HandbookResourceLink[]>([]);
     const [loading, setLoading] = useState(true);

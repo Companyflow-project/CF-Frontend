@@ -1,6 +1,24 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
+/** Roles that have full admin/edit access (account owner, company admin, platform admin). */
+const ADMIN_ROLES = new Set(['administrator', 'account_owner', 'company_admin']);
+
+/** Check if a role has admin-level access (can edit handbook, manage employees, etc.). */
+export function isAdminRole(role?: string): boolean {
+  return !!role && ADMIN_ROLES.has(role);
+}
+
+/** Check if a role is an admin row in the employee table (protected from bulk actions/deletion). */
+export function isAdminEmployeeRole(role?: string): boolean {
+  return role === 'company_admin' || role === 'account_owner' || role === 'ADMIN';
+}
+
+/** Check if a role can view all handbook pages including unpublished. */
+export function canViewAllPagesRole(role?: string): boolean {
+  return isAdminRole(role) || role === 'senior_employee';
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -68,6 +86,30 @@ export function formatRelativeTime(dateString: string | null | undefined): strin
   } catch (error) {
     return dateString; // Return original if parsing fails
   }
+}
+
+/**
+ * Resolve a backend file path (e.g. /sites/default/files/...) into a full URL
+ * by prepending the API origin. Already-absolute URLs are returned as-is.
+ */
+const _API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+export function resolveBackendUrl(uri: string | null | undefined): string {
+  if (!uri) return '';
+  if (uri.startsWith('http') || uri.startsWith('blob:') || uri.startsWith('data:')) return uri;
+  const base = _API_ORIGIN.replace(/\/api\/?$/, '');
+  return `${base}${uri}`;
+}
+
+/**
+ * Rewrite relative src/href attributes inside an HTML string so images and
+ * links served from the backend (e.g. /sites/default/files/...) load correctly.
+ */
+export function resolveHtmlUrls(html: string): string {
+  if (!html) return html;
+  const base = _API_ORIGIN.replace(/\/api\/?$/, '');
+  if (!base) return html;
+  // Match src="/ or href="/ (but not src="http or href="http)
+  return html.replace(/(src|href)=(["'])\/((?!\/)[^"']*)\2/gi, `$1=$2${base}/$3$2`);
 }
 
 /**
