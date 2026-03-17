@@ -254,5 +254,19 @@
   "publish.ready": "Ready",
   "publish.error.noHandbook": "Handbook ID not found. Please try again.",
   "publish.error.failed": "Failed to publish handbook. Please try again.",
-  "publish.success": "Published. {{count}} employees will receive a notification."
+  "publish.success": "Published. {{count}} employees will receive a notification.",
+
+  "editor.heading": "Heading",
+  "editor.textMode": "Text Mode",
+  "editor.modeCompanyFlow": "CompanyFlow Text",
+  "editor.modeCompanyFlowDesc": "Use the standard CompanyFlow template as-is",
+  "editor.modeEditPremade": "Edit CompanyFlow Text",
+  "editor.modeEditPremadeDesc": "Start from the template and customize it",
+  "editor.modeWriteOwn": "Write your own text",
+  "editor.modeWriteOwnDesc": "Start from scratch with a blank editor",
+  "editor.showTemplate": "Show CompanyFlow Template",
+  "editor.hideTemplate": "Hide CompanyFlow Template",
+  "editor.templateReadOnly": "CompanyFlow Template (Read-Only)",
+  "editor.customText": "Custom Text",
+  "editor.textPreview": "Text (Preview)"
 }

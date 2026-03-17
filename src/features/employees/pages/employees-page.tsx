@@ -89,9 +89,9 @@ export const EmployeesPage: React.FC = () => {
     let filtered = [...employees];
 
     if (isStrictAdmin) {
-      // Admins/company_admins see all by default; toggles narrow the list
-      if (showInactive) {
-        filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.status === 'INACTIVE');
+      // Hide inactive employees unless the "Show inactive" checkbox is ticked
+      if (!showInactive) {
+        filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.status !== 'INACTIVE');
       }
       if (publicOnly) {
         filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.isPublic);
@@ -485,6 +485,7 @@ export const EmployeesPage: React.FC = () => {
                   emptyStateTitle={t('manage.noEmployeesTitle')}
                   emptyStateDescription={t('manage.noEmployeesDesc')}
                   currentUserEmail={authUser?.email ?? undefined}
+                  currentUserRole={authUser?.role ?? undefined}
                 />
               </div>
 

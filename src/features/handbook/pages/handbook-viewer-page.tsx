@@ -7,13 +7,16 @@ import { Button } from '@/components/ui/button';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
 import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAppearance } from '@/context/appearance-context';
-import { resolveHtmlUrls } from '@/lib/utils';
+import { resolveHtmlUrls, resolveBackendUrl } from '@/lib/utils';
 
 interface FlatPage {
   id: number;
   title: string;
   chapterTitle: string;
   html: string;
+  imageUrl?: string | null;
+  imageName?: string;
+  imagePlacement?: string | null;
 }
 
 export const HandbookViewerPage: React.FC = () => {
@@ -50,12 +53,22 @@ export const HandbookViewerPage: React.FC = () => {
           }
         }
 
-        // Pre-fetch content for all pages in parallel
+        // Pre-fetch content + page detail (for images) in parallel
         const results = await Promise.all(
           candidates.map(async (page) => {
             try {
-              const html = await handbookApi.getHandbookContent(page.id);
-              return { ...page, html: html || '' };
+              const [html, detail] = await Promise.all([
+                handbookApi.getHandbookContent(page.id).catch(() => ''),
+                handbookApi.getPageDetail(page.id, i18n.language).catch(() => null),
+              ]);
+              const firstPic = detail?.pictures?.[0];
+              return {
+                ...page,
+                html: html || '',
+                imageUrl: firstPic?.url || null,
+                imageName: firstPic?.name || 'Image',
+                imagePlacement: detail?.imagePlacement || null,
+              };
             } catch {
               return { ...page, html: '' };
             }
@@ -265,16 +278,71 @@ export const HandbookViewerPage: React.FC = () => {
               </div>
             )}
 
-            {currentPageData.html.trim().length > 0 ? (
-              <div
-                className="prose max-w-none handbook-content handbook-themed-content mt-4"
-                dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(currentPageData.html) }}
-              />
-            ) : (
-              <p className="text-sm text-[#9ca3af] italic mt-4">
-                {t('viewer.emptyContent')}
-              </p>
-            )}
+            {(() => {
+              const placement = currentPageData.imagePlacement || 'none';
+              const imageUrl = currentPageData.imageUrl;
+              const hasImage = imageUrl && placement !== 'none';
+              const hasHtml = currentPageData.html.trim().length > 0;
+
+              const imageEl = hasImage ? (
+                <img
+                  src={resolveBackendUrl(imageUrl)}
+                  alt={currentPageData.imageName || 'Image'}
+                  className="rounded-md object-contain"
+                />
+              ) : null;
+
+              const htmlEl = hasHtml ? (
+                <div
+                  className="prose max-w-none handbook-content handbook-themed-content"
+                  dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(currentPageData.html) }}
+                />
+              ) : (
+                <p className="text-sm text-[#9ca3af] italic">
+                  {t('viewer.emptyContent')}
+                </p>
+              );
+
+              if (!hasImage) return <div className="mt-4">{htmlEl}</div>;
+
+              if (placement === 'before') {
+                return (
+                  <div className="mt-4">
+                    <div className="flex justify-center mb-4">{React.cloneElement(imageEl!, { className: 'max-h-72 object-contain rounded-md' })}</div>
+                    {htmlEl}
+                  </div>
+                );
+              }
+
+              if (placement === 'after') {
+                return (
+                  <div className="mt-4">
+                    {htmlEl}
+                    <div className="flex justify-center mt-4">{React.cloneElement(imageEl!, { className: 'max-h-72 object-contain rounded-md' })}</div>
+                  </div>
+                );
+              }
+
+              if (placement === 'left') {
+                return (
+                  <div className="mt-4 flex flex-col sm:flex-row gap-4 items-start">
+                    {React.cloneElement(imageEl!, { className: 'w-full sm:w-1/3 max-h-64 object-contain rounded-md shrink-0' })}
+                    <div className="flex-1">{htmlEl}</div>
+                  </div>
+                );
+              }
+
+              if (placement === 'right') {
+                return (
+                  <div className="mt-4 flex flex-col sm:flex-row gap-4 items-start">
+                    <div className="flex-1">{htmlEl}</div>
+                    {React.cloneElement(imageEl!, { className: 'w-full sm:w-1/3 max-h-64 object-contain rounded-md shrink-0' })}
+                  </div>
+                );
+              }
+
+              return <div className="mt-4">{htmlEl}</div>;
+            })()}
 
             {showReceiptButton && (
               <div className="mt-8 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>

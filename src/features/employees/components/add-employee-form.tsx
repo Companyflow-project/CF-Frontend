@@ -11,8 +11,8 @@ import { useEmploymentTypes } from '@/features/employment-types/hooks';
 import { employeesApi } from '../api';
 
 /** All languages that can be assigned to employees. */
-const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDefault?: boolean }[] = [
-  { code: 'da', label: 'Danish', flag: '🇩🇰', isDefault: true },
+const ALL_LANGUAGES: readonly { code: string; label: string; flag: string }[] = [
+  { code: 'da', label: 'Danish', flag: '🇩🇰' },
   { code: 'en', label: 'English (US)', flag: '🇺🇸' },
   { code: 'en-uk', label: 'English (UK)', flag: '🇬🇧' },
   { code: 'nl', label: 'Dutch', flag: '🇳🇱' },
@@ -35,6 +35,7 @@ export interface EmployeeFormData {
   isBusinessAdmin: boolean;
   languages: string[];
   sendEmail: string;
+  customMessage: string;
   /** fid returned from POST /files after the user picks a profile photo. null = no photo yet. */
   userPictureFid: number | null;
 }
@@ -408,7 +409,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                 <RadioGroup
                   value={formData.employmentType}
                   onValueChange={(value) => onChange({ ...formData, employmentType: value })}
-                  className="space-y-2"
+                  className="gap-x-4"
                 >
                   <RadioGroupItem value="none" id="employment-none">
                     {t('form.employment.noType')}
@@ -508,25 +509,21 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                   const isCompanyLang = (user?.companyLanguages ?? ['da']).includes(lang.code);
                   if (!isCompanyLang) return null;
                   const isChecked = formData.languages.includes(lang.code);
-                  const isDanish = lang.code === 'da';
                   return (
                     <div key={lang.code} className="flex items-center space-x-2">
                       <Checkbox
                         id={`lang-${lang.code}`}
                         checked={isChecked}
-                        disabled={isDanish}
                         onChange={(e) => {
-                          if (isDanish) return;
                           const next = e.target.checked
                             ? [...formData.languages, lang.code]
                             : formData.languages.filter(l => l !== lang.code);
                           onChange({ ...formData, languages: next });
                         }}
                       />
-                      <Label htmlFor={`lang-${lang.code}`} className={`text-sm font-normal cursor-pointer ${isDanish ? 'text-gray-500' : ''}`}>
+                      <Label htmlFor={`lang-${lang.code}`} className="text-sm font-normal cursor-pointer">
                         <span className="mr-1.5">{lang.flag}</span>
                         {lang.label}
-                        {isDanish && <span className="text-gray-400 text-xs ml-1">({t('form.languageDefault')})</span>}
                       </Label>
                     </div>
                   );
@@ -540,12 +537,25 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
               <RadioGroup
                 value={formData.sendEmail}
                 onValueChange={(value) => onChange({ ...formData, sendEmail: value })}
-                className="space-y-2"
+                className="gap-x-4"
               >
                 <RadioGroupItem value="no" id="email-no">{t('form.sendEmailNo')}</RadioGroupItem>
                 <RadioGroupItem value="standard" id="email-standard">{t('form.sendEmailStandard')}</RadioGroupItem>
                 <RadioGroupItem value="customized" id="email-customized">{t('form.sendEmailCustomized')}</RadioGroupItem>
               </RadioGroup>
+              {formData.sendEmail === 'customized' && (
+                <div className="mt-3">
+                  <Label className="text-sm font-medium mb-1 block">{t('form.customMessageLabel')}</Label>
+                  <textarea
+                    className="w-full border border-[#c8d8d3] rounded-[8px] p-3 text-sm min-h-[100px] resize-y focus:outline-none focus:ring-2 focus:ring-[#1a5948]/20"
+                    placeholder={t('form.customMessagePlaceholder')}
+                    value={formData.customMessage}
+                    onChange={(e) => onChange({ ...formData, customMessage: e.target.value })}
+                    maxLength={2000}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{t('form.customMessageHint')}</p>
+                </div>
+              )}
               <p className="text-xs text-gray-500 mt-2 italic">
                 {t('form.sendEmailDesc')}
               </p>

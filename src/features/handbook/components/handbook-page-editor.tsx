@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
     ChevronDown,
@@ -47,6 +48,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
     onSave,
     onCancel,
 }) => {
+    const { t } = useTranslation('handbook');
     // Auth and employees
     const { user } = useAuth();
     const { data: employees, loading: employeesLoading } = useEmployees();
@@ -62,7 +64,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
     // Form fields
     const [heading, setHeading] = useState('');
     const [customText, setCustomText] = useState('');
-    const [mode, setMode] = useState<'company' | 'custom'>('company'); // 'company' or 'custom'
+    const [mode, setMode] = useState<'company' | 'edit-premade' | 'custom'>('company');
     const [showReference, setShowReference] = useState(false);
     const [notes, setNotes] = useState('');
     const [imageId, setImageId] = useState<number | null>(null);
@@ -96,7 +98,11 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 if (data) {
                     setPageDetail(data);
                     setHeading(data.title || '');
-                    setMode(data.sourceMode === 'own' ? 'custom' : 'company');
+                    if (data.sourceMode === 'own') {
+                        setMode(data.versions?.premade ? 'edit-premade' : 'custom');
+                    } else {
+                        setMode('company');
+                    }
                     const contentHtml = await handbookApi.getHandbookContent(pageId);
                     setCustomText(contentHtml || data.versions?.custom || data.content || '');
                     setNotes(data.internalNote || '');
@@ -111,7 +117,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                         setImageUrl(null);
                         setImageName(null);
                     }
-                    setImagePlacement(data.imagePlacement);
+                    setImagePlacement(data.imagePlacement === 'none' ? null : data.imagePlacement);
                     setOwners(data.owners || []);
                     setDocuments(
                         (data.documents || []).map((d) => {
@@ -243,7 +249,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
             setSaving(true);
             setError(null);
 
-            const textMode: '0' | '1' = mode === 'custom' ? '1' : '0';
+            const textMode: '0' | '1' = mode === 'company' ? '0' : '1';
             const effectiveCustomText = textMode === '1' ? customText : '';
 
             const payload: UpdatePagePayload = {
@@ -273,7 +279,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
 
             await handbookApi.updatePage(pageId, payload);
 
-            if (mode === 'custom') {
+            if (mode !== 'company') {
                 await handbookApi.saveHandbookContent(pageId, customText);
             }
 
@@ -323,7 +329,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
         <div className="space-y-6">
             {/* Heading */}
             <div className="space-y-2">
-                <Label className="text-sm font-medium text-[#0d0e0e]">Heading</Label>
+                <Label className="text-sm font-medium text-[#0d0e0e]">{t('editor.heading')}</Label>
                 <Input
                     value={heading}
                     onChange={(e) => setHeading(e.target.value)}
@@ -331,29 +337,48 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 />
             </div>
 
-            {/* Text Mode Toggle */}
-            <div className="flex items-center justify-between p-4 bg-[#f9fafb] rounded-[10px] border border-[#e5e7eb]">
-                <div className="flex-1">
-                    <Label className="text-sm font-medium text-[#0d0e0e]">Text Mode</Label>
-                    <p className="text-xs text-[#7b8a85] mt-1">
-                        {mode === 'company'
-                            ? 'Using CompanyFlow template text'
-                            : 'Using your own custom text'}
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <span className="text-sm text-[#7b8a85]">CompanyFlow</span>
-                    <Switch
-                        checked={mode === 'custom'}
-                        onCheckedChange={(checked: boolean) => setMode(checked ? 'custom' : 'company')}
-                    />
-                    <span className="text-sm text-[#0d0e0e] font-medium">Custom</span>
-                </div>
+            {/* Text Mode Radio Group */}
+            <div className="space-y-3">
+                <Label className="text-sm font-medium text-[#0d0e0e]">{t('editor.textMode')}</Label>
+                <RadioGroup
+                    variant="card"
+                    value={mode}
+                    onValueChange={(value: string) => {
+                        const newMode = value as 'company' | 'edit-premade' | 'custom';
+                        if (newMode === mode) return;
+                        if (newMode === 'company') {
+                            setShowReference(false);
+                            setMode('company');
+                        } else if (newMode === 'edit-premade') {
+                            setShowReference(false);
+                            setCustomText(premadeContent);
+                            setMode('edit-premade');
+                        } else {
+                            setCustomText('');
+                            setMode('custom');
+                        }
+                    }}
+                    className="flex flex-col gap-2"
+                >
+                    {premadeContent && (
+                        <>
+                            <RadioGroupItem value="company" id="mode-company" description={t('editor.modeCompanyFlowDesc')}>
+                                {t('editor.modeCompanyFlow')}
+                            </RadioGroupItem>
+                            <RadioGroupItem value="edit-premade" id="mode-edit-premade" description={t('editor.modeEditPremadeDesc')}>
+                                {t('editor.modeEditPremade')}
+                            </RadioGroupItem>
+                        </>
+                    )}
+                    <RadioGroupItem value="custom" id="mode-custom" description={t('editor.modeWriteOwnDesc')}>
+                        {t('editor.modeWriteOwn')}
+                    </RadioGroupItem>
+                </RadioGroup>
             </div>
 
-            {/* Reference View Toggle (only show when in custom mode) */}
+            {/* Template Reference (only in "Write your own" mode) */}
             {mode === 'custom' && premadeContent && (
-                <div className="flex items-center gap-2">
+                <div className="space-y-3">
                     <Button
                         type="button"
                         variant="outline"
@@ -362,52 +387,37 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                         className="border-[#c8d8d3] text-[#1a5948] rounded-[8px] px-3 h-8 text-xs gap-2"
                     >
                         {showReference ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                        {showReference ? 'Hide' : 'Show'} CompanyFlow Template
+                        {showReference ? t('editor.hideTemplate') : t('editor.showTemplate')}
                     </Button>
-                    <span className="text-xs text-[#7b8a85]">
-                        View the original template for reference
-                    </span>
-                </div>
-            )}
-
-            {/* Reference View (Read-only template) */}
-            {mode === 'custom' && showReference && premadeContent && (
-                <div className="border-l-4 border-[#3d997d] bg-[#f0f9f6] p-4 rounded-r-[10px]">
-                    <div className="flex items-center justify-between mb-3">
-                        <Label className="text-sm font-semibold text-[#1a5948]">
-                            CompanyFlow Template (Read-Only)
-                        </Label>
-                        <span className="text-xs text-[#7b8a85] italic">
-                            Copy content from here to your custom editor below
-                        </span>
-                    </div>
-                    <RichTextEditor
-                        content={premadeContent}
-                        onChange={() => { }} // Read-only
-                        isEditable={false}
-                    />
+                    {showReference && (
+                        <div className="border-l-4 border-[#3d997d] bg-[#f0f9f6] p-4 rounded-r-[10px]">
+                            <Label className="text-sm font-semibold text-[#1a5948] mb-3 block">
+                                {t('editor.templateReadOnly')}
+                            </Label>
+                            <RichTextEditor
+                                content={premadeContent}
+                                onChange={() => {}}
+                                isEditable={false}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* Main Text Editor */}
             <div className="space-y-2">
                 <Label className="text-sm font-medium text-[#0d0e0e]">
-                    {mode === 'custom' ? 'Custom Text' : 'Text (Preview)'}
+                    {mode === 'company' ? t('editor.textPreview') : t('editor.customText')}
                 </Label>
                 <RichTextEditor
-                    content={mode === 'custom' ? customText : premadeContent}
+                    content={mode === 'company' ? premadeContent : customText}
                     onChange={(html) => {
-                        if (mode === 'custom') {
+                        if (mode !== 'company') {
                             setCustomText(html);
                         }
                     }}
-                    isEditable={mode === 'custom'}
+                    isEditable={mode !== 'company'}
                 />
-                {mode === 'company' && (
-                    <p className="text-xs text-[#7b8a85] italic">
-                        Switch to Custom mode to edit this content
-                    </p>
-                )}
             </div>
 
             {/* Pictures Section */}

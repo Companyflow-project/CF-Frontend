@@ -89,6 +89,8 @@ export const employeesApi = {
     isSeniorEmployee?: boolean;
     isBusinessAdmin?: boolean;
     sendEmailType?: string;
+    /** Optional custom message included in the welcome email when sendEmailType is 'customized' */
+    customMessage?: string;
     /** fid returned from POST /files — links the uploaded photo to the employee */
     userPictureFid?: number;
     /** Responsibility ids from GET /api/responsibilities */
@@ -115,6 +117,7 @@ export const employeesApi = {
         responsibilityIds: payload.responsibilityIds,
       }),
       ...(payload.sendEmailType && payload.sendEmailType !== 'no' && { sendEmailType: payload.sendEmailType }),
+      ...(payload.customMessage && { customMessage: payload.customMessage }),
       ...(payload.languages && payload.languages.length > 0 && { languages: payload.languages }),
     };
 
@@ -152,6 +155,8 @@ export const employeesApi = {
       /** Language codes assigned to this employee */
       languages?: string[];
       sendEmailType?: string;
+      /** Optional custom message included in the welcome email when sendEmailType is 'customized' */
+      customMessage?: string;
     }
   ): Promise<Employee> {
     const requestBody: Record<string, unknown> = {};
@@ -180,6 +185,9 @@ export const employeesApi = {
     }
     if (payload.sendEmailType && payload.sendEmailType !== 'no') {
       requestBody.sendEmailType = payload.sendEmailType;
+    }
+    if (payload.customMessage) {
+      requestBody.customMessage = payload.customMessage;
     }
 
     const response = await axiosClient.patch<ApiResponse<BackendEmployeeLike> | BackendEmployeeLike>(

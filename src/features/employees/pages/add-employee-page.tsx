@@ -31,6 +31,7 @@ export const AddEmployeePage: React.FC = () => {
     isBusinessAdmin: false,
     languages: ['da'],
     sendEmail: 'no',
+    customMessage: '',
     userPictureFid: null,
   });
 
@@ -81,6 +82,7 @@ export const AddEmployeePage: React.FC = () => {
         isBusinessAdmin: formData.isBusinessAdmin,
         languages: formData.languages,
         sendEmailType: formData.sendEmail,
+        ...(formData.sendEmail === 'customized' && formData.customMessage && { customMessage: formData.customMessage }),
         ...(formData.userPictureFid != null && { userPictureFid: formData.userPictureFid }),
       };
 
@@ -100,7 +102,7 @@ export const AddEmployeePage: React.FC = () => {
       const message =
         typeof apiError?.message === 'string' && apiError.message.trim()
           ? apiError.message.trim()
-          : t('toast.createFailed');
+          : error?.response?.data?.message ?? t('toast.createFailed');
 
       toast.error(message);
     } finally {

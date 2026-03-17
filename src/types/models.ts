@@ -128,6 +128,7 @@ export interface HandbookNode {
   type: 'chapter' | 'page';
   status: 'ready' | 'opted_out' | 'not_ready';
   badge: 'custom' | 'premade';
+  isPublished?: boolean;
   hasNote?: boolean;
   hasDocuments?: boolean;
   hasLinks?: boolean;

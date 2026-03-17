@@ -136,9 +136,11 @@
   "form.sendEmailStandard": "Standard",
   "form.sendEmailCustomized": "Customized",
   "form.sendEmailDesc": "Send a message with a link to the handbook.",
+  "form.customMessageLabel": "Custom message",
+  "form.customMessagePlaceholder": "Write a personal message to include in the welcome email…",
+  "form.customMessageHint": "This message will be included in the welcome email sent to the employee.",
   "form.languages": "Languages",
-  "form.languagesDesc": "Select which languages this employee can access. Danish is always enabled.",
-  "form.languageDefault": "default",
+  "form.languagesDesc": "Select which languages this employee can access.",
 
   "form.validation.nameRequired": "Name is required",
   "form.validation.emailRequired": "Email is required",

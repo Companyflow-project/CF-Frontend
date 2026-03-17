@@ -56,7 +56,7 @@ export const HandbookPagesPage: React.FC = () => {
         const open = searchParams.get('open');
         if (open === 'add') {
             setSearchParams((prev) => {
-                const next = new URLSearchParams(prev);
+                const next = new URLSearchParams(prev);     
                 next.delete('open');
                 return next;
             }, { replace: true });
@@ -699,10 +699,11 @@ export const HandbookPagesPage: React.FC = () => {
                             {filteredPages.map((page) => {
                                 const isExpanded = expandedPageId === page.id;
                                 const status = (page.status as string) || 'not_ready';
+                                const isReady = status === 'ready';
                                 return (
                                     <div
                                         key={page.id}
-                                        className={`page-row-container bg-white rounded-[8px] border border-[#e5e7eb] overflow-hidden relative transition-all duration-200 ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
+                                        className={`page-row-container rounded-[8px] border overflow-hidden relative transition-all duration-200 ${isReady ? 'bg-[#f6fbf9] border-[#d4f4e6]' : 'bg-white border-[#e5e7eb]'} ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
                                         onDragOver={(e) => {
                                             if (!canEditHandbook || !draggingPageId || search || statusFilter || draggingPageId === page.id) {
                                                 e.preventDefault();
@@ -814,7 +815,17 @@ export const HandbookPagesPage: React.FC = () => {
 
                                             {/* Title and Badges */}
                                             <div className="flex-1 flex items-center gap-3 min-w-0">
-                                                <span className="font-medium text-[#0d0e0e] truncate">{page.title}</span>
+                                                <button
+                                                    type="button"
+                                                    className={`font-medium truncate text-left transition-colors ${canEditHandbook ? 'hover:text-[#1a5948] hover:underline cursor-pointer' : 'cursor-default'} text-[#0d0e0e]`}
+                                                    onClick={(e) => {
+                                                        if (!canEditHandbook) return;
+                                                        e.stopPropagation();
+                                                        setExpandedPageId(isExpanded ? null : page.id);
+                                                    }}
+                                                >
+                                                    {page.title}
+                                                </button>
                                                 {page.badge && (
                                                     <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
                                                         {page.badge === 'custom' ? t('badge.custom') : t('badge.premade')}
@@ -824,13 +835,13 @@ export const HandbookPagesPage: React.FC = () => {
                                                 {(() => {
                                                     const activities: string[] = [];
                                                     if (page.badge === 'custom') activities.push(t('tag.customPage'));
-                                                    if (page.hasCustomBody && page.badge !== 'custom') activities.push(t('tag.addedText'));
+                                                    if (page.badge === 'premade' || page.hasCustomBody) activities.push(t('tag.addedText'));
+                                                    if (page.badge === 'custom' && !page.hasCustomBody) activities.push(t('tag.noText'));
                                                     if (page.hasReceipt) activities.push(t('tag.receipt'));
                                                     if (page.hasNote) activities.push(t('tag.notes'));
                                                     if (page.hasDocuments) activities.push(t('tag.documents'));
                                                     if (page.hasLinks) activities.push(t('tag.links'));
                                                     if (page.hasImage) activities.push(t('tag.image'));
-                                                    if (activities.length === 0 && page.badge !== 'custom') activities.push(t('tag.noText'));
                                                     return activities.length > 0 ? (
                                                         <span className="text-xs italic text-gray-400 flex-shrink-0 whitespace-nowrap">
                                                             ({activities.join(', ')})
@@ -843,8 +854,16 @@ export const HandbookPagesPage: React.FC = () => {
                                             </div>
 
                                             {/* Status Badge */}
-                                            <div className="flex-shrink-0">
-                                                {getStatusBadge(status)}
+                                            <div className="flex-shrink-0 flex items-center gap-2">
+                                                <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
+                                                    status === 'ready' ? 'bg-[#10b981]' :
+                                                    status === 'not_ready' ? 'bg-[#f59e0b]' :
+                                                    status === 'opted_out' ? 'bg-[#ef4444]' : 'bg-gray-300'
+                                                }`} />
+                                                {page.isPublished
+                                                    ? <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-3 py-1 text-xs font-medium">{t('publish.published')}</Badge>
+                                                    : getStatusBadge(status)
+                                                }
                                             </div>
 
                                             {/* Action Buttons */}
@@ -1002,14 +1021,6 @@ export const HandbookPagesPage: React.FC = () => {
                                     disabled={!canEditHandbook || isBulkUpdating}
                                 >
                                     {t('pages.optOut')}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] text-sm justify-start h-9"
-                                    onClick={() => handleBulkAction('include')}
-                                    disabled={!canEditHandbook || isBulkUpdating}
-                                >
-                                    {t('pages.include')}
                                 </Button>
                             </div>
                         </CardContent>

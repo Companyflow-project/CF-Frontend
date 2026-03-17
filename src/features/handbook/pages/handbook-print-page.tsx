@@ -6,7 +6,7 @@ import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import { useAppearance } from '@/context/appearance-context';
-import { resolveHtmlUrls } from '@/lib/utils';
+import { resolveHtmlUrls, resolveBackendUrl } from '@/lib/utils';
 import { useHandbookLang } from '../components/language-toggle';
 import { useTranslation } from 'react-i18next';
 
@@ -18,6 +18,7 @@ export const HandbookPrintPage: React.FC = () => {
   const lang = searchParams.get('lang') || storedLang;
   const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree(lang);
   const [bodies, setBodies] = useState<Map<number, string>>(new Map());
+  const [pageImages, setPageImages] = useState<Map<number, { url: string; name: string; placement: string }>>(new Map());
   const [bodiesLoading, setBodiesLoading] = useState(false);
   const [bodiesError, setBodiesError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
@@ -40,15 +41,33 @@ export const HandbookPrintPage: React.FC = () => {
     setBodiesLoading(true);
     setBodiesError(null);
     Promise.all(
-      readyPageIds.map((id) =>
-        handbookApi.getHandbookContent(id, lang).then((html) => ({ id, html }))
-      )
+      readyPageIds.map(async (id) => {
+        const [html, detail] = await Promise.all([
+          handbookApi.getHandbookContent(id, lang).catch(() => ''),
+          handbookApi.getPageDetail(id, lang).catch(() => null),
+        ]);
+        const pic = detail?.pictures?.[0];
+        return {
+          id,
+          html,
+          imageUrl: pic?.url || null,
+          imageName: pic?.name || 'Image',
+          imagePlacement: detail?.imagePlacement || null,
+        };
+      })
     )
-      .then((bodyResults) => {
+      .then((results) => {
         if (cancelled) return;
-        const map = new Map<number, string>();
-        bodyResults.forEach(({ id, html }) => map.set(id, html));
-        setBodies(map);
+        const bodyMap = new Map<number, string>();
+        const imgMap = new Map<number, { url: string; name: string; placement: string }>();
+        results.forEach(({ id, html, imageUrl, imageName, imagePlacement }) => {
+          bodyMap.set(id, html);
+          if (imageUrl && imagePlacement && imagePlacement !== 'none') {
+            imgMap.set(id, { url: imageUrl, name: imageName, placement: imagePlacement });
+          }
+        });
+        setBodies(bodyMap);
+        setPageImages(imgMap);
       })
       .catch((err: any) => {
         if (!cancelled)
@@ -145,22 +164,61 @@ export const HandbookPrintPage: React.FC = () => {
                 <h2 className="text-xl font-bold mt-8 mb-3 first:mt-0 print:text-lg" style={{ color: getColor('headlines') }}>
                   {chapter.title}
                 </h2>
-                {chapter.pages?.map((page: any) => (
-                  <section
-                    key={page.id}
-                    className="mb-8 break-inside-avoid"
-                    style={{ pageBreakInside: 'avoid' }}
-                  >
-                    <h3 className="text-lg font-semibold mb-2 print:text-base" style={{ color: getColor('headlines') }}>
-                      {page.title}
-                    </h3>
+                {chapter.pages?.map((page: any) => {
+                  const img = pageImages.get(page.id);
+                  const bodyHtml = resolveHtmlUrls(page.body || '');
+                  const bodyEl = (
                     <div
                       className="prose prose-sm max-w-none handbook-print-body handbook-themed-content"
                       style={{ color: getColor('bodyText') }}
-                      dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(page.body || '') }}
+                      dangerouslySetInnerHTML={{ __html: bodyHtml }}
                     />
-                  </section>
-                ))}
+                  );
+                  const imgEl = img ? (
+                    <img
+                      src={resolveBackendUrl(img.url)}
+                      alt={img.name}
+                      className="rounded-md object-contain"
+                    />
+                  ) : null;
+
+                  return (
+                    <section
+                      key={page.id}
+                      className="mb-8 break-inside-avoid"
+                      style={{ pageBreakInside: 'avoid' }}
+                    >
+                      <h3 className="text-lg font-semibold mb-2 print:text-base" style={{ color: getColor('headlines') }}>
+                        {page.title}
+                      </h3>
+                      {!img ? bodyEl : img.placement === 'before' ? (
+                        <>
+                          <div className="flex justify-center mb-4">
+                            {React.cloneElement(imgEl!, { className: 'max-h-72 object-contain rounded-md' })}
+                          </div>
+                          {bodyEl}
+                        </>
+                      ) : img.placement === 'after' ? (
+                        <>
+                          {bodyEl}
+                          <div className="flex justify-center mt-4">
+                            {React.cloneElement(imgEl!, { className: 'max-h-72 object-contain rounded-md' })}
+                          </div>
+                        </>
+                      ) : img.placement === 'left' ? (
+                        <div className="flex gap-4 items-start">
+                          {React.cloneElement(imgEl!, { className: 'w-1/3 max-h-64 object-contain rounded-md shrink-0' })}
+                          <div className="flex-1">{bodyEl}</div>
+                        </div>
+                      ) : img.placement === 'right' ? (
+                        <div className="flex gap-4 items-start">
+                          <div className="flex-1">{bodyEl}</div>
+                          {React.cloneElement(imgEl!, { className: 'w-1/3 max-h-64 object-contain rounded-md shrink-0' })}
+                        </div>
+                      ) : bodyEl}
+                    </section>
+                  );
+                })}
               </React.Fragment>
             ))
           )}

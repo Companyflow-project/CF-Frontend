@@ -274,11 +274,11 @@ Greetings from your company.`;
                             <FileText className="h-3.5 w-3.5 text-[#2f946f] shrink-0" />
                             <span className="flex-1">{page.title}</span>
                             <span className={`text-[11px] font-medium rounded-full px-2 py-0.5 shrink-0 ${
-                              isPublished
+                              page.isPublished
                                 ? 'text-[#2f946f] bg-[#e8f5ef] border border-[#cde3da]'
                                 : 'text-[#b45309] bg-[#fef3c7] border border-[#fcd34d]'
                             }`}>
-                              {isPublished ? t('publish.published') : t('publish.ready')}
+                              {page.isPublished ? t('publish.published') : t('publish.ready')}
                             </span>
                           </div>
                         ))}

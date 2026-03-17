@@ -28,6 +28,7 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
     isBusinessAdmin: emp.isBusinessAdmin ?? false,
     languages: emp.languages ?? ['da'],
     sendEmail: 'no',
+    customMessage: '',
     userPictureFid: null,
   };
 }
@@ -142,6 +143,7 @@ export const EditEmployeePage: React.FC = () => {
           isBusinessAdmin: formData.isBusinessAdmin,
           languages: formData.languages,
           sendEmailType: formData.sendEmail,
+          ...(formData.sendEmail === 'customized' && formData.customMessage && { customMessage: formData.customMessage }),
         }),
         // Send userPictureFid: new fid to set, null to clear, or omit to leave unchanged
         // Photo was cleared if ref is null AND formData fid is null AND employee originally had a photo

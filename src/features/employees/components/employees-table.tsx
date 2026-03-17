@@ -163,6 +163,8 @@ interface EmployeesTableProps {
   emptyStateDescription?: string;
   /** Email of the currently logged-in user — used to lock self-row actions */
   currentUserEmail?: string;
+  /** Role of the currently logged-in user — account_owner can manage all employees */
+  currentUserRole?: string;
 }
 
 export const EmployeesTable: React.FC<EmployeesTableProps> = ({
@@ -179,13 +181,15 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
   emptyStateTitle = 'No data yet.',
   emptyStateDescription,
   currentUserEmail,
+  currentUserRole,
 }) => {
   const { t } = useTranslation('employees');
-  // For the header checkbox: exclude self-row and admin rows so they can never be "all selected"
+  const viewerIsOwner = currentUserRole === 'account_owner';
+  // For the header checkbox: exclude self-row; also exclude admin rows unless the viewer is account_owner
   const selectableEmployees = employees.filter(
     (e) =>
       (!currentUserEmail || e.email.toLowerCase() !== currentUserEmail.toLowerCase()) &&
-      !isAdminEmployeeRole(e.role)
+      (viewerIsOwner || !isAdminEmployeeRole(e.role))
   );
   const allSelected = selectableEmployees.length > 0 && selectableEmployees.every((e) => selectedIds.includes(e.id));
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -247,7 +251,9 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                 employee.telephone || employee.mobileNumber || employee.alternateNumber;
               const isSelf = !!(currentUserEmail && employee.email.toLowerCase() === currentUserEmail.toLowerCase());
               const isAdminRow = isAdminEmployeeRole(employee.role);
-              const isProtected = isSelf || isAdminRow;
+              const viewerIsOwner = currentUserRole === 'account_owner';
+              // account_owner can manage everyone except themselves; others cannot touch admins
+              const isProtected = isSelf || (!viewerIsOwner && isAdminRow);
 
               return (
                 <TableRow

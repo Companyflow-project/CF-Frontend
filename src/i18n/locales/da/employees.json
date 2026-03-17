@@ -136,9 +136,11 @@
   "form.sendEmailStandard": "Standard",
   "form.sendEmailCustomized": "Tilpasset",
   "form.sendEmailDesc": "Send en besked med et link til håndbogen.",
+  "form.customMessageLabel": "Brugerdefineret besked",
+  "form.customMessagePlaceholder": "Skriv en personlig besked til velkomstmailen…",
+  "form.customMessageHint": "Denne besked vil blive inkluderet i velkomstmailen sendt til medarbejderen.",
   "form.languages": "Sprog",
-  "form.languagesDesc": "Vælg hvilke sprog denne medarbejder kan tilgå. Dansk er altid aktiveret.",
-  "form.languageDefault": "standard",
+  "form.languagesDesc": "Vælg hvilke sprog denne medarbejder kan tilgå.",
 
   "form.validation.nameRequired": "Navn er påkrævet",
   "form.validation.emailRequired": "E-mail er påkrævet",

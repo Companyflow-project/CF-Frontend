@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,8 @@ export const ResetPasswordPage: React.FC = () => {
   const [email, setEmail] = useState<string | null>(null);
   const [validating, setValidating] = useState(true);
   const [tokenValid, setTokenValid] = useState(true);
+  const [searchParams] = useSearchParams();
+  const isWelcome = searchParams.get('welcome') === 'true';
   const { t } = useTranslation('auth');
 
   useEffect(() => {
@@ -131,12 +133,12 @@ export const ResetPasswordPage: React.FC = () => {
 
         <div className="flex flex-col gap-2">
           <h2 className="text-[20px] font-semibold text-[#0d0e0e] leading-[28px]">
-            {t('resetPassword.title')}
+            {isWelcome ? t('resetPassword.welcomeTitle') : t('resetPassword.title')}
           </h2>
           <p className="text-[14px] text-[#6b7280] leading-[20px]">
             {email
-              ? t('resetPassword.descriptionWithEmail', { email })
-              : t('resetPassword.descriptionWithoutEmail')}
+              ? t(isWelcome ? 'resetPassword.welcomeDescriptionWithEmail' : 'resetPassword.descriptionWithEmail', { email })
+              : t(isWelcome ? 'resetPassword.welcomeDescriptionWithoutEmail' : 'resetPassword.descriptionWithoutEmail')}
           </p>
         </div>
 
@@ -182,7 +184,9 @@ export const ResetPasswordPage: React.FC = () => {
               disabled={submitting}
               className="w-full bg-[#1a5948] hover:bg-[#143e33] active:bg-[#0f2e26] text-white font-medium text-[18px] leading-[25px] py-3 px-8 rounded-[15px] tracking-[0.18px] h-auto disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              {submitting ? t('resetPassword.submitting') : t('resetPassword.submit')}
+              {submitting
+                ? t(isWelcome ? 'resetPassword.welcomeSubmitting' : 'resetPassword.submitting')
+                : t(isWelcome ? 'resetPassword.welcomeSubmit' : 'resetPassword.submit')}
             </Button>
 
             <div className="text-center">

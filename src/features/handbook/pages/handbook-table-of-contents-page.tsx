@@ -458,13 +458,13 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         {(() => {
                                                             const tags: string[] = [];
                                                             if (page.badge === 'custom') tags.push(t('tag.customPage'));
-                                                            if (page.hasCustomBody && page.badge !== 'custom') tags.push(t('tag.addedText'));
+                                                            if (page.badge === 'premade' || page.hasCustomBody) tags.push(t('tag.addedText'));
+                                                            if (page.badge === 'custom' && !page.hasCustomBody) tags.push(t('tag.noText'));
                                                             if (page.hasReceipt) tags.push(t('tag.receipt'));
                                                             if (page.hasNote) tags.push(t('tag.notes'));
                                                             if (page.hasDocuments) tags.push(t('tag.documents'));
                                                             if (page.hasLinks) tags.push(t('tag.links'));
                                                             if (page.hasImage) tags.push(t('tag.image'));
-                                                            if (tags.length === 0 && page.badge !== 'custom') tags.push(t('tag.noText'));
                                                             return (
                                                                 <span className="flex-shrink-0 text-[11px] text-[#6b7475] italic truncate max-w-[260px]">
                                                                     ({tags.join(', ')})

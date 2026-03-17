@@ -254,5 +254,19 @@
   "publish.ready": "Klar",
   "publish.error.noHandbook": "Håndbog-ID ikke fundet. Prøv venligst igen.",
   "publish.error.failed": "Kunne ikke udgive håndbog. Prøv venligst igen.",
-  "publish.success": "Udgivet. {{count}} medarbejdere vil modtage en notifikation."
+  "publish.success": "Udgivet. {{count}} medarbejdere vil modtage en notifikation.",
+
+  "editor.heading": "Overskrift",
+  "editor.textMode": "Teksttilstand",
+  "editor.modeCompanyFlow": "CompanyFlow tekst",
+  "editor.modeCompanyFlowDesc": "Brug standard CompanyFlow skabelonen som den er",
+  "editor.modeEditPremade": "Rediger CompanyFlow tekst",
+  "editor.modeEditPremadeDesc": "Start fra skabelonen og tilpas den",
+  "editor.modeWriteOwn": "Skriv din egen tekst",
+  "editor.modeWriteOwnDesc": "Start forfra med en tom editor",
+  "editor.showTemplate": "Vis CompanyFlow skabelon",
+  "editor.hideTemplate": "Skjul CompanyFlow skabelon",
+  "editor.templateReadOnly": "CompanyFlow skabelon (skrivebeskyttet)",
+  "editor.customText": "Brugerdefineret tekst",
+  "editor.textPreview": "Tekst (forhåndsvisning)"
 }
