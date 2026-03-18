@@ -232,7 +232,7 @@ export const HandbookPagesPage: React.FC = () => {
         switch (status) {
             case 'ready':
                 return (
-                    <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-3 py-1 text-xs font-medium">
+                    <Badge className="bg-[#dbeafe] text-[#1e40af] border-0 rounded-[6px] px-3 py-1 text-xs font-medium">
                         {t('status.ready')}
                     </Badge>
                 );
@@ -835,8 +835,8 @@ export const HandbookPagesPage: React.FC = () => {
                                                 {(() => {
                                                     const activities: string[] = [];
                                                     if (page.badge === 'custom') activities.push(t('tag.customPage'));
-                                                    if (page.badge === 'premade' || page.hasCustomBody) activities.push(t('tag.addedText'));
-                                                    if (page.badge === 'custom' && !page.hasCustomBody) activities.push(t('tag.noText'));
+                                                    if (page.hasText) activities.push(t('tag.addedText'));
+                                                    if (!page.hasText) activities.push(t('tag.noText'));
                                                     if (page.hasReceipt) activities.push(t('tag.receipt'));
                                                     if (page.hasNote) activities.push(t('tag.notes'));
                                                     if (page.hasDocuments) activities.push(t('tag.documents'));
@@ -1094,6 +1094,7 @@ export const HandbookPagesPage: React.FC = () => {
                     pageTitle={sneakPeekPage.title}
                     lang={lang}
                     canEdit={canEditHandbook}
+                    canViewNotes={canViewAllPages}
                     handbookBid={handbookBid}
                 />
             )}

@@ -203,22 +203,64 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                     <div className="space-y-6">
                                         {chapter.pages?.map((page: any) => {
                                             const detail = pageDetails.get(page.id);
+                                            const firstPicture = detail?.pictures && detail.pictures.length > 0 ? detail.pictures[0] : undefined;
+                                            const placement = detail?.imagePlacement || 'none';
+                                            const showImage = firstPicture?.url && placement !== 'none';
+
+                                            const imageEl = showImage ? (
+                                                <img
+                                                    src={resolveBackendUrl(firstPicture!.url)}
+                                                    alt={firstPicture!.name || 'Image'}
+                                                    className={placement === 'before' || placement === 'after' ? 'w-full max-h-64 object-contain rounded-md' : 'w-full sm:w-1/3 max-h-48 object-contain rounded-md'}
+                                                />
+                                            ) : null;
+
+                                            const textEl = page.body ? (
+                                                <div
+                                                    className="prose prose-sm max-w-none leading-relaxed handbook-themed-content"
+                                                    style={{ color: getColor('bodyText') }}
+                                                    dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(page.body) }}
+                                                />
+                                            ) : (
+                                                <p className="text-sm italic text-[#9ca3af]">
+                                                    {t('preview.noContent')}
+                                                </p>
+                                            );
+
                                             return (
                                             <div key={page.id} className="space-y-2">
-                                                <h3 className="text-base font-semibold" style={{ color: getColor('headlines') }}>
-                                                    {page.title}
-                                                </h3>
-                                                {page.body ? (
-                                                    <div
-                                                        className="prose prose-sm max-w-none leading-relaxed handbook-themed-content"
-                                                        style={{ color: getColor('bodyText') }}
-                                                        dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(page.body) }}
-                                                    />
-                                                ) : (
-                                                    <p className="text-sm italic text-[#9ca3af]">
-                                                        {t('preview.noContent')}
-                                                    </p>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-base font-semibold" style={{ color: getColor('headlines') }}>
+                                                        {page.title}
+                                                    </h3>
+                                                    {!page.isPublished && (
+                                                        <span className="text-[11px] font-medium text-[#92400e] bg-[#fef3c7] rounded-full px-2 py-0.5">
+                                                            {t('preview.unpublished')}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Image + Text with placement */}
+                                                {showImage && placement === 'before' && (
+                                                    <div>
+                                                        {imageEl}
+                                                        <div className="mt-3">{textEl}</div>
+                                                    </div>
                                                 )}
+                                                {showImage && placement === 'after' && (
+                                                    <div>
+                                                        {textEl}
+                                                        <div className="mt-3">{imageEl}</div>
+                                                    </div>
+                                                )}
+                                                {showImage && (placement === 'left' || placement === 'right') && (
+                                                    <div className="flex flex-col sm:flex-row gap-4 items-start">
+                                                        {placement === 'left' && imageEl}
+                                                        <div className="flex-1">{textEl}</div>
+                                                        {placement === 'right' && imageEl}
+                                                    </div>
+                                                )}
+                                                {!showImage && textEl}
 
                                                 {/* Documents */}
                                                 {detail?.documents && detail.documents.length > 0 && (

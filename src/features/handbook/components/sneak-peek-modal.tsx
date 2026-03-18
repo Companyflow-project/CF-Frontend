@@ -23,6 +23,8 @@ interface SneakPeekModalProps {
     pageTitle: string;
     lang?: string;
     canEdit?: boolean;
+    /** Show internal notes — should be true for admin + senior roles */
+    canViewNotes?: boolean;
     handbookBid?: number | null;
 }
 
@@ -34,6 +36,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
     pageTitle,
     lang = 'da',
     canEdit = false,
+    canViewNotes = false,
     handbookBid,
 }) => {
     const navigate = useNavigate();
@@ -244,6 +247,17 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Notes Section — admin & senior only */}
+                            {canViewNotes && pageDetail.internalNote && pageDetail.internalNote.trim() !== '' && (
+                                <div className="mb-6">
+                                    <h3 className="text-base font-bold text-[#0d0e0e] mb-3">{t('sneakPeek.notes')}</h3>
+                                    <div
+                                        className="prose prose-sm max-w-none text-sm leading-relaxed bg-[#fffbeb] border border-[#fde68a] rounded-[8px] px-4 py-3"
+                                        dangerouslySetInnerHTML={{ __html: pageDetail.internalNote }}
+                                    />
                                 </div>
                             )}
                         </div>

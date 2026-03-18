@@ -458,8 +458,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         {(() => {
                                                             const tags: string[] = [];
                                                             if (page.badge === 'custom') tags.push(t('tag.customPage'));
-                                                            if (page.badge === 'premade' || page.hasCustomBody) tags.push(t('tag.addedText'));
-                                                            if (page.badge === 'custom' && !page.hasCustomBody) tags.push(t('tag.noText'));
+                                                            if (page.hasText) tags.push(t('tag.addedText'));
+                                                            if (!page.hasText) tags.push(t('tag.noText'));
                                                             if (page.hasReceipt) tags.push(t('tag.receipt'));
                                                             if (page.hasNote) tags.push(t('tag.notes'));
                                                             if (page.hasDocuments) tags.push(t('tag.documents'));
@@ -510,6 +510,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     pageId={sneakPeekPage.id}
                     pageTitle={sneakPeekPage.title}
                     canEdit={canEditHandbook}
+                    canViewNotes={canViewAllPages}
                     handbookBid={handbookBid}
                 />
             )}

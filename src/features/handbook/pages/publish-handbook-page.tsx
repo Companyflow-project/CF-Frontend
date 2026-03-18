@@ -29,7 +29,7 @@ export const PublishHandbookPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
 
-  const { data: tree, bid: treeBid, isPublished, loading: treeLoading } = useHandbookTree();
+  const { data: tree, bid: treeBid, loading: treeLoading } = useHandbookTree();
 
   // Parse selected page IDs from URL (passed from the pages screen)
   const selectedPageIds = useMemo(() => {
