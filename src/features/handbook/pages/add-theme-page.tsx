@@ -100,7 +100,8 @@ export const AddThemePage: React.FC = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-[8px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white"
+              className="rounded-[8px]"
+              style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             >
               {isSubmitting ? 'Creating…' : 'Create theme'}
             </Button>

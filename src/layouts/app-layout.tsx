@@ -44,12 +44,20 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
   const { data: companyProfile } = useCompanyProfile(companyId);
   const companyName = companyProfile?.businessName || 'CompanyFlow';
 
+  // Build full logo URL from company profile
+  const companyLogoUrl = (() => {
+    if (!companyProfile?.logoUrl) return null;
+    if (companyProfile.logoUrl.startsWith('http')) return companyProfile.logoUrl;
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
+    return `${baseUrl}${companyProfile.logoUrl}`;
+  })();
+
   return (
     <div className="min-h-screen flex flex-col">
-      <TopNav />
+      <TopNav companyLogoUrl={companyLogoUrl} companyName={companyName} />
       <ViewAsEmployeeBanner />
       <main className="flex-1 bg-gray-50">{children}</main>
-      <footer className="bg-white border-t py-4 text-center text-sm text-gray-600">
+      <footer className="border-t py-4 text-center text-sm" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)', color: 'var(--cf-nav-text, #ffffff)' }}>
         {t('footer.copyright', { companyName })}
       </footer>
     </div>

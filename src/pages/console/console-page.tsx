@@ -50,15 +50,15 @@ const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
 }) => {
   const { t } = useTranslation('console');
   return (
-  <Card className="bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)]">
+  <Card className="border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)]" style={{ backgroundColor: 'var(--cf-card-bg, #ffffff)' }}>
     <CardHeader className="pb-3">
       <div className="flex items-center gap-3 mb-1">
         <div className={`h-9 w-9 rounded-[10px] flex items-center justify-center flex-shrink-0 ${iconBg}`}>
           {icon}
         </div>
-        <CardTitle className="text-lg font-bold text-[#0d0e0e]">{title}</CardTitle>
+        <CardTitle className="text-lg font-bold" style={{ color: 'var(--cf-card-heading, #0d0e0e)' }}>{title}</CardTitle>
       </div>
-      <CardDescription className="text-sm text-[#6b7280]">{description}</CardDescription>
+      <CardDescription className="text-sm" style={{ color: 'var(--cf-card-text, #6b7280)' }}>{description}</CardDescription>
     </CardHeader>
     <CardContent className="space-y-2">
       {actions.map((action, index) => {
@@ -75,9 +75,16 @@ const ConsoleCard: React.FC<ConsoleCardProps & { canEdit: boolean }> = ({
               className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${isLocked
                 ? 'bg-white border border-[#e5efea] text-[#9ca3af] opacity-60 cursor-not-allowed'
                 : action.variant === 'primary'
-                  ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
-                  : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
+                  ? ''
+                  : 'bg-white border border-[#e5efea] hover:bg-[#f6fbf9]'
                 }`}
+              style={
+                !isLocked && action.variant === 'primary'
+                  ? { backgroundColor: 'var(--cf-card-btn, #d4f4e6)', color: 'var(--cf-card-btn-text, #1a5948)' }
+                  : !isLocked && action.variant !== 'primary'
+                    ? { color: 'var(--cf-card-heading, #0d0e0e)' }
+                    : undefined
+              }
             >
               <span>{action.label}</span>
               {isLocked ? (
@@ -133,7 +140,8 @@ export const ConsolePage: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => navigate(employeesRoutes.add)}
-              className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-2 h-auto text-sm shadow-[0_8px_16px_rgba(23,102,79,0.3)]"
+              className="rounded-[999px] px-5 py-2 h-auto text-sm shadow-[0_8px_16px_rgba(23,102,79,0.3)]"
+              style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             >
               {t('trial.inviteEmployees')}
             </Button>
@@ -150,8 +158,8 @@ export const ConsolePage: React.FC = () => {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0b0c0c]">{t('dashboard.title')}</h1>
-        <p className="text-sm text-[#6b7280] mt-1">{t('dashboard.subtitle')}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--cf-page-headline, #0b0c0c)' }}>{t('dashboard.title')}</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--cf-page-subhead, #6b7280)' }}>{t('dashboard.subtitle')}</p>
       </div>
 
       {/* Top row — 2 cols */}
@@ -160,7 +168,7 @@ export const ConsolePage: React.FC = () => {
           canEdit={isAdmin}
           title={t('card.employees.title')}
           description={t('card.employees.desc')}
-          icon={<Users className="h-5 w-5 text-[#1a5948]" />}
+          icon={<Users className="h-5 w-5" style={{ color: 'var(--cf-card-icon, #1a5948)' }} />}
           iconBg="bg-[#d4f4e6]"
           actions={[
             { label: t('card.employees.goTo'), onClick: () => navigate(employeesRoutes.list), variant: 'primary' },
@@ -172,7 +180,7 @@ export const ConsolePage: React.FC = () => {
           canEdit={isAdmin}
           title={t('card.handbook.title')}
           description={t('card.handbook.desc')}
-          icon={<BookOpen className="h-5 w-5 text-[#1a5948]" />}
+          icon={<BookOpen className="h-5 w-5" style={{ color: 'var(--cf-card-icon, #1a5948)' }} />}
           iconBg="bg-[#d4f4e6]"
           actions={[
             { label: t('card.handbook.open'), onClick: () => navigate(handbookRoutes.manage), variant: 'primary' },

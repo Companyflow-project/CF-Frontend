@@ -191,7 +191,8 @@ export const AssignEmploymentTypePage: React.FC = () => {
                 <Button
                     onClick={handleAssign}
                     disabled={selectedEmployeeIds.length === 0 || assignMutation.isPending}
-                    className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white px-8"
+                    className="px-8"
+                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                 >
                     {assignMutation.isPending ? 'Assigning...' : 'Assign employment type'}
                 </Button>

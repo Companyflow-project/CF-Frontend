@@ -10,7 +10,25 @@ import { HelpBanner } from '@/components/ui/help-banner';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { toast } from 'sonner';
 import { useCompanyAppearance, useUpdateCompanyAppearance } from '../hooks';
-import { useAppearance, DEFAULT_APPEARANCE_COLORS } from '@/context/appearance-context';
+import { useAppearance, DEFAULT_CONSOLE_COLORS } from '@/context/appearance-context';
+
+const CONSOLE_COLOR_KEYS = [
+  'cfNavBg',
+  'cfNavText',
+  'cfPageHeadline',
+  'cfPageSubhead',
+  'cfCardBg',
+  'cfCardHeading',
+  'cfCardBtn',
+  'cfCardBtnText',
+  'cfCardText',
+  'cfCardIcon',
+  'cfPrimaryBtn',
+  'cfPrimaryBtnText',
+  'cfSecondaryBtn',
+  'cfSecondaryBtnText',
+  'cfLinks',
+] as const;
 
 interface ColorSetting {
     id: string;
@@ -34,23 +52,14 @@ export const AppearancePage: React.FC = () => {
     const updateAppearanceMutation = useUpdateCompanyAppearance();
     const { refresh: refreshAppearance } = useAppearance();
 
-    const [colors, setColors] = useState<ColorSetting[]>(() => [
-        { id: 'topBottom', label: t('appearance.color.topBottom'), description: t('appearance.color.topBottom.desc'), value: DEFAULT_APPEARANCE_COLORS.topBottom },
-        { id: 'headlines', label: t('appearance.color.headlines'), description: t('appearance.color.headlines.desc'), value: DEFAULT_APPEARANCE_COLORS.headlines },
-        { id: 'bodyText', label: t('appearance.color.bodyText'), description: t('appearance.color.bodyText.desc'), value: DEFAULT_APPEARANCE_COLORS.bodyText },
-        { id: 'lightBackground', label: t('appearance.color.lightBackground'), description: t('appearance.color.lightBackground.desc'), value: DEFAULT_APPEARANCE_COLORS.lightBackground },
-        { id: 'confirmationButton', label: t('appearance.color.confirmationButton'), description: t('appearance.color.confirmationButton.desc'), value: DEFAULT_APPEARANCE_COLORS.confirmationButton },
-        { id: 'topButton', label: t('appearance.color.topButton'), description: t('appearance.color.topButton.desc'), value: DEFAULT_APPEARANCE_COLORS.topButton },
-        { id: 'textOnTopButtons', label: t('appearance.color.textOnTopButtons'), description: t('appearance.color.textOnTopButtons.desc'), value: DEFAULT_APPEARANCE_COLORS.textOnTopButtons },
-        { id: 'structureButton', label: t('appearance.color.structureButton'), description: t('appearance.color.structureButton.desc'), value: DEFAULT_APPEARANCE_COLORS.structureButton },
-        { id: 'cancelButton', label: t('appearance.color.cancelButton'), description: t('appearance.color.cancelButton.desc'), value: DEFAULT_APPEARANCE_COLORS.cancelButton },
-        { id: 'bigButton', label: t('appearance.color.bigButton'), description: t('appearance.color.bigButton.desc'), value: DEFAULT_APPEARANCE_COLORS.bigButton },
-        { id: 'buttonText', label: t('appearance.color.buttonText'), description: t('appearance.color.buttonText.desc'), value: DEFAULT_APPEARANCE_COLORS.buttonText },
-        { id: 'frameColor', label: t('appearance.color.frameColor'), description: t('appearance.color.frameColor.desc'), value: DEFAULT_APPEARANCE_COLORS.frameColor },
-        { id: 'htmlBackground', label: t('appearance.color.htmlBackground'), description: t('appearance.color.htmlBackground.desc'), value: DEFAULT_APPEARANCE_COLORS.htmlBackground },
-        { id: 'pageBackground', label: t('appearance.color.pageBackground'), description: t('appearance.color.pageBackground.desc'), value: DEFAULT_APPEARANCE_COLORS.pageBackground },
-        { id: 'links', label: t('appearance.color.links'), description: t('appearance.color.links.desc'), value: DEFAULT_APPEARANCE_COLORS.links },
-    ]);
+    const [colors, setColors] = useState<ColorSetting[]>(() =>
+        CONSOLE_COLOR_KEYS.map((id) => ({
+            id,
+            label: t(`appearance.color.${id}`),
+            description: t(`appearance.color.${id}.desc`),
+            value: DEFAULT_CONSOLE_COLORS[id],
+        }))
+    );
 
     useEffect(() => {
         if (appearanceData) {
@@ -80,7 +89,7 @@ export const AppearancePage: React.FC = () => {
 
     const handleResetColors = () => {
         if (window.confirm(t('appearance.resetConfirm'))) {
-            setColors(colors.map(color => ({ ...color, value: DEFAULT_APPEARANCE_COLORS[color.id] || '#3d997d' })));
+            setColors(colors.map(color => ({ ...color, value: DEFAULT_CONSOLE_COLORS[color.id] || '#3d997d' })));
             toast.success(t('appearance.resetSuccess'));
         }
     };
@@ -129,7 +138,6 @@ export const AppearancePage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Help Banner */}
                 <HelpBanner className="mb-6">
                     {t('appearance.helpBanner')}
                 </HelpBanner>
@@ -138,50 +146,30 @@ export const AppearancePage: React.FC = () => {
                 <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
                     <h2 className="text-lg font-semibold text-[#0d0e0e] mb-4">{t('appearance.pictures')}</h2>
 
-                    <div className="space-y-4">
-                        <p className="text-sm text-gray-600 mb-4">
+                    <div className="space-y-3">
+                        <p className="text-sm text-gray-600">
                             {t('appearance.picturesFor')}
                         </p>
-                        <p className="text-xs text-gray-500 mb-4">
+                        <p className="text-xs text-gray-500">
                             {t('appearance.picturesChoose')}
                         </p>
 
-                        <div className="space-y-3">
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="pictureType"
-                                    value="own"
-                                    checked={pictureType === 'own'}
-                                    onChange={(e) => setPictureType(e.target.value as any)}
-                                    className="w-4 h-4 text-[#2f946f] focus:ring-[#2f946f]"
-                                />
-                                <span className="text-sm text-[#0d0e0e]">{t('appearance.ownPictures')}</span>
-                            </label>
-
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="pictureType"
-                                    value="small"
-                                    checked={pictureType === 'small'}
-                                    onChange={(e) => setPictureType(e.target.value as any)}
-                                    className="w-4 h-4 text-[#2f946f] focus:ring-[#2f946f]"
-                                />
-                                <span className="text-sm text-[#0d0e0e]">{t('appearance.smallPictures')}</span>
-                            </label>
-
-                            <label className="flex items-center gap-3 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="pictureType"
-                                    value="photographs"
-                                    checked={pictureType === 'photographs'}
-                                    onChange={(e) => setPictureType(e.target.value as any)}
-                                    className="w-4 h-4 text-[#2f946f] focus:ring-[#2f946f]"
-                                />
-                                <span className="text-sm text-[#0d0e0e]">{t('appearance.photographs')}</span>
-                            </label>
+                        <div className="flex items-center gap-6">
+                            {(['own', 'small', 'photographs'] as const).map((type) => (
+                                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="pictureType"
+                                        value={type}
+                                        checked={pictureType === type}
+                                        onChange={(e) => setPictureType(e.target.value as any)}
+                                        className="w-4 h-4 text-[#2f946f] focus:ring-[#2f946f]"
+                                    />
+                                    <span className="text-sm text-[#0d0e0e]">
+                                        {t(`appearance.${type === 'own' ? 'ownPictures' : type === 'small' ? 'smallPictures' : 'photographs'}`)}
+                                    </span>
+                                </label>
+                            ))}
                         </div>
                     </div>
                 </div>
@@ -190,16 +178,16 @@ export const AppearancePage: React.FC = () => {
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <h2 className="text-lg font-semibold text-[#0d0e0e] mb-4">{t('appearance.colors')}</h2>
 
-                    <div className="space-y-4">
+                    <div className="space-y-1">
                         {colors.map((color) => (
-                            <div key={color.id} className="grid grid-cols-1 md:grid-cols-[200px_120px_1fr] gap-4 items-center py-3 border-b border-gray-100 last:border-0">
-                                <Label className="text-sm font-medium text-[#0d0e0e]">
+                            <div key={color.id} className="grid grid-cols-[200px_120px_1fr] gap-4 items-center py-3 border-b border-gray-100 last:border-0">
+                                <Label className="text-sm font-semibold text-[#0d0e0e]">
                                     {color.label}
                                 </Label>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => handleColorSquareClick(color.id)}
-                                        className="w-8 h-8 rounded border border-gray-300 cursor-pointer hover:ring-2 hover:ring-gray-400 transition-all"
+                                        className="w-6 h-6 rounded flex-shrink-0 border border-gray-300 cursor-pointer hover:ring-2 hover:ring-gray-400 transition-all"
                                         style={{ backgroundColor: color.value }}
                                         title={t('appearance.colorPicker')}
                                     />
@@ -207,11 +195,11 @@ export const AppearancePage: React.FC = () => {
                                         type="text"
                                         value={color.value}
                                         onChange={(e) => handleColorChange(color.id, e.target.value)}
-                                        className={`h-9 w-24 font-mono text-xs ${!isValidHex(color.value) ? 'border-red-400 focus:ring-red-400' : ''}`}
-                                        placeholder="#3d997d"
+                                        className={`h-8 w-[85px] font-mono text-xs ${!isValidHex(color.value) ? 'border-red-400 focus:ring-red-400' : ''}`}
+                                        placeholder="#3D997D"
                                     />
                                 </div>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-gray-500">
                                     {color.description}
                                 </p>
                             </div>
@@ -231,7 +219,8 @@ export const AppearancePage: React.FC = () => {
                     <Button
                         onClick={handleSaveUpdates}
                         disabled={updateAppearanceMutation.isPending}
-                        className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white px-6"
+                        className="px-6"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {updateAppearanceMutation.isPending ? tCommon('saving') : t('appearance.saveUpdates')}
                     </Button>
@@ -242,7 +231,7 @@ export const AppearancePage: React.FC = () => {
                     <ColorPicker
                         open={isColorPickerOpen}
                         onOpenChange={setIsColorPickerOpen}
-                        value={colors.find(c => c.id === selectedColorId)?.value || DEFAULT_APPEARANCE_COLORS[selectedColorId] || '#3d997d'}
+                        value={colors.find(c => c.id === selectedColorId)?.value || DEFAULT_CONSOLE_COLORS[selectedColorId] || '#3d997d'}
                         onChange={(newColor) => handleColorChange(selectedColorId, newColor)}
                     />
                 )}

@@ -133,7 +133,8 @@ export const ViewDepartmentsPage: React.FC = () => {
                                                     state: { department: dept },
                                                 })
                                             }
-                                            className="h-8 w-8 p-0 text-[#2f946f] hover:text-[#2f946f]/80 hover:bg-[#2f946f]/10"
+                                            className="h-8 w-8 p-0"
+                                            style={{ color: 'var(--cf-primary-btn, #3d997d)' }}
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </Button>

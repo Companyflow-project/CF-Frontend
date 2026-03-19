@@ -150,7 +150,8 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
           </div>
           <Button
             onClick={() => navigate(employeesRoutes.messageLogs)}
-            className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[10px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)] lg:ml-auto"
+            className="rounded-[10px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)] lg:ml-auto"
+            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
           >
             {t('messageLogs.viewAll')}
           </Button>
@@ -240,8 +241,9 @@ export const EmployeeMessageLogsDetailPage: React.FC = () => {
                     {showEllipsis && <span className="px-2 text-gray-400">...</span>}
                     <Button
                       variant={page === p ? 'default' : 'outline'}
-                      className={`h-9 min-w-[36px] rounded-[10px] border-[#d6e8e1] ${page === p ? 'bg-[#3d997d] hover:bg-[#3d997d]/90 text-white shadow-md' : 'text-gray-600 hover:bg-[#f0f7f5]'
+                      className={`h-9 min-w-[36px] rounded-[10px] border-[#d6e8e1] ${page === p ? 'shadow-md' : 'text-gray-600 hover:bg-[#f0f7f5]'
                         }`}
+                      {...(page === p ? { style: { backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' } } : {})}
                       onClick={() => setPage(p)}
                     >
                       {p}

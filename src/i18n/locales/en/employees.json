@@ -74,6 +74,7 @@
   "toast.fixErrors": "Please fix the errors above before submitting",
   "toast.created": "Employee created successfully!",
   "toast.createFailed": "Something went wrong while creating the employee.",
+  "toast.duplicateEmail": "Employee email is already registered. Please ask employee to login or create a new employee using a new email.",
   "toast.updated": "Employee updated successfully!",
   "toast.updateFailed": "Something went wrong while updating the employee.",
   "toast.magicLinkFailed": "Failed to generate magic link.",

@@ -235,7 +235,8 @@ export const EditEmployeePage: React.FC = () => {
             <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('edit.title')}</h1>
           </div>
           <Button
-            className="bg-teal-600 hover:bg-teal-700"
+            className="rounded-md px-4 py-2"
+            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             onClick={handleSave}
             disabled={isSubmitting}
           >

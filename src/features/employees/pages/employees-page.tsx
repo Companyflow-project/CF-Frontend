@@ -304,7 +304,8 @@ export const EmployeesPage: React.FC = () => {
             {effectiveAdmin && (
               <Button
                 onClick={() => navigate(employeesRoutes.add)}
-                className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
+                className="rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
+                style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
               >
                 {t('manage.addEmployee')}
               </Button>

@@ -88,3 +88,11 @@
   opacity: 0.8;
 }
 
+/* Console whitelabeling — CSS variables are injected on :root by AppearanceProvider.
+   These styles apply company colors to console UI elements globally. */
+
+/* Page headings — all h1 inside the main content area */
+main h1 {
+  color: var(--cf-page-headline) !important;
+}
+

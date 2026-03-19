@@ -181,7 +181,8 @@ Greetings from your company.`;
             size="sm"
             onClick={handlePublish}
             disabled={submitting || totalReadyPages === 0}
-            className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[9px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.35)] disabled:opacity-50 disabled:shadow-none"
+            className="rounded-[999px] px-5 py-[9px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.35)] disabled:opacity-50 disabled:shadow-none"
+            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
           >
             {submitting
               ? t('publish.publishing')

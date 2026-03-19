@@ -201,7 +201,8 @@ export const EditDepartmentPage: React.FC = () => {
                     </Button>
                     <Button
                         onClick={handleSubmit}
-                        className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white px-6"
+                        className="px-6"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         Update department
                     </Button>

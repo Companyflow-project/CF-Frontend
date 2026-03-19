@@ -79,16 +79,8 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
         return pageDetail.versions?.premade || pageDetail.content || null;
     };
 
-    // Strip HTML tags for plain text display
-    const stripHtml = (html: string | null) => {
-        if (!html) return '';
-        const tmp = document.createElement('DIV');
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || '';
-    };
-
-    const contentText = getContentText();
-    const plainText = stripHtml(contentText);
+    const contentHtml = getContentText();
+    const hasContent = !!contentHtml && contentHtml.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0;
 
     const firstPicture = pageDetail?.pictures && pageDetail.pictures.length > 0
         ? pageDetail.pictures[0]
@@ -137,10 +129,8 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                                 alt={firstPicture.name || 'Image'}
                                                 className="w-full max-h-64 object-contain rounded-md mb-4"
                                             />
-                                            {plainText && (
-                                                <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
-                                                    {plainText}
-                                                </p>
+                                            {hasContent && (
+                                                <div className="prose prose-sm max-w-none handbook-themed-content" style={{ color: getColor('bodyText') }} dangerouslySetInnerHTML={{ __html: contentHtml! }} />
                                             )}
                                         </div>
                                     )}
@@ -154,12 +144,8 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                                     className="w-full sm:w-1/3 max-h-48 object-contain rounded-md"
                                                 />
                                             )}
-                                            {plainText && (
-                                                <div className="flex-1">
-                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
-                                                        {plainText}
-                                                    </p>
-                                                </div>
+                                            {hasContent && (
+                                                <div className="flex-1 prose prose-sm max-w-none handbook-themed-content" style={{ color: getColor('bodyText') }} dangerouslySetInnerHTML={{ __html: contentHtml! }} />
                                             )}
                                             {placement === 'right' && (
                                                 <img
@@ -173,10 +159,8 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                     {/* After: image below text */}
                                     {placement === 'after' && (
                                         <div className="mb-6">
-                                            {plainText && (
-                                                <p className="text-sm leading-relaxed whitespace-pre-wrap mb-4" style={{ color: getColor('bodyText') }}>
-                                                    {plainText}
-                                                </p>
+                                            {hasContent && (
+                                                <div className="prose prose-sm max-w-none handbook-themed-content mb-4" style={{ color: getColor('bodyText') }} dangerouslySetInnerHTML={{ __html: contentHtml! }} />
                                             )}
                                             <img
                                                 src={resolveBackendUrl(firstPicture.url)}
@@ -187,11 +171,9 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                     )}
                                 </>
                             ) : (
-                                plainText && (
+                                hasContent && (
                                     <div className="mb-6">
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: getColor('bodyText') }}>
-                                            {plainText}
-                                        </p>
+                                        <div className="prose prose-sm max-w-none handbook-themed-content" style={{ color: getColor('bodyText') }} dangerouslySetInnerHTML={{ __html: contentHtml! }} />
                                     </div>
                                 )
                             )}

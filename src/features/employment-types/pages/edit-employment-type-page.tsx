@@ -131,7 +131,8 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
                             <Button
                                 type="submit"
                                 disabled={updateMutation.isPending || !formData.name.trim()}
-                                className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white px-6"
+                                className="px-6"
+                                style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                             >
                                 {updateMutation.isPending ? 'Updating...' : 'Update employment type'}
                             </Button>

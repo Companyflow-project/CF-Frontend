@@ -675,7 +675,8 @@ export const ContactsPage: React.FC = () => {
                 </Button>
                 <Button
                   onClick={() => setAddContactModalOpen(true)}
-                  className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                  className="rounded-[999px] px-5 py-[11px] h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                  style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                 >
                   {t('manage.addEmployee')}
                 </Button>
@@ -1012,7 +1013,7 @@ export const ContactsPage: React.FC = () => {
               {t('manage.importDialog.cancel')}
             </Button>
             <Button
-              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white"
+              style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
               onClick={handleImportConfirm}
               disabled={importLoading}
             >

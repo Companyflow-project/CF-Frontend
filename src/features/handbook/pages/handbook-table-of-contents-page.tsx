@@ -306,7 +306,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     </p>
                     <Button
                         onClick={() => navigate(handbookRoutes.pages)}
-                        className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-6 py-2 h-auto text-sm mt-2"
+                        className="rounded-[999px] px-6 py-2 h-auto text-sm mt-2"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {t('toc.goToPages')}
                     </Button>
@@ -473,7 +474,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         })()}
 
                                                         {/* Badge (custom/premade) */}
-                                                        {page.badge && (
+                                                        {page.badge && !(page.badge === 'premade' && !page.hasText) && (
                                                             <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
                                                                 {page.badge === 'custom' ? t('badge.custom') : t('badge.premade')}
                                                             </span>

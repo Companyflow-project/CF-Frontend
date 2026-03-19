@@ -176,7 +176,8 @@ const AddLanguagesModal: React.FC<AddLanguagesModalProps> = ({ open, onClose, cu
                         size="sm"
                         onClick={handleSave}
                         disabled={saving}
-                        className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white px-5 py-2 h-auto text-sm rounded-lg"
+                        className="px-5 py-2 h-auto text-sm rounded-lg"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {saving ? (
                             <>
@@ -279,7 +280,8 @@ const AddLicensesModal: React.FC<AddLicensesModalProps> = ({ open, onClose, onAd
                         size="sm"
                         onClick={handleSave}
                         disabled={saving || count < MIN_LICENSES}
-                        className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white px-5 py-2 h-auto text-sm rounded-lg"
+                        className="px-5 py-2 h-auto text-sm rounded-lg"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {saving ? (
                             <>
@@ -382,7 +384,8 @@ const AddSmsCreditsModal: React.FC<AddSmsCreditsModalProps> = ({ open, onClose, 
                         size="sm"
                         onClick={handleSave}
                         disabled={saving || count < MIN_SMS_CREDITS}
-                        className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white px-5 py-2 h-auto text-sm rounded-lg"
+                        className="px-5 py-2 h-auto text-sm rounded-lg"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {saving ? (
                             <>

@@ -178,7 +178,8 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
             <Button
               size="sm"
               onClick={() => navigate(employeesRoutes.statistics)}
-              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-4 py-2 h-auto text-[13px] shadow-[0_8px_16px_rgba(13,94,67,0.3)] gap-1.5"
+              className="rounded-[999px] px-4 py-2 h-auto text-[13px] shadow-[0_8px_16px_rgba(13,94,67,0.3)] gap-1.5"
+              style={{ backgroundColor: 'var(--cf-primary-btn, #2f946f)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             >
               <Send className="h-3.5 w-3.5" />
               {t('messageLogs.sendFollowUp')}
@@ -228,10 +229,11 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
                       variant={page === p ? 'default' : 'outline'}
                       className={`h-8 min-w-[32px] rounded-[8px] border-[#d6e8e1] text-[13px] ${
                         page === p
-                          ? 'bg-[#3d997d] hover:bg-[#3d997d]/90 text-white shadow-md'
+                          ? 'shadow-md'
                           : 'text-[#374151] hover:bg-[#f0f7f5]'
                       }`}
                       onClick={() => setPage(p)}
+                      {...(page === p ? { style: { backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' } } : {})}
                     >
                       {p}
                     </Button>

@@ -74,6 +74,7 @@
   "toast.fixErrors": "Ret venligst fejlene ovenfor før indsendelse",
   "toast.created": "Medarbejder oprettet!",
   "toast.createFailed": "Noget gik galt under oprettelse af medarbejderen.",
+  "toast.duplicateEmail": "Medarbejderens e-mail er allerede registreret. Bed medarbejderen om at logge ind, eller opret en ny medarbejder med en ny e-mail.",
   "toast.updated": "Medarbejder opdateret!",
   "toast.updateFailed": "Noget gik galt under opdatering af medarbejderen.",
   "toast.magicLinkFailed": "Kunne ikke generere magic link.",

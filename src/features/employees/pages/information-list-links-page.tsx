@@ -275,7 +275,8 @@ export const InformationListLinksPage: React.FC = () => {
                         <Button
                             onClick={handleSaveAndAdd}
                             disabled={saving}
-                            className="bg-[#3d997d] hover:bg-[#2c7860] text-white rounded-[999px] px-6 h-10 text-[13.3px] shadow-[0_8px_20px_rgba(23,102,79,0.32)]"
+                            className="rounded-[999px] px-6 h-10 text-[13.3px] shadow-[0_8px_20px_rgba(23,102,79,0.32)]"
+                            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                         >
                             {t('infoListLinks.saveAndAdd')}
                         </Button>

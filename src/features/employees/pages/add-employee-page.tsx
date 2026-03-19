@@ -99,10 +99,15 @@ export const AddEmployeePage: React.FC = () => {
       console.error('Backend response body:', error?.response?.data);
 
       const apiError = error?.response?.data?.error;
-      const message =
+      const rawMessage =
         typeof apiError?.message === 'string' && apiError.message.trim()
           ? apiError.message.trim()
-          : error?.response?.data?.message ?? t('toast.createFailed');
+          : error?.response?.data?.message ?? '';
+
+      const isDuplicateEmail = rawMessage.toLowerCase().includes('already in use') || rawMessage.toLowerCase().includes('already exists');
+      const message = isDuplicateEmail
+        ? t('toast.duplicateEmail')
+        : rawMessage || t('toast.createFailed');
 
       toast.error(message);
     } finally {
@@ -131,7 +136,8 @@ export const AddEmployeePage: React.FC = () => {
             <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('add.title')}</h1>
           </div>
           <Button
-            className="bg-teal-600 hover:bg-teal-700"
+            className="rounded-md px-4 py-2"
+            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             onClick={handleSave}
             disabled={isSubmitting}
           >

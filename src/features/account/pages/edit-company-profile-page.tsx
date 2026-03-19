@@ -238,7 +238,8 @@ export const EditCompanyProfilePage: React.FC = () => {
                     <Button
                         onClick={handleSubmit}
                         disabled={isLoading || updateMutation.isPending}
-                        className="bg-[#2f946f] hover:bg-[#257a5b] text-white h-[44px] px-8 rounded-[8px] text-[15px] font-medium shadow-sm transition-colors disabled:opacity-50"
+                        className="h-[44px] px-8 rounded-[8px] text-[15px] font-medium shadow-sm transition-colors disabled:opacity-50"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {updateMutation.isPending ? t('companyProfile.saving') : t('companyProfile.save')}
                     </Button>

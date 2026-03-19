@@ -130,7 +130,8 @@ export const AddDepartmentPage: React.FC = () => {
                 <div className="flex justify-end mb-4">
                     <Button
                         onClick={handleSubmit}
-                        className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white px-6"
+                        className="px-6"
+                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                         {t('addDepartment.submit')}
                     </Button>

@@ -116,7 +116,8 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
                         <Button
                             type="submit"
                             disabled={createMutation.isPending || !formData.name.trim()}
-                            className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white px-6"
+                            className="px-6"
+                            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                         >
                             {createMutation.isPending ? 'Adding...' : 'Add employment type'}
                         </Button>

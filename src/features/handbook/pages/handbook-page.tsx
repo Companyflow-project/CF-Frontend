@@ -49,7 +49,8 @@ export const HandbookPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
-              className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-5 py-[11px] h-auto text-[13px] shadow-[0_12px_24px_rgba(13,94,67,0.35)]"
+              className="rounded-[999px] px-5 py-[11px] h-auto text-[13px] shadow-[0_12px_24px_rgba(13,94,67,0.35)]"
+              style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             >
               Preview Handbook
             </Button>
@@ -176,7 +177,8 @@ export const HandbookPage: React.FC = () => {
                             />
                             <div className="mt-5 flex flex-wrap justify-end gap-2">
                               <Button
-                                className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-6 py-2 h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                                className="rounded-[999px] px-6 py-2 h-auto text-sm shadow-[0_10px_20px_rgba(13,94,67,0.3)]"
+                                style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                               >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Page
@@ -269,7 +271,8 @@ export const HandbookPage: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={() => setPublishModalOpen(true)}
-                      className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white rounded-[999px] px-4 py-2 h-auto w-full sm:w-auto"
+                      className="rounded-[999px] px-4 py-2 h-auto w-full sm:w-auto"
+                      style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
                       Publish Handbook
                     </Button>

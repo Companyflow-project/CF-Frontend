@@ -18,7 +18,12 @@ const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDef
   { code: 'de', label: 'German', flag: '🇩🇪' },
 ];
 
-export const TopNav: React.FC = () => {
+interface TopNavProps {
+  companyLogoUrl?: string | null;
+  companyName?: string;
+}
+
+export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) => {
   const location = useLocation();
   const { user, logout, updateLanguage } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,7 +33,8 @@ export const TopNav: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const isAdmin = isAdminRole(user?.role);
   const isSenior = user?.role === 'senior_employee';
-  const employeeLanguages = user?.employeeLanguages ?? user?.employeeLanguages ?? ['da'];
+  const rawLangs = user?.employeeLanguages ?? ['da'];
+  const employeeLanguages = rawLangs.includes('da') ? rawLangs : ['da', ...rawLangs];
   const currentLang = i18n.language || 'da';
   const currentFlag = ALL_LANGUAGES.find(l => l.code === currentLang)?.flag ?? '🇩🇰';
   const showEmployeeView = (!isAdmin && !isSenior) || viewAsEmployee;
@@ -78,14 +84,19 @@ export const TopNav: React.FC = () => {
   };
 
   return (
-    <nav className="bg-black text-white px-4 sm:px-6 lg:px-8 py-4">
+    <nav className="px-4 sm:px-6 lg:px-8 py-4" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)', color: 'var(--cf-nav-text, #ffffff)' }}>
       <div className="relative flex items-center justify-between max-w-[1360px] mx-auto">
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center gap-2.5">
           <img
-            src={logoUrl}
-            alt="CompanyFlow"
-            className="h-6 w-auto"
+            src={companyLogoUrl || logoUrl}
+            alt={companyName || 'CompanyFlow'}
+            className="h-8 w-auto max-w-[160px] object-contain"
           />
+          {companyName && (
+            <span className="text-sm font-semibold truncate max-w-[180px]" style={{ color: 'inherit' }}>
+              {companyName}
+            </span>
+          )}
         </Link>
         <div className="hidden lg:flex items-center gap-1 absolute left-1/2 transform -translate-x-1/2">
           {navItems.map((item) => {
@@ -100,10 +111,10 @@ export const TopNav: React.FC = () => {
                   className={cn(
                     'px-3 py-2 rounded-[10px] text-sm font-medium transition-colors',
                     isActive
-                      ? 'text-white'
-                      : 'text-white hover:bg-white/5'
+                      ? ''
+                      : 'hover:opacity-80'
                   )}
-                  style={isActive ? { background: 'rgba(255, 255, 255, 0.06)' } : undefined}
+                  style={{ color: 'inherit', background: isActive ? 'rgba(255, 255, 255, 0.06)' : undefined }}
                 >
                   {item.label}
                 </Link>
@@ -116,7 +127,8 @@ export const TopNav: React.FC = () => {
               type="button"
               variant="outline"
               size="icon"
-              className="border-white/20 bg-transparent text-white hover:bg-white/10"
+              className="bg-transparent hover:opacity-80"
+              style={{ color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
               onClick={() => setIsMenuOpen((prev) => !prev)}
               aria-label={isMenuOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             >
@@ -130,7 +142,8 @@ export const TopNav: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsLangOpen(prev => !prev)}
-                  className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-lg hover:bg-white/20 transition-colors"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-lg transition-colors"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'inherit' }}
                   title={t('nav.language', 'Language')}
                 >
                   {currentFlag}
@@ -174,14 +187,15 @@ export const TopNav: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="w-10 h-10 rounded-full bg-teal-700 flex items-center justify-center text-sm font-medium text-white">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
                 {getInitials(user.name)}
               </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="border-white/20 bg-transparent text-white hover:bg-white/10 text-sm"
+                className="bg-transparent hover:opacity-80 text-sm"
+                style={{ color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
                 onClick={() => logout()}
               >
                 {t('logOut')}
@@ -191,7 +205,7 @@ export const TopNav: React.FC = () => {
         </div>
       </div>
       {isMenuOpen && (
-        <div className="lg:hidden border-t border-white/10">
+        <div className="lg:hidden" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
           <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1">
             {navItems.map((item) => {
               const isActive =
@@ -206,10 +220,9 @@ export const TopNav: React.FC = () => {
                   onClick={() => setIsMenuOpen(false)}
                   className={cn(
                     'px-3 py-2 rounded-[10px] text-sm font-medium transition-colors w-full text-left',
-                    isActive
-                      ? 'text-white bg-white/10'
-                      : 'text-white hover:bg-white/5'
+                    isActive ? 'opacity-100' : 'hover:opacity-80'
                   )}
+                  style={{ color: 'inherit', background: isActive ? 'rgba(255,255,255,0.1)' : undefined }}
                 >
                   {item.label}
                 </Link>

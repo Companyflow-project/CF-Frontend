@@ -21,9 +21,18 @@ interface EmployeeCardProps {
 }
 
 const EmployeeCard: React.FC<EmployeeCardProps> = ({ title, description, actions }) => (
-  <div className="bg-white border border-[#e5e7eb] rounded-[18px] shadow-sm p-6">
-    <h3 className="text-lg font-bold text-[#0d0e0e] mb-1">{title}</h3>
-    <p className="text-sm text-[#6b7280] mb-5">{description}</p>
+  <div
+    className="border border-[#e5e7eb] rounded-[18px] shadow-sm p-6"
+    style={{ backgroundColor: 'var(--cf-card-bg, #ffffff)' }}
+  >
+    <h3
+      className="text-lg font-bold mb-1"
+      style={{ color: 'var(--cf-card-heading, #0d0e0e)' }}
+    >{title}</h3>
+    <p
+      className="text-sm mb-5"
+      style={{ color: 'var(--cf-card-desc, #6b7280)' }}
+    >{description}</p>
     <div className="space-y-2">
       {actions.map((action, index) => (
         <button
@@ -31,9 +40,12 @@ const EmployeeCard: React.FC<EmployeeCardProps> = ({ title, description, actions
           onClick={action.onClick}
           className={`w-full flex items-center justify-between px-4 py-3 rounded-[10px] text-sm font-medium transition-all ${
             action.variant === 'primary'
-              ? 'bg-[#d4f4e6] text-[#1a5948] hover:bg-[#c0edd9]'
+              ? ''
               : 'bg-white border border-[#e5efea] text-[#0d0e0e] hover:bg-[#f6fbf9]'
           }`}
+          {...(action.variant === 'primary'
+            ? { style: { backgroundColor: 'var(--cf-card-btn, #d4f4e6)', color: 'var(--cf-card-btn-text, #1a5948)' } }
+            : {})}
         >
           <span>{action.label}</span>
           <ArrowRight className="h-4 w-4" />
