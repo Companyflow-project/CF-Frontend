@@ -23,17 +23,27 @@ export const HandbookPrintPage: React.FC = () => {
   const [bodiesError, setBodiesError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Optional page filter from URL (e.g. ?pages=123,456)
+  const filterPageIds = useMemo(() => {
+    const pagesParam = searchParams.get('pages');
+    if (!pagesParam) return null;
+    const ids = pagesParam.split(',').map(Number).filter((n) => Number.isFinite(n) && n > 0);
+    return ids.length > 0 ? new Set(ids) : null;
+  }, [searchParams]);
+
   const readyPageIds = useMemo(() => {
     if (!Array.isArray(tree)) return [];
     const ids: number[] = [];
     tree.forEach((node) => {
       if (node.type !== 'chapter') return;
       (node.pages || []).forEach((page: any) => {
-        if (page.status === 'ready') ids.push(page.id);
+        if (page.status !== 'ready') return;
+        if (filterPageIds && !filterPageIds.has(page.id)) return;
+        ids.push(page.id);
       });
     });
     return ids;
-  }, [tree]);
+  }, [tree, filterPageIds]);
 
   useEffect(() => {
     if (readyPageIds.length === 0) return;
@@ -86,6 +96,7 @@ export const HandbookPrintPage: React.FC = () => {
       .map((chapter) => {
         const readyPages = (chapter.pages || [])
           .filter((page: any) => page.status === 'ready')
+          .filter((page: any) => !filterPageIds || filterPageIds.has(page.id))
           .map((page: any) => ({
             ...page,
             body: bodies.get(page.id) ?? '',

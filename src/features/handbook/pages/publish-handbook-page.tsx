@@ -299,7 +299,7 @@ Greetings from your company.`;
         <div className="space-y-4">
           <Card className="border border-[#cde3da] rounded-[16px] shadow-[0_18px_40px_rgba(14,51,38,0.08)] overflow-hidden">
             <CardContent className="p-0">
-              <div className="bg-[#2f946f] text-white px-4 py-3 flex items-center justify-between">
+              <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
                 <span className="text-sm font-semibold">
                   {t('publish.defaultMessage')}
                 </span>
@@ -318,7 +318,7 @@ Greetings from your company.`;
                   <>
                     {hasEmail && (
                       <div className="border border-[#cde3da] rounded-[10px] overflow-hidden bg-white">
-                        <div className="bg-[#1a5948] text-white px-4 py-2 text-sm font-semibold">
+                        <div className="px-4 py-2 text-sm font-semibold" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)', color: '#ffffff' }}>
                           {t('publish.email')}
                         </div>
                         {messageType === 'custom' && customSubject.trim() && (
@@ -339,7 +339,7 @@ Greetings from your company.`;
 
                     {hasSms && (
                       <div className="border border-[#cde3da] rounded-[10px] overflow-hidden bg-white">
-                        <div className="bg-[#1a5948] text-white px-4 py-2 text-sm font-semibold">
+                        <div className="px-4 py-2 text-sm font-semibold" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)', color: '#ffffff' }}>
                           {t('publish.sms')}
                         </div>
                         <div className="p-4">

@@ -96,3 +96,10 @@ main h1 {
   color: var(--cf-page-headline) !important;
 }
 
+/* Hide nav, footer, and non-content elements when printing */
+@media print {
+  nav, footer {
+    display: none !important;
+  }
+}
+

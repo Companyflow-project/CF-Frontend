@@ -134,6 +134,7 @@ export interface HandbookNode {
   hasLinks?: boolean;
   hasImage?: boolean;
   hasCustomBody?: boolean;
+  hasSelectableTexts?: boolean;
   hasText?: boolean;
   hasReceipt?: boolean;
   isDeletable: boolean;
@@ -200,7 +201,7 @@ export interface UpdatePagePayload {
   /**
    * "0" = use CompanyFlow text, "1" = use custom text
    */
-  textMode: '0' | '1';
+  textMode: '0' | '1' | '2';
   /**
    * HTML string from the rich text editor
    */

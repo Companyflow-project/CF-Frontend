@@ -352,7 +352,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                     }}
                                 >
                                     {/* Chapter number bubble */}
-                                    <div className="flex-shrink-0 h-9 w-9 rounded-[10px] bg-[#1a5948] text-white flex items-center justify-center text-sm font-bold shadow-[0_4px_10px_rgba(26,89,72,0.3)]">
+                                    <div className="flex-shrink-0 h-9 w-9 rounded-[10px] flex items-center justify-center text-sm font-bold shadow-[0_4px_10px_rgba(26,89,72,0.3)]" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
                                         {chapterNumber}
                                     </div>
 
@@ -459,8 +459,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         {(() => {
                                                             const tags: string[] = [];
                                                             if (page.badge === 'custom') tags.push(t('tag.customPage'));
-                                                            if (page.hasText) tags.push(t('tag.addedText'));
-                                                            if (!page.hasText) tags.push(t('tag.noText'));
+                                                            if (page.hasCustomBody) tags.push(t('tag.addedText'));
+                                                            if (!page.hasCustomBody && (!page.hasSelectableTexts || page.badge === 'custom')) tags.push(t('tag.noText'));
                                                             if (page.hasReceipt) tags.push(t('tag.receipt'));
                                                             if (page.hasNote) tags.push(t('tag.notes'));
                                                             if (page.hasDocuments) tags.push(t('tag.documents'));
@@ -473,10 +473,15 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                             );
                                                         })()}
 
-                                                        {/* Badge (custom/premade) */}
-                                                        {page.badge && !(page.badge === 'premade' && !page.hasText) && (
+                                                        {/* Badge */}
+                                                        {page.badge === 'premade' && (page.hasSelectableTexts || page.hasCustomBody) && (
                                                             <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
-                                                                {page.badge === 'custom' ? t('badge.custom') : t('badge.premade')}
+                                                                {t('badge.premade')}
+                                                            </span>
+                                                        )}
+                                                        {page.badge === 'custom' && (
+                                                            <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
+                                                                {t('badge.custom')}
                                                             </span>
                                                         )}
 

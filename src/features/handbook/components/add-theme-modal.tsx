@@ -124,7 +124,8 @@ export const AddThemeModal: React.FC<AddThemeModalProps> = ({
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="rounded-[8px] px-5 py-2 h-auto text-sm bg-[#3d997d] hover:bg-[#3d997d]/90 text-white"
+                            className="rounded-[8px] px-5 py-2 h-auto text-sm"
+                            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                         >
                             {isSubmitting ? t('addTheme.creating') : t('addTheme.create')}
                         </Button>

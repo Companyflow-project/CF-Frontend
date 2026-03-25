@@ -128,6 +128,7 @@
   "preview.close": "Close",
   "preview.print": "Print",
 
+  "sneakPeek.desc": "Preview of this page as employees will see it.",
   "sneakPeek.loading": "Loading...",
   "sneakPeek.document": "Document",
   "sneakPeek.links": "Links",

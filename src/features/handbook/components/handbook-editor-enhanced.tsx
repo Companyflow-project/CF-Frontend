@@ -312,7 +312,7 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
                 <Label className="text-sm font-medium text-[#0d0e0e]">Text</Label>
 
                 {/* Rich Text Toolbar */}
-                <div className="bg-[#1a5948] rounded-t-[10px] p-2 flex items-center justify-between">
+                <div className="rounded-t-[10px] p-2 flex items-center justify-between" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)' }}>
                     <div className="flex items-center gap-1">
                         {/* Paragraph Dropdown */}
                         <button className="flex items-center gap-2 px-3 py-1.5 text-white text-sm hover:bg-white/10 rounded-[6px]">
@@ -818,7 +818,8 @@ export const HandbookEditorEnhanced: React.FC<HandbookEditorProps> = ({
                 <Button
                     onClick={handleSave}
                     disabled={saving || !pageId}
-                    className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-6 py-2 h-auto text-sm"
+                    className="rounded-[8px] px-6 py-2 h-auto text-sm"
+                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                 >
                     {saving ? (
                         <>

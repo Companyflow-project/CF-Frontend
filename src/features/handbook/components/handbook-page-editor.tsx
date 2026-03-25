@@ -249,8 +249,8 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
             setSaving(true);
             setError(null);
 
-            const textMode: '0' | '1' = mode === 'company' ? '0' : '1';
-            const effectiveCustomText = textMode === '1' ? customText : '';
+            const textMode: '0' | '1' | '2' = mode === 'company' ? '0' : mode === 'edit-premade' ? '1' : '2';
+            const effectiveCustomText = textMode !== '0' ? customText : '';
 
             const payload: UpdatePagePayload = {
                 textMode,
@@ -852,7 +852,8 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     type="button"
                     onClick={handleSave}
                     disabled={saving || !pageId}
-                    className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[8px] px-6 py-2 h-auto text-sm"
+                    className="rounded-[8px] px-6 py-2 h-auto text-sm"
+                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                 >
                     {saving ? (
                         <>

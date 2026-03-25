@@ -406,9 +406,10 @@ export const HandbookViewerPage: React.FC = () => {
                   onClick={() => goToPage(item)}
                   className={`h-9 min-w-[36px] px-2 flex items-center justify-center rounded-[8px] text-sm font-medium transition-colors ${
                     currentPage === item
-                      ? 'bg-[#1a5948] text-white'
+                      ? ''
                       : 'text-[#374151] hover:bg-[#f3f4f6]'
                   }`}
+                  style={currentPage === item ? { backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' } : undefined}
                 >
                   {item}
                 </button>

@@ -107,9 +107,10 @@ export const HandbookPage: React.FC = () => {
                   size="sm"
                   onClick={() => setStatusFilter(null)}
                   className={`rounded-[999px] px-5 h-11 text-sm ${statusFilter === null
-                      ? 'bg-[#1a5948] text-white border-[#1a5948]'
+                      ? 'border-transparent'
                       : 'border-[#c8d8d3] text-[#0d0e0e] bg-white'
                     }`}
+                  style={statusFilter === null ? { backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' } : undefined}
                 >
                   Show Your Pages
                 </Button>

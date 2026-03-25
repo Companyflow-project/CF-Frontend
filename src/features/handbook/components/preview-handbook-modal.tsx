@@ -33,7 +33,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     selectedPageIds = null,
     tree: treeProp,
 }) => {
-    const { t } = useTranslation('handbook');
+    const { t, i18n } = useTranslation('handbook');
     const { getColor } = useAppearance();
     const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree();
     const tree = treeProp ?? treeFromHook;
@@ -79,7 +79,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
         Promise.all([
             Promise.all(
                 pageIdsToFetch.map((id) =>
-                    handbookApi.getHandbookContent(id).then((html) => ({ id, html }))
+                    handbookApi.getHandbookContent(id, i18n.language).then((html) => ({ id, html }))
                 )
             ),
             Promise.all(
@@ -184,7 +184,8 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                         onClose();
                                         navigate(handbookRoutes.pages);
                                     }}
-                                    className="mt-4 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px]"
+                                    className="mt-4 rounded-[999px]"
+                                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                                 >
                                     {t('preview.managePages')}
                                 </Button>
@@ -328,7 +329,8 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                             type="button"
                             onClick={handlePrint}
                             disabled={loading || readyHandbookData.length === 0}
-                            className="rounded-[999px] px-6 h-10 bg-[#3d997d] hover:bg-[#3d997d]/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="rounded-[999px] px-6 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                         >
                             {t('preview.print')}
                         </Button>

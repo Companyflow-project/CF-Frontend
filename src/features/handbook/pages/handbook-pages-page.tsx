@@ -827,17 +827,23 @@ export const HandbookPagesPage: React.FC = () => {
                                                 >
                                                     {page.title}
                                                 </button>
-                                                {page.badge && !(page.badge === 'premade' && !page.hasText) && (
+                                                {/* Badge: "CompanyFlow text" when premade page has template text */}
+                                                {page.badge === 'premade' && (page.hasSelectableTexts || page.hasCustomBody) && (
                                                     <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
-                                                        {page.badge === 'custom' ? t('badge.custom') : t('badge.premade')}
+                                                        {t('badge.premade')}
                                                     </Badge>
                                                 )}
-                                                {/* Recent activity summary */}
+                                                {page.badge === 'custom' && (
+                                                    <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
+                                                        {t('badge.custom')}
+                                                    </Badge>
+                                                )}
+                                                {/* Activity tags */}
                                                 {(() => {
                                                     const activities: string[] = [];
                                                     if (page.badge === 'custom') activities.push(t('tag.customPage'));
-                                                    if (page.hasText) activities.push(t('tag.addedText'));
-                                                    if (!page.hasText) activities.push(t('tag.noText'));
+                                                    if (page.hasCustomBody) activities.push(t('tag.addedText'));
+                                                    if (!page.hasCustomBody && (!page.hasSelectableTexts || page.badge === 'custom')) activities.push(t('tag.noText'));
                                                     if (page.hasReceipt) activities.push(t('tag.receipt'));
                                                     if (page.hasNote) activities.push(t('tag.notes'));
                                                     if (page.hasDocuments) activities.push(t('tag.documents'));
