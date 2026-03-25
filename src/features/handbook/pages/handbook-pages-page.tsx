@@ -73,6 +73,10 @@ export const HandbookPagesPage: React.FC = () => {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [pendingDelete, setPendingDelete] = useState<{ ids: number[]; names: string[] } | null>(null);
 
+    // Delete theme confirmation modal
+    const [deleteThemeConfirmOpen, setDeleteThemeConfirmOpen] = useState(false);
+    const [pendingDeleteTheme, setPendingDeleteTheme] = useState<{ id: number; name: string } | null>(null);
+
     // Focused (highlighted) page for Preview Handbook
     const [focusedPageId, setFocusedPageId] = useState<number | null>(null);
     const [draggingPageId, setDraggingPageId] = useState<number | null>(null);
@@ -827,8 +831,8 @@ export const HandbookPagesPage: React.FC = () => {
                                                 >
                                                     {page.title}
                                                 </button>
-                                                {/* Badge: "CompanyFlow text" when premade page has template text */}
-                                                {page.badge === 'premade' && (page.hasSelectableTexts || page.hasCustomBody) && (
+                                                {/* Badge: "CompanyFlow text" only when premade page uses template text (not when user added their own) */}
+                                                {page.badge === 'premade' && page.hasSelectableTexts && !page.hasCustomBody && (
                                                     <Badge className="bg-[#d4f4e6] text-[#1a5948] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0">
                                                         {t('badge.premade')}
                                                     </Badge>
@@ -843,7 +847,7 @@ export const HandbookPagesPage: React.FC = () => {
                                                     const activities: string[] = [];
                                                     if (page.badge === 'custom') activities.push(t('tag.customPage'));
                                                     if (page.hasCustomBody) activities.push(t('tag.addedText'));
-                                                    if (!page.hasCustomBody && (!page.hasSelectableTexts || page.badge === 'custom')) activities.push(t('tag.noText'));
+                                                    if (!page.hasCustomBody && !page.hasSelectableTexts) activities.push(t('tag.noText'));
                                                     if (page.hasReceipt) activities.push(t('tag.receipt'));
                                                     if (page.hasNote) activities.push(t('tag.notes'));
                                                     if (page.hasDocuments) activities.push(t('tag.documents'));
@@ -961,6 +965,21 @@ export const HandbookPagesPage: React.FC = () => {
                                         {t('pages.deletePage')}{checkedInViewIds.length > 1 ? ` (${checkedInViewIds.length})` : ''}
                                     </Button>
                                 )}
+                                {(() => {
+                                    const activeChapter = chapters.find((ch) => ch.id === activeChapterId);
+                                    return activeChapter?.isDeletable && canEditHandbook ? (
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                setPendingDeleteTheme({ id: activeChapter.id, name: activeChapter.title });
+                                                setDeleteThemeConfirmOpen(true);
+                                            }}
+                                            className="border-[#fca5a5] text-[#b91c1c] rounded-[8px] px-4 py-2 h-auto text-sm bg-[#fef2f2] hover:bg-[#fee2e2]"
+                                        >
+                                            {t('pages.deleteTheme')}
+                                        </Button>
+                                    ) : null;
+                                })()}
                                 <Button
                                     className="rounded-[8px] px-6 py-2 h-auto text-sm"
                                     style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
@@ -1202,6 +1221,68 @@ export const HandbookPagesPage: React.FC = () => {
                                     toast.error(message);
                                 }
                                 setPendingDelete(null);
+                            }}
+                        >
+                            {t('common:delete')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete theme confirmation modal */}
+            <Dialog
+                open={deleteThemeConfirmOpen}
+                onOpenChange={(open) => {
+                    if (!open) setPendingDeleteTheme(null);
+                    setDeleteThemeConfirmOpen(open);
+                }}
+            >
+                <DialogContent className="max-w-md border-[#e5efea] rounded-[16px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-[#0d0e0e]">
+                            <AlertTriangle className="h-5 w-5 text-[#b91c1c]" />
+                            {t('pages.deleteThemeTitle')}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        {pendingDeleteTheme && (
+                            <p className="text-sm text-[#374151]">
+                                {t('pages.deleteThemeConfirm', { name: pendingDeleteTheme.name })}
+                            </p>
+                        )}
+                    </div>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteThemeConfirmOpen(false)}
+                            className="rounded-[8px]"
+                        >
+                            {t('common:cancel')}
+                        </Button>
+                        <Button
+                            className="rounded-[8px] bg-[#b91c1c] hover:bg-[#991b1b] text-white"
+                            disabled={!pendingDeleteTheme}
+                            onClick={async () => {
+                                if (!pendingDeleteTheme) return;
+                                setDeleteThemeConfirmOpen(false);
+                                try {
+                                    await handbookApi.deleteChapter(pendingDeleteTheme.id);
+                                    toast.success(t('pages.themeDeleted'));
+                                    setActiveChapterId(null);
+                                    setSelectedPages(new Set());
+                                    setFocusedPageId(null);
+                                    await refreshHandbookTree();
+                                } catch (err: any) {
+                                    const apiError = err?.response?.data?.error;
+                                    const message =
+                                        typeof apiError?.message === 'string' &&
+                                            apiError.message.trim()
+                                            ? apiError.message.trim()
+                                            : err?.message ||
+                                            t('pages.failedToDeleteTheme');
+                                    toast.error(message);
+                                }
+                                setPendingDeleteTheme(null);
                             }}
                         >
                             {t('common:delete')}

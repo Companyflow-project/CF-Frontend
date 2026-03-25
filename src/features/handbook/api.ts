@@ -124,12 +124,13 @@ export const handbookApi = {
    * POST or PATCH /api/handbook/content/:nid
    * Body: { body_value: "<html string>" }
    */
-  async saveHandbookContent(nid: number, bodyValue: string): Promise<{ success: boolean }> {
+  async saveHandbookContent(nid: number, bodyValue: string, lang?: string): Promise<{ success: boolean }> {
     requireValidNid(nid);
     try {
       const response = await axiosClient.patch<{ success: boolean }>(
         `/handbook/content/${nid}`,
-        { body_value: bodyValue }
+        { body_value: bodyValue },
+        lang ? { params: { lang } } : undefined
       );
       return response.data;
     } catch (error: any) {
@@ -285,12 +286,14 @@ export const handbookApi = {
    */
   async updatePage(
     pageId: number,
-    payload: UpdatePagePayload
+    payload: UpdatePagePayload,
+    lang?: string
   ): Promise<{ success: boolean }> {
     try {
       const response = await axiosClient.put<{ success: boolean }>(
         `/handbook/pages/${pageId}`,
-        payload
+        payload,
+        lang ? { params: { lang } } : undefined
       );
       return response.data;
     } catch (error: any) {
@@ -436,6 +439,38 @@ export const handbookApi = {
       }
 
       throw new Error(apiMessage || 'Failed to delete handbook page.');
+    }
+  },
+
+  /**
+   * Delete a custom handbook chapter (theme) and all its child pages.
+   * DELETE /api/handbook/chapters/:id
+   *
+   * Only admin or company_admin can call this.
+   */
+  async deleteChapter(id: number): Promise<{ success: boolean }> {
+    requireValidNid(id);
+    try {
+      const response = await axiosClient.delete<{ success: boolean; error?: { message?: string } }>(
+        `/handbook/chapters/${id}`,
+      );
+      return response.data ?? { success: true };
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const apiError = error?.response?.data?.error;
+      const apiMessage =
+        (apiError && typeof apiError.message === 'string' && apiError.message.trim()) ||
+        (typeof error?.response?.data?.message === 'string' && error.response.data.message.trim()) ||
+        (typeof error?.response?.data?.error === 'string' && error.response.data.error.trim());
+
+      if (status === 403) {
+        throw new Error(apiMessage || "Only custom themes can be deleted.");
+      }
+      if (status === 404) {
+        throw new Error(apiMessage || 'Handbook chapter not found.');
+      }
+
+      throw new Error(apiMessage || 'Failed to delete handbook chapter.');
     }
   },
 

@@ -103,7 +103,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     } else {
                         setMode('company');
                     }
-                    const contentHtml = await handbookApi.getHandbookContent(pageId);
+                    const contentHtml = await handbookApi.getHandbookContent(pageId, lang);
                     setCustomText(contentHtml || data.versions?.custom || data.content || '');
                     setNotes(data.internalNote || '');
 
@@ -253,6 +253,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
             const effectiveCustomText = textMode !== '0' ? customText : '';
 
             const payload: UpdatePagePayload = {
+                title: heading,
                 textMode,
                 customText: effectiveCustomText,
                 notes,
@@ -277,10 +278,10 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 },
             };
 
-            await handbookApi.updatePage(pageId, payload);
+            await handbookApi.updatePage(pageId, payload, lang);
 
             if (mode !== 'company') {
-                await handbookApi.saveHandbookContent(pageId, customText);
+                await handbookApi.saveHandbookContent(pageId, customText, lang);
             }
 
             toast.success('Page saved successfully!');

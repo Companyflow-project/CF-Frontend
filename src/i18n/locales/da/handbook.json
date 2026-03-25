@@ -218,6 +218,11 @@
   "pages.noPermissionCreate": "Du har ikke tilladelse til at oprette håndbogssider.",
   "pages.noPermissionCreateTheme": "Du har ikke tilladelse til at oprette håndbogstemaer.",
   "pages.failedToDelete": "Kunne ikke slette side(r). Prøv venligst igen.",
+  "pages.deleteTheme": "Slet tema",
+  "pages.deleteThemeTitle": "Slet tema?",
+  "pages.deleteThemeConfirm": "Du er ved at slette temaet \"{{name}}\" og alle dets sider. Dette kan ikke fortrydes.",
+  "pages.themeDeleted": "Tema slettet",
+  "pages.failedToDeleteTheme": "Kunne ikke slette tema. Prøv venligst igen.",
 
   "publish.title": "Udgiv håndbog",
   "publish.helpBanner": "Her kan du give medarbejdere adgang til din personalehåndbog. Det kan være en fordel ikke at gøre dette, mens du arbejder på den. Del den kun med dem, når den er helt klar.",

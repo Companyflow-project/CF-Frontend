@@ -218,6 +218,11 @@
   "pages.noPermissionCreate": "You don't have permission to create handbook pages.",
   "pages.noPermissionCreateTheme": "You don't have permission to create handbook themes.",
   "pages.failedToDelete": "Failed to delete page(s). Please try again.",
+  "pages.deleteTheme": "Delete theme",
+  "pages.deleteThemeTitle": "Delete theme?",
+  "pages.deleteThemeConfirm": "You are about to delete the theme \"{{name}}\" and all its pages. This cannot be undone.",
+  "pages.themeDeleted": "Theme deleted",
+  "pages.failedToDeleteTheme": "Failed to delete theme. Please try again.",
 
   "publish.title": "Publish Handbook",
   "publish.helpBanner": "Here you can give employees access to your personnel handbook. It may be an advantage not to do this while you are working on it. Only share it with them when it is completely ready.",

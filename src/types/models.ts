@@ -199,6 +199,10 @@ export interface HandbookPage extends HandbookPageDetail { }
 
 export interface UpdatePagePayload {
   /**
+   * Optional page title (heading). Only sent when the user has changed it.
+   */
+  title?: string;
+  /**
    * "0" = use CompanyFlow text, "1" = use custom text
    */
   textMode: '0' | '1' | '2';
