@@ -276,5 +276,59 @@
   "editor.hideTemplate": "Skjul CompanyFlow skabelon",
   "editor.templateReadOnly": "CompanyFlow skabelon (skrivebeskyttet)",
   "editor.customText": "Brugerdefineret tekst",
-  "editor.textPreview": "Tekst (forhåndsvisning)"
+  "editor.textPreview": "Tekst (forhåndsvisning)",
+
+  "editor.pictures": "Billeder",
+  "editor.clickUploadImage": "Klik for at uploade billede",
+  "editor.allowedImageTypes": "Tilladt: jpg, jpeg, png",
+  "editor.uploadingImage": "Uploader billede...",
+  "editor.removeImage": "Fjern billede",
+  "editor.imagePlacement": "Billedplacering:",
+  "editor.placementBefore": "Før",
+  "editor.placementLeft": "Venstre",
+  "editor.placementRight": "Højre",
+  "editor.placementAfter": "Efter",
+  "editor.placementNone": "Ingen",
+
+  "editor.documents": "Dokumenter",
+  "editor.clickUploadFiles": "Klik for at uploade filer",
+  "editor.allowedDocTypes": "Tilladt: pdf, doc, docx, xls, xlsx, ppt, pptx, osv.",
+  "editor.uploadingDocuments": "Uploader dokumenter...",
+  "editor.description": "Beskrivelse",
+  "editor.removeDocument": "Fjern",
+
+  "editor.links": "Links",
+  "editor.addLink": "Tilføj link",
+  "editor.url": "URL",
+  "editor.linkTitle": "Titel",
+  "editor.removeLink": "Fjern",
+
+  "editor.others": "Andet",
+  "editor.askForReceipt": "Bed om kvittering",
+  "editor.askForReceiptDesc": "Bed medarbejderne om en kvittering for, at de har set denne side.",
+  "editor.isReady": "Jeg synes siden er klar nu",
+  "editor.isReadyDesc": "Selvom du markerer siden som klar, kan du altid komme tilbage og ændre den.",
+  "editor.includeInHandbook": "Inkluder denne side i håndbogen",
+  "editor.includeInHandbookDesc": "Sæt kryds for at inkludere siden i håndbogen, fjern krydset for at udelukke siden.",
+  "editor.notifyEmployees": "Underret medarbejdere",
+  "editor.notifyEmployeesDesc": "Sæt kryds for at underrette medarbejdere om denne side, når den er gemt og klar.",
+
+  "editor.responsible": "Ansvarlig",
+  "editor.owner": "Ejer",
+  "editor.responsibleNote": "Tildel hvem der er ansvarlig for denne side. Har du flere administratorer, kan I dele ansvaret mellem jer.",
+
+  "editor.notes": "Noter",
+  "editor.notesHelper": "Her kan du skrive noter til dig selv eller andre, der kan redigere siderne. Virksomhedsadministratorer kan se disse noter.",
+
+  "editor.visibility": "Synlighed",
+  "editor.visibilityDesc": "Begræns denne side til bestemte ansættelsestyper eller afdelinger. Lad begge stå tomme for at gøre den synlig for alle medarbejdere.",
+  "editor.visibilitySelected": "{{count}} valgt",
+  "editor.employmentTypes": "Ansættelsestyper",
+  "editor.departments": "Afdelinger",
+
+  "editor.cancel": "Annuller",
+  "editor.savePage": "Gem side",
+  "editor.saving": "Gemmer...",
+  "editor.pageSaved": "Siden er gemt!",
+  "editor.saveFailed": "Kunne ikke gemme side. Prøv venligst igen."
 }

@@ -18,7 +18,7 @@ export const PageShell: React.FC<PageShellProps> = ({ children, sidebar, fullWid
         className={
           fullWidth
             ? 'w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8'
-            : 'max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full'
+            : 'max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full'
         }
       >
         {sidebar && (

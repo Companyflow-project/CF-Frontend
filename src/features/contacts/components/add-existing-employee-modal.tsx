@@ -325,6 +325,11 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                                     <span className="text-xs text-[#6b7280] block truncate">{emp.email}</span>
                                   )}
                                 </span>
+                                {emp.status === 'INACTIVE' && (
+                                  <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af] bg-[#f3f4f6] rounded-full px-2 py-0.5 flex-shrink-0">
+                                    Inactive
+                                  </span>
+                                )}
                                 {isSelected && <Check className="h-4 w-4 text-[#3d997d] flex-shrink-0" />}
                               </button>
                             </li>

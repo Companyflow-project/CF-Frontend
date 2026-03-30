@@ -85,7 +85,7 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
 
   return (
     <nav className="px-4 sm:px-6 lg:px-8 py-4" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)', color: 'var(--cf-nav-text, #ffffff)' }}>
-      <div className="relative flex items-center justify-between max-w-[1360px] mx-auto">
+      <div className="relative flex items-center justify-between max-w-[1600px] mx-auto">
         <Link to="/" className="flex items-center gap-2.5">
           <img
             src={companyLogoUrl || logoUrl}
@@ -206,7 +206,7 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
       </div>
       {isMenuOpen && (
         <div className="lg:hidden" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1">
             {navItems.map((item) => {
               const isActive =
                 location.pathname === item.path ||

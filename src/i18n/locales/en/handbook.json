@@ -276,5 +276,59 @@
   "editor.hideTemplate": "Hide CompanyFlow Template",
   "editor.templateReadOnly": "CompanyFlow Template (Read-Only)",
   "editor.customText": "Custom Text",
-  "editor.textPreview": "Text (Preview)"
+  "editor.textPreview": "Text (Preview)",
+
+  "editor.pictures": "Pictures",
+  "editor.clickUploadImage": "Click to upload image",
+  "editor.allowedImageTypes": "Allowed: jpg, jpeg, png",
+  "editor.uploadingImage": "Uploading image...",
+  "editor.removeImage": "Remove image",
+  "editor.imagePlacement": "Image placement:",
+  "editor.placementBefore": "Before",
+  "editor.placementLeft": "Left",
+  "editor.placementRight": "Right",
+  "editor.placementAfter": "After",
+  "editor.placementNone": "None",
+
+  "editor.documents": "Documents",
+  "editor.clickUploadFiles": "Click to upload files",
+  "editor.allowedDocTypes": "Allowed: pdf, doc, docx, xls, xlsx, ppt, pptx, etc.",
+  "editor.uploadingDocuments": "Uploading documents...",
+  "editor.description": "Description",
+  "editor.removeDocument": "Remove",
+
+  "editor.links": "Links",
+  "editor.addLink": "Add link",
+  "editor.url": "URL",
+  "editor.linkTitle": "Title",
+  "editor.removeLink": "Remove",
+
+  "editor.others": "Others",
+  "editor.askForReceipt": "Ask for a receipt",
+  "editor.askForReceiptDesc": "Ask the employees for a receipt that they have viewed this page.",
+  "editor.isReady": "I think the page is ready now",
+  "editor.isReadyDesc": "Even if you mark the page as ready, you can always come back and change it.",
+  "editor.includeInHandbook": "Include this page in the handbook",
+  "editor.includeInHandbookDesc": "Tick to include the page in the handbook, untick to exclude the page.",
+  "editor.notifyEmployees": "Notify employees",
+  "editor.notifyEmployeesDesc": "Check the box to notify employees about this page when it is saved and ready.",
+
+  "editor.responsible": "Responsible",
+  "editor.owner": "Owner",
+  "editor.responsibleNote": "Assign who is responsible for this page. If you have multiple administrators you can divide the responsibility between you.",
+
+  "editor.notes": "Notes",
+  "editor.notesHelper": "Here you can write notes for yourself or others who can edit the pages. Company administrators can see these notes.",
+
+  "editor.visibility": "Visibility",
+  "editor.visibilityDesc": "Restrict this page to specific employment types or departments. Leave both empty to make it visible to all employees.",
+  "editor.visibilitySelected": "{{count}} selected",
+  "editor.employmentTypes": "Employment Types",
+  "editor.departments": "Departments",
+
+  "editor.cancel": "Cancel",
+  "editor.savePage": "Save page",
+  "editor.saving": "Saving...",
+  "editor.pageSaved": "Page saved successfully!",
+  "editor.saveFailed": "Failed to save page. Please try again."
 }

@@ -22,6 +22,8 @@ import { useEmployees } from '@/features/employees/hooks';
 import { useAuth } from '@/context/auth-context';
 import type { HandbookPageDetail, UpdatePagePayload } from '@/types/models';
 import { resolveBackendUrl } from '@/lib/utils';
+import { employmentTypesApi, type EmploymentType } from '@/features/employment-types/api';
+import { departmentsApi, type Department } from '@/features/departments/api';
 
 interface HandbookPageEditorProps {
     pageId?: number;
@@ -81,6 +83,12 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
     const [isReady, setIsReady] = useState(false);
     const [includeInHandbook, setIncludeInHandbook] = useState(false);
     const [notifyEmployees, setNotifyEmployees] = useState(false);
+
+    // Visibility filtering
+    const [employmentTypeIds, setEmploymentTypeIds] = useState<number[]>([]);
+    const [departmentIds, setDepartmentIds] = useState<number[]>([]);
+    const [availableEmploymentTypes, setAvailableEmploymentTypes] = useState<EmploymentType[]>([]);
+    const [availableDepartments, setAvailableDepartments] = useState<Department[]>([]);
 
     // Local upload state
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -148,6 +156,9 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                         setIncludeInHandbook(false);
                         setNotifyEmployees(false);
                     }
+
+                    setEmploymentTypeIds(data.employmentTypeIds || []);
+                    setDepartmentIds(data.departmentIds || []);
                 }
             } catch (err: any) {
                 console.error('Failed to load page:', err);
@@ -159,6 +170,18 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
 
         loadPage();
     }, [pageId, lang]);
+
+    // Fetch available employment types and departments for the company
+    useEffect(() => {
+        if (!user?.companyId) return;
+        const companyId = user.companyId;
+        employmentTypesApi.getEmploymentTypes(companyId)
+            .then(setAvailableEmploymentTypes)
+            .catch(() => { /* ignore — section simply won't show options */ });
+        departmentsApi.getDepartments(companyId)
+            .then(setAvailableDepartments)
+            .catch(() => { /* ignore */ });
+    }, [user?.companyId]);
 
     const toggleSection = (section: string) => {
         const newExpanded = new Set(expandedSections);
@@ -276,6 +299,8 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     includeInHandbook,
                     notifyEmployees,
                 },
+                employmentTypeIds,
+                departmentIds,
             };
 
             await handbookApi.updatePage(pageId, payload, lang);
@@ -284,11 +309,11 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 await handbookApi.saveHandbookContent(pageId, customText, lang);
             }
 
-            toast.success('Page saved successfully!');
+            toast.success(t('editor.pageSaved'));
             onSave?.();
         } catch (err: any) {
             console.error('Failed to save page:', err);
-            toast.error(err.message || 'Failed to save page. Please try again.');
+            toast.error(err.message || t('editor.saveFailed'));
         } finally {
             setSaving(false);
         }
@@ -306,6 +331,8 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
         isReady,
         includeInHandbook,
         notifyEmployees,
+        employmentTypeIds,
+        departmentIds,
         onSave,
     ]);
 
@@ -428,7 +455,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     onClick={() => toggleSection('pictures')}
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
                 >
-                    <span className="font-semibold text-[#0d0e0e]">Pictures</span>
+                    <span className="font-semibold text-[#0d0e0e]">{t('editor.pictures')}</span>
                     <ChevronDown
                         className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('pictures') ? 'rotate-180' : ''
                             }`}
@@ -442,10 +469,10 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 className="flex flex-col items-center justify-center cursor-pointer"
                             >
                                 <Upload className="h-8 w-8 text-[#7b8a85] mx-auto mb-2" />
-                                <p className="text-sm text-[#7b8a85] mb-1">Click to upload image</p>
-                                <p className="text-xs text-[#7b8a85]">Allowed: jpg, jpeg, png</p>
+                                <p className="text-sm text-[#7b8a85] mb-1">{t('editor.clickUploadImage')}</p>
+                                <p className="text-xs text-[#7b8a85]">{t('editor.allowedImageTypes')}</p>
                                 {uploadingImage && (
-                                    <p className="text-xs text-[#4b5563] mt-2">Uploading image...</p>
+                                    <p className="text-xs text-[#4b5563] mt-2">{t('editor.uploadingImage')}</p>
                                 )}
                                 {!uploadingImage && imageUrl && (
                                     <div className="mt-3 flex flex-col items-center gap-2">
@@ -474,7 +501,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                             className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs gap-1"
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
-                                            Remove image
+                                            {t('editor.removeImage')}
                                         </Button>
                                     </div>
                                 )}
@@ -489,10 +516,10 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                         </div>
                         <div className="space-y-2">
                             <Label className="text-sm font-medium text-[#0d0e0e]">
-                                Image placement:
+                                {t('editor.imagePlacement')}
                             </Label>
                             <div className="flex items-center gap-3">
-                                {['before', 'left', 'right', 'after'].map((placement) => (
+                                {(['before', 'left', 'right', 'after'] as const).map((placement) => (
                                     <label key={placement} className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="radio"
@@ -502,7 +529,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                             onChange={() => setImagePlacement(placement)}
                                             className="text-[#3d997d]"
                                         />
-                                        <span className="text-sm text-[#0d0e0e] capitalize">{placement}</span>
+                                        <span className="text-sm text-[#0d0e0e]">{t(`editor.placement${placement.charAt(0).toUpperCase() + placement.slice(1)}`)}</span>
                                     </label>
                                 ))}
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -514,7 +541,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                         onChange={() => setImagePlacement(null)}
                                         className="text-[#3d997d]"
                                     />
-                                    <span className="text-sm text-[#0d0e0e]">None</span>
+                                    <span className="text-sm text-[#0d0e0e]">{t('editor.placementNone')}</span>
                                 </label>
                             </div>
                         </div>
@@ -529,7 +556,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     onClick={() => toggleSection('documents')}
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
                 >
-                    <span className="font-semibold text-[#0d0e0e]">Documents</span>
+                    <span className="font-semibold text-[#0d0e0e]">{t('editor.documents')}</span>
                     <ChevronDown
                         className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('documents') ? 'rotate-180' : ''
                             }`}
@@ -567,12 +594,12 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 className="flex flex-col items-center justify-center cursor-pointer"
                             >
                                 <Upload className="h-8 w-8 text-[#7b8a85] mx-auto mb-2" />
-                                <p className="text-sm text-[#7b8a85] mb-1">Click to upload files</p>
+                                <p className="text-sm text-[#7b8a85] mb-1">{t('editor.clickUploadFiles')}</p>
                                 <p className="text-xs text-[#7b8a85]">
-                                    Allowed: pdf, doc, docx, xls, xlsx, ppt, pptx, etc.
+                                    {t('editor.allowedDocTypes')}
                                 </p>
                                 {uploadingDocuments && (
-                                    <p className="text-xs text-[#4b5563] mt-2">Uploading documents...</p>
+                                    <p className="text-xs text-[#4b5563] mt-2">{t('editor.uploadingDocuments')}</p>
                                 )}
                             </label>
                             <input
@@ -594,7 +621,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     onClick={() => toggleSection('links')}
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
                 >
-                    <span className="font-semibold text-[#0d0e0e]">Links</span>
+                    <span className="font-semibold text-[#0d0e0e]">{t('editor.links')}</span>
                     <ChevronDown
                         className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('links') ? 'rotate-180' : ''
                             }`}
@@ -605,7 +632,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                         {links.map((link, index) => (
                             <div key={index} className="flex items-end gap-3">
                                 <div className="flex-1 space-y-1">
-                                    <Label className="text-xs font-medium text-[#7b8a85]">Title</Label>
+                                    <Label className="text-xs font-medium text-[#7b8a85]">{t('editor.linkTitle')}</Label>
                                     <Input
                                         value={link.title}
                                         onChange={(e) => updateLink(index, 'title', e.target.value)}
@@ -614,7 +641,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                     />
                                 </div>
                                 <div className="flex-1 space-y-1">
-                                    <Label className="text-xs font-medium text-[#7b8a85]">URL</Label>
+                                    <Label className="text-xs font-medium text-[#7b8a85]">{t('editor.url')}</Label>
                                     <Input
                                         value={link.uri}
                                         onChange={(e) => updateLink(index, 'uri', e.target.value)}
@@ -641,7 +668,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                             className="border-[#c8d8d3] text-[#1a5948] rounded-[8px] px-3 h-8 text-xs gap-1"
                         >
                             <Plus className="h-3.5 w-3.5" />
-                            Add link
+                            {t('editor.addLink')}
                         </Button>
                         <p className="text-sm text-[#7b8a85]">
                             <span className="font-semibold">Note:</span> Add https:// in front of your website link.
@@ -657,7 +684,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     onClick={() => toggleSection('others')}
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
                 >
-                    <span className="font-semibold text-[#0d0e0e]">Others</span>
+                    <span className="font-semibold text-[#0d0e0e]">{t('editor.others')}</span>
                     <ChevronDown
                         className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('others') ? 'rotate-180' : ''
                             }`}
@@ -674,9 +701,9 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 className="rounded-[4px] border-[#3d997d] h-4 w-4 mt-0.5"
                             />
                             <span className="text-sm text-[#0d0e0e]">
-                                Ask for a receipt{' '}
+                                {t('editor.askForReceipt')}{' '}
                                 <span className="text-[#7b8a85]">
-                                    (Ask the employees for a receipt that they have viewed this page.)
+                                    ({t('editor.askForReceiptDesc')})
                                 </span>
                             </span>
                         </label>
@@ -694,9 +721,9 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 className="rounded-[4px] border-[#3d997d] h-4 w-4 mt-0.5"
                             />
                             <span className="text-sm text-[#0d0e0e]">
-                                I think the page is ready now{' '}
+                                {t('editor.isReady')}{' '}
                                 <span className="text-[#7b8a85]">
-                                    (Even if you mark the page as ready, you can always come back and change it.)
+                                    ({t('editor.isReadyDesc')})
                                 </span>
                             </span>
                         </label>
@@ -711,9 +738,9 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 className="rounded-[4px] border-[#3d997d] h-4 w-4 mt-0.5 disabled:opacity-50"
                             />
                             <span className="text-sm text-[#0d0e0e]">
-                                Include this page in the handbook{' '}
+                                {t('editor.includeInHandbook')}{' '}
                                 <span className="text-[#7b8a85]">
-                                    (Tick to include the page in the handbook, untick to exclude the page.)
+                                    ({t('editor.includeInHandbookDesc')})
                                 </span>
                             </span>
                         </label>
@@ -727,9 +754,9 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 className="rounded-[4px] border-[#3d997d] h-4 w-4 mt-0.5"
                             />
                             <span className="text-sm text-[#0d0e0e]">
-                                Notify employees{' '}
+                                {t('editor.notifyEmployees')}{' '}
                                 <span className="text-[#7b8a85]">
-                                    (Check the box to notify employees about this page when it is saved and ready.)
+                                    ({t('editor.notifyEmployeesDesc')})
                                 </span>
                             </span>
                         </label>
@@ -744,7 +771,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     onClick={() => toggleSection('responsible')}
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
                 >
-                    <span className="font-semibold text-[#0d0e0e]">Responsible</span>
+                    <span className="font-semibold text-[#0d0e0e]">{t('editor.responsible')}</span>
                     <ChevronDown
                         className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('responsible') ? 'rotate-180' : ''
                             }`}
@@ -753,7 +780,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 {isSectionExpanded('responsible') && (
                     <div className="px-4 pb-4 space-y-3">
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium text-[#0d0e0e]">Owner</Label>
+                            <Label className="text-sm font-medium text-[#0d0e0e]">{t('editor.owner')}</Label>
                             {employeesLoading ? (
                                 <div className="flex items-center gap-2 text-sm text-[#7b8a85] py-2">
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -799,8 +826,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                             )}
                         </div>
                         <p className="text-sm text-[#7b8a85]">
-                            <span className="font-semibold">Note:</span> Assign who is responsible for this page.
-                            If you have multiple administrators you can divide the responsibility between you.
+                            <span className="font-semibold">Note:</span> {t('editor.responsibleNote')}
                         </p>
                     </div>
                 )}
@@ -813,7 +839,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     onClick={() => toggleSection('notes')}
                     className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
                 >
-                    <span className="font-semibold text-[#0d0e0e]">Notes</span>
+                    <span className="font-semibold text-[#0d0e0e]">{t('editor.notes')}</span>
                     <ChevronDown
                         className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('notes') ? 'rotate-180' : ''
                             }`}
@@ -829,12 +855,87 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                             className="rounded-[10px] border border-[#c8d8d3] bg-white resize-none"
                         />
                         <p className="text-sm text-[#7b8a85]">
-                            <span className="font-semibold">Note:</span> Here you can write notes for yourself or
-                            others who can edit the pages. Company administrators can see these notes.
+                            <span className="font-semibold">Note:</span> {t('editor.notesHelper')}
                         </p>
                     </div>
                 )}
             </div>
+
+            {/* Visibility (Employment Types & Departments) */}
+            {(availableEmploymentTypes.length > 0 || availableDepartments.length > 0) && (
+                <div className="border border-[#e5efea] rounded-[12px]">
+                    <button
+                        type="button"
+                        onClick={() => toggleSection('visibility')}
+                        className="w-full flex items-center justify-between p-4 text-left hover:bg-[#f6fbf9] transition-colors"
+                    >
+                        <span className="font-semibold text-[#0d0e0e]">
+                            {t('editor.visibility')}
+                            {(employmentTypeIds.length > 0 || departmentIds.length > 0) && (
+                                <span className="ml-2 text-xs font-normal text-[#7b8a85]">
+                                    ({t('editor.visibilitySelected', { count: employmentTypeIds.length + departmentIds.length })})
+                                </span>
+                            )}
+                        </span>
+                        <ChevronDown
+                            className={`h-4 w-4 text-[#7b8a85] transition-transform ${isSectionExpanded('visibility') ? 'rotate-180' : ''}`}
+                        />
+                    </button>
+                    {isSectionExpanded('visibility') && (
+                        <div className="px-4 pb-4 space-y-4">
+                            <p className="text-sm text-[#7b8a85]">
+                                {t('editor.visibilityDesc')}
+                            </p>
+
+                            {availableEmploymentTypes.length > 0 && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-[#0d0e0e]">{t('editor.employmentTypes')}</Label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {availableEmploymentTypes.map((et) => (
+                                            <label key={et.id} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-[#f6fbf9]">
+                                                <Checkbox
+                                                    checked={employmentTypeIds.includes(et.id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setEmploymentTypeIds((prev) => [...prev, et.id]);
+                                                        } else {
+                                                            setEmploymentTypeIds((prev) => prev.filter((id) => id !== et.id));
+                                                        }
+                                                    }}
+                                                />
+                                                <span className="text-sm text-[#0d0e0e]">{et.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {availableDepartments.length > 0 && (
+                                <div className="space-y-2">
+                                    <Label className="text-sm font-medium text-[#0d0e0e]">{t('editor.departments')}</Label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {availableDepartments.map((dept) => (
+                                            <label key={dept.id} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-[#f6fbf9]">
+                                                <Checkbox
+                                                    checked={departmentIds.includes(dept.id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setDepartmentIds((prev) => [...prev, dept.id]);
+                                                        } else {
+                                                            setDepartmentIds((prev) => prev.filter((id) => id !== dept.id));
+                                                        }
+                                                    }}
+                                                />
+                                                <span className="text-sm text-[#0d0e0e]">{dept.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -846,7 +947,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                         disabled={saving}
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-6 py-2 h-auto text-sm"
                     >
-                        Cancel
+                        {t('editor.cancel')}
                     </Button>
                 )}
                 <Button
@@ -859,10 +960,10 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                     {saving ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                            Saving...
+                            {t('editor.saving')}
                         </>
                     ) : (
-                        'Save page'
+                        t('editor.savePage')
                     )}
                 </Button>
             </div>

@@ -131,6 +131,13 @@ export const RolesPermissionsModal: React.FC<RolesPermissionsModalProps> = ({
                                                 )}
                                             </span>
 
+                                            {/* Inactive badge */}
+                                            {emp.status === 'INACTIVE' && (
+                                                <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af] bg-[#f3f4f6] rounded-full px-2 py-0.5 flex-shrink-0">
+                                                    Inactive
+                                                </span>
+                                            )}
+
                                             {/* Employment type badge */}
                                             {emp.employmentType && emp.employmentType !== 'N/A' && (
                                                 <span className="text-[10px] font-semibold uppercase tracking-wide text-[#3d997d] bg-[#e8f5ef] rounded-full px-2 py-0.5 flex-shrink-0">

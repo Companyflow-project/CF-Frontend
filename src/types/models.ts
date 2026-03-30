@@ -193,6 +193,8 @@ export interface HandbookPageDetail {
     notifyEmployees: boolean;
   };
   isDeletable: boolean;
+  employmentTypeIds?: number[];
+  departmentIds?: number[];
 }
 
 export interface HandbookPage extends HandbookPageDetail { }
@@ -231,6 +233,8 @@ export interface UpdatePagePayload {
     includeInHandbook: boolean;
     notifyEmployees: boolean;
   };
+  employmentTypeIds?: number[];
+  departmentIds?: number[];
 }
 
 export interface CompanyProfile {
