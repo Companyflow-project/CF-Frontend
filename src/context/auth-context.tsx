@@ -47,9 +47,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     checkAuth();
-  }, [syncLanguage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = async (email: string, password: string) => {
+    // Clear any stale session before logging in as a new user
+    localStorage.removeItem('token');
+    try { sessionStorage.removeItem('auth_user_company'); } catch { /* ignore */ }
+    setUser(null);
+
     const userData = await authApi.login({ email, password });
     setUser(userData);
     syncLanguage(userData);
@@ -77,8 +83,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = async () => {
-    await authApi.logout();
-    setUser(null);
+    try {
+      await authApi.logout();
+    } finally {
+      // Always clear user state even if the logout API call fails
+      setUser(null);
+    }
   };
 
   return (
