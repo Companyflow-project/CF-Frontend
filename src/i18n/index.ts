@@ -10,6 +10,7 @@ import daEmployees from './locales/da/employees.json';
 import daHandbook from './locales/da/handbook.json';
 import daAccount from './locales/da/account.json';
 import daContacts from './locales/da/contacts.json';
+import daAdmin from './locales/da/admin.json';
 
 // English translations
 import enCommon from './locales/en/common.json';
@@ -19,6 +20,7 @@ import enEmployees from './locales/en/employees.json';
 import enHandbook from './locales/en/handbook.json';
 import enAccount from './locales/en/account.json';
 import enContacts from './locales/en/contacts.json';
+import enAdmin from './locales/en/admin.json';
 
 // Migrate legacy handbook-lang localStorage key to i18nextLng
 try {
@@ -43,6 +45,7 @@ i18n
         handbook: daHandbook,
         account: daAccount,
         contacts: daContacts,
+        admin: daAdmin,
       },
       en: {
         common: enCommon,
@@ -52,12 +55,13 @@ i18n
         handbook: enHandbook,
         account: enAccount,
         contacts: enContacts,
+        admin: enAdmin,
       },
     },
     lng: undefined, // let detector decide; falls back to 'da'
     fallbackLng: 'da',
     defaultNS: 'common',
-    ns: ['common', 'auth', 'console', 'employees', 'handbook', 'account', 'contacts'],
+    ns: ['common', 'auth', 'console', 'employees', 'handbook', 'account', 'contacts', 'admin'],
     interpolation: {
       escapeValue: false, // React already escapes
     },

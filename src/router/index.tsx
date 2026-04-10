@@ -12,6 +12,19 @@ import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
 import { companiesRoutes } from '@/features/companies/routes';
 import { userManualRoutes } from '@/features/user-manual/routes';
+import { adminRoutes } from '@/features/admin/routes';
+import { AdminLayout } from '@/features/admin/layouts/admin-layout';
+
+// Admin pages (lazy-loaded)
+const AdminDashboardPage = lazy(() => import('@/features/admin/pages/admin-dashboard-page').then((m) => ({ default: m.AdminDashboardPage })));
+const AdminCompaniesPage = lazy(() => import('@/features/admin/pages/admin-companies-page').then((m) => ({ default: m.AdminCompaniesPage })));
+const AdminCompanyDetailPage = lazy(() => import('@/features/admin/pages/admin-company-detail-page').then((m) => ({ default: m.AdminCompanyDetailPage })));
+const AdminCreateCompanyPage = lazy(() => import('@/features/admin/pages/admin-create-company-page').then((m) => ({ default: m.AdminCreateCompanyPage })));
+const AdminUsersPage = lazy(() => import('@/features/admin/pages/admin-users-page').then((m) => ({ default: m.AdminUsersPage })));
+const AdminSubscriptionsPage = lazy(() => import('@/features/admin/pages/admin-subscriptions-page').then((m) => ({ default: m.AdminSubscriptionsPage })));
+const AdminActivityPage = lazy(() => import('@/features/admin/pages/admin-activity-page').then((m) => ({ default: m.AdminActivityPage })));
+const AdminAnalyticsPage = lazy(() => import('@/features/admin/pages/admin-analytics-page').then((m) => ({ default: m.AdminAnalyticsPage })));
+const AdminSettingsPage = lazy(() => import('@/features/admin/pages/admin-settings-page').then((m) => ({ default: m.AdminSettingsPage })));
 
 const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
@@ -143,6 +156,15 @@ const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   }
 
+  return <>{children}</>;
+};
+
+const RequirePlatformAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <PageFallback />;
+  if (!user || user.role !== 'administrator') {
+    return <Navigate to="/" replace />;
+  }
   return <>{children}</>;
 };
 
@@ -656,6 +678,115 @@ export const AppRouter: React.FC = () => {
                 <AppLayout>
                   <HandbookViewerPage />
                 </AppLayout>
+              </RequireAuth>
+            }
+          />
+          {/* Admin panel routes (platform administrator only) */}
+          <Route
+            path={adminRoutes.dashboard}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminDashboardPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.createCompany}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCreateCompanyPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.companyDetail}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCompanyDetailPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.companies}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCompaniesPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.users}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminUsersPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.subscriptions}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminSubscriptionsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.activity}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminActivityPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.analytics}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminAnalyticsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.settings}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminSettingsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
               </RequireAuth>
             }
           />

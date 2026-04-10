@@ -1,0 +1,209 @@
+{
+  "nav": {
+    "console": "Console",
+    "companies": "Companies",
+    "crm": "CRM",
+    "invoices": "Invoices",
+    "newsletters": "Newsletters",
+    "support": "Support",
+    "help": "Help"
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {{name}}",
+    "title": "Control Panel",
+    "infoList": "Information List",
+    "keyFigures": "Key Figures",
+    "cards": {
+      "companies": "Companies",
+      "companiesDesc": "Searchable company overview and management.",
+      "goToCompanies": "Go to Companies →",
+      "createBusiness": "Create a business",
+      "sources": "Sources",
+      "supportTickets": "Support Tickets",
+      "supportDesc": "View and create support tickets for your customers.",
+      "openTickets": "Open Tickets →",
+      "createTicket": "Create new ticket",
+      "ticketSettings": "Ticket settings",
+      "crmToDo": "CRM To-Do",
+      "crmDesc": "List of CRM activities and follow-ups.",
+      "openCrm": "Open CRM →",
+      "addActivity": "Add activity",
+      "newsletters": "Newsletters",
+      "newslettersDesc": "View and create newsletters.",
+      "openNewsletters": "Open Newsletters →",
+      "createNewsletter": "Create newsletter",
+      "handbook": "Management Handbook",
+      "handbookDesc": "Good advice for business leaders.",
+      "openHandbook": "Open Handbook →",
+      "browseArticles": "Browse articles"
+    },
+    "latestCompanies": "Latest Companies",
+    "viewAll": "View All",
+    "columns": {
+      "business": "Business",
+      "name": "Name",
+      "category": "Category",
+      "tel": "Tel.",
+      "created": "Created"
+    },
+    "employeeTraffic": "Employees Traffic",
+    "adminTraffic": "Administrators Traffic",
+    "trafficColumns": {
+      "daysAgo": "Days Ago",
+      "number": "Number"
+    },
+    "recentActivities": "Recent Activities",
+    "addActivityBtn": "+ Add Activity"
+  },
+  "companies": {
+    "title": "Companies",
+    "sources": "Sources",
+    "createNew": "+ Create New Business",
+    "search": "Search companies...",
+    "sortBy": "Sort",
+    "filterCategory": "Filter",
+    "all": "All",
+    "columns": {
+      "business": "Business",
+      "subscription": "Subscription",
+      "quickLinks": "Quick Links",
+      "actions": "Actions"
+    },
+    "customerNo": "Customer no.: {{id}}",
+    "product": "Product: {{name}}",
+    "licenses": "Licenses: {{used}} / {{total}}",
+    "sms": "SMSs: {{used}} / {{cap}}",
+    "sender": "Sender: {{name}}",
+    "whistleblower": "Whistleblower: {{status}}",
+    "start": "Start: {{date}}",
+    "end": "End: {{date}}",
+    "timeLeft": "{{time}} left",
+    "links": {
+      "allPages": "All pages",
+      "createHandbook": "Create your handbook",
+      "controlPanel": "Control panel",
+      "employees": "Employees",
+      "addCrmActivity": "Add CRM activity"
+    },
+    "actions": {
+      "edit": "Edit",
+      "wise": "Wise",
+      "reset": "Reset",
+      "deleteAll": "Delete everything"
+    },
+    "showing": "Showing {{from}}–{{to}} of {{total}} companies",
+    "perPage": "per page"
+  },
+  "companyDetail": {
+    "back": "← Back to Companies",
+    "subscription": "Subscription",
+    "editSubscription": "Edit Subscription",
+    "employees": "Employees",
+    "handbooks": "Handbooks"
+  },
+  "subscriptionEdit": {
+    "title": "Edit Subscription",
+    "licenses": "Licenses",
+    "smsCredits": "SMS Credits",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "save": "Save Changes",
+    "cancel": "Cancel"
+  },
+  "users": {
+    "title": "Users",
+    "search": "Search users...",
+    "filterRole": "Role",
+    "filterStatus": "Status",
+    "filterCompany": "Company",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "company": "Company",
+      "status": "Status",
+      "lastActive": "Last Active"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "moveCompany": "Move to Company"
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "columns": {
+      "company": "Company",
+      "product": "Product",
+      "start": "Start",
+      "end": "End",
+      "daysLeft": "Days Left",
+      "licenses": "Licenses",
+      "sms": "SMS",
+      "status": "Status"
+    },
+    "expired": "Expired",
+    "expiring": "Expiring",
+    "active": "Active"
+  },
+  "activity": {
+    "title": "Activity Log",
+    "noActivity": "No activity recorded yet.",
+    "actions": {
+      "subscription_updated": "Updated subscription",
+      "user_role_changed": "Changed user role",
+      "user_status_changed": "Changed user status",
+      "user_moved": "Moved user to another company",
+      "company_created": "Created company",
+      "company_deleted": "Deleted company"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "signupsPerWeek": "Company Signups (Last 12 Weeks)",
+    "userGrowth": "New Users (Last 12 Weeks)",
+    "smsUsage": "SMS Usage (Last 6 Months)"
+  },
+  "settings": {
+    "title": "Platform Settings",
+    "trialLength": "Default Trial Length (days)",
+    "smsPricing": "SMS Pricing",
+    "save": "Save Settings"
+  },
+  "createCompany": {
+    "title": "Create a Business",
+    "cvrLookup": "CVR Lookup",
+    "cvrDesc": "Autofill business details from the Danish CVR registry.",
+    "lookupBtn": "Look up CVR number",
+    "business": "Business",
+    "name": "Name",
+    "email": "Email",
+    "telephone": "Telephone",
+    "category": "Category",
+    "categoryDesc": "Select the customer category for this business.",
+    "contactPerson": "Primary Contact Person",
+    "contactDesc": "Fill in the Name field with the user's real name.",
+    "internalName": "Internal name",
+    "internalNameDesc": "The internal username is created automatically",
+    "mobilePhone": "Mobile phone",
+    "sendEmail": "Send email to primary contact person",
+    "subscription": "Subscription",
+    "product": "Product",
+    "licenses": "Licenses",
+    "source": "Source",
+    "nothingSelected": "— Nothing selected —",
+    "create": "Create",
+    "createAndCrm": "Create and add CRM activity",
+    "createAndAdmin": "Create and add company administrator",
+    "note": "Please note that it may take a few minutes to create a business."
+  },
+  "impersonate": {
+    "title": "Change user view",
+    "namePlaceholder": "Name",
+    "change": "Change"
+  },
+  "switchTo": "Switch to",
+  "adminAccount": "Admin Account",
+  "viewInvoices": "View Invoices",
+  "createBusiness": "Create a Business"
+}

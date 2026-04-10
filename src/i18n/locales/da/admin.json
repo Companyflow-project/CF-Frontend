@@ -1,0 +1,209 @@
+{
+  "nav": {
+    "console": "Konsol",
+    "companies": "Virksomheder",
+    "crm": "CRM",
+    "invoices": "Fakturaer",
+    "newsletters": "Nyhedsbreve",
+    "support": "Support",
+    "help": "Hjælp"
+  },
+  "dashboard": {
+    "welcome": "Velkommen tilbage, {{name}}",
+    "title": "Kontrolpanel",
+    "infoList": "Informationsliste",
+    "keyFigures": "Nøgletal",
+    "cards": {
+      "companies": "Virksomheder",
+      "companiesDesc": "Søgbar virksomhedsoversigt og administration.",
+      "goToCompanies": "Gå til Virksomheder →",
+      "createBusiness": "Opret en virksomhed",
+      "sources": "Kilder",
+      "supportTickets": "Support Tickets",
+      "supportDesc": "Se og opret support tickets til dine kunder.",
+      "openTickets": "Åbn Tickets →",
+      "createTicket": "Opret ny ticket",
+      "ticketSettings": "Ticket indstillinger",
+      "crmToDo": "CRM To-Do",
+      "crmDesc": "Liste over CRM-aktiviteter og opfølgninger.",
+      "openCrm": "Åbn CRM →",
+      "addActivity": "Tilføj aktivitet",
+      "newsletters": "Nyhedsbreve",
+      "newslettersDesc": "Se og opret nyhedsbreve.",
+      "openNewsletters": "Åbn Nyhedsbreve →",
+      "createNewsletter": "Opret nyhedsbrev",
+      "handbook": "Lederhåndbogen",
+      "handbookDesc": "Gode råd til virksomhedsledere.",
+      "openHandbook": "Åbn Håndbog →",
+      "browseArticles": "Gennemse artikler"
+    },
+    "latestCompanies": "Seneste Virksomheder",
+    "viewAll": "Se Alle",
+    "columns": {
+      "business": "Virksomhed",
+      "name": "Navn",
+      "category": "Kategori",
+      "tel": "Tlf.",
+      "created": "Oprettet"
+    },
+    "employeeTraffic": "Medarbejder Trafik",
+    "adminTraffic": "Administrator Trafik",
+    "trafficColumns": {
+      "daysAgo": "Dage Siden",
+      "number": "Antal"
+    },
+    "recentActivities": "Seneste Aktiviteter",
+    "addActivityBtn": "+ Tilføj Aktivitet"
+  },
+  "companies": {
+    "title": "Virksomheder",
+    "sources": "Kilder",
+    "createNew": "+ Opret Ny Virksomhed",
+    "search": "Søg virksomheder...",
+    "sortBy": "Sorter",
+    "filterCategory": "Filter",
+    "all": "Alle",
+    "columns": {
+      "business": "Virksomhed",
+      "subscription": "Abonnement",
+      "quickLinks": "Genveje",
+      "actions": "Handlinger"
+    },
+    "customerNo": "Kundenr.: {{id}}",
+    "product": "Produkt: {{name}}",
+    "licenses": "Licenser: {{used}} / {{total}}",
+    "sms": "SMS: {{used}} / {{cap}}",
+    "sender": "Afsender: {{name}}",
+    "whistleblower": "Whistleblower: {{status}}",
+    "start": "Start: {{date}}",
+    "end": "Slut: {{date}}",
+    "timeLeft": "{{time}} tilbage",
+    "links": {
+      "allPages": "Alle sider",
+      "createHandbook": "Opret din håndbog",
+      "controlPanel": "Kontrolpanel",
+      "employees": "Medarbejdere",
+      "addCrmActivity": "Tilføj CRM aktivitet"
+    },
+    "actions": {
+      "edit": "Rediger",
+      "wise": "Wise",
+      "reset": "Nulstil",
+      "deleteAll": "Slet alt"
+    },
+    "showing": "Viser {{from}}–{{to}} af {{total}} virksomheder",
+    "perPage": "pr. side"
+  },
+  "companyDetail": {
+    "back": "← Tilbage til Virksomheder",
+    "subscription": "Abonnement",
+    "editSubscription": "Rediger Abonnement",
+    "employees": "Medarbejdere",
+    "handbooks": "Håndbøger"
+  },
+  "subscriptionEdit": {
+    "title": "Rediger Abonnement",
+    "licenses": "Licenser",
+    "smsCredits": "SMS Kreditter",
+    "startDate": "Startdato",
+    "endDate": "Slutdato",
+    "save": "Gem Ændringer",
+    "cancel": "Annuller"
+  },
+  "users": {
+    "title": "Brugere",
+    "search": "Søg brugere...",
+    "filterRole": "Rolle",
+    "filterStatus": "Status",
+    "filterCompany": "Virksomhed",
+    "columns": {
+      "name": "Navn",
+      "email": "Email",
+      "role": "Rolle",
+      "company": "Virksomhed",
+      "status": "Status",
+      "lastActive": "Sidst Aktiv"
+    },
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "activate": "Aktiver",
+    "deactivate": "Deaktiver",
+    "moveCompany": "Flyt til Virksomhed"
+  },
+  "subscriptions": {
+    "title": "Abonnementer",
+    "columns": {
+      "company": "Virksomhed",
+      "product": "Produkt",
+      "start": "Start",
+      "end": "Slut",
+      "daysLeft": "Dage Tilbage",
+      "licenses": "Licenser",
+      "sms": "SMS",
+      "status": "Status"
+    },
+    "expired": "Udløbet",
+    "expiring": "Udløber snart",
+    "active": "Aktiv"
+  },
+  "activity": {
+    "title": "Aktivitetslog",
+    "noActivity": "Ingen aktivitet registreret endnu.",
+    "actions": {
+      "subscription_updated": "Opdaterede abonnement",
+      "user_role_changed": "Ændrede brugerrolle",
+      "user_status_changed": "Ændrede brugerstatus",
+      "user_moved": "Flyttede bruger til anden virksomhed",
+      "company_created": "Oprettede virksomhed",
+      "company_deleted": "Slettede virksomhed"
+    }
+  },
+  "analytics": {
+    "title": "Analyser",
+    "signupsPerWeek": "Virksomhedstilmeldinger (Sidste 12 Uger)",
+    "userGrowth": "Nye Brugere (Sidste 12 Uger)",
+    "smsUsage": "SMS Forbrug (Sidste 6 Måneder)"
+  },
+  "settings": {
+    "title": "Platformindstillinger",
+    "trialLength": "Standard prøveperiode (dage)",
+    "smsPricing": "SMS Priser",
+    "save": "Gem Indstillinger"
+  },
+  "createCompany": {
+    "title": "Opret en Virksomhed",
+    "cvrLookup": "CVR Opslag",
+    "cvrDesc": "Autoudfyld virksomhedsoplysninger fra det danske CVR-register.",
+    "lookupBtn": "Slå CVR-nummer op",
+    "business": "Virksomhed",
+    "name": "Navn",
+    "email": "Email",
+    "telephone": "Telefon",
+    "category": "Kategori",
+    "categoryDesc": "Vælg kundekategori for denne virksomhed.",
+    "contactPerson": "Primær Kontaktperson",
+    "contactDesc": "Udfyld Navn-feltet med brugerens rigtige navn.",
+    "internalName": "Internt navn",
+    "internalNameDesc": "Det interne brugernavn oprettes automatisk",
+    "mobilePhone": "Mobiltelefon",
+    "sendEmail": "Send email til primær kontaktperson",
+    "subscription": "Abonnement",
+    "product": "Produkt",
+    "licenses": "Licenser",
+    "source": "Kilde",
+    "nothingSelected": "— Intet valgt —",
+    "create": "Opret",
+    "createAndCrm": "Opret og tilføj CRM aktivitet",
+    "createAndAdmin": "Opret og tilføj virksomhedsadministrator",
+    "note": "Bemærk venligst at det kan tage et par minutter at oprette en virksomhed."
+  },
+  "impersonate": {
+    "title": "Skift brugervisning",
+    "namePlaceholder": "Navn",
+    "change": "Skift"
+  },
+  "switchTo": "Skift til",
+  "adminAccount": "Admin Konto",
+  "viewInvoices": "Se Fakturaer",
+  "createBusiness": "Opret en Virksomhed"
+}
