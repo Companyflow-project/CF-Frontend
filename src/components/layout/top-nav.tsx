@@ -187,9 +187,20 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                   </div>
                 )}
               </div>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
-                {getInitials(user.name)}
-              </div>
+              {user.role === 'administrator' ? (
+                <Link
+                  to="/admin"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
+                  style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
+                  title={t('nav.switchToAdmin', 'Switch to Admin Console')}
+                >
+                  {getInitials(user.name)}
+                </Link>
+              ) : (
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
+                  {getInitials(user.name)}
+                </div>
+              )}
               <Button
                 type="button"
                 variant="outline"

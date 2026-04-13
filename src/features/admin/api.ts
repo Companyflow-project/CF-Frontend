@@ -53,6 +53,20 @@ export const adminApi = {
     await axiosClient.put(`/admin/companies/${companyId}/subscription`, data);
   },
 
+  updateCompany: async (companyId: string, data: Record<string, unknown>): Promise<void> => {
+    await axiosClient.patch(`/admin/companies/${companyId}`, data);
+  },
+
+  createCrmActivity: async (data: Record<string, unknown>): Promise<{ nid: number }> => {
+    const res = await axiosClient.post('/admin/crm/activities', data);
+    return unwrap(res);
+  },
+
+  getCrmTaxonomy: async (): Promise<{ types: Array<{ tid: number; name: string }>; statuses: Array<{ tid: number; name: string }> }> => {
+    const res = await axiosClient.get('/admin/crm/taxonomy');
+    return unwrap(res);
+  },
+
   createCompany: async (data: CreateCompanyPayload): Promise<{ nid: number }> => {
     const res = await axiosClient.post('/admin/companies', data);
     return unwrap<{ nid: number }>(res);
@@ -98,6 +112,71 @@ export const adminApi = {
 
   updateSettings: async (data: PlatformSettings): Promise<void> => {
     await axiosClient.put('/admin/settings', data);
+  },
+
+  // --- Key Figures ---
+  getKeyFigures: async (params: Record<string, unknown>): Promise<PaginatedResponse<Array<{ nid: number; business: string; licenses: number; used: number; exploitationPct: number; lastAccess: number | null; lastEdited: number | null; published: boolean; flagged: 'none' | 'pink' }>>> => {
+    const res = await axiosClient.get('/admin/key-figures', { params });
+    return res.data as PaginatedResponse<Array<{ nid: number; business: string; licenses: number; used: number; exploitationPct: number; lastAccess: number | null; lastEdited: number | null; published: boolean; flagged: 'none' | 'pink' }>>;
+  },
+
+  getKeyFiguresTraffic: async (params: Record<string, unknown>): Promise<PaginatedResponse<Array<{ uid: number; name: string; business: string; roles: string[]; lastAccess: number }>>> => {
+    const res = await axiosClient.get('/admin/key-figures/traffic', { params });
+    return res.data as PaginatedResponse<Array<{ uid: number; name: string; business: string; roles: string[]; lastAccess: number }>>;
+  },
+
+  getKeyFiguresKeywords: async (params: Record<string, unknown>): Promise<PaginatedResponse<Array<{ word: string; count: number; latestSearch: number }>>> => {
+    const res = await axiosClient.get('/admin/key-figures/keywords', { params });
+    return res.data as PaginatedResponse<Array<{ word: string; count: number; latestSearch: number }>>;
+  },
+
+  // --- Tickets ---
+  getTicketFilters: async (): Promise<{ priorities: Array<{ key: string; label: string; count: number }>; statuses: Array<{ tid: number; key: string; label: string; count: number }>; lists: Array<{ tid: number; name: string }>; responsibles: Array<{ uid: number; name: string; colorSeed: string }>; authors: Array<{ uid: number; name: string; colorSeed: string }> }> => {
+    const res = await axiosClient.get('/admin/tickets/filters');
+    return unwrap(res);
+  },
+
+  getTickets: async (params: Record<string, unknown>): Promise<PaginatedResponse<Array<{ nid: number; title: string; body: string; created: number; priority: string; priorityKey: string; status: string; statusKey: string; listName: string | null; responsibleUid: number | null; responsibleName: string; authorUid: number; authorName: string }>>> => {
+    const res = await axiosClient.get('/admin/tickets', { params });
+    return res.data as PaginatedResponse<Array<{ nid: number; title: string; body: string; created: number; priority: string; priorityKey: string; status: string; statusKey: string; listName: string | null; responsibleUid: number | null; responsibleName: string; authorUid: number; authorName: string }>>;
+  },
+
+  // --- Invoices ---
+  getInvoices: async (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }): Promise<PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>> => {
+    const res = await axiosClient.get('/admin/invoices', { params });
+    return res.data as PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>;
+  },
+
+  exportInvoicesCsv: async (params: { customersOnly?: boolean; search?: string }): Promise<Blob> => {
+    const res = await axiosClient.get('/admin/invoices/export', { params, responseType: 'blob' });
+    return res.data as Blob;
+  },
+
+  // --- CRM ---
+  getCrmUsers: async (): Promise<Array<{ uid: number; name: string; initials: string; colorSeed: string }>> => {
+    const res = await axiosClient.get('/admin/crm/users');
+    return unwrap(res);
+  },
+
+  getCrmSummary: async (params: Record<string, unknown>): Promise<{ total: number; meetings: number; automatic: number; other: number }> => {
+    const res = await axiosClient.get('/admin/crm/summary', { params });
+    return unwrap(res);
+  },
+
+  getCrmActivities: async (params: Record<string, unknown>): Promise<PaginatedResponse<Array<{ id: number; companyId: number; companyName: string; activity: string; type: string; typeKey: string; status: string; fupDate: string | null; writtenOn: string; responsibleUid: number | null; responsibleName: string; colorSeed: string }>>> => {
+    const res = await axiosClient.get('/admin/crm/activities', { params });
+    return res.data as PaginatedResponse<Array<{ id: number; companyId: number; companyName: string; activity: string; type: string; typeKey: string; status: string; fupDate: string | null; writtenOn: string; responsibleUid: number | null; responsibleName: string; colorSeed: string }>>;
+  },
+
+  // --- Sources ---
+  getSourceFilters: async (): Promise<{ sources: Array<{ label: string; count: number }>; categories: Array<{ label: string; count: number }> }> => {
+    const res = await axiosClient.get('/admin/sources/filters');
+    return unwrap(res);
+  },
+
+  getSourceCompanies: async (params: { page?: number; limit?: number; source?: string; category?: string }): Promise<PaginatedResponse<Array<{ nid: number; title: string; source: string; category: string; created: number; mupDate: string | null }>>> => {
+    const res = await axiosClient.get('/admin/sources/companies', { params });
+    return res.data as PaginatedResponse<Array<{ nid: number; title: string; source: string; category: string; created: number; mupDate: string | null }>>;
   },
 
   // --- Impersonation (Phase 4) ---

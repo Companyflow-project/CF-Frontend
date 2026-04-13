@@ -44,28 +44,28 @@ export const AdminActivityPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t('activity.title')}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          {t('activity.title', 'Activity')}
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('activity.description')}
+          {t('activity.description', 'Admin activity log')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('activity.log')}</CardTitle>
+          <CardTitle>{t('activity.log', 'Log')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="py-12 text-center text-gray-400">
-              {t('common.loading')}
+              {t('common.loading', 'Loading...')}
             </div>
           ) : entries.length === 0 ? (
             <div className="py-12 text-center text-gray-400">
-              {t('activity.noEntries')}
+              {t('activity.noEntries', 'No activity entries')}
             </div>
           ) : (
             <>
@@ -73,7 +73,7 @@ export const AdminActivityPage: React.FC = () => {
                 {entries.map((entry, idx) => (
                   <div
                     key={entry.id}
-                    className="relative flex items-start gap-4 py-4 border-b border-gray-100 last:border-b-0"
+                    className="relative flex items-start gap-3 sm:gap-4 py-4 border-b border-gray-100 last:border-b-0"
                   >
                     {/* Timeline connector */}
                     <div className="flex flex-col items-center">
@@ -120,7 +120,7 @@ export const AdminActivityPage: React.FC = () => {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
                 <p className="text-sm text-gray-500">
                   {t('common.pagination', {
                     from: (page - 1) * PAGE_SIZE + 1,

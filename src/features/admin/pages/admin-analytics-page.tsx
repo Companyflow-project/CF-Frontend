@@ -10,6 +10,7 @@ interface BarChartProps {
 }
 
 const HorizontalBarChart: React.FC<BarChartProps> = ({ title, data, color }) => {
+  const { t } = useTranslation('admin');
   const maxValue = Math.max(...data.map((d) => d.value), 1);
 
   return (
@@ -20,13 +21,13 @@ const HorizontalBarChart: React.FC<BarChartProps> = ({ title, data, color }) => 
       <CardContent>
         {data.length === 0 ? (
           <div className="py-8 text-center text-gray-400 text-sm">
-            No data available
+            {t('analytics.noData', 'No data available')}
           </div>
         ) : (
           <div className="space-y-3">
             {data.map((item) => (
-              <div key={item.label} className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 w-20 text-right tabular-nums flex-shrink-0 truncate">
+              <div key={item.label} className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs text-gray-500 w-16 sm:w-20 text-right tabular-nums flex-shrink-0 truncate">
                   {item.label}
                 </span>
                 <div className="flex-1 h-7 bg-gray-100 rounded-md overflow-hidden relative">
@@ -71,41 +72,43 @@ export const AdminAnalyticsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
         <div className="py-20 text-center text-gray-400">
-          {t('common.loading')}
+          {t('common.loading', 'Loading...')}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t('analytics.title')}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          {t('analytics.title', 'Analytics')}
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('analytics.description')}
+          {t('analytics.description', 'Platform usage statistics')}
         </p>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
         <HorizontalBarChart
-          title={t('analytics.signupsPerWeek')}
+          title={t('analytics.signupsPerWeek', 'Signups per week')}
           data={signupsData}
           color="#3d997d"
         />
         <HorizontalBarChart
-          title={t('analytics.userGrowth')}
+          title={t('analytics.userGrowth', 'User growth')}
           data={userGrowthData}
           color="#3b82f6"
         />
-        <HorizontalBarChart
-          title={t('analytics.smsUsage')}
-          data={smsData}
-          color="#f59e0b"
-        />
+        <div className="md:col-span-2">
+          <HorizontalBarChart
+            title={t('analytics.smsUsage', 'SMS usage')}
+            data={smsData}
+            color="#f59e0b"
+          />
+        </div>
       </div>
     </div>
   );

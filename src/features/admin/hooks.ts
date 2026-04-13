@@ -47,6 +47,37 @@ export const useUpdateSubscription = () => {
   });
 };
 
+export const useUpdateCompany = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ companyId, data }: { companyId: string; data: Record<string, unknown> }) =>
+      adminApi.updateCompany(companyId, data),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ['admin-company', vars.companyId] });
+      qc.invalidateQueries({ queryKey: ['admin-companies'] });
+    },
+  });
+};
+
+export const useCreateCrmActivity = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Record<string, unknown>) => adminApi.createCrmActivity(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-crm-activities'] });
+      qc.invalidateQueries({ queryKey: ['admin-crm-summary'] });
+    },
+  });
+};
+
+export const useCrmTaxonomy = () => {
+  return useQuery({
+    queryKey: ['admin-crm-taxonomy'],
+    queryFn: () => adminApi.getCrmTaxonomy(),
+    staleTime: 10 * 60_000,
+  });
+};
+
 // --- Users (Phase 2) ---
 export const useAdminUsers = (params: AdminUserListParams) => {
   return useQuery({
@@ -92,6 +123,100 @@ export const useAdminAnalytics = () => {
     queryKey: ['admin-analytics'],
     queryFn: () => adminApi.getAnalytics(),
     staleTime: 5 * 60_000,
+  });
+};
+
+// --- Key Figures ---
+export const useKeyFigures = (params: Record<string, unknown>) => {
+  return useQuery({
+    queryKey: ['admin-key-figures', params],
+    queryFn: () => adminApi.getKeyFigures(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useKeyFiguresTraffic = (params: Record<string, unknown>) => {
+  return useQuery({
+    queryKey: ['admin-key-figures-traffic', params],
+    queryFn: () => adminApi.getKeyFiguresTraffic(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useKeyFiguresKeywords = (params: Record<string, unknown>) => {
+  return useQuery({
+    queryKey: ['admin-key-figures-keywords', params],
+    queryFn: () => adminApi.getKeyFiguresKeywords(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+// --- Tickets ---
+export const useTicketFilters = () => {
+  return useQuery({
+    queryKey: ['admin-ticket-filters'],
+    queryFn: () => adminApi.getTicketFilters(),
+    staleTime: 60_000,
+  });
+};
+
+export const useTickets = (params: Record<string, unknown>, enabled: boolean) => {
+  return useQuery({
+    queryKey: ['admin-tickets', params],
+    queryFn: () => adminApi.getTickets(params),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+};
+
+// --- Invoices ---
+export const useInvoices = (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }) => {
+  return useQuery({
+    queryKey: ['admin-invoices', params],
+    queryFn: () => adminApi.getInvoices(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+// --- CRM ---
+export const useCrmUsers = () => {
+  return useQuery({
+    queryKey: ['admin-crm-users'],
+    queryFn: () => adminApi.getCrmUsers(),
+    staleTime: 5 * 60_000,
+  });
+};
+
+export const useCrmSummary = (params: Record<string, unknown>) => {
+  return useQuery({
+    queryKey: ['admin-crm-summary', params],
+    queryFn: () => adminApi.getCrmSummary(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useCrmActivities = (params: Record<string, unknown>) => {
+  return useQuery({
+    queryKey: ['admin-crm-activities', params],
+    queryFn: () => adminApi.getCrmActivities(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+// --- Sources ---
+export const useSourceFilters = () => {
+  return useQuery({
+    queryKey: ['admin-source-filters'],
+    queryFn: () => adminApi.getSourceFilters(),
+    staleTime: 60_000,
+  });
+};
+
+export const useSourceCompanies = (params: { page?: number; limit?: number; source?: string; category?: string }) => {
+  return useQuery({
+    queryKey: ['admin-source-companies', params],
+    queryFn: () => adminApi.getSourceCompanies(params),
+    placeholderData: keepPreviousData,
   });
 };
 

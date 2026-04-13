@@ -204,28 +204,28 @@ export const AdminCreateCompanyPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t('createCompany.title')}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          {t('createCompany.title', 'Create company')}
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('createCompany.description')}
+          {t('createCompany.description', 'Onboard a new business')}
         </p>
       </div>
 
-      <div className="grid gap-6 max-w-4xl">
+      <div className="grid gap-4 sm:gap-6 max-w-4xl">
         {/* CVR Lookup */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.cvrLookup')}
+              {t('createCompany.cvrLookup', 'CVR lookup')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-3">
               <div className="flex-1 space-y-2">
-                <Label htmlFor="cvr">{t('createCompany.cvrNumber')}</Label>
+                <Label htmlFor="cvr">{t('createCompany.cvrNumber', 'CVR number')}</Label>
                 <Input
                   id="cvr"
                   placeholder="12345678"
@@ -237,11 +237,12 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 variant="outline"
                 onClick={handleCvrLookup}
                 disabled={cvrLoading || !form.cvr.trim()}
+                className="w-full sm:w-auto"
               >
                 <Search className="h-4 w-4 mr-2" />
                 {cvrLoading
-                  ? t('createCompany.lookingUp')
-                  : t('createCompany.lookup')}
+                  ? t('createCompany.lookingUp', 'Looking up...')
+                  : t('createCompany.lookup', 'Look up')}
               </Button>
             </div>
           </CardContent>
@@ -251,14 +252,14 @@ export const AdminCreateCompanyPage: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.businessDetails')}
+              {t('createCompany.businessDetails', 'Business details')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  {t('createCompany.companyName')} *
+                  {t('createCompany.companyName', 'Company name')} *
                 </Label>
                 <Input
                   id="name"
@@ -269,7 +270,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="company-email">
-                  {t('createCompany.companyEmail')} *
+                  {t('createCompany.companyEmail', 'Company email')} *
                 </Label>
                 <Input
                   id="company-email"
@@ -281,14 +282,14 @@ export const AdminCreateCompanyPage: React.FC = () => {
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="company-phone">
-                  {t('createCompany.telephone')}
+                  {t('createCompany.telephone', 'Telephone')}
                 </Label>
                 <Input
                   id="company-phone"
                   type="tel"
                   value={form.phone}
                   onChange={(e) => set('phone', e.target.value)}
-                  className="max-w-xs"
+                  className="w-full sm:max-w-xs"
                 />
               </div>
             </div>
@@ -299,11 +300,11 @@ export const AdminCreateCompanyPage: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.category')}
+              {t('createCompany.category', 'Category')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {CATEGORIES.map((cat) => (
                 <label
                   key={cat.value}
@@ -325,7 +326,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm text-gray-700">{cat.label}</span>
+                  <span className="text-sm text-gray-700">{t(`createCompany.categories.${cat.value}`, cat.label)}</span>
                 </label>
               ))}
             </div>
@@ -336,14 +337,14 @@ export const AdminCreateCompanyPage: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.primaryContact')}
+              {t('createCompany.primaryContact', 'Primary contact')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">
-                  {t('createCompany.contactName')} *
+                  {t('createCompany.contactName', 'Contact name')} *
                 </Label>
                 <Input
                   id="contact-name"
@@ -354,7 +355,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-internal">
-                  {t('createCompany.internalName')}
+                  {t('createCompany.internalName', 'Internal name')}
                 </Label>
                 <Input
                   id="contact-internal"
@@ -366,7 +367,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-email">
-                  {t('createCompany.contactEmail')} *
+                  {t('createCompany.contactEmail', 'Contact email')} *
                 </Label>
                 <Input
                   id="contact-email"
@@ -378,7 +379,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-mobile">
-                  {t('createCompany.contactMobile')}
+                  {t('createCompany.contactMobile', 'Contact mobile')}
                 </Label>
                 <Input
                   id="contact-mobile"
@@ -396,7 +397,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                     className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                   />
                   <span className="text-sm text-gray-700">
-                    {t('createCompany.sendEmail')}
+                    {t('createCompany.sendEmail', 'Send welcome email')}
                   </span>
                 </label>
               </div>
@@ -408,14 +409,14 @@ export const AdminCreateCompanyPage: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.subscription')}
+              {t('createCompany.subscription', 'Subscription')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="product">
-                  {t('createCompany.product')}
+                  {t('createCompany.product', 'Product')}
                 </Label>
                 <Select
                   id="product"
@@ -424,14 +425,14 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 >
                   {PRODUCTS.map((p) => (
                     <option key={p.value} value={p.value}>
-                      {p.label}
+                      {t(`createCompany.products.${p.value}`, p.label)}
                     </option>
                   ))}
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="licenses">
-                  {t('createCompany.licenses')}
+                  {t('createCompany.licenses', 'Licenses')}
                 </Label>
                 <Select
                   id="licenses"
@@ -445,9 +446,9 @@ export const AdminCreateCompanyPage: React.FC = () => {
                   ))}
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 sm:col-span-2 md:col-span-1">
                 <Label htmlFor="source">
-                  {t('createCompany.source')}
+                  {t('createCompany.source', 'Source')}
                 </Label>
                 <Select
                   id="source"
@@ -456,7 +457,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 >
                   {SOURCES.map((s) => (
                     <option key={s.value} value={s.value}>
-                      {s.label}
+                      {t(`createCompany.sources.${s.value}`, s.label)}
                     </option>
                   ))}
                 </Select>
@@ -466,26 +467,29 @@ export const AdminCreateCompanyPage: React.FC = () => {
         </Card>
 
         {/* Submit Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pb-8">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pb-8">
           <Button
             onClick={() => handleSubmit('create')}
             disabled={submitting}
+            className="w-full sm:w-auto"
           >
-            {submitting ? t('common.saving') : t('createCompany.submit.create')}
+            {submitting ? t('common.saving', 'Saving...') : t('createCompany.submit.create', 'Create')}
           </Button>
           <Button
             variant="outline"
             onClick={() => handleSubmit('create_crm')}
             disabled={submitting}
+            className="w-full sm:w-auto"
           >
-            {t('createCompany.submit.createCrm')}
+            {t('createCompany.submit.createCrm', 'Create + add CRM')}
           </Button>
           <Button
             variant="outline"
             onClick={() => handleSubmit('create_admin')}
             disabled={submitting}
+            className="w-full sm:w-auto"
           >
-            {t('createCompany.submit.createAdmin')}
+            {t('createCompany.submit.createAdmin', 'Create + set admin')}
           </Button>
         </div>
       </div>

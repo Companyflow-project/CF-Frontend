@@ -81,23 +81,23 @@ export const AdminUsersPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{t('users.title')}</h1>
-        <p className="text-sm text-gray-500 mt-1">{t('users.description')}</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('users.title', 'Users')}</h1>
+        <p className="text-sm text-gray-500 mt-1">{t('users.description', 'Manage platform users')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('users.allUsers')}</CardTitle>
+          <CardTitle>{t('users.allUsers', 'All users')}</CardTitle>
         </CardHeader>
         <CardContent>
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <div className="relative flex-1">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mb-6">
+            <div className="relative flex-1 min-w-full sm:min-w-[240px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder={t('users.searchPlaceholder')}
+                placeholder={t('users.searchPlaceholder', 'Search users...')}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -114,7 +114,7 @@ export const AdminUsersPage: React.FC = () => {
               }}
               className="w-full sm:w-44"
             >
-              <option value="all">{t('users.allRoles')}</option>
+              <option value="all">{t('users.allRoles', 'All roles')}</option>
               {ROLES.filter((r) => r !== 'all').map((role) => (
                 <option key={role} value={role}>
                   {t(`users.roles.${role}`)}
@@ -129,7 +129,7 @@ export const AdminUsersPage: React.FC = () => {
               }}
               className="w-full sm:w-40"
             >
-              <option value="all">{t('users.allStatuses')}</option>
+              <option value="all">{t('users.allStatuses', 'All statuses')}</option>
               {STATUSES.filter((s) => s !== 'all').map((status) => (
                 <option key={status} value={status}>
                   {t(`users.statuses.${status}`)}
@@ -137,7 +137,7 @@ export const AdminUsersPage: React.FC = () => {
               ))}
             </Select>
             <Input
-              placeholder={t('users.companyIdFilter')}
+              placeholder={t('users.companyIdFilter', 'Company ID')}
               value={companyFilter}
               onChange={(e) => {
                 setCompanyFilter(e.target.value);
@@ -150,25 +150,26 @@ export const AdminUsersPage: React.FC = () => {
           {/* Table */}
           {isLoading ? (
             <div className="py-12 text-center text-gray-400">
-              {t('common.loading')}
+              {t('common.loading', 'Loading...')}
             </div>
           ) : users.length === 0 ? (
             <div className="py-12 text-center text-gray-400">
-              {t('users.noResults')}
+              {t('users.noResults', 'No users found')}
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('users.columns.name')}</TableHead>
-                    <TableHead>{t('users.columns.email')}</TableHead>
-                    <TableHead>{t('users.columns.role')}</TableHead>
-                    <TableHead>{t('users.columns.company')}</TableHead>
-                    <TableHead>{t('users.columns.status')}</TableHead>
-                    <TableHead>{t('users.columns.lastActive')}</TableHead>
+                    <TableHead>{t('users.columns.name', 'Name')}</TableHead>
+                    <TableHead>{t('users.columns.email', 'Email')}</TableHead>
+                    <TableHead>{t('users.columns.role', 'Role')}</TableHead>
+                    <TableHead>{t('users.columns.company', 'Company')}</TableHead>
+                    <TableHead>{t('users.columns.status', 'Status')}</TableHead>
+                    <TableHead>{t('users.columns.lastActive', 'Last active')}</TableHead>
                     <TableHead className="text-right">
-                      {t('users.columns.actions')}
+                      {t('users.columns.actions', 'Actions')}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -222,17 +223,18 @@ export const AdminUsersPage: React.FC = () => {
                           }
                         >
                           {user.status === 1
-                            ? t('users.deactivate')
-                            : t('users.activate')}
+                            ? t('users.deactivate', 'Deactivate')
+                            : t('users.activate', 'Activate')}
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
                 <p className="text-sm text-gray-500">
                   {t('common.pagination', {
                     from: (page - 1) * PAGE_SIZE + 1,

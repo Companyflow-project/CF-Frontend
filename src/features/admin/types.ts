@@ -80,6 +80,127 @@ export interface AdminCompanyDetail extends AdminCompanyListItem {
   subscriptionRemainingMonths: number | null;
   employees: AdminCompanyEmployee[];
   handbooks: AdminCompanyHandbook[];
+  keyFigures: {
+    licenses: number;
+    used: number;
+    exploitationPct: number;
+    lastAccess: number | null;
+    lastEdited: number | null;
+    published: boolean;
+  };
+  crmActivities: Array<{
+    id: number;
+    title: string;
+    body: string;
+    typeName: string;
+    statusName: string;
+    created: number;
+    responsibleName: string;
+    authorName: string;
+    fupDate: string | null;
+  }>;
+  contacts: Array<{
+    uid: number;
+    name: string;
+    email: string;
+    phone: string;
+    isPrimary: boolean;
+  }>;
+  extended: {
+    customerGroup: number | null;
+    customerCategory: number | null;
+    customerSource: number | null;
+    product: number | null;
+    sop: string;
+    numOwnHandbooks: number;
+    discountByLicenses: number;
+    logoFid: number | null;
+    referenceLogoFid: number | null;
+    alwaysShowImageTab: boolean;
+    homepage: string;
+    smsSender: string;
+    whistleblowerType: string;
+    whistleblowerDisableAnon: boolean;
+    whistleblowerContactUid: number | null;
+    linkGdpr: string;
+    linkIntranet: string;
+    linkDrivesheet: string;
+    linkFirePlan: string;
+    linkTimesheet: string;
+    phonebookShowEmployees: boolean;
+    phonebookShowLinks: boolean;
+    phonebookShowDocuments: boolean;
+    phonebookShowRelations: boolean;
+    phonebookCollapseEmpl: boolean;
+    ownHandbookReady: boolean;
+    freeDone: boolean;
+    demoCompany: boolean;
+    testCompany: boolean;
+    customTerms: boolean;
+  };
+}
+
+export interface UpdateCompanyPayload {
+  title?: string;
+  cvr?: string;
+  phone?: string;
+  email?: string;
+  customerGroup?: number | null;
+  customerCategory?: number | null;
+  customerSource?: number | null;
+  street?: string;
+  city?: string;
+  zipCode?: string;
+  product?: number | null;
+  licensesTotal?: number;
+  smsCreditsTotal?: number;
+  subscriptionStart?: string;
+  subscriptionEnd?: string;
+  paymentInterval?: string;
+  nextInvoice?: string;
+  invoiceNote?: string;
+  sop?: string;
+  numOwnHandbooks?: number;
+  discountByLicenses?: number;
+  logoFid?: number | null;
+  referenceLogoFid?: number | null;
+  alwaysShowImageTab?: boolean;
+  homepage?: string;
+  senderName?: string;
+  smsSender?: string;
+  whistleblowerAccess?: boolean;
+  whistleblowerType?: string;
+  whistleblowerDisableAnon?: boolean;
+  whistleblowerContactUid?: number | null;
+  linkGdpr?: string;
+  linkIntranet?: string;
+  linkDrivesheet?: string;
+  linkFirePlan?: string;
+  linkTimesheet?: string;
+  phonebookShowEmployees?: boolean;
+  phonebookShowLinks?: boolean;
+  phonebookShowDocuments?: boolean;
+  phonebookShowRelations?: boolean;
+  phonebookCollapseEmpl?: boolean;
+  handbookReady?: boolean;
+  ownHandbookReady?: boolean;
+  freeDone?: boolean;
+  demoCompany?: boolean;
+  testCompany?: boolean;
+  customTerms?: boolean;
+  status?: number;
+}
+
+export interface CreateCrmActivityPayload {
+  title: string;
+  companyId: number;
+  typeTid?: number;
+  statusTid?: number;
+  responsibleUid?: number;
+  body?: string;
+  fupDate?: string;
+  nextActionDate?: string;
+  published?: boolean;
 }
 
 export interface UpdateSubscriptionPayload {
@@ -162,6 +283,134 @@ export interface AdminAnalytics {
 // --- Settings (Phase 4) ---
 export interface PlatformSettings {
   [key: string]: unknown;
+}
+
+// --- Key Figures ---
+export interface KeyFigureRow {
+  nid: number;
+  business: string;
+  licenses: number;
+  used: number;
+  exploitationPct: number;
+  lastAccess: number | null;
+  lastEdited: number | null;
+  published: boolean;
+  flagged: 'none' | 'pink';
+}
+
+export interface TrafficUserRow {
+  uid: number;
+  name: string;
+  business: string;
+  roles: string[];
+  lastAccess: number;
+}
+
+export interface KeywordRow {
+  word: string;
+  count: number;
+  latestSearch: number;
+}
+
+// --- Tickets ---
+export interface TicketFilters {
+  priorities: Array<{ key: string; label: string; count: number }>;
+  statuses: Array<{ tid: number; key: string; label: string; count: number }>;
+  lists: Array<{ tid: number; name: string }>;
+  responsibles: Array<{ uid: number; name: string; colorSeed: string }>;
+  authors: Array<{ uid: number; name: string; colorSeed: string }>;
+}
+
+export interface TicketRow {
+  nid: number;
+  title: string;
+  body: string;
+  created: number;
+  priority: string;
+  priorityKey: string;
+  status: string;
+  statusKey: string;
+  listName: string | null;
+  responsibleUid: number | null;
+  responsibleName: string;
+  authorUid: number;
+  authorName: string;
+}
+
+export interface TicketListParams {
+  page?: number;
+  limit?: number;
+  priority?: string;
+  statusTid?: string;
+  listTid?: string;
+  responsibleUid?: string;
+  authorUid?: string;
+  search?: string;
+  sort?: string;
+}
+
+// --- Invoices ---
+export interface InvoiceRow {
+  nid: number;
+  business: string;
+  category: string;
+  licenses: number;
+  addPurchases: string;
+  payment: string;
+  paymentKey: string;
+  beginner: string | null;
+  ends: string | null;
+  endsAboutMonths: number | null;
+  invoicing: string | null;
+  whenMonths: number | null;
+  notes: string;
+}
+
+export interface InvoiceListParams {
+  page?: number;
+  limit?: number;
+  customersOnly?: boolean;
+  search?: string;
+}
+
+// --- CRM ---
+export interface CrmUser {
+  uid: number;
+  name: string;
+  initials: string;
+  colorSeed: string;
+}
+
+export interface CrmSummary {
+  total: number;
+  meetings: number;
+  automatic: number;
+  other: number;
+}
+
+export interface CrmActivity {
+  id: number;
+  companyId: number;
+  companyName: string;
+  activity: string;
+  type: string;
+  typeKey: string;
+  status: string;
+  fupDate: string | null;
+  writtenOn: string;
+  responsibleUid: number | null;
+  responsibleName: string;
+  colorSeed: string;
+}
+
+export interface CrmListParams {
+  page?: number;
+  limit?: number;
+  userId?: string;
+  period?: 'previous' | 'latest_week' | 'next_week' | 'next_month' | 'all_upcoming';
+  status?: string;
+  followUp?: 'all' | 'fup_date' | 'no_fup_date';
+  type?: string;
 }
 
 // --- Create Company (Phase 4) ---

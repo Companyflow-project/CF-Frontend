@@ -46,86 +46,89 @@ export const AdminSettingsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
         <div className="py-20 text-center text-gray-400">
-          {t('common.loading')}
+          {t('common.loading', 'Loading...')}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t('settings.title')}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          {t('settings.title', 'Settings')}
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('settings.description')}
+          {t('settings.description', 'Configure platform-wide settings')}
         </p>
       </div>
 
-      <Card className="max-w-xl">
+      <Card className="w-full max-w-xl">
         <CardHeader>
-          <CardTitle>{t('settings.platformSettings')}</CardTitle>
+          <CardTitle>{t('settings.platformSettings', 'Platform settings')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="trial-length">
-                {t('settings.defaultTrialLength')}
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="trial-length"
-                  type="number"
-                  min={1}
-                  max={365}
-                  value={trialLength}
-                  onChange={(e) => setTrialLength(Number(e.target.value))}
-                  className="w-32"
-                />
-                <span className="text-sm text-gray-500">
-                  {t('settings.days')}
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="trial-length">
+                  {t('settings.defaultTrialLength', 'Default trial length')}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="trial-length"
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={trialLength}
+                    onChange={(e) => setTrialLength(Number(e.target.value))}
+                    className="w-full max-w-[8rem]"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {t('settings.days', 'days')}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">
+                  {t('settings.trialLengthHelp', 'Default trial period for new companies')}
+                </p>
               </div>
-              <p className="text-xs text-gray-400">
-                {t('settings.trialLengthHelp')}
-              </p>
+
+              <div className="space-y-2">
+                <Label htmlFor="sms-pricing">
+                  {t('settings.smsPricing', 'SMS pricing')}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="sms-pricing"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    value={smsPricing}
+                    onChange={(e) => setSmsPricing(Number(e.target.value))}
+                    className="w-full max-w-[8rem]"
+                  />
+                  <span className="text-sm text-gray-500">
+                    {t('settings.perSms', 'per SMS')}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400">
+                  {t('settings.smsPricingHelp', 'Price charged per SMS sent')}
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="sms-pricing">
-                {t('settings.smsPricing')}
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="sms-pricing"
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={smsPricing}
-                  onChange={(e) => setSmsPricing(Number(e.target.value))}
-                  className="w-32"
-                />
-                <span className="text-sm text-gray-500">
-                  {t('settings.perSms')}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400">
-                {t('settings.smsPricingHelp')}
-              </p>
-            </div>
-
-            <div className="pt-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
               <Button
                 onClick={handleSave}
                 disabled={updateSettings.isPending}
+                className="w-full sm:w-auto"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {updateSettings.isPending
-                  ? t('common.saving')
-                  : t('settings.save')}
+                  ? t('common.saving', 'Saving...')
+                  : t('settings.save', 'Save')}
               </Button>
             </div>
           </div>

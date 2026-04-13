@@ -42,48 +42,49 @@ export const AdminSubscriptionsPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {t('subscriptions.title')}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          {t('subscriptions.title', 'Subscriptions')}
         </h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('subscriptions.description')}
+          {t('subscriptions.description', 'Active customer subscriptions')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('subscriptions.overview')}</CardTitle>
+          <CardTitle>{t('subscriptions.overview', 'Overview')}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="py-12 text-center text-gray-400">
-              {t('common.loading')}
+              {t('common.loading', 'Loading...')}
             </div>
           ) : subscriptions.length === 0 ? (
             <div className="py-12 text-center text-gray-400">
-              {t('subscriptions.noResults')}
+              {t('subscriptions.noResults', 'No subscriptions found')}
             </div>
           ) : (
             <>
+              <div className="overflow-x-auto -mx-6 px-6">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('subscriptions.columns.company')}</TableHead>
-                    <TableHead>{t('subscriptions.columns.product')}</TableHead>
-                    <TableHead>{t('subscriptions.columns.start')}</TableHead>
-                    <TableHead>{t('subscriptions.columns.end')}</TableHead>
+                    <TableHead>{t('subscriptions.columns.company', 'Company')}</TableHead>
+                    <TableHead>{t('subscriptions.columns.product', 'Product')}</TableHead>
+                    <TableHead>{t('subscriptions.columns.start', 'Start')}</TableHead>
+                    <TableHead>{t('subscriptions.columns.end', 'End')}</TableHead>
                     <TableHead className="text-right">
-                      {t('subscriptions.columns.daysLeft')}
+                      {t('subscriptions.columns.daysLeft', 'Days left')}
                     </TableHead>
                     <TableHead className="text-right">
-                      {t('subscriptions.columns.licenses')}
+                      {t('subscriptions.columns.licenses', 'Licenses')}
                     </TableHead>
                     <TableHead className="text-right">
-                      {t('subscriptions.columns.sms')}
+                      {t('subscriptions.columns.sms', 'SMS')}
                     </TableHead>
-                    <TableHead>{t('subscriptions.columns.status')}</TableHead>
+                    <TableHead>{t('subscriptions.columns.status', 'Status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -138,9 +139,10 @@ export const AdminSubscriptionsPage: React.FC = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4 pt-4 border-t">
                 <p className="text-sm text-gray-500">
                   {t('common.pagination', {
                     from: (page - 1) * PAGE_SIZE + 1,

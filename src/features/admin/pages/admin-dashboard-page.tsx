@@ -63,7 +63,7 @@ export const AdminDashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-gray-500">{t('dashboard.loading', 'Loading…')}</p>
       </div>
     );
   }
@@ -71,258 +71,266 @@ export const AdminDashboardPage: React.FC = () => {
   if (isError || !dashboard) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-red-500">Failed to load dashboard.</p>
+        <p className="text-red-500">{t('dashboard.loadError', 'Failed to load dashboard.')}</p>
       </div>
     );
   }
 
-  const { stats, latestCompanies, employeeTraffic, adminTraffic, recentActivities } = dashboard;
+  const { stats: _stats, latestCompanies, employeeTraffic, adminTraffic, recentActivities } = dashboard;
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-6 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6 sm:space-y-8">
       {/* Subscription Banner */}
-      <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-6 py-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-gray-50 border border-gray-200 rounded-xl px-4 sm:px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded bg-green-500 flex items-center justify-center">
+          <div className="w-6 h-6 rounded bg-green-500 flex items-center justify-center flex-shrink-0">
             <Check className="h-4 w-4 text-white" />
           </div>
-          <span className="text-sm">
-            <span className="text-green-600 font-medium">Free sample is active</span>
-            {' '}for {user?.name ?? 'Admin'}.
+          <span className="text-xs sm:text-sm">
+            <span className="text-green-600 font-medium">{t('dashboard.freeSampleActive', 'Free sample is active')}</span>
+            {' '}{t('dashboard.for', 'for')} {user?.name ?? t('dashboard.adminFallback', 'Admin')}.
           </span>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button variant="outline" size="sm">
-            View Invoices
+            {t('dashboard.viewInvoices', 'View Invoices')}
           </Button>
           <Button size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90">
-            Create a Business
+            {t('dashboard.createBusiness', 'Create a Business')}
           </Button>
         </div>
       </div>
 
       {/* Welcome + Title */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <p className="text-sm text-gray-500">Welcome back, {user?.name?.split(' ')[0] ?? 'Admin'}</p>
-          <h1 className="text-3xl font-bold text-[#0d0e0e]">Control Panel</h1>
+          <p className="text-xs sm:text-sm text-gray-500">
+            {t('dashboard.welcomeBack', 'Welcome back')}, {user?.name?.split(' ')[0] ?? t('dashboard.adminFallback', 'Admin')}
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">{t('dashboard.title', 'Control Panel')}</h1>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button variant="outline" size="sm" className="rounded-lg" asChild>
-            <Link to={adminRoutes.activity}>Information List</Link>
+            <Link to={adminRoutes.activity}>{t('dashboard.informationList', 'Information List')}</Link>
           </Button>
           <Button variant="outline" size="sm" className="rounded-lg" asChild>
-            <Link to={adminRoutes.analytics}>Key Figures</Link>
+            <Link to={adminRoutes.keyFigures}>{t('dashboard.keyFigures', 'Key Figures')}</Link>
           </Button>
         </div>
       </div>
 
       {/* Top Cards Row — 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Companies */}
-        <div className="border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="border border-gray-200 rounded-xl p-5 sm:p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Companies</h2>
-            <p className="text-sm text-gray-500 mt-1">Searchable company overview and management.</p>
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.companies.title', 'Companies')}</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.companies.desc', 'Searchable company overview and management.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg" asChild>
-            <Link to={adminRoutes.companies}>Go to Companies →</Link>
+          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto" asChild>
+            <Link to={adminRoutes.companies}>{t('dashboard.cards.companies.cta', 'Go to Companies →')}</Link>
           </Button>
           <div className="space-y-2">
-            <CardLink to={adminRoutes.createCompany} label="Create a business" icon="arrow" />
-            <CardLink to={`${adminRoutes.companies}?view=sources`} label="Sources" icon="arrow" />
+            <CardLink to={adminRoutes.createCompany} label={t('dashboard.cards.companies.createBusiness', 'Create a business')} icon="arrow" />
+            <CardLink to={`${adminRoutes.companies}?view=sources`} label={t('dashboard.cards.companies.sources', 'Sources')} icon="arrow" />
           </div>
         </div>
 
         {/* Support Tickets */}
-        <div className="border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="border border-gray-200 rounded-xl p-5 sm:p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Support Tickets</h2>
-            <p className="text-sm text-gray-500 mt-1">View and create support tickets for your customers.</p>
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.tickets.title', 'Support Tickets')}</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.tickets.desc', 'View and create support tickets for your customers.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg">
-            Open Tickets →
+          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+            {t('dashboard.cards.tickets.cta', 'Open Tickets →')}
           </Button>
           <div className="space-y-2">
-            <CardLink to="/admin/tickets/create" label="Create new ticket" icon="arrow" />
-            <CardLink to="/admin/tickets/settings" label="Ticket settings" icon="arrow" />
+            <CardLink to="/admin/tickets/create" label={t('dashboard.cards.tickets.create', 'Create new ticket')} icon="arrow" />
+            <CardLink to="/admin/tickets/settings" label={t('dashboard.cards.tickets.settings', 'Ticket settings')} icon="arrow" />
           </div>
         </div>
       </div>
 
       {/* Bottom Cards Row — 3 columns */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         {/* CRM To-Do */}
-        <div className="border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="border border-gray-200 rounded-xl p-5 sm:p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-[#0d0e0e]">CRM To-Do</h2>
-            <p className="text-sm text-gray-500 mt-1">List of CRM activities and follow-ups.</p>
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.crm.title', 'CRM To-Do')}</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.crm.desc', 'List of CRM activities and follow-ups.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg">
-            Open CRM →
+          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+            {t('dashboard.cards.crm.cta', 'Open CRM →')}
           </Button>
-          <CardLink to="/admin/crm/add" label="Add activity" icon="plus" />
+          <CardLink to="/admin/crm/add" label={t('dashboard.cards.crm.add', 'Add activity')} icon="plus" />
         </div>
 
         {/* Newsletters */}
-        <div className="border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="border border-gray-200 rounded-xl p-5 sm:p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Newsletters</h2>
-            <p className="text-sm text-gray-500 mt-1">View and create newsletters.</p>
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.newsletters.title', 'Newsletters')}</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.newsletters.desc', 'View and create newsletters.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg">
-            Open Newsletters →
+          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+            {t('dashboard.cards.newsletters.cta', 'Open Newsletters →')}
           </Button>
-          <CardLink to="/admin/newsletters/create" label="Create newsletter" icon="arrow" />
+          <CardLink to="/admin/newsletters/create" label={t('dashboard.cards.newsletters.create', 'Create newsletter')} icon="arrow" />
         </div>
 
         {/* Management Handbook */}
-        <div className="border border-gray-200 rounded-xl p-6 space-y-4">
+        <div className="border border-gray-200 rounded-xl p-5 sm:p-6 space-y-4 sm:col-span-2 md:col-span-1">
           <div>
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Management Handbook</h2>
-            <p className="text-sm text-gray-500 mt-1">Good advice for business leaders.</p>
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.handbook.title', 'Management Handbook')}</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.handbook.desc', 'Good advice for business leaders.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg">
-            Open Handbook →
+          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+            {t('dashboard.cards.handbook.cta', 'Open Handbook →')}
           </Button>
-          <CardLink to="/admin/handbook/articles" label="Browse articles" icon="arrow" />
+          <CardLink to="/admin/handbook/articles" label={t('dashboard.cards.handbook.browse', 'Browse articles')} icon="arrow" />
         </div>
       </div>
 
       {/* Latest Companies */}
       <div className="border border-gray-200 rounded-xl">
-        <div className="flex items-center justify-between px-6 py-5">
-          <h2 className="text-lg font-bold text-[#0d0e0e]">Latest Companies</h2>
-          <Button variant="outline" size="sm" className="rounded-lg" asChild>
-            <Link to={adminRoutes.companies}>View All</Link>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5">
+          <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.latestCompanies', 'Latest Companies')}</h2>
+          <Button variant="outline" size="sm" className="rounded-lg self-start sm:self-auto" asChild>
+            <Link to={adminRoutes.companies}>{t('dashboard.viewAll', 'View All')}</Link>
           </Button>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Business</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tel.</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {latestCompanies.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-400 py-8">
-                  No companies found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              latestCompanies.map((c) => (
-                <TableRow key={c.nid} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">
-                    <Link
-                      to={adminRoutes.companyDetail.replace(':id', String(c.nid))}
-                      className="text-[#0d0e0e] hover:underline"
-                    >
-                      {c.title}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-gray-600">{c.contactName}</TableCell>
-                  <TableCell>
-                    <CategoryBadge category={c.category} />
-                  </TableCell>
-                  <TableCell className="text-gray-600">{c.telephone}</TableCell>
-                  <TableCell className="text-gray-600">{formatDate(c.created)}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Traffic Tables — 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Employees Traffic */}
-        <div className="border border-gray-200 rounded-xl">
-          <div className="px-6 py-5">
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Employees Traffic</h2>
-          </div>
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Days Ago</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Number</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.business', 'Business')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.name', 'Name')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.category', 'Category')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.tel', 'Tel.')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.created', 'Created')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employeeTraffic.length === 0 ? (
+              {latestCompanies.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center text-gray-400 py-6">No data</TableCell>
+                  <TableCell colSpan={5} className="text-center text-gray-400 py-8">
+                    {t('dashboard.noCompaniesFound', 'No companies found.')}
+                  </TableCell>
                 </TableRow>
               ) : (
-                employeeTraffic.map((b) => (
-                  <TableRow key={b.label}>
-                    <TableCell className="text-gray-700">{b.label}</TableCell>
-                    <TableCell className="text-gray-700">{b.count}</TableCell>
+                latestCompanies.map((c) => (
+                  <TableRow key={c.nid} className="hover:bg-gray-50">
+                    <TableCell className="font-medium">
+                      <Link
+                        to={adminRoutes.companyDetail.replace(':id', String(c.nid))}
+                        className="text-[#0d0e0e] hover:underline"
+                      >
+                        {c.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-gray-600">{c.contactName}</TableCell>
+                    <TableCell>
+                      <CategoryBadge category={c.category} />
+                    </TableCell>
+                    <TableCell className="text-gray-600">{c.telephone}</TableCell>
+                    <TableCell className="text-gray-600">{formatDate(c.created)}</TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
+        </div>
+      </div>
+
+      {/* Traffic Tables — 2 columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        {/* Employees Traffic */}
+        <div className="border border-gray-200 rounded-xl">
+          <div className="px-4 sm:px-6 py-4 sm:py-5">
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.employeesTraffic', 'Employees Traffic')}</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.daysAgo', 'Days Ago')}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.number', 'Number')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {employeeTraffic.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center text-gray-400 py-6">{t('dashboard.noData', 'No data')}</TableCell>
+                  </TableRow>
+                ) : (
+                  employeeTraffic.map((b) => (
+                    <TableRow key={b.label}>
+                      <TableCell className="text-gray-700">{b.label}</TableCell>
+                      <TableCell className="text-gray-700">{b.count}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
         {/* Administrators Traffic */}
         <div className="border border-gray-200 rounded-xl">
-          <div className="px-6 py-5">
-            <h2 className="text-lg font-bold text-[#0d0e0e]">Administrators Traffic</h2>
+          <div className="px-4 sm:px-6 py-4 sm:py-5">
+            <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.administratorsTraffic', 'Administrators Traffic')}</h2>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Days Ago</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Number</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {adminTraffic.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={2} className="text-center text-gray-400 py-6">No data</TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.daysAgo', 'Days Ago')}</TableHead>
+                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.number', 'Number')}</TableHead>
                 </TableRow>
-              ) : (
-                adminTraffic.map((b) => (
-                  <TableRow key={b.label}>
-                    <TableCell className="text-gray-700">{b.label}</TableCell>
-                    <TableCell className="text-gray-700">{b.count}</TableCell>
+              </TableHeader>
+              <TableBody>
+                {adminTraffic.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center text-gray-400 py-6">{t('dashboard.noData', 'No data')}</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  adminTraffic.map((b) => (
+                    <TableRow key={b.label}>
+                      <TableCell className="text-gray-700">{b.label}</TableCell>
+                      <TableCell className="text-gray-700">{b.count}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
 
       {/* Recent Activities */}
       <div className="border border-gray-200 rounded-xl">
-        <div className="flex items-center justify-between px-6 py-5">
-          <h2 className="text-lg font-bold text-[#0d0e0e]">Recent Activities</h2>
-          <Button variant="outline" size="sm" className="rounded-lg">
-            + Add Activity
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5">
+          <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.recentActivities', 'Recent Activities')}</h2>
+          <Button variant="outline" size="sm" className="rounded-lg self-start sm:self-auto">
+            {t('dashboard.addActivity', '+ Add Activity')}
           </Button>
         </div>
-        <div className="px-6 pb-6">
+        <div className="px-4 sm:px-6 pb-5 sm:pb-6">
           {recentActivities.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">No recent activities.</p>
+            <p className="text-sm text-gray-400 py-4 text-center">{t('dashboard.noRecentActivities', 'No recent activities.')}</p>
           ) : (
             <div className="space-y-5">
               {recentActivities.map((a, i) => (
                 <div key={`${a.timestamp}-${i}`} className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-2.5 h-2.5 mt-1.5 rounded-full bg-amber-400" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
                       <span>{formatRelativeTime(a.timestamp)}</span>
                       <span className="font-medium text-[#0d0e0e]">{a.companyName}</span>
                     </div>
                     <p className="text-sm font-semibold text-[#0d0e0e] mt-0.5">{a.title}</p>
                     {a.description && (
-                      <p className="text-sm text-gray-500 mt-0.5">{a.description}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{a.description}</p>
                     )}
                   </div>
                 </div>

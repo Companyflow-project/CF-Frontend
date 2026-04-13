@@ -25,6 +25,14 @@ const AdminSubscriptionsPage = lazy(() => import('@/features/admin/pages/admin-s
 const AdminActivityPage = lazy(() => import('@/features/admin/pages/admin-activity-page').then((m) => ({ default: m.AdminActivityPage })));
 const AdminAnalyticsPage = lazy(() => import('@/features/admin/pages/admin-analytics-page').then((m) => ({ default: m.AdminAnalyticsPage })));
 const AdminSettingsPage = lazy(() => import('@/features/admin/pages/admin-settings-page').then((m) => ({ default: m.AdminSettingsPage })));
+const AdminSourcesPage = lazy(() => import('@/features/admin/pages/admin-sources-page').then((m) => ({ default: m.AdminSourcesPage })));
+const AdminCrmPage = lazy(() => import('@/features/admin/pages/admin-crm-page').then((m) => ({ default: m.AdminCrmPage })));
+const AdminInvoicesPage = lazy(() => import('@/features/admin/pages/admin-invoices-page').then((m) => ({ default: m.AdminInvoicesPage })));
+const AdminTicketsPage = lazy(() => import('@/features/admin/pages/admin-tickets-page').then((m) => ({ default: m.AdminTicketsPage })));
+const AdminKeyFiguresPage = lazy(() => import('@/features/admin/pages/admin-key-figures-page').then((m) => ({ default: m.AdminKeyFiguresPage })));
+const AdminCreateCrmActivityPage = lazy(() => import('@/features/admin/pages/admin-create-crm-activity-page').then((m) => ({ default: m.AdminCreateCrmActivityPage })));
+const AdminLatestCompaniesPage = lazy(() => import('@/features/admin/pages/admin-latest-companies-page').then((m) => ({ default: m.AdminLatestCompaniesPage })));
+const AdminEditCompanyPage = lazy(() => import('@/features/admin/pages/admin-edit-company-page').then((m) => ({ default: m.AdminEditCompanyPage })));
 
 const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
@@ -773,6 +781,102 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminAnalyticsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.crmCreate}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCreateCrmActivityPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.latestCompanies}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminLatestCompaniesPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.companyEdit}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminEditCompanyPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.keyFigures}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminKeyFiguresPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.tickets}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminTicketsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.invoices}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminInvoicesPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.crm}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCrmPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.sources}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminSourcesPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

@@ -13,9 +13,9 @@ import type { AdminCompanyListItem } from '../types';
 const CATEGORIES = ['All', 'Demo Requested', 'Free Sample'] as const;
 
 const SORT_OPTIONS = [
-  { value: 'title', label: 'Name' },
-  { value: 'created', label: 'Created' },
-  { value: 'customerNumber', label: 'Customer #' },
+  { value: 'title', labelKey: 'companies.sort.name', fallback: 'Name' },
+  { value: 'created', labelKey: 'companies.sort.created', fallback: 'Created' },
+  { value: 'customerNumber', labelKey: 'companies.sort.customerNumber', fallback: 'Customer #' },
 ] as const;
 
 function getCategoryBadgeClasses(category: string): string {
@@ -35,24 +35,27 @@ function getCountryFlag(countryCode: string): string {
   return flag;
 }
 
-function formatTimeRemaining(subscriptionEnd: string | null): { label: string; variant: 'green' | 'yellow' | 'red' | 'gray' } {
-  if (!subscriptionEnd) return { label: 'No end date', variant: 'gray' };
+function formatTimeRemaining(
+  subscriptionEnd: string | null,
+  t: (key: string, fallback: string) => string
+): { label: string; variant: 'green' | 'yellow' | 'red' | 'gray' } {
+  if (!subscriptionEnd) return { label: t('companies.noEndDate', 'No end date'), variant: 'gray' };
 
   const now = new Date();
   const end = new Date(subscriptionEnd);
   const diffMs = end.getTime() - now.getTime();
 
-  if (diffMs <= 0) return { label: 'Expired', variant: 'red' };
+  if (diffMs <= 0) return { label: t('companies.expired', 'Expired'), variant: 'red' };
 
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 7) return { label: `${diffDays} day${diffDays !== 1 ? 's' : ''} left`, variant: 'red' };
+  if (diffDays < 7) return { label: `${diffDays} ${diffDays !== 1 ? t('companies.daysLeft', 'days left') : t('companies.dayLeft', 'day left')}`, variant: 'red' };
   if (diffDays < 30) {
     const weeks = Math.floor(diffDays / 7);
-    return { label: `${weeks} week${weeks !== 1 ? 's' : ''} left`, variant: 'yellow' };
+    return { label: `${weeks} ${weeks !== 1 ? t('companies.weeksLeft', 'weeks left') : t('companies.weekLeft', 'week left')}`, variant: 'yellow' };
   }
   const months = Math.floor(diffDays / 30);
-  return { label: `${months} month${months !== 1 ? 's' : ''} left`, variant: 'green' };
+  return { label: `${months} ${months !== 1 ? t('companies.monthsLeft', 'months left') : t('companies.monthLeft', 'month left')}`, variant: 'green' };
 }
 
 function getTimeRemainingBadgeClasses(variant: 'green' | 'yellow' | 'red' | 'gray'): string {
@@ -78,7 +81,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 export const AdminCompaniesPage: React.FC = () => {
-  const { t: _t } = useTranslation('admin');
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
@@ -146,32 +149,39 @@ export const AdminCompaniesPage: React.FC = () => {
     return pages;
   };
 
+  const categoryLabel = (cat: string): string => {
+    if (cat === 'All') return t('companies.category.all', 'All');
+    if (cat === 'Demo Requested') return t('companies.category.demoRequested', 'Demo Requested');
+    if (cat === 'Free Sample') return t('companies.category.freeSample', 'Free Sample');
+    return cat;
+  };
+
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Companies</h1>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('companies.title', 'Companies')}</h1>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/admin/sources">Sources</Link>
+            <Link to="/admin/sources">{t('companies.sources', 'Sources')}</Link>
           </Button>
           <Button
             size="sm"
             className="bg-gray-900 text-white hover:bg-gray-800"
             onClick={() => navigate(adminRoutes.createCompany)}
           >
-            + Create New Business
+            {t('companies.createNew', '+ Create New Business')}
           </Button>
         </div>
       </div>
 
       {/* Filter / Sort Bar */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 mb-6">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4 mb-6">
         {/* Search */}
         <div className="relative w-full lg:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search companies..."
+            placeholder={t('companies.searchPlaceholder', 'Search companies...')}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9"
@@ -180,57 +190,57 @@ export const AdminCompaniesPage: React.FC = () => {
 
         {/* Sort dropdown */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500 whitespace-nowrap">Sort by</span>
+          <span className="text-sm text-gray-500 whitespace-nowrap">{t('companies.sortBy', 'Sort by')}</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-10 flex-1 lg:flex-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>{t(opt.labelKey, opt.fallback)}</option>
             ))}
           </select>
           <Button
             variant="outline"
             size="icon"
             onClick={handleSortDirectionToggle}
-            title={`Sort ${sortDirection === 'asc' ? 'ascending' : 'descending'}`}
+            title={sortDirection === 'asc' ? t('companies.sortAsc', 'Sort ascending') : t('companies.sortDesc', 'Sort descending')}
           >
             <ArrowUpDown className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Category filter chips */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => { setCategory(cat); setPage(1); }}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors ${
                 category === cat
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              {cat}
+              {categoryLabel(cat)}
             </button>
           ))}
         </div>
 
         {/* Source filter */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">Filter</span>
+          <span className="text-sm text-gray-500">{t('companies.filter', 'Filter')}</span>
           <select
             value={source}
             onChange={(e) => { setSource(e.target.value); setPage(1); }}
-            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-10 flex-1 lg:flex-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <option value="">All Sources</option>
-            <option value="website">Website</option>
-            <option value="referral">Referral</option>
-            <option value="partner">Partner</option>
-            <option value="direct">Direct</option>
+            <option value="">{t('companies.allSources', 'All Sources')}</option>
+            <option value="website">{t('companies.source.website', 'Website')}</option>
+            <option value="referral">{t('companies.source.referral', 'Referral')}</option>
+            <option value="partner">{t('companies.source.partner', 'Partner')}</option>
+            <option value="direct">{t('companies.source.direct', 'Direct')}</option>
           </select>
         </div>
       </div>
@@ -245,15 +255,15 @@ export const AdminCompaniesPage: React.FC = () => {
       {/* Error state */}
       {isError && (
         <div className="text-center py-20">
-          <p className="text-red-600 font-medium">Failed to load companies.</p>
-          <p className="text-sm text-gray-500 mt-1">Please try again later.</p>
+          <p className="text-red-600 font-medium">{t('companies.loadError', 'Failed to load companies.')}</p>
+          <p className="text-sm text-gray-500 mt-1">{t('companies.tryAgainLater', 'Please try again later.')}</p>
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && !isError && companies.length === 0 && (
         <div className="text-center py-20">
-          <p className="text-gray-500">No companies found.</p>
+          <p className="text-gray-500">{t('companies.noneFound', 'No companies found.')}</p>
         </div>
       )}
 
@@ -261,18 +271,17 @@ export const AdminCompaniesPage: React.FC = () => {
       {!isLoading && !isError && companies.length > 0 && (
         <div className="space-y-4">
           {companies.map((company) => {
-            const timeRemaining = formatTimeRemaining(company.subscriptionEnd);
-
+            const timeRemaining = formatTimeRemaining(company.subscriptionEnd, t);
             return (
               <Card key={company.nid} className="p-0 overflow-hidden">
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto_auto_auto] gap-0">
                   {/* Company Info Column */}
-                  <div className="p-5 border-b xl:border-b-0 xl:border-r border-gray-100">
-                    <div className="flex items-start gap-3 mb-3">
+                  <div className="p-4 sm:p-5 border-b xl:border-b-0 xl:border-r border-gray-100">
+                    <div className="flex flex-wrap items-start gap-2 sm:gap-3 mb-3">
                       <Badge className={getCategoryBadgeClasses(company.category)}>
-                        {company.category || 'Uncategorized'}
+                        {company.category || t('companies.uncategorized', 'Uncategorized')}
                       </Badge>
-                      <span className="text-lg font-semibold text-gray-900">
+                      <span className="text-base sm:text-lg font-semibold text-gray-900">
                         {getCountryFlag(company.countryCode)}{' '}
                         <Link
                           to={adminRoutes.companyDetail.replace(':id', String(company.nid))}
@@ -283,100 +292,103 @@ export const AdminCompaniesPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-2 text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-2 text-xs sm:text-sm">
                       <div>
-                        <span className="text-gray-400">Customer #</span>
+                        <span className="text-gray-400">{t('companies.field.customerNumber', 'Customer #')}</span>
                         <p className="text-gray-700 font-medium">{company.customerNumber}</p>
                       </div>
                       <div>
-                        <span className="text-gray-400">CVR</span>
+                        <span className="text-gray-400">{t('companies.field.cvr', 'CVR')}</span>
                         <p className="text-gray-700 font-medium">{company.cvr || '-'}</p>
                       </div>
                       <div>
-                        <span className="text-gray-400">Product</span>
+                        <span className="text-gray-400">{t('companies.field.product', 'Product')}</span>
                         <p className="text-gray-700 font-medium">{company.productName || '-'}</p>
                       </div>
                       <div>
-                        <span className="text-gray-400">Licenses</span>
+                        <span className="text-gray-400">{t('companies.field.licenses', 'Licenses')}</span>
                         <p className="text-gray-700 font-medium">
                           {company.licensesUsed}/{company.licensesTotal}
                         </p>
                       </div>
                       <div>
-                        <span className="text-gray-400">SMS</span>
+                        <span className="text-gray-400">{t('companies.field.sms', 'SMS')}</span>
                         <p className="text-gray-700 font-medium">
                           {company.smsUsed}/{company.smsCreditsTotal}
                         </p>
                       </div>
                       <div>
-                        <span className="text-gray-400">Sender</span>
+                        <span className="text-gray-400">{t('companies.field.sender', 'Sender')}</span>
                         <p className="text-gray-700 font-medium">{company.senderName || '-'}</p>
                       </div>
                       <div>
-                        <span className="text-gray-400">Whistleblower</span>
+                        <span className="text-gray-400">{t('companies.field.whistleblower', 'Whistleblower')}</span>
                         <p className="text-gray-700 font-medium">
                           {company.whistleblowerAccess ? (
-                            <span className="text-green-600">Active</span>
+                            <span className="text-green-600">{t('companies.active', 'Active')}</span>
                           ) : (
-                            <span className="text-gray-400">Inactive</span>
+                            <span className="text-gray-400">{t('companies.inactive', 'Inactive')}</span>
                           )}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Subscription Column */}
-                  <div className="p-5 border-b xl:border-b-0 xl:border-r border-gray-100 min-w-[200px]">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Subscription</p>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="text-gray-400">Start</span>
-                        <p className="text-gray-700 font-medium">{formatDate(company.subscriptionStart)}</p>
+                  {/* Subscription + Quick Links stacked on mobile, separate cols on xl */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-[auto_auto] xl:contents">
+                    {/* Subscription Column */}
+                    <div className="p-4 sm:p-5 border-b sm:border-b-0 sm:border-r xl:border-b-0 xl:border-r border-gray-100 xl:min-w-[200px]">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t('companies.subscription', 'Subscription')}</p>
+                      <div className="space-y-2 text-xs sm:text-sm">
+                        <div>
+                          <span className="text-gray-400">{t('companies.start', 'Start')}</span>
+                          <p className="text-gray-700 font-medium">{formatDate(company.subscriptionStart)}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">{t('companies.end', 'End')}</span>
+                          <p className="text-gray-700 font-medium">{formatDate(company.subscriptionEnd)}</p>
+                        </div>
+                        <Badge className={getTimeRemainingBadgeClasses(timeRemaining.variant)}>
+                          {timeRemaining.label}
+                        </Badge>
                       </div>
-                      <div>
-                        <span className="text-gray-400">End</span>
-                        <p className="text-gray-700 font-medium">{formatDate(company.subscriptionEnd)}</p>
-                      </div>
-                      <Badge className={getTimeRemainingBadgeClasses(timeRemaining.variant)}>
-                        {timeRemaining.label}
-                      </Badge>
                     </div>
-                  </div>
 
-                  {/* Quick Links Column */}
-                  <div className="p-5 border-b xl:border-b-0 xl:border-r border-gray-100 min-w-[200px]">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Links</p>
-                    <div className="space-y-1.5">
-                      {[
-                        { label: 'All pages', to: `/admin/companies/${company.nid}/pages` },
-                        { label: 'Create handbook', to: `/admin/companies/${company.nid}/handbooks/create` },
-                        { label: 'Control panel', to: `/admin/companies/${company.nid}/control` },
-                        { label: 'Employees', to: `/admin/companies/${company.nid}/employees` },
-                        { label: 'Add CRM activity', to: `/admin/companies/${company.nid}/crm/add` },
-                      ].map((link) => (
-                        <Link
-                          key={link.label}
-                          to={link.to}
-                          className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                          {link.label}
-                          <ArrowRight className="h-3 w-3" />
-                        </Link>
-                      ))}
+                    {/* Quick Links Column */}
+                    <div className="p-4 sm:p-5 border-b xl:border-b-0 xl:border-r border-gray-100 xl:min-w-[200px]">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t('companies.quickLinks', 'Quick Links')}</p>
+                      <div className="space-y-1.5">
+                        {[
+                          { label: t('companies.links.allPages', 'All pages'), to: `/admin/companies/${company.nid}/pages` },
+                          { label: t('companies.links.createHandbook', 'Create handbook'), to: `/admin/companies/${company.nid}/handbooks/create` },
+                          { label: t('companies.links.controlPanel', 'Control panel'), to: `/admin/companies/${company.nid}/control` },
+                          { label: t('companies.links.employees', 'Employees'), to: `/admin/companies/${company.nid}/employees` },
+                          { label: t('companies.links.addCrm', 'Add CRM activity'), to: `/admin/companies/${company.nid}/crm/add` },
+                        ].map((link) => (
+                          <Link
+                            key={link.label}
+                            to={link.to}
+                            className="flex items-center gap-2 text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            {link.label}
+                            <ArrowRight className="h-3 w-3" />
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
                   {/* Actions Column */}
-                  <div className="p-5 min-w-[160px]">
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Actions</p>
-                    <div className="flex flex-col gap-2">
+                  <div className="p-4 sm:p-5 xl:min-w-[160px]">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t('companies.actions', 'Actions')}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-1 gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         className="w-full justify-start"
                         onClick={() => navigate(adminRoutes.companyDetail.replace(':id', String(company.nid)))}
                       >
-                        Edit
+                        {t('companies.edit', 'Edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -384,7 +396,7 @@ export const AdminCompaniesPage: React.FC = () => {
                         className="w-full justify-start"
                         onClick={() => navigate(`/admin/companies/${company.nid}/wise`)}
                       >
-                        Wise
+                        {t('companies.wise', 'Wise')}
                       </Button>
                       <Button
                         variant="outline"
@@ -392,7 +404,7 @@ export const AdminCompaniesPage: React.FC = () => {
                         className="w-full justify-start"
                         onClick={() => navigate(`/admin/companies/${company.nid}/reset`)}
                       >
-                        Reset
+                        {t('companies.reset', 'Reset')}
                       </Button>
                       <Button
                         variant="outline"
@@ -400,7 +412,7 @@ export const AdminCompaniesPage: React.FC = () => {
                         className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
                         onClick={() => navigate(`/admin/companies/${company.nid}/delete`)}
                       >
-                        Delete everything
+                        {t('companies.deleteAll', 'Delete everything')}
                       </Button>
                     </div>
                   </div>
@@ -413,19 +425,19 @@ export const AdminCompaniesPage: React.FC = () => {
 
       {/* Pagination */}
       {!isLoading && !isError && total > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
-          <p className="text-sm text-gray-500">
-            Showing {showingFrom}-{showingTo} of {total} companies
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mt-6 sm:mt-8">
+          <p className="text-xs sm:text-sm text-gray-500 text-center lg:text-left">
+            {t('companies.showing', 'Showing')} {showingFrom}-{showingTo} {t('companies.of', 'of')} {total} {t('companies.companiesLower', 'companies')}
           </p>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             <Button
               variant="outline"
               size="sm"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Previous
+              {t('companies.previous', 'Previous')}
             </Button>
 
             {getPageNumbers().map((pg, idx) =>
@@ -450,7 +462,7 @@ export const AdminCompaniesPage: React.FC = () => {
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
-              Next
+              {t('companies.next', 'Next')}
             </Button>
           </div>
 
@@ -469,7 +481,7 @@ export const AdminCompaniesPage: React.FC = () => {
               }}
               className="w-16 text-center"
             />
-            <span className="text-sm text-gray-500">per page</span>
+            <span className="text-xs sm:text-sm text-gray-500">{t('companies.perPage', 'per page')}</span>
           </div>
         </div>
       )}

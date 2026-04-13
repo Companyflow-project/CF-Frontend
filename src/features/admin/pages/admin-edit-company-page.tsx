@@ -1,0 +1,1598 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { useAdminCompany, useUpdateCompany } from '../hooks';
+import { adminRoutes } from '../routes';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { UpdateCompanyPayload } from '../types';
+
+function formatDateForInput(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  try {
+    return new Date(dateStr).toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+}
+
+function formatDateDisplay(dateStr: string | null | undefined): string {
+  if (!dateStr) return '-';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+interface AboutForm {
+  title: string;
+  customerCompany: string;
+  phone: string;
+  email: string;
+  cvr: string;
+  source: string;
+}
+
+interface AddressForm {
+  street: string;
+  zipCode: string;
+  city: string;
+}
+
+interface SubscriptionForm {
+  product: string;
+  licensesTotal: string;
+  smsCreditsTotal: string;
+  smsSending: boolean;
+  additionalManuals: string;
+  sopText: string;
+  optionalDesign: boolean;
+  subscriptionStart: string;
+  subscriptionEnd: string;
+  langDanish: boolean;
+  langEnglish: boolean;
+  langBulgarian: boolean;
+  flagDanish: boolean;
+  accessToCourses: boolean;
+  hideQuestionsInProgress: boolean;
+  turnOffTracking: boolean;
+  showEmployees: boolean;
+  showRelatives: boolean;
+  showDocuments: boolean;
+  collapseLists: boolean;
+  hideLinks: boolean;
+  hideDocuments: boolean;
+  seasonalEmployees: boolean;
+  paymentInterval: string;
+  nextInvoice: string;
+}
+
+interface InvoiceForm {
+  invoiceNote: string;
+}
+
+interface AdminForm {
+  whistleblowerAccess: boolean;
+}
+
+interface StatusForm {
+  handbookReady: boolean;
+  published: boolean;
+}
+
+interface BusinessGroupForm {
+  customerGroup: string; // select value, '' => null
+}
+
+interface LogoForm {
+  logoFid: number | null;
+  referenceLogoFid: number | null;
+  alwaysShowImageTab: boolean;
+  homepage: string;
+  smsSender: string;
+}
+
+interface WhistleblowerForm {
+  whistleblowerAccess: boolean;
+  whistleblowerDisableAnon: boolean;
+  whistleblowerType: string;
+  whistleblowerContactUid: string;
+}
+
+interface LyricsForm {
+  description: string;
+  customTerms: boolean;
+}
+
+interface LinksForm {
+  homepage: string;
+  linkDrivesheet: string;
+  linkFirePlan: string;
+  linkGdpr: string;
+  linkIntranet: string;
+  linkTimesheet: string;
+  additionalInfo: string;
+}
+
+interface InternalForm {
+  handbookReady: boolean;
+  ownHandbookReady: boolean;
+  freeDone: boolean;
+  demoCompany: boolean;
+  testCompany: boolean;
+  employeesPopup: string;
+}
+
+const SECTION_LABELS = {
+  about: 'about',
+  address: 'address',
+  subscription: 'subscription',
+  invoice: 'invoice',
+  admin: 'admin',
+  status: 'status',
+  businessGroup: 'businessGroup',
+  logo: 'logo',
+  whistleblower: 'whistleblower',
+  lyrics: 'lyrics',
+  links: 'links',
+  internal: 'internal',
+} as const;
+
+type SectionKey = keyof typeof SECTION_LABELS;
+
+const TabLink: React.FC<{ to?: string; active?: boolean; disabled?: boolean; children: React.ReactNode }> = ({
+  to,
+  active,
+  disabled,
+  children,
+}) => {
+  const base =
+    'px-3 py-2 text-sm border-b-2 -mb-px transition-colors whitespace-nowrap';
+  if (active) {
+    return <span className={`${base} border-gray-900 text-gray-900 font-medium`}>{children}</span>;
+  }
+  if (disabled || !to) {
+    return (
+      <span className={`${base} border-transparent text-gray-300 cursor-not-allowed select-none`} aria-disabled="true">
+        {children}
+      </span>
+    );
+  }
+  return (
+    <Link to={to} className={`${base} border-transparent text-gray-500 hover:text-gray-700`}>
+      {children}
+    </Link>
+  );
+};
+
+export const AdminEditCompanyPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { t } = useTranslation('admin');
+
+  const { data: company, isLoading, isError } = useAdminCompany(id);
+  const updateCompany = useUpdateCompany();
+
+  // --- Section forms ---
+  const [aboutForm, setAboutForm] = useState<AboutForm>({
+    title: '',
+    customerCompany: '',
+    phone: '',
+    email: '',
+    cvr: '',
+    source: '',
+  });
+
+  const [addressForm, setAddressForm] = useState<AddressForm>({
+    street: '',
+    zipCode: '',
+    city: '',
+  });
+
+  const [subscriptionForm, setSubscriptionForm] = useState<SubscriptionForm>({
+    product: '',
+    licensesTotal: '',
+    smsCreditsTotal: '',
+    smsSending: false,
+    additionalManuals: '0',
+    sopText: '',
+    optionalDesign: false,
+    subscriptionStart: '',
+    subscriptionEnd: '',
+    langDanish: true,
+    langEnglish: false,
+    langBulgarian: false,
+    flagDanish: false,
+    accessToCourses: false,
+    hideQuestionsInProgress: false,
+    turnOffTracking: false,
+    showEmployees: true,
+    showRelatives: false,
+    showDocuments: false,
+    collapseLists: false,
+    hideLinks: false,
+    hideDocuments: false,
+    seasonalEmployees: false,
+    paymentInterval: 'Annual',
+    nextInvoice: '',
+  });
+
+  const [invoiceForm, setInvoiceForm] = useState<InvoiceForm>({ invoiceNote: '' });
+  const [adminForm, setAdminForm] = useState<AdminForm>({ whistleblowerAccess: false });
+  const [statusForm, setStatusForm] = useState<StatusForm>({ handbookReady: false, published: true });
+
+  const [businessGroupForm, setBusinessGroupForm] = useState<BusinessGroupForm>({ customerGroup: '' });
+  const [logoForm, setLogoForm] = useState<LogoForm>({
+    logoFid: null,
+    referenceLogoFid: null,
+    alwaysShowImageTab: false,
+    homepage: '',
+    smsSender: '',
+  });
+  const [whistleblowerForm, setWhistleblowerForm] = useState<WhistleblowerForm>({
+    whistleblowerAccess: false,
+    whistleblowerDisableAnon: false,
+    whistleblowerType: '',
+    whistleblowerContactUid: '',
+  });
+  const [lyricsForm, setLyricsForm] = useState<LyricsForm>({ description: '', customTerms: false });
+  const [linksForm, setLinksForm] = useState<LinksForm>({
+    homepage: '',
+    linkDrivesheet: '',
+    linkFirePlan: '',
+    linkGdpr: '',
+    linkIntranet: '',
+    linkTimesheet: '',
+    additionalInfo: '',
+  });
+  const [internalForm, setInternalForm] = useState<InternalForm>({
+    handbookReady: false,
+    ownHandbookReady: false,
+    freeDone: false,
+    demoCompany: false,
+    testCompany: false,
+    employeesPopup: '',
+  });
+
+  const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
+
+  // Initialize forms from loaded data
+  useEffect(() => {
+    if (!company) return;
+    setAboutForm({
+      title: company.title ?? '',
+      customerCompany: '',
+      phone: company.phone ?? '',
+      email: company.email ?? '',
+      cvr: company.cvr ?? '',
+      source: company.category ?? '',
+    });
+    setAddressForm({
+      street: company.street ?? '',
+      zipCode: company.zipCode ?? '',
+      city: company.city ?? '',
+    });
+    setSubscriptionForm((prev) => ({
+      ...prev,
+      product: company.productName ?? '',
+      licensesTotal: String(company.licensesTotal ?? ''),
+      smsCreditsTotal: String(company.smsCreditsTotal ?? ''),
+      subscriptionStart: formatDateForInput(company.subscriptionStart),
+      subscriptionEnd: formatDateForInput(company.subscriptionEnd),
+    }));
+    setAdminForm({ whistleblowerAccess: !!company.whistleblowerAccess });
+    setStatusForm({
+      handbookReady: !!company.keyFigures?.published,
+      published: company.status === 1,
+    });
+
+    const ext = company.extended;
+    if (ext) {
+      setBusinessGroupForm({
+        customerGroup: ext.customerGroup == null ? '' : String(ext.customerGroup),
+      });
+      setLogoForm({
+        logoFid: ext.logoFid,
+        referenceLogoFid: ext.referenceLogoFid,
+        alwaysShowImageTab: !!ext.alwaysShowImageTab,
+        homepage: ext.homepage ?? '',
+        smsSender: ext.smsSender ?? '',
+      });
+      setWhistleblowerForm({
+        whistleblowerAccess: !!company.whistleblowerAccess,
+        whistleblowerDisableAnon: !!ext.whistleblowerDisableAnon,
+        whistleblowerType: ext.whistleblowerType ?? '',
+        whistleblowerContactUid:
+          ext.whistleblowerContactUid == null ? '' : String(ext.whistleblowerContactUid),
+      });
+      setLyricsForm({
+        description: '',
+        customTerms: !!ext.customTerms,
+      });
+      setLinksForm({
+        homepage: ext.homepage ?? '',
+        linkDrivesheet: ext.linkDrivesheet ?? '',
+        linkFirePlan: ext.linkFirePlan ?? '',
+        linkGdpr: ext.linkGdpr ?? '',
+        linkIntranet: ext.linkIntranet ?? '',
+        linkTimesheet: ext.linkTimesheet ?? '',
+        additionalInfo: '',
+      });
+      setInternalForm({
+        handbookReady: !!company.keyFigures?.published,
+        ownHandbookReady: !!ext.ownHandbookReady,
+        freeDone: !!ext.freeDone,
+        demoCompany: !!ext.demoCompany,
+        testCompany: !!ext.testCompany,
+        employeesPopup: '',
+      });
+    }
+  }, [company]);
+
+  const primaryContact = company?.contacts?.find((c) => c.isPrimary) ?? company?.contacts?.[0];
+
+  const saveSection = async (section: SectionKey, payload: UpdateCompanyPayload) => {
+    if (!id) return;
+    setSavingSection(section);
+    try {
+      await updateCompany.mutateAsync({ companyId: id, data: payload as Record<string, unknown> });
+      toast.success(t('editCompany.saveSuccess', 'Changes saved'));
+    } catch {
+      toast.error(t('editCompany.saveFailed', 'Failed to save changes'));
+    } finally {
+      setSavingSection(null);
+    }
+  };
+
+  const handleSaveAbout = () => {
+    const payload: UpdateCompanyPayload = {
+      title: aboutForm.title,
+      phone: aboutForm.phone,
+      email: aboutForm.email,
+      cvr: aboutForm.cvr,
+    };
+    void saveSection('about', payload);
+  };
+
+  const handleSaveAddress = () => {
+    void saveSection('address', {
+      street: addressForm.street,
+      zipCode: addressForm.zipCode,
+      city: addressForm.city,
+    });
+  };
+
+  const handleSaveSubscription = () => {
+    const payload: UpdateCompanyPayload = {
+      licensesTotal: subscriptionForm.licensesTotal ? parseInt(subscriptionForm.licensesTotal, 10) : undefined,
+      smsCreditsTotal: subscriptionForm.smsCreditsTotal ? parseInt(subscriptionForm.smsCreditsTotal, 10) : undefined,
+      subscriptionStart: subscriptionForm.subscriptionStart || undefined,
+      subscriptionEnd: subscriptionForm.subscriptionEnd || undefined,
+      paymentInterval: subscriptionForm.paymentInterval || undefined,
+      nextInvoice: subscriptionForm.nextInvoice || undefined,
+    };
+    void saveSection('subscription', payload);
+  };
+
+  const handleSaveInvoice = () => {
+    void saveSection('invoice', { invoiceNote: invoiceForm.invoiceNote });
+  };
+
+  const handleSaveAdmin = () => {
+    void saveSection('admin', { whistleblowerAccess: adminForm.whistleblowerAccess });
+  };
+
+  const handleSaveStatus = () => {
+    void saveSection('status', {
+      handbookReady: statusForm.handbookReady,
+      status: statusForm.published ? 1 : 0,
+    });
+  };
+
+  const handleSaveBusinessGroup = () => {
+    void saveSection('businessGroup', {
+      customerGroup: businessGroupForm.customerGroup ? parseInt(businessGroupForm.customerGroup, 10) : null,
+    });
+  };
+
+  const handleSaveLogo = () => {
+    void saveSection('logo', {
+      logoFid: logoForm.logoFid,
+      referenceLogoFid: logoForm.referenceLogoFid,
+      alwaysShowImageTab: logoForm.alwaysShowImageTab,
+      homepage: logoForm.homepage,
+      smsSender: logoForm.smsSender,
+    });
+  };
+
+  const handleSaveWhistleblower = () => {
+    void saveSection('whistleblower', {
+      whistleblowerAccess: whistleblowerForm.whistleblowerAccess,
+      whistleblowerDisableAnon: whistleblowerForm.whistleblowerDisableAnon,
+      whistleblowerType: whistleblowerForm.whistleblowerType,
+      whistleblowerContactUid: whistleblowerForm.whistleblowerContactUid
+        ? parseInt(whistleblowerForm.whistleblowerContactUid, 10)
+        : null,
+    });
+  };
+
+  const handleSaveLyrics = () => {
+    void saveSection('lyrics', {
+      sop: lyricsForm.description,
+      customTerms: lyricsForm.customTerms,
+    });
+  };
+
+  const handleSaveLinks = () => {
+    void saveSection('links', {
+      homepage: linksForm.homepage,
+      linkDrivesheet: linksForm.linkDrivesheet,
+      linkFirePlan: linksForm.linkFirePlan,
+      linkGdpr: linksForm.linkGdpr,
+      linkIntranet: linksForm.linkIntranet,
+      linkTimesheet: linksForm.linkTimesheet,
+    });
+  };
+
+  const handleSaveInternal = () => {
+    void saveSection('internal', {
+      handbookReady: internalForm.handbookReady,
+      ownHandbookReady: internalForm.ownHandbookReady,
+      freeDone: internalForm.freeDone,
+      demoCompany: internalForm.demoCompany,
+      testCompany: internalForm.testCompany,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !company || !id) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
+        <Link
+          to={adminRoutes.companies}
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
+        >
+          &larr; {t('editCompany.backToCompanies', 'Back to Companies')}
+        </Link>
+        <div className="text-center py-20">
+          <p className="text-red-600 font-medium">
+            {t('editCompany.loadError', 'Failed to load company.')}
+          </p>
+          <Button variant="outline" className="mt-4" onClick={() => navigate(adminRoutes.companies)}>
+            {t('editCompany.goBack', 'Go back')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const companyDetailPath = adminRoutes.companyDetail.replace(':id', id);
+  const companyEditPath = adminRoutes.companyEdit.replace(':id', id);
+  const isSaving = (section: SectionKey) => savingSection === section;
+
+  return (
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
+      {/* Breadcrumb */}
+      <nav className="flex flex-wrap items-center gap-1 text-xs sm:text-sm text-gray-500">
+        <Link to={adminRoutes.dashboard} className="hover:text-gray-700">
+          {t('editCompany.console', 'Console')}
+        </Link>
+        <span className="text-gray-300">/</span>
+        <Link to={adminRoutes.companies} className="hover:text-gray-700">
+          {t('editCompany.companies', 'Companies')}
+        </Link>
+        <span className="text-gray-300">/</span>
+        <Link to={companyDetailPath} className="hover:text-gray-700 truncate max-w-[160px]">
+          {company.title}
+        </Link>
+        <span className="text-gray-300">/</span>
+        <span className="text-gray-700">{t('editCompany.edit', 'Edit')}</span>
+      </nav>
+
+      {/* Title */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+          {t('editCompany.title', 'Edit Company')} &mdash; {company.title}
+        </h1>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <div className="flex items-center gap-1 min-w-max">
+          <TabLink to={companyDetailPath}>{t('editCompany.tabs.view', 'View')}</TabLink>
+          <TabLink to={companyEditPath} active>
+            {t('editCompany.tabs.edit', 'Edit')}
+          </TabLink>
+          <TabLink disabled>{t('editCompany.tabs.toc', 'Table of Contents')}</TabLink>
+          <TabLink disabled>{t('editCompany.tabs.update', 'Update')}</TabLink>
+          <TabLink disabled>{t('editCompany.tabs.delete', 'Delete')}</TabLink>
+          <TabLink disabled>{t('editCompany.tabs.deleteAll', 'Delete All')}</TabLink>
+          <TabLink disabled>{t('editCompany.tabs.versions', 'Versions')}</TabLink>
+        </div>
+      </div>
+
+      {/* About the Company */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.about.title', 'About the Company')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="about-title">
+                {t('editCompany.about.name', 'Company name')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="about-title"
+                value={aboutForm.title}
+                onChange={(e) => setAboutForm((p) => ({ ...p, title: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="about-customer">{t('editCompany.about.customerCompany', 'Customer company')}</Label>
+              <Input
+                id="about-customer"
+                value={aboutForm.customerCompany}
+                onChange={(e) => setAboutForm((p) => ({ ...p, customerCompany: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('editCompany.about.primaryContact', 'Primary contact person')}</Label>
+            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+              {primaryContact ? (
+                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+                  <span className="font-medium text-gray-900">{primaryContact.name}</span>
+                  <span className="text-gray-500">{primaryContact.email}</span>
+                  {primaryContact.phone ? (
+                    <span className="text-gray-500">{primaryContact.phone}</span>
+                  ) : null}
+                </div>
+              ) : (
+                <span className="text-gray-400">
+                  {t('editCompany.about.noContact', 'No primary contact assigned')}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="about-phone">{t('editCompany.about.phone', 'Company phone')}</Label>
+              <Input
+                id="about-phone"
+                value={aboutForm.phone}
+                onChange={(e) => setAboutForm((p) => ({ ...p, phone: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="about-email">{t('editCompany.about.email', 'Company email')}</Label>
+              <Input
+                id="about-email"
+                type="email"
+                value={aboutForm.email}
+                onChange={(e) => setAboutForm((p) => ({ ...p, email: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="about-cvr">{t('editCompany.about.cvr', 'CVR number')}</Label>
+              <Input
+                id="about-cvr"
+                value={aboutForm.cvr}
+                onChange={(e) => setAboutForm((p) => ({ ...p, cvr: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="about-source">{t('editCompany.about.source', 'Source')}</Label>
+              <select
+                id="about-source"
+                value={aboutForm.source}
+                onChange={(e) => setAboutForm((p) => ({ ...p, source: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:opacity-50"
+              >
+                <option value="">{t('editCompany.about.sourceNone', '- None -')}</option>
+                <option value="referral">{t('editCompany.source.referral', 'Referral')}</option>
+                <option value="google">{t('editCompany.source.google', 'Google')}</option>
+                <option value="linkedin">{t('editCompany.source.linkedin', 'LinkedIn')}</option>
+                <option value="direct">{t('editCompany.source.direct', 'Direct')}</option>
+                <option value="other">{t('editCompany.source.other', 'Other')}</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveAbout}
+              disabled={isSaving('about') || !aboutForm.title.trim()}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('about')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Address */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.address.title', 'Address')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="addr-street">{t('editCompany.address.street', 'Street and number')}</Label>
+            <Input
+              id="addr-street"
+              value={addressForm.street}
+              onChange={(e) => setAddressForm((p) => ({ ...p, street: e.target.value }))}
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="addr-zip">{t('editCompany.address.postal', 'Postal code')}</Label>
+              <Input
+                id="addr-zip"
+                value={addressForm.zipCode}
+                onChange={(e) => setAddressForm((p) => ({ ...p, zipCode: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addr-city">{t('editCompany.address.town', 'Town')}</Label>
+              <Input
+                id="addr-city"
+                value={addressForm.city}
+                onChange={(e) => setAddressForm((p) => ({ ...p, city: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveAddress}
+              disabled={isSaving('address')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('address')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Subscription */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.subscription.title', 'Subscription')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sub-product">{t('editCompany.subscription.product', 'Product')}</Label>
+              <select
+                id="sub-product"
+                value={subscriptionForm.product}
+                onChange={(e) => setSubscriptionForm((p) => ({ ...p, product: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              >
+                <option value="">{t('editCompany.subscription.productNone', '- None -')}</option>
+                <option value="The staff handbook">
+                  {t('editCompany.subscription.productStaff', 'The staff handbook')}
+                </option>
+                <option value="Free Sample">
+                  {t('editCompany.subscription.productFree', 'Free Sample')}
+                </option>
+                <option value="Free Sample Not used">
+                  {t('editCompany.subscription.productFreeNotUsed', 'Free Sample Not used')}
+                </option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sub-licenses">
+                {t('editCompany.subscription.licenses', 'Licenses')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="sub-licenses"
+                type="number"
+                min={0}
+                required
+                value={subscriptionForm.licensesTotal}
+                onChange={(e) =>
+                  setSubscriptionForm((p) => ({ ...p, licensesTotal: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sub-sms">{t('editCompany.subscription.smsCount', 'Number of SMS')}</Label>
+              <Input
+                id="sub-sms"
+                type="number"
+                min={0}
+                value={subscriptionForm.smsCreditsTotal}
+                onChange={(e) =>
+                  setSubscriptionForm((p) => ({ ...p, smsCreditsTotal: e.target.value }))
+                }
+              />
+              <label className="flex items-center gap-2 pt-1 text-sm text-gray-700">
+                <Checkbox
+                  checked={subscriptionForm.smsSending}
+                  onChange={(e) =>
+                    setSubscriptionForm((p) => ({ ...p, smsSending: e.target.checked }))
+                  }
+                />
+                {t('editCompany.subscription.sending', 'Sending')}
+              </label>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sub-manuals">
+                {t('editCompany.subscription.additionalManuals', 'Additional manuals')}
+              </Label>
+              <Input
+                id="sub-manuals"
+                type="number"
+                value={subscriptionForm.additionalManuals}
+                readOnly
+                disabled
+                className="bg-gray-50 text-gray-500"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="sub-sop">{t('editCompany.subscription.sopText', 'SOP text')}</Label>
+            <Textarea
+              id="sub-sop"
+              rows={3}
+              value={subscriptionForm.sopText}
+              onChange={(e) => setSubscriptionForm((p) => ({ ...p, sopText: e.target.value }))}
+            />
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={subscriptionForm.optionalDesign}
+              onChange={(e) =>
+                setSubscriptionForm((p) => ({ ...p, optionalDesign: e.target.checked }))
+              }
+            />
+            {t('editCompany.subscription.optionalDesign', 'Optional design')}
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sub-start">
+                {t('editCompany.subscription.start', 'Subscription start')}
+              </Label>
+              <Input
+                id="sub-start"
+                type="date"
+                value={subscriptionForm.subscriptionStart}
+                onChange={(e) =>
+                  setSubscriptionForm((p) => ({ ...p, subscriptionStart: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sub-end">{t('editCompany.subscription.end', 'Subscription end')}</Label>
+              <Input
+                id="sub-end"
+                type="date"
+                value={subscriptionForm.subscriptionEnd}
+                onChange={(e) =>
+                  setSubscriptionForm((p) => ({ ...p, subscriptionEnd: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('editCompany.subscription.languagesAvailable', 'Languages available')}</Label>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <Checkbox
+                  checked={subscriptionForm.langDanish}
+                  onChange={(e) =>
+                    setSubscriptionForm((p) => ({ ...p, langDanish: e.target.checked }))
+                  }
+                />
+                {t('editCompany.subscription.langDanish', 'Danish')}
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <Checkbox
+                  checked={subscriptionForm.langEnglish}
+                  onChange={(e) =>
+                    setSubscriptionForm((p) => ({ ...p, langEnglish: e.target.checked }))
+                  }
+                />
+                {t('editCompany.subscription.langEnglish', 'English')}
+              </label>
+              <label className="flex items-center gap-2 text-sm text-gray-700">
+                <Checkbox
+                  checked={subscriptionForm.langBulgarian}
+                  onChange={(e) =>
+                    setSubscriptionForm((p) => ({ ...p, langBulgarian: e.target.checked }))
+                  }
+                />
+                {t('editCompany.subscription.langBulgarian', 'Bulgarian')}
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('editCompany.subscription.settings', 'Settings')}</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+              {(
+                [
+                  ['flagDanish', t('editCompany.subscription.flagDanish', 'Danish')],
+                  ['accessToCourses', t('editCompany.subscription.accessToCourses', 'Give access to courses')],
+                  [
+                    'hideQuestionsInProgress',
+                    t('editCompany.subscription.hideQuestions', 'Hide questions in progress'),
+                  ],
+                  ['turnOffTracking', t('editCompany.subscription.turnOffTracking', 'Turn off tracking')],
+                  ['showEmployees', t('editCompany.subscription.showEmployees', 'Show employees in the info list')],
+                  ['showRelatives', t('editCompany.subscription.showRelatives', 'Show relatives in the info list')],
+                  ['showDocuments', t('editCompany.subscription.showDocuments', 'Show documents in the info list')],
+                  ['collapseLists', t('editCompany.subscription.collapseLists', 'Collapse lists in the info list')],
+                  ['hideLinks', t('editCompany.subscription.hideLinks', 'Hide links')],
+                  ['hideDocuments', t('editCompany.subscription.hideDocuments', 'Hide documents')],
+                  [
+                    'seasonalEmployees',
+                    t('editCompany.subscription.seasonalEmployees', 'Have seasonal employees'),
+                  ],
+                ] as Array<[keyof SubscriptionForm, string]>
+              ).map(([key, label]) => (
+                <label key={String(key)} className="flex items-center gap-2 text-sm text-gray-700">
+                  <Checkbox
+                    checked={Boolean(subscriptionForm[key])}
+                    onChange={(e) =>
+                      setSubscriptionForm((p) => ({ ...p, [key]: e.target.checked }))
+                    }
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sub-payment">
+                {t('editCompany.subscription.paymentMethod', 'Payment method')}
+              </Label>
+              <select
+                id="sub-payment"
+                value={subscriptionForm.paymentInterval}
+                onChange={(e) =>
+                  setSubscriptionForm((p) => ({ ...p, paymentInterval: e.target.value }))
+                }
+                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              >
+                <option value="Annual">{t('editCompany.subscription.annual', 'Annual')}</option>
+                <option value="Quarterly">
+                  {t('editCompany.subscription.quarterly', 'Quarterly')}
+                </option>
+                <option value="Monthly">{t('editCompany.subscription.monthly', 'Monthly')}</option>
+                <option value="None">{t('editCompany.subscription.none', 'None')}</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sub-next">
+                {t('editCompany.subscription.nextBilling', 'Next billing')}
+              </Label>
+              <Input
+                id="sub-next"
+                type="date"
+                value={subscriptionForm.nextInvoice}
+                onChange={(e) =>
+                  setSubscriptionForm((p) => ({ ...p, nextInvoice: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveSubscription}
+              disabled={isSaving('subscription') || !subscriptionForm.licensesTotal}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('subscription')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Note to invoice */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.invoice.title', 'Note to invoice')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Textarea
+            rows={6}
+            value={invoiceForm.invoiceNote}
+            onChange={(e) => setInvoiceForm({ invoiceNote: e.target.value })}
+            placeholder={t('editCompany.invoice.placeholder', 'Add a note that will appear on invoices...')}
+          />
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSaveInvoice}
+              disabled={isSaving('invoice')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('invoice')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Business Group */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.businessGroup.title', 'Business Group')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="bg-group">
+              {t('editCompany.businessGroup.group', 'Business group')}
+            </Label>
+            <select
+              id="bg-group"
+              value={businessGroupForm.customerGroup}
+              onChange={(e) =>
+                setBusinessGroupForm({ customerGroup: e.target.value })
+              }
+              className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="">{t('editCompany.businessGroup.none', '— No group —')}</option>
+              <option value="1">{t('editCompany.businessGroup.a', 'Group A')}</option>
+              <option value="2">{t('editCompany.businessGroup.b', 'Group B')}</option>
+            </select>
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveBusinessGroup}
+              disabled={isSaving('businessGroup')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('businessGroup')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Logo & Images */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.logo.title', 'Logo & Images')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t('editCompany.logo.logo', 'Logo')}</Label>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-700">
+                  {logoForm.logoFid != null
+                    ? `${t('editCompany.logo.file', 'File')} #${logoForm.logoFid}`
+                    : t('editCompany.logo.noFile', 'No file')}
+                </span>
+                <Button type="button" variant="outline" size="sm" disabled>
+                  {t('editCompany.logo.choose', 'Choose File')}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>{t('editCompany.logo.referenceLogo', 'Reference logo')}</Label>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-700">
+                  {logoForm.referenceLogoFid != null
+                    ? `${t('editCompany.logo.file', 'File')} #${logoForm.referenceLogoFid}`
+                    : t('editCompany.logo.noFile', 'No file')}
+                </span>
+                <Button type="button" variant="outline" size="sm" disabled>
+                  {t('editCompany.logo.choose', 'Choose File')}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={logoForm.alwaysShowImageTab}
+              onChange={(e) =>
+                setLogoForm((p) => ({ ...p, alwaysShowImageTab: e.target.checked }))
+              }
+            />
+            {t('editCompany.logo.alwaysShow', 'Always show image tab')}
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="logo-homepage">{t('editCompany.logo.homepage', 'Homepage')}</Label>
+              <Input
+                id="logo-homepage"
+                type="url"
+                value={logoForm.homepage}
+                onChange={(e) => setLogoForm((p) => ({ ...p, homepage: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="logo-sms">
+                {t('editCompany.logo.smsSender', 'Sender name on SMS messages')}
+              </Label>
+              <Input
+                id="logo-sms"
+                value={logoForm.smsSender}
+                onChange={(e) => setLogoForm((p) => ({ ...p, smsSender: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveLogo}
+              disabled={isSaving('logo')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('logo')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* CRM Contacts */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base sm:text-lg">
+              {t('editCompany.crmContacts.title', 'CRM Contacts')}
+            </CardTitle>
+            <span className="inline-flex items-center rounded-full bg-gray-900 text-white text-xs px-2.5 py-1">
+              {t('editCompany.crmContacts.tag', 'CRM contacts')}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Input
+            disabled
+            placeholder={t('editCompany.crmContacts.search', 'Search contacts...')}
+          />
+          <div className="rounded-md border border-gray-200 divide-y divide-gray-100">
+            {company.contacts && company.contacts.length > 0 ? (
+              company.contacts.map((c) => (
+                <div
+                  key={c.uid}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-2 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium text-gray-900 truncate">{c.name}</span>
+                  <span className="text-gray-600 truncate">{c.email}</span>
+                  <span className="text-gray-500 truncate">
+                    {c.isPrimary
+                      ? t('editCompany.crmContacts.primary', 'Primary contact')
+                      : t('editCompany.crmContacts.contact', 'Contact')}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="px-3 py-4 text-sm text-gray-400 text-center">
+                {t('editCompany.crmContacts.empty', 'No contacts')}
+              </div>
+            )}
+          </div>
+          <Button type="button" variant="outline" size="sm" disabled>
+            {t('editCompany.crmContacts.add', '+ Add Another Entry')}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Offers, Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.offers.title', 'Offers, Documents')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="rounded-md border-2 border-dashed border-gray-300 px-4 py-10 text-center">
+            <p className="text-sm font-medium text-gray-700">
+              {t('editCompany.offers.addNew', 'Add a new file')}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {t('editCompany.offers.dragHere', 'Drag and drop files here, or click to browse')}
+            </p>
+          </div>
+          <p className="text-xs text-gray-500">
+            {t(
+              'editCompany.offers.allowed',
+              'Allowed extensions: pdf, doc, docx, xls, xlsx, png, jpg, jpeg, gif, txt',
+            )}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Whistleblower Scheme */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            &#9660; {t('editCompany.whistleblower.title', 'Whistleblower Scheme')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={whistleblowerForm.whistleblowerAccess}
+              onChange={(e) =>
+                setWhistleblowerForm((p) => ({ ...p, whistleblowerAccess: e.target.checked }))
+              }
+            />
+            {t('editCompany.whistleblower.enable', 'Enable')}
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={whistleblowerForm.whistleblowerDisableAnon}
+              onChange={(e) =>
+                setWhistleblowerForm((p) => ({ ...p, whistleblowerDisableAnon: e.target.checked }))
+              }
+            />
+            {t('editCompany.whistleblower.disableAnon', 'Disable anonymous reports')}
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="wb-type">{t('editCompany.whistleblower.type', 'Type')}</Label>
+              <Input
+                id="wb-type"
+                value={whistleblowerForm.whistleblowerType}
+                onChange={(e) =>
+                  setWhistleblowerForm((p) => ({ ...p, whistleblowerType: e.target.value }))
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wb-uid">
+                {t('editCompany.whistleblower.contactUid', 'Contact user UID')}
+              </Label>
+              <Input
+                id="wb-uid"
+                type="number"
+                min={0}
+                value={whistleblowerForm.whistleblowerContactUid}
+                onChange={(e) =>
+                  setWhistleblowerForm((p) => ({ ...p, whistleblowerContactUid: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveWhistleblower}
+              disabled={isSaving('whistleblower')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('whistleblower')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lyrics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            &#9660; {t('editCompany.lyrics.title', 'Lyrics')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            {t(
+              'editCompany.lyrics.instruction',
+              "The company's own texts. Generally not edited here. See on the company's own handbook form",
+            )}
+          </p>
+
+          <div className="space-y-2">
+            <Label htmlFor="lyrics-desc">
+              {t('editCompany.lyrics.description', 'Description')}
+            </Label>
+            <Textarea
+              id="lyrics-desc"
+              rows={6}
+              value={lyricsForm.description}
+              onChange={(e) => setLyricsForm((p) => ({ ...p, description: e.target.value }))}
+              placeholder={t('editCompany.lyrics.wysiwyg', 'WYSIWYG editor placeholder...')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('editCompany.lyrics.nameTemplates', 'Name templates')}</Label>
+            <div className="flex flex-wrap gap-2">
+              {['Company_short_name', 'Company_medium_name', 'Company_admin', 'Owner_titling'].map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-xs px-2.5 py-1"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('editCompany.lyrics.sexFormat', 'Sex format')}</Label>
+            <div className="flex flex-wrap gap-2">
+              {['First letter', 'Hours', 'Date', 'Design'].map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 text-xs px-2.5 py-1"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={lyricsForm.customTerms}
+              onChange={(e) => setLyricsForm((p) => ({ ...p, customTerms: e.target.checked }))}
+            />
+            {t('editCompany.lyrics.customTerms', 'Custom terms')}
+          </label>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveLyrics}
+              disabled={isSaving('lyrics')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('lyrics')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            &#9660; {t('editCompany.links.title', 'Links')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            {t('editCompany.links.subtext', 'Links to external resources')}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="link-homepage">{t('editCompany.links.homepage', 'Homepage')}</Label>
+              <Input
+                id="link-homepage"
+                type="url"
+                value={linksForm.homepage}
+                onChange={(e) => setLinksForm((p) => ({ ...p, homepage: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link-drivesheet">
+                {t('editCompany.links.drivesheet', 'Drivesheet link')}
+              </Label>
+              <Input
+                id="link-drivesheet"
+                type="url"
+                value={linksForm.linkDrivesheet}
+                onChange={(e) => setLinksForm((p) => ({ ...p, linkDrivesheet: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link-fire">{t('editCompany.links.fire', 'Fire plan link')}</Label>
+              <Input
+                id="link-fire"
+                type="url"
+                value={linksForm.linkFirePlan}
+                onChange={(e) => setLinksForm((p) => ({ ...p, linkFirePlan: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link-gdpr">{t('editCompany.links.gdpr', 'GDPR link')}</Label>
+              <Input
+                id="link-gdpr"
+                type="url"
+                value={linksForm.linkGdpr}
+                onChange={(e) => setLinksForm((p) => ({ ...p, linkGdpr: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link-intranet">
+                {t('editCompany.links.intranet', 'Intranet link')}
+              </Label>
+              <Input
+                id="link-intranet"
+                type="url"
+                value={linksForm.linkIntranet}
+                onChange={(e) => setLinksForm((p) => ({ ...p, linkIntranet: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="link-timesheet">
+                {t('editCompany.links.timesheet', 'Timesheet link')}
+              </Label>
+              <Input
+                id="link-timesheet"
+                type="url"
+                value={linksForm.linkTimesheet}
+                onChange={(e) => setLinksForm((p) => ({ ...p, linkTimesheet: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="link-additional">
+              {t('editCompany.links.additional', 'Additional Information')}
+            </Label>
+            <Textarea
+              id="link-additional"
+              rows={3}
+              value={linksForm.additionalInfo}
+              onChange={(e) => setLinksForm((p) => ({ ...p, additionalInfo: e.target.value }))}
+            />
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveLinks}
+              disabled={isSaving('links')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('links')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Internal Fields */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            &#9660; {t('editCompany.internal.title', 'Internal Fields')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            {t(
+              'editCompany.internal.helper',
+              'Fields used by the system and not normally edited manually.',
+            )}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+            {(
+              [
+                ['handbookReady', t('editCompany.internal.handbookReady', 'The handbook has been published')],
+                ['ownHandbookReady', t('editCompany.internal.ownHandbook', 'Own handbook ready')],
+                ['freeDone', t('editCompany.internal.freeDone', 'Free course completed')],
+                ['demoCompany', t('editCompany.internal.demo', 'Demo company')],
+                ['testCompany', t('editCompany.internal.test', 'Test company')],
+              ] as Array<[keyof InternalForm, string]>
+            ).map(([key, label]) => (
+              <label key={String(key)} className="flex items-center gap-2 text-sm text-gray-700">
+                <Checkbox
+                  checked={Boolean(internalForm[key])}
+                  onChange={(e) =>
+                    setInternalForm((p) => ({ ...p, [key]: e.target.checked }))
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="int-popup">
+                {t('editCompany.internal.employeesPopup', 'Number of employees pop up')}
+              </Label>
+              <Input
+                id="int-popup"
+                type="number"
+                min={0}
+                value={internalForm.employeesPopup}
+                onChange={(e) =>
+                  setInternalForm((p) => ({ ...p, employeesPopup: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleSaveInternal}
+              disabled={isSaving('internal')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('internal')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Administrative Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.admin.title', 'Administrative Settings')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={adminForm.whistleblowerAccess}
+              onChange={(e) =>
+                setAdminForm({ whistleblowerAccess: e.target.checked })
+              }
+            />
+            {t('editCompany.admin.allowWise', 'Allow wise')}
+          </label>
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSaveAdmin}
+              disabled={isSaving('admin')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('admin')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Status & Version Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">
+            {t('editCompany.status.title', 'Status & Version Info')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">{t('editCompany.status.status', 'Status')}:</span>
+            <Badge
+              className={
+                statusForm.handbookReady
+                  ? 'bg-green-100 text-green-700 border-green-200'
+                  : 'bg-gray-100 text-gray-600 border-gray-200'
+              }
+            >
+              {statusForm.handbookReady
+                ? t('editCompany.status.published', 'Published')
+                : t('editCompany.status.notPublished', 'Not Published')}
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+                {t('editCompany.status.tableOfContents', 'Table of Contents')}
+              </p>
+              <p className="text-gray-900">
+                {company.handbooks?.length ?? 0} {t('editCompany.status.items', 'items')}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+                {t('editCompany.status.lastSaved', 'Last saved')}
+              </p>
+              <p className="text-gray-900">
+                {company.keyFigures?.lastEdited
+                  ? formatDateDisplay(new Date(company.keyFigures.lastEdited * 1000).toISOString())
+                  : '-'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+                {t('editCompany.status.author', 'Author')}
+              </p>
+              <p className="text-gray-900">{primaryContact?.name ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
+                {t('editCompany.status.promotion', 'Promotion settings')}
+              </p>
+              <p className="text-gray-900">{t('editCompany.status.default', 'Default')}</p>
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={statusForm.handbookReady}
+              onChange={(e) =>
+                setStatusForm((p) => ({ ...p, handbookReady: e.target.checked }))
+              }
+            />
+            {t('editCompany.status.handbookReady', 'Handbook ready')}
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <Checkbox
+              checked={statusForm.published}
+              onChange={(e) => setStatusForm((p) => ({ ...p, published: e.target.checked }))}
+            />
+            {t('editCompany.status.publishedCheckbox', 'Published')}
+          </label>
+
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSaveStatus}
+              disabled={isSaving('status')}
+              className="bg-gray-900 text-white hover:bg-gray-800"
+            >
+              {isSaving('status')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.save', 'Save')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default AdminEditCompanyPage;
