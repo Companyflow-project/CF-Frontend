@@ -50,7 +50,7 @@ export const AdminTopNav: React.FC = () => {
     { path: adminRoutes.companies, label: t('nav.companies'), enabled: true },
     { path: adminRoutes.crm, label: t('nav.crm'), enabled: true },
     { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true },
-    { path: '/admin/newsletters', label: t('nav.newsletters'), enabled: false },
+    { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true },
     { path: adminRoutes.tickets, label: t('nav.support'), enabled: true },
     { path: '/admin/help', label: t('nav.help'), enabled: false },
   ];

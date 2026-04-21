@@ -172,10 +172,12 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.newsletters.title', 'Newsletters')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.newsletters.desc', 'View and create newsletters.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
-            {t('dashboard.cards.newsletters.cta', 'Open Newsletters →')}
+          <Button asChild className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+            <Link to={adminRoutes.newsletters}>
+              {t('dashboard.cards.newsletters.cta', 'Open Newsletters →')}
+            </Link>
           </Button>
-          <CardLink to="/admin/newsletters/create" label={t('dashboard.cards.newsletters.create', 'Create newsletter')} icon="arrow" />
+          <CardLink to={adminRoutes.newsletterCreate} label={t('dashboard.cards.newsletters.create', 'Create newsletter')} icon="arrow" />
         </div>
 
         {/* Management Handbook */}
@@ -184,10 +186,12 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.handbook.title', 'Management Handbook')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.handbook.desc', 'Good advice for business leaders.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
-            {t('dashboard.cards.handbook.cta', 'Open Handbook →')}
+          <Button asChild className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+            <Link to={adminRoutes.handbook}>
+              {t('dashboard.cards.handbook.cta', 'Open Handbook →')}
+            </Link>
           </Button>
-          <CardLink to="/admin/handbook/articles" label={t('dashboard.cards.handbook.browse', 'Browse articles')} icon="arrow" />
+          <CardLink to={adminRoutes.handbookTableOfContents} label={t('dashboard.cards.handbook.browse', 'Browse articles')} icon="arrow" />
         </div>
       </div>
 

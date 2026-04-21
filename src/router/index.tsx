@@ -33,6 +33,12 @@ const AdminKeyFiguresPage = lazy(() => import('@/features/admin/pages/admin-key-
 const AdminCreateCrmActivityPage = lazy(() => import('@/features/admin/pages/admin-create-crm-activity-page').then((m) => ({ default: m.AdminCreateCrmActivityPage })));
 const AdminLatestCompaniesPage = lazy(() => import('@/features/admin/pages/admin-latest-companies-page').then((m) => ({ default: m.AdminLatestCompaniesPage })));
 const AdminEditCompanyPage = lazy(() => import('@/features/admin/pages/admin-edit-company-page').then((m) => ({ default: m.AdminEditCompanyPage })));
+const AdminHandbookPage = lazy(() => import('@/features/admin/pages/admin-handbook-page').then((m) => ({ default: m.AdminHandbookPage })));
+const AdminHandbookBrowsePage = lazy(() => import('@/features/admin/pages/admin-handbook-browse-page').then((m) => ({ default: m.AdminHandbookBrowsePage })));
+const AdminHandbookEditorPage = lazy(() => import('@/features/admin/pages/admin-handbook-editor-page').then((m) => ({ default: m.AdminHandbookEditorPage })));
+const AdminHandbookMetaPage = lazy(() => import('@/features/admin/pages/admin-handbook-meta-page').then((m) => ({ default: m.AdminHandbookMetaPage })));
+const AdminNewslettersPage = lazy(() => import('@/features/admin/pages/admin-newsletters-page').then((m) => ({ default: m.AdminNewslettersPage })));
+const AdminNewsletterEditorPage = lazy(() => import('@/features/admin/pages/admin-newsletter-editor-page').then((m) => ({ default: m.AdminNewsletterEditorPage })));
 
 const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
@@ -787,6 +793,66 @@ export const AppRouter: React.FC = () => {
             }
           />
           <Route
+            path={adminRoutes.handbook}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminHandbookPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.handbookTableOfContents}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminHandbookBrowsePage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.handbookPageMeta}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminHandbookMetaPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.handbookPageTab}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminHandbookEditorPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.handbookPage}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminHandbookEditorPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
             path={adminRoutes.crmCreate}
             element={
               <RequireAuth>
@@ -889,6 +955,42 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminSettingsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.newsletterCreate}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminNewsletterEditorPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.newsletterEdit}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminNewsletterEditorPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.newsletters}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminNewslettersPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

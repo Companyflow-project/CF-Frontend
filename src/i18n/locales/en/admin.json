@@ -205,5 +205,308 @@
   "switchTo": "Switch to",
   "adminAccount": "Admin Account",
   "viewInvoices": "View Invoices",
-  "createBusiness": "Create a Business"
+  "createBusiness": "Create a Business",
+  "handbook": {
+    "title": "Management Handbook",
+    "help": "Help",
+    "edit": "Edit",
+    "helpSaved": "Help text saved",
+    "helpSaveFailed": "Failed to save help text",
+    "helpPlaceholder": "Help text (paragraphs separated by blank lines)",
+    "toc": "Table of contents",
+    "tocDesc": "Searchable overview",
+    "print": "Printer-Friendly version",
+    "printDesc": "The entire handbook",
+    "editorHeading": "Edit Simple Page",
+    "tabs": {
+      "preview": "Preview",
+      "edit": "Edit",
+      "lix": "Lix info",
+      "toc": "Table of Contents",
+      "delete": "Delete",
+      "versions": "Versions",
+      "translate": "Translate"
+    },
+    "common": {
+      "loading": "Loading…",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "published": "Published",
+      "unpublished": "Unpublished",
+      "search": "Search",
+      "book": "Book",
+      "nothingSelected": "– Nothing selected –",
+      "noBookSelected": "No book selected.",
+      "inBook": "In book",
+      "notInBook": "Not in book"
+    },
+    "preview": {
+      "bookStructure": "Book structure",
+      "noContent": "No content yet."
+    },
+    "edit": {
+      "title": "Title",
+      "body": "Body text (Edit intro)",
+      "aboutTextFormats": "About text formats",
+      "textFormat": "Text format",
+      "simpleHtml": "Simple HTML",
+      "fullHtml": "Full HTML",
+      "plainText": "Plain text",
+      "helpPage": "Help page",
+      "helpPageHint": "Tick if the page is a guide or help page for businesses.",
+      "excludeFromOverview": "Exclude from help overview",
+      "excludeHint": "Do not show this page in the overview of help texts for business leaders.",
+      "helpCategory": "Help category",
+      "helpCategoryPlaceholder": "Search categories…",
+      "helpCategoryHint": "Place this help page in a category on the help page overview.",
+      "userManual": "User manual",
+      "routeUrl": "Route/URL",
+      "routeHint": "Can be used on help pages to tie function and help together. Use the patterns this.is.route (route) or /this/url (url)",
+      "longWordsLabel": "Long words",
+      "status": "Status",
+      "metaTags": "Meta tags",
+      "tocSidebar": "Table of contents",
+      "versionInfo": "Version info",
+      "author": "Author",
+      "sidebarTitle": "Status & Version Info",
+      "saveActivity": "Save Activity",
+      "deleteConfirm": "Delete this page? This cannot be undone.",
+      "saved": "Page saved",
+      "saveFailed": "Failed to save page",
+      "deleted": "Page deleted",
+      "deleteFailed": "Failed to delete page"
+    },
+    "lix": {
+      "title": "Lix counter",
+      "number": "Number",
+      "words": "words",
+      "sentences": "sentences",
+      "difficulty": {
+        "very_easy": "Very Easy",
+        "easy": "Easy",
+        "medium": "Medium",
+        "difficult": "Difficult",
+        "very_difficult": "Very Difficult"
+      },
+      "longSentences": "{{count}} long sentences (>120 characters)",
+      "longWords": "{{count}} long words (>7 characters)",
+      "veryLongWords": "{{count}} very long words (>10 characters)",
+      "frequentWords": "{{count}} frequent words (>3 times >7 characters)",
+      "noContent": "No content yet."
+    },
+    "toc": {
+      "instructions": "Use tables of contents to add content to the book hierarchy, move it around the hierarchy, or reorganize an entire book.",
+      "book": "Book",
+      "bookHint": "The page becomes part of the selected book.",
+      "weight": "Weight",
+      "weightHint": "Pages at a given level are sorted first by weight and then by title.",
+      "addToBook": "Add to book",
+      "addedSuccess": "Page added to book",
+      "removedSuccess": "Page removed from book",
+      "updateFailed": "Failed to update table of contents"
+    },
+    "versions": {
+      "title": "Versions",
+      "empty": "No revision history available for this page.",
+      "columnVersion": "Version",
+      "columnTitle": "Title",
+      "columnAuthor": "Author",
+      "columnChanged": "Changed",
+      "columnLog": "Log",
+      "current": "current"
+    },
+    "translate": {
+      "title": "Translate",
+      "description": "Translations supported for this page. Click Edit to open the version in a specific language — if a translation is missing, opening Edit will let you add it.",
+      "columnLanguage": "Language",
+      "columnCode": "Code",
+      "columnStatus": "Status",
+      "columnAction": "Action",
+      "translated": "Translated",
+      "notTranslated": "Not translated",
+      "edit": "Edit",
+      "add": "Add translation",
+      "current": "current",
+      "danish": "Danish",
+      "english": "English"
+    },
+    "delete": {
+      "title": "Delete page",
+      "warning": "You are about to delete {{title}}. This action removes the page from its book and unpublishes the node.",
+      "confirm": "Are you sure you want to delete this page? This cannot be undone.",
+      "button": "Delete page"
+    },
+    "browse": {
+      "book": "Book",
+      "searchPlaceholder": "Search the handbook…",
+      "empty": "This book has no pages yet.",
+      "loading": "Loading tree…",
+      "noBooks": "No books",
+      "noMatches": "No matches."
+    },
+    "meta": {
+      "title": "Meta Tags",
+      "breadcrumbHelpEdit": "Help Edit",
+      "intro": "Configure the meta tags below. Use tokens to avoid redundant meta data and search engine penalization.",
+      "otherKeys": "Other stored keys",
+      "saved": "Meta tags saved",
+      "saveFailed": "Failed to save meta tags"
+    }
+  },
+  "common": {
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No",
+    "prev": "Prev",
+    "next": "Next",
+    "unknown": "Unknown"
+  },
+  "svi": {
+    "sectionTitle": "Status & Version Info",
+    "published": "Published",
+    "saveActivity": "Save Activity",
+    "status": {
+      "title": "Status",
+      "published": "Published",
+      "notPublished": "Not Published",
+      "lastSaved": "Last saved:",
+      "author": "Author:",
+      "notSavedYet": "Not saved yet"
+    },
+    "toc": {
+      "title": "Table of contents",
+      "subtitleNotInBook": "Not in book",
+      "subtitleInBook": "In book",
+      "book": "Book",
+      "nothingSelected": "– Nothing selected –",
+      "bookHint": "The page becomes part of the selected book.",
+      "noBookSelected": "No book selected.",
+      "weight": "Weight",
+      "weightHint": "Pages at a given level are sorted first by weight and then by title."
+    },
+    "version": {
+      "title": "Version info",
+      "subtitleNoVersion": "No version",
+      "subtitleHasLog": "Has log",
+      "logMessage": "Log message",
+      "logPlaceholder": "Please provide a brief description of your changes.",
+      "logHint": "Please provide a brief description of your changes."
+    },
+    "author": {
+      "title": "Author",
+      "subtitle": "By {{name}}, {{date}}",
+      "writtenBy": "Written by",
+      "writtenByHint": "The author's username.",
+      "writtenOn": "Written on",
+      "writtenOnHint": "The time when the content item was created."
+    },
+    "promotion": {
+      "title": "Promotion settings",
+      "subtitlePromoted": "Promoted",
+      "subtitleNotPromoted": "Not promoted",
+      "promotedToFrontPage": "Promoted to front page",
+      "sticky": "Sticky"
+    }
+  },
+  "newsletters": {
+    "title": "Newsletters",
+    "create": "+ Create Newsletter",
+    "searchPlaceholder": "Search newsletters…",
+    "searchBtn": "Search",
+    "empty": "No newsletters yet.",
+    "loadError": "Failed to load newsletters.",
+    "showing": "Showing {{from}}–{{to}} of {{total}} newsletters",
+    "showingNone": "Showing 0 newsletters",
+    "perPage": "Show",
+    "columns": {
+      "title": "Title",
+      "subject": "Subject",
+      "recipients": "Recipients",
+      "sentAt": "Was Sent",
+      "published": "Published"
+    },
+    "sections": {
+      "contents": "Contents",
+      "dates": "Dates",
+      "recipients": "Recipients",
+      "language": "Language",
+      "status": "Status & Info"
+    },
+    "fields": {
+      "internalName": "Internal name",
+      "subject": "Subject",
+      "subjectHint": "The text that appears in the email's subject line",
+      "body": "Text",
+      "format": "Text format",
+      "formatHint": "The text of the email. The header and footer are added automatically.",
+      "smsText": "SMS text",
+      "smsHint": "Any text for SMS. Keep it short!",
+      "useAsTemplate": "Use as a template",
+      "useAsTemplateHint": "Check if this email should be used as a template for new emails.",
+      "category": "Mail category",
+      "categoryHint": "Place the email or template in an appropriate category.",
+      "doNotSend": "Do not send",
+      "doNotSendHint": "Check to block sending the email to regular users regardless of other settings.",
+      "broadcastOn": "Broadcast on",
+      "sendImmediately": "Send immediately",
+      "scheduleHint": "Time of sending. Default is immediately when the email is saved.",
+      "wasSent": "Was sent",
+      "sendTestOnSave": "Send test when saving",
+      "sendTestOnSaveHint": "Send the email to the test addresses when it is saved.",
+      "testAddresses": "Test addresses",
+      "csvHint": "Enter email addresses separated by commas.",
+      "manualReceivers": "Manual receivers",
+      "manualReceiversHint": "Write the email addresses separated by commas.",
+      "business": "Business",
+      "businessPlaceholder": "Company ID",
+      "businessHint": "The email is linked to a specific company and is registered in CRM under this company.",
+      "language": "Language",
+      "statusLabel": "Status",
+      "lastSaved": "Last saved",
+      "author": "Author",
+      "published": "Published"
+    },
+    "format": {
+      "simpleHtml": "Simple HTML",
+      "fullHtml": "Full HTML",
+      "plain": "Plain text"
+    },
+    "category": {
+      "orientation": "Orientation email",
+      "reminder": "Reminder",
+      "announcement": "Announcement",
+      "other": "Other"
+    },
+    "status": {
+      "published": "Published",
+      "notPublished": "Not Published",
+      "notSavedYet": "Not saved yet",
+      "noAuthor": "—"
+    },
+    "editor": {
+      "createTitle": "Create Customer Email",
+      "editTitle": "Edit Customer Email",
+      "createCrumb": "Create",
+      "editCrumb": "Edit",
+      "helpText": "Give the email an internal name that makes it easy to understand what it is used for. Do not publish it.",
+      "save": "Save Activity",
+      "created": "Newsletter created",
+      "updated": "Newsletter saved",
+      "saveFailed": "Failed to save newsletter",
+      "loadError": "Failed to load newsletter.",
+      "testSendQueued": "Test send requested on save."
+    },
+    "validation": {
+      "titleRequired": "Internal name is required.",
+      "subjectRequired": "Subject is required.",
+      "bodyRequired": "Body text is required."
+    }
+  }
 }

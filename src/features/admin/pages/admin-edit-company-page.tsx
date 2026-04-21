@@ -9,9 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { UpdateCompanyPayload } from '../types';
+import {
+  StatusVersionInfoCard,
+  defaultStatusVersionInfoValue,
+  type StatusVersionInfoValue,
+} from '../components/status-version-info-card';
 
 function formatDateForInput(dateStr: string | null | undefined): string {
   if (!dateStr) return '';
@@ -266,6 +270,10 @@ export const AdminEditCompanyPage: React.FC = () => {
   });
 
   const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
+
+  const [sviValue, setSviValue] = useState<StatusVersionInfoValue>(() =>
+    defaultStatusVersionInfoValue(''),
+  );
 
   // Initialize forms from loaded data
   useEffect(() => {
@@ -1505,92 +1513,24 @@ export const AdminEditCompanyPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Status & Version Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base sm:text-lg">
-            {t('editCompany.status.title', 'Status & Version Info')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">{t('editCompany.status.status', 'Status')}:</span>
-            <Badge
-              className={
-                statusForm.handbookReady
-                  ? 'bg-green-100 text-green-700 border-green-200'
-                  : 'bg-gray-100 text-gray-600 border-gray-200'
-              }
-            >
-              {statusForm.handbookReady
-                ? t('editCompany.status.published', 'Published')
-                : t('editCompany.status.notPublished', 'Not Published')}
-            </Badge>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                {t('editCompany.status.tableOfContents', 'Table of Contents')}
-              </p>
-              <p className="text-gray-900">
-                {company.handbooks?.length ?? 0} {t('editCompany.status.items', 'items')}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                {t('editCompany.status.lastSaved', 'Last saved')}
-              </p>
-              <p className="text-gray-900">
-                {company.keyFigures?.lastEdited
-                  ? formatDateDisplay(new Date(company.keyFigures.lastEdited * 1000).toISOString())
-                  : '-'}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                {t('editCompany.status.author', 'Author')}
-              </p>
-              <p className="text-gray-900">{primaryContact?.name ?? '-'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-                {t('editCompany.status.promotion', 'Promotion settings')}
-              </p>
-              <p className="text-gray-900">{t('editCompany.status.default', 'Default')}</p>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <Checkbox
-              checked={statusForm.handbookReady}
-              onChange={(e) =>
-                setStatusForm((p) => ({ ...p, handbookReady: e.target.checked }))
-              }
-            />
-            {t('editCompany.status.handbookReady', 'Handbook ready')}
-          </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
-            <Checkbox
-              checked={statusForm.published}
-              onChange={(e) => setStatusForm((p) => ({ ...p, published: e.target.checked }))}
-            />
-            {t('editCompany.status.publishedCheckbox', 'Published')}
-          </label>
-
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSaveStatus}
-              disabled={isSaving('status')}
-              className="bg-gray-900 text-white hover:bg-gray-800"
-            >
-              {isSaving('status')
-                ? t('editCompany.saving', 'Saving...')
-                : t('editCompany.save', 'Save')}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Status & Version Info (tabbed) */}
+      <StatusVersionInfoCard
+        value={sviValue}
+        onChange={setSviValue}
+        published={statusForm.published}
+        onPublishedChange={(v) => setStatusForm((p) => ({ ...p, published: v }))}
+        authorDisplay={primaryContact?.name ?? '—'}
+        lastSavedLabel={
+          company.keyFigures?.lastEdited
+            ? formatDateDisplay(
+                new Date(company.keyFigures.lastEdited * 1000).toISOString(),
+              )
+            : undefined
+        }
+        onSave={handleSaveStatus}
+        onCancel={() => navigate(companyDetailPath)}
+        saving={isSaving('status')}
+      />
     </div>
   );
 };

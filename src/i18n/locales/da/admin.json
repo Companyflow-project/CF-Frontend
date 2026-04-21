@@ -205,5 +205,308 @@
   "switchTo": "Skift til",
   "adminAccount": "Admin Konto",
   "viewInvoices": "Se Fakturaer",
-  "createBusiness": "Opret en Virksomhed"
+  "createBusiness": "Opret en Virksomhed",
+  "handbook": {
+    "title": "Lederhåndbogen",
+    "help": "Hjælp",
+    "edit": "Rediger",
+    "helpSaved": "Hjælpetekst gemt",
+    "helpSaveFailed": "Kunne ikke gemme hjælpetekst",
+    "helpPlaceholder": "Hjælpetekst (afsnit adskilt af blanke linjer)",
+    "toc": "Indholdsfortegnelse",
+    "tocDesc": "Søgbart overblik",
+    "print": "Printervenlig version",
+    "printDesc": "Hele håndbogen",
+    "editorHeading": "Rediger simpel side",
+    "tabs": {
+      "preview": "Forhåndsvisning",
+      "edit": "Rediger",
+      "lix": "Lix info",
+      "toc": "Indholdsfortegnelse",
+      "delete": "Slet",
+      "versions": "Versioner",
+      "translate": "Oversæt"
+    },
+    "common": {
+      "loading": "Indlæser…",
+      "save": "Gem",
+      "saving": "Gemmer…",
+      "cancel": "Annuller",
+      "delete": "Slet",
+      "deleting": "Sletter…",
+      "published": "Offentliggjort",
+      "unpublished": "Ikke offentliggjort",
+      "search": "Søg",
+      "book": "Bog",
+      "nothingSelected": "– Intet valgt –",
+      "noBookSelected": "Ingen bog valgt.",
+      "inBook": "I bogen",
+      "notInBook": "Ikke i bogen"
+    },
+    "preview": {
+      "bookStructure": "Bogens struktur",
+      "noContent": "Intet indhold endnu."
+    },
+    "edit": {
+      "title": "Titel",
+      "body": "Brødtekst (rediger intro)",
+      "aboutTextFormats": "Om tekstformater",
+      "textFormat": "Tekstformat",
+      "simpleHtml": "Simpel HTML",
+      "fullHtml": "Fuld HTML",
+      "plainText": "Almindelig tekst",
+      "helpPage": "Hjælpeside",
+      "helpPageHint": "Markér hvis siden er en vejledning eller hjælpeside til virksomheder.",
+      "excludeFromOverview": "Udeluk fra hjælpeoversigt",
+      "excludeHint": "Vis ikke denne side i oversigten over hjælpetekster for ledere.",
+      "helpCategory": "Hjælpekategori",
+      "helpCategoryPlaceholder": "Søg kategorier…",
+      "helpCategoryHint": "Placer denne hjælpeside i en kategori på hjælpesideoversigten.",
+      "userManual": "Brugermanual",
+      "routeUrl": "Route/URL",
+      "routeHint": "Kan bruges på hjælpesider til at koble funktion og hjælp sammen. Brug mønstrene this.is.route (route) eller /this/url (url)",
+      "longWordsLabel": "Lange ord",
+      "status": "Status",
+      "metaTags": "Meta-tags",
+      "tocSidebar": "Indholdsfortegnelse",
+      "versionInfo": "Versionsinfo",
+      "author": "Forfatter",
+      "sidebarTitle": "Status og versionsinfo",
+      "saveActivity": "Gem aktivitet",
+      "deleteConfirm": "Slet denne side? Dette kan ikke fortrydes.",
+      "saved": "Side gemt",
+      "saveFailed": "Kunne ikke gemme siden",
+      "deleted": "Side slettet",
+      "deleteFailed": "Kunne ikke slette siden"
+    },
+    "lix": {
+      "title": "Lix-tæller",
+      "number": "Tal",
+      "words": "ord",
+      "sentences": "sætninger",
+      "difficulty": {
+        "very_easy": "Meget let",
+        "easy": "Let",
+        "medium": "Mellem",
+        "difficult": "Svær",
+        "very_difficult": "Meget svær"
+      },
+      "longSentences": "{{count}} lange sætninger (>120 tegn)",
+      "longWords": "{{count}} lange ord (>7 tegn)",
+      "veryLongWords": "{{count}} meget lange ord (>10 tegn)",
+      "frequentWords": "{{count}} hyppige ord (>3 gange >7 tegn)",
+      "noContent": "Intet indhold endnu."
+    },
+    "toc": {
+      "instructions": "Brug indholdsfortegnelser til at tilføje indhold til bogens hierarki, flytte det rundt eller reorganisere en hel bog.",
+      "book": "Bog",
+      "bookHint": "Siden bliver en del af den valgte bog.",
+      "weight": "Vægt",
+      "weightHint": "Sider på samme niveau sorteres først efter vægt og derefter efter titel.",
+      "addToBook": "Tilføj til bog",
+      "addedSuccess": "Side tilføjet til bog",
+      "removedSuccess": "Side fjernet fra bog",
+      "updateFailed": "Kunne ikke opdatere indholdsfortegnelse"
+    },
+    "versions": {
+      "title": "Versioner",
+      "empty": "Der er ingen versionshistorik for denne side.",
+      "columnVersion": "Version",
+      "columnTitle": "Titel",
+      "columnAuthor": "Forfatter",
+      "columnChanged": "Ændret",
+      "columnLog": "Log",
+      "current": "aktuel"
+    },
+    "translate": {
+      "title": "Oversæt",
+      "description": "Understøttede oversættelser for denne side. Klik Rediger for at åbne versionen på et bestemt sprog — hvis en oversættelse mangler, kan du tilføje den via Rediger.",
+      "columnLanguage": "Sprog",
+      "columnCode": "Kode",
+      "columnStatus": "Status",
+      "columnAction": "Handling",
+      "translated": "Oversat",
+      "notTranslated": "Ikke oversat",
+      "edit": "Rediger",
+      "add": "Tilføj oversættelse",
+      "current": "aktuel",
+      "danish": "Dansk",
+      "english": "Engelsk"
+    },
+    "delete": {
+      "title": "Slet side",
+      "warning": "Du er ved at slette {{title}}. Handlingen fjerner siden fra bogen og afpubliserer noden.",
+      "confirm": "Er du sikker på, at du vil slette denne side? Dette kan ikke fortrydes.",
+      "button": "Slet side"
+    },
+    "browse": {
+      "book": "Bog",
+      "searchPlaceholder": "Søg i håndbogen…",
+      "empty": "Denne bog har endnu ingen sider.",
+      "loading": "Indlæser træ…",
+      "noBooks": "Ingen bøger",
+      "noMatches": "Ingen resultater."
+    },
+    "meta": {
+      "title": "Meta-tags",
+      "breadcrumbHelpEdit": "Rediger hjælp",
+      "intro": "Konfigurer meta-tags nedenfor. Brug tokens for at undgå gentagen meta-data og søgemaskinestraf.",
+      "otherKeys": "Andre gemte nøgler",
+      "saved": "Meta-tags gemt",
+      "saveFailed": "Kunne ikke gemme meta-tags"
+    }
+  },
+  "common": {
+    "loading": "Indlæser…",
+    "saving": "Gemmer…",
+    "save": "Gem",
+    "cancel": "Annuller",
+    "back": "Tilbage",
+    "yes": "Ja",
+    "no": "Nej",
+    "prev": "Forrige",
+    "next": "Næste",
+    "unknown": "Ukendt"
+  },
+  "svi": {
+    "sectionTitle": "Status og versionsinfo",
+    "published": "Udgivet",
+    "saveActivity": "Gem aktivitet",
+    "status": {
+      "title": "Status",
+      "published": "Udgivet",
+      "notPublished": "Ikke udgivet",
+      "lastSaved": "Sidst gemt:",
+      "author": "Forfatter:",
+      "notSavedYet": "Ikke gemt endnu"
+    },
+    "toc": {
+      "title": "Indholdsfortegnelse",
+      "subtitleNotInBook": "Ikke i bog",
+      "subtitleInBook": "I bog",
+      "book": "Bog",
+      "nothingSelected": "– Intet valgt –",
+      "bookHint": "Siden bliver del af den valgte bog.",
+      "noBookSelected": "Ingen bog valgt.",
+      "weight": "Vægt",
+      "weightHint": "Sider på samme niveau sorteres først efter vægt og derefter efter titel."
+    },
+    "version": {
+      "title": "Versionsinfo",
+      "subtitleNoVersion": "Ingen version",
+      "subtitleHasLog": "Har log",
+      "logMessage": "Logbesked",
+      "logPlaceholder": "Angiv en kort beskrivelse af dine ændringer.",
+      "logHint": "Angiv en kort beskrivelse af dine ændringer."
+    },
+    "author": {
+      "title": "Forfatter",
+      "subtitle": "Af {{name}}, {{date}}",
+      "writtenBy": "Skrevet af",
+      "writtenByHint": "Forfatterens brugernavn.",
+      "writtenOn": "Skrevet den",
+      "writtenOnHint": "Tidspunktet hvor indholdet blev oprettet."
+    },
+    "promotion": {
+      "title": "Promoveringsindstillinger",
+      "subtitlePromoted": "Promoveret",
+      "subtitleNotPromoted": "Ikke promoveret",
+      "promotedToFrontPage": "Promoveret til forsiden",
+      "sticky": "Fastgjort"
+    }
+  },
+  "newsletters": {
+    "title": "Nyhedsbreve",
+    "create": "+ Opret nyhedsbrev",
+    "searchPlaceholder": "Søg nyhedsbreve…",
+    "searchBtn": "Søg",
+    "empty": "Ingen nyhedsbreve endnu.",
+    "loadError": "Kunne ikke indlæse nyhedsbreve.",
+    "showing": "Viser {{from}}–{{to}} af {{total}} nyhedsbreve",
+    "showingNone": "Viser 0 nyhedsbreve",
+    "perPage": "Vis",
+    "columns": {
+      "title": "Titel",
+      "subject": "Emne",
+      "recipients": "Modtagere",
+      "sentAt": "Blev sendt",
+      "published": "Udgivet"
+    },
+    "sections": {
+      "contents": "Indhold",
+      "dates": "Datoer",
+      "recipients": "Modtagere",
+      "language": "Sprog",
+      "status": "Status & info"
+    },
+    "fields": {
+      "internalName": "Internt navn",
+      "subject": "Emne",
+      "subjectHint": "Teksten, der vises i emnefeltet",
+      "body": "Tekst",
+      "format": "Tekstformat",
+      "formatHint": "Emailens tekst. Header og footer tilføjes automatisk.",
+      "smsText": "SMS-tekst",
+      "smsHint": "Tekst til SMS. Hold det kort!",
+      "useAsTemplate": "Brug som skabelon",
+      "useAsTemplateHint": "Marker, hvis denne email skal bruges som skabelon for nye emails.",
+      "category": "Mailkategori",
+      "categoryHint": "Placér emailen eller skabelonen i en passende kategori.",
+      "doNotSend": "Send ikke",
+      "doNotSendHint": "Marker for at blokere afsendelse til almindelige brugere, uanset andre indstillinger.",
+      "broadcastOn": "Send den",
+      "sendImmediately": "Send med det samme",
+      "scheduleHint": "Afsendelsestidspunkt. Standard er med det samme, når emailen gemmes.",
+      "wasSent": "Blev sendt",
+      "sendTestOnSave": "Send test ved gem",
+      "sendTestOnSaveHint": "Send emailen til testadresserne når den gemmes.",
+      "testAddresses": "Testadresser",
+      "csvHint": "Angiv emailadresser adskilt med komma.",
+      "manualReceivers": "Manuelle modtagere",
+      "manualReceiversHint": "Skriv emailadresserne adskilt med komma.",
+      "business": "Virksomhed",
+      "businessPlaceholder": "Virksomheds-ID",
+      "businessHint": "Emailen er knyttet til en specifik virksomhed og registreres i CRM under denne virksomhed.",
+      "language": "Sprog",
+      "statusLabel": "Status",
+      "lastSaved": "Sidst gemt",
+      "author": "Forfatter",
+      "published": "Udgivet"
+    },
+    "format": {
+      "simpleHtml": "Simpel HTML",
+      "fullHtml": "Fuld HTML",
+      "plain": "Almindelig tekst"
+    },
+    "category": {
+      "orientation": "Orienterings-email",
+      "reminder": "Påmindelse",
+      "announcement": "Meddelelse",
+      "other": "Andet"
+    },
+    "status": {
+      "published": "Udgivet",
+      "notPublished": "Ikke udgivet",
+      "notSavedYet": "Endnu ikke gemt",
+      "noAuthor": "—"
+    },
+    "editor": {
+      "createTitle": "Opret kunde-email",
+      "editTitle": "Rediger kunde-email",
+      "createCrumb": "Opret",
+      "editCrumb": "Rediger",
+      "helpText": "Giv emailen et internt navn, der gør det nemt at forstå, hvad den bruges til. Udgiv den ikke.",
+      "save": "Gem aktivitet",
+      "created": "Nyhedsbrev oprettet",
+      "updated": "Nyhedsbrev gemt",
+      "saveFailed": "Kunne ikke gemme nyhedsbrev",
+      "loadError": "Kunne ikke indlæse nyhedsbrev.",
+      "testSendQueued": "Testafsendelse anmodet ved gem."
+    },
+    "validation": {
+      "titleRequired": "Internt navn er påkrævet.",
+      "subjectRequired": "Emne er påkrævet.",
+      "bodyRequired": "Brødtekst er påkrævet."
+    }
+  }
 }

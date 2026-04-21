@@ -26,6 +26,11 @@ import {
 import { adminRoutes } from '../routes';
 import { useAuth } from '@/features/auth/hooks';
 import type { CreateCrmActivityPayload } from '../types';
+import {
+  StatusVersionInfoCard,
+  defaultStatusVersionInfoValue,
+  type StatusVersionInfoValue,
+} from '../components/status-version-info-card';
 
 // -------- Static taxonomy (fallback labels + icon mapping) --------
 const STATUS_OPTIONS = [
@@ -207,6 +212,11 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
   const [dragOver, setDragOver] = useState(false);
 
   const [published, setPublished] = useState(true);
+
+  const authorDisplay = user?.name ?? t('common.unknown', 'Unknown');
+  const [sviValue, setSviValue] = useState<StatusVersionInfoValue>(() =>
+    defaultStatusVersionInfoValue(authorDisplay),
+  );
 
   // Data
   const taxonomyQuery = useCrmTaxonomy();
@@ -691,69 +701,17 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
         )}
       </SectionCard>
 
-      {/* Status & Version Info */}
-      <SectionCard title={t('crmCreate.sections.versionInfo', 'Status & Version Info')}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t('crmCreate.version.author', 'Author')}
-            </div>
-            <div className="mt-1 text-gray-700">
-              {user?.name ?? t('common.unknown', 'Unknown')}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t('crmCreate.version.created', 'Created')}
-            </div>
-            <div className="mt-1 text-gray-700">—</div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t('crmCreate.version.lastModified', 'Last modified')}
-            </div>
-            <div className="mt-1 text-gray-700">—</div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              {t('crmCreate.version.version', 'Version')}
-            </div>
-            <div className="mt-1 text-gray-700">1</div>
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* Promotion Settings */}
-      <SectionCard
-        title={t('crmCreate.sections.promotion', 'Promotion Settings')}
-      >
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={published}
-            onChange={(e) => setPublished(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300"
-          />
-          {t('crmCreate.fields.published', 'Published')}
-        </label>
-      </SectionCard>
-
-      {/* Bottom actions */}
-      <div className="flex items-center justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={handleCancel} disabled={saving}>
-          {t('common.cancel', 'Cancel')}
-        </Button>
-        <Button
-          type="button"
-          className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90"
-          onClick={handleSubmit}
-          disabled={saving}
-        >
-          {saving
-            ? t('common.saving', 'Saving…')
-            : t('crmCreate.saveActivity', 'Save Activity')}
-        </Button>
-      </div>
+      {/* Status & Version Info (tabbed) */}
+      <StatusVersionInfoCard
+        value={sviValue}
+        onChange={setSviValue}
+        published={published}
+        onPublishedChange={setPublished}
+        authorDisplay={authorDisplay}
+        onSave={handleSubmit}
+        onCancel={handleCancel}
+        saving={saving}
+      />
     </div>
   );
 };
