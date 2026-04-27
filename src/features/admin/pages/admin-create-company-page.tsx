@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,15 +13,12 @@ import { Search } from 'lucide-react';
 
 // ---- Category definitions (matches Drupal "Create a Business" form) ----
 const CATEGORIES = [
-  { value: 'lead', label: 'Lead', color: '#94a3b8' },
+  { value: 'potential_customer', label: 'Potential customer', color: '#a78bfa' },
   { value: 'demo_requested', label: 'Demo requested', color: '#60a5fa' },
   { value: 'not_a_customer', label: 'Not a customer', color: '#f87171' },
-  { value: 'potential', label: 'Potential', color: '#a78bfa' },
   { value: 'demo_agreed', label: 'Demo agreed', color: '#38bdf8' },
   { value: 'terminated', label: 'Terminated', color: '#ef4444' },
-  { value: 'inquiry_from_us', label: 'Inquiry from us', color: '#fb923c' },
   { value: 'want_contact', label: 'Want contact', color: '#facc15' },
-  { value: 'former_customer', label: 'Former customer', color: '#f97316' },
   { value: 'accepted', label: 'Accepted', color: '#4ade80' },
   { value: 'offer_sent', label: 'Offer sent', color: '#2dd4bf' },
   { value: 'partner', label: 'Partner', color: '#c084fc' },
@@ -29,8 +26,6 @@ const CATEGORIES = [
   { value: 'offer_rejected', label: 'Offer rejected', color: '#fb7185' },
   { value: 'internal_testing', label: 'Internal testing', color: '#a3a3a3' },
   { value: 'meeting_scheduled', label: 'Meeting scheduled', color: '#67e8f9' },
-  { value: 'external_testing', label: 'External testing', color: '#d4d4d4' },
-  { value: 'internal_demo', label: 'Internal demo', color: '#cbd5e1' },
   { value: 'free_sample', label: 'Free sample', color: '#86efac' },
   { value: 'customer', label: 'Customer', color: '#22c55e' },
 ] as const;
@@ -76,7 +71,7 @@ const initialForm: FormState = {
   name: '',
   email: '',
   phone: '',
-  category: 'lead',
+  category: 'potential_customer',
   contactName: '',
   contactInternalName: '',
   contactEmail: '',
@@ -206,8 +201,19 @@ export const AdminCreateCompanyPage: React.FC = () => {
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-          {t('createCompany.title', 'Create company')}
+        <div className="text-sm text-gray-500">
+          <Link to={adminRoutes.dashboard} className="hover:underline">
+            {t('nav.console', 'Console')}
+          </Link>
+          {' › '}
+          <Link to={adminRoutes.companies} className="hover:underline">
+            {t('nav.companies', 'Companies')}
+          </Link>
+          {' › '}
+          <span className="text-gray-700">{t('createCompany.title', 'Create a Business')}</span>
+        </div>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+          {t('createCompany.title', 'Create a Business')}
         </h1>
         <p className="text-sm text-gray-500 mt-1">
           {t('createCompany.description', 'Onboard a new business')}

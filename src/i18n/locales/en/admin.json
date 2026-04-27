@@ -6,62 +6,117 @@
     "invoices": "Invoices",
     "newsletters": "Newsletters",
     "support": "Support",
-    "help": "Help"
+    "help": "Help",
+    "activity": "Activity",
+    "language": "Language",
+    "logout": "Log out",
+    "people": "People",
+    "settings": "Settings",
+    "userConsole": "User Console",
+    "userAccount": "User account",
+    "changeUserView": "Change user view",
+    "content": "Content",
+    "structure": "Structure",
+    "companyFlow": "CompanyFlow",
+    "comingSoon": "Coming soon"
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}",
+    "welcomeBack": "Welcome back",
+    "adminFallback": "Admin",
     "title": "Control Panel",
+    "loading": "Loading…",
+    "loadError": "Failed to load dashboard.",
+    "freeSampleActive": "Free sample is active",
+    "for": "for",
+    "viewInvoices": "View Invoices",
+    "createBusiness": "Create a Business",
+    "informationList": "Information List",
     "infoList": "Information List",
     "keyFigures": "Key Figures",
     "cards": {
-      "companies": "Companies",
-      "companiesDesc": "Searchable company overview and management.",
-      "goToCompanies": "Go to Companies →",
-      "createBusiness": "Create a business",
-      "sources": "Sources",
-      "supportTickets": "Support Tickets",
-      "supportDesc": "View and create support tickets for your customers.",
-      "openTickets": "Open Tickets →",
-      "createTicket": "Create new ticket",
-      "ticketSettings": "Ticket settings",
-      "crmToDo": "CRM To-Do",
-      "crmDesc": "List of CRM activities and follow-ups.",
-      "openCrm": "Open CRM →",
-      "addActivity": "Add activity",
-      "newsletters": "Newsletters",
-      "newslettersDesc": "View and create newsletters.",
-      "openNewsletters": "Open Newsletters →",
-      "createNewsletter": "Create newsletter",
-      "handbook": "Management Handbook",
-      "handbookDesc": "Good advice for business leaders.",
-      "openHandbook": "Open Handbook →",
-      "browseArticles": "Browse articles"
+      "companies": {
+        "title": "Companies",
+        "desc": "Searchable company overview and management.",
+        "cta": "Go to Companies →",
+        "createBusiness": "Create a business",
+        "sources": "Sources"
+      },
+      "tickets": {
+        "title": "Support Tickets",
+        "desc": "View and create support tickets for your customers.",
+        "cta": "Open Tickets →",
+        "create": "Create new ticket",
+        "settings": "Ticket settings"
+      },
+      "crm": {
+        "title": "CRM To-Do",
+        "desc": "List of CRM activities and follow-ups.",
+        "cta": "Open CRM →",
+        "add": "Add activity"
+      },
+      "newsletters": {
+        "title": "Newsletters",
+        "desc": "View and create newsletters.",
+        "cta": "Open Newsletters →",
+        "create": "Create newsletter"
+      },
+      "handbook": {
+        "title": "Management Handbook",
+        "desc": "Good advice for business leaders.",
+        "cta": "Manage Handbook →",
+        "browse": "Browse articles",
+        "print": "Printer-friendly version"
+      }
     },
     "latestCompanies": "Latest Companies",
+    "noCompaniesFound": "No companies found.",
     "viewAll": "View All",
-    "columns": {
+    "table": {
       "business": "Business",
       "name": "Name",
       "category": "Category",
       "tel": "Tel.",
-      "created": "Created"
-    },
-    "employeeTraffic": "Employees Traffic",
-    "adminTraffic": "Administrators Traffic",
-    "trafficColumns": {
+      "created": "Created",
       "daysAgo": "Days Ago",
       "number": "Number"
     },
+    "employeesTraffic": "Employees Traffic",
+    "administratorsTraffic": "Administrators Traffic",
+    "noData": "No data",
     "recentActivities": "Recent Activities",
-    "addActivityBtn": "+ Add Activity"
+    "noRecentActivities": "No recent activities.",
+    "addActivity": "+ Add Activity",
+    "comingSoon": "Coming soon"
   },
   "companies": {
     "title": "Companies",
     "sources": "Sources",
     "createNew": "+ Create New Business",
     "search": "Search companies...",
-    "sortBy": "Sort",
+    "searchPlaceholder": "Search companies...",
+    "sortBy": "Sort by",
+    "sortAsc": "Sort ascending",
+    "sortDesc": "Sort descending",
+    "sort": {
+      "name": "Name",
+      "created": "Created",
+      "customerNumber": "Customer #"
+    },
+    "filter": "Filter",
     "filterCategory": "Filter",
+    "allSources": "All Sources",
+    "source": {
+      "website": "Website",
+      "referral": "Referral",
+      "partner": "Partner",
+      "direct": "Direct"
+    },
+    "category": {
+      "all": "All",
+      "demoRequested": "Demo Requested",
+      "freeSample": "Free Sample"
+    },
     "all": "All",
     "columns": {
       "business": "Business",
@@ -69,30 +124,60 @@
       "quickLinks": "Quick Links",
       "actions": "Actions"
     },
+    "field": {
+      "customerNumber": "Customer #",
+      "cvr": "CVR",
+      "product": "Product",
+      "licenses": "Licenses",
+      "sms": "SMS",
+      "sender": "Sender",
+      "whistleblower": "Whistleblower"
+    },
+    "subscription": "Subscription",
+    "quickLinks": "Quick Links",
+    "actions": "Actions",
+    "start": "Start",
+    "end": "End",
+    "active": "Active",
+    "inactive": "Inactive",
+    "uncategorized": "Uncategorized",
+    "loadError": "Failed to load companies.",
+    "tryAgainLater": "Please try again later.",
+    "noneFound": "No companies found.",
+    "noEndDate": "No end date",
+    "expired": "Expired",
+    "dayLeft": "day left",
+    "daysLeft": "days left",
+    "weekLeft": "week left",
+    "weeksLeft": "weeks left",
+    "monthLeft": "month left",
+    "monthsLeft": "months left",
+    "timeLeft": "{{time}} left",
     "customerNo": "Customer no.: {{id}}",
     "product": "Product: {{name}}",
     "licenses": "Licenses: {{used}} / {{total}}",
     "sms": "SMSs: {{used}} / {{cap}}",
     "sender": "Sender: {{name}}",
     "whistleblower": "Whistleblower: {{status}}",
-    "start": "Start: {{date}}",
-    "end": "End: {{date}}",
-    "timeLeft": "{{time}} left",
     "links": {
       "allPages": "All pages",
-      "createHandbook": "Create your handbook",
+      "createHandbook": "Create handbook",
       "controlPanel": "Control panel",
       "employees": "Employees",
+      "addCrm": "Add CRM activity",
       "addCrmActivity": "Add CRM activity"
     },
-    "actions": {
-      "edit": "Edit",
-      "wise": "Wise",
-      "reset": "Reset",
-      "deleteAll": "Delete everything"
-    },
-    "showing": "Showing {{from}}–{{to}} of {{total}} companies",
-    "perPage": "per page"
+    "edit": "Edit",
+    "wise": "Wise",
+    "reset": "Reset",
+    "deleteAll": "Delete everything",
+    "showing": "Showing",
+    "of": "of",
+    "companiesLower": "companies",
+    "previous": "Previous",
+    "next": "Next",
+    "perPage": "per page",
+    "comingSoon": "Coming soon"
   },
   "companyDetail": {
     "back": "← Back to Companies",
@@ -122,13 +207,31 @@
       "role": "Role",
       "company": "Company",
       "status": "Status",
-      "lastActive": "Last Active"
+      "lastActive": "Last Active",
+      "actions": "Actions"
     },
     "active": "Active",
     "inactive": "Inactive",
     "activate": "Activate",
     "deactivate": "Deactivate",
-    "moveCompany": "Move to Company"
+    "moveCompany": "Move to Company",
+    "activated": "User activated",
+    "allRoles": "All roles",
+    "allStatuses": "All statuses",
+    "allUsers": "All users",
+    "companyIdFilter": "Company ID",
+    "deactivated": "User deactivated",
+    "description": "Manage platform users",
+    "never": "Never",
+    "noResults": "No users found",
+    "roleUpdateFailed": "Failed to update role",
+    "roleUpdated": "Role updated",
+    "searchPlaceholder": "Search users...",
+    "statusUpdateFailed": "Failed to update status",
+    "statuses": {
+      "active": "Active",
+      "blocked": "Blocked"
+    }
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -144,7 +247,10 @@
     },
     "expired": "Expired",
     "expiring": "Expiring",
-    "active": "Active"
+    "active": "Active",
+    "description": "Active customer subscriptions",
+    "noResults": "No subscriptions found",
+    "overview": "Overview"
   },
   "activity": {
     "title": "Activity Log",
@@ -156,19 +262,33 @@
       "user_moved": "Moved user to another company",
       "company_created": "Created company",
       "company_deleted": "Deleted company"
-    }
+    },
+    "description": "Admin activity log",
+    "log": "Log",
+    "noEntries": "No activity entries"
   },
   "analytics": {
     "title": "Analytics",
     "signupsPerWeek": "Company Signups (Last 12 Weeks)",
     "userGrowth": "New Users (Last 12 Weeks)",
-    "smsUsage": "SMS Usage (Last 6 Months)"
+    "smsUsage": "SMS Usage (Last 6 Months)",
+    "description": "Platform usage statistics",
+    "noData": "No data available"
   },
   "settings": {
     "title": "Platform Settings",
     "trialLength": "Default Trial Length (days)",
     "smsPricing": "SMS Pricing",
-    "save": "Save Settings"
+    "save": "Save Settings",
+    "days": "days",
+    "defaultTrialLength": "Default trial length",
+    "description": "Configure platform-wide settings",
+    "perSms": "per SMS",
+    "platformSettings": "Platform settings",
+    "saveFailed": "Failed to save settings",
+    "saved": "Settings saved",
+    "smsPricingHelp": "Price charged per SMS sent",
+    "trialLengthHelp": "Default trial period for new companies"
   },
   "createCompany": {
     "title": "Create a Business",
@@ -195,7 +315,34 @@
     "create": "Create",
     "createAndCrm": "Create and add CRM activity",
     "createAndAdmin": "Create and add company administrator",
-    "note": "Please note that it may take a few minutes to create a business."
+    "note": "Please note that it may take a few minutes to create a business.",
+    "businessDetails": "Business details",
+    "companyEmail": "Company email",
+    "companyName": "Company name",
+    "contactEmail": "Contact email",
+    "contactMobile": "Contact mobile",
+    "contactName": "Contact name",
+    "cvrFound": "Business found via CVR lookup",
+    "cvrLookupFailed": "CVR lookup failed",
+    "cvrNotFound": "No business found for that CVR number",
+    "cvrNumber": "CVR number",
+    "description": "Onboard a new business",
+    "failed": "Failed to create business",
+    "lookingUp": "Looking up...",
+    "lookup": "Look up",
+    "primaryContact": "Primary contact",
+    "submit": {
+      "create": "Create",
+      "createAdmin": "Create + set admin",
+      "createCrm": "Create + add CRM"
+    },
+    "success": "Business created",
+    "validation": {
+      "contactEmailRequired": "Contact email is required",
+      "contactNameRequired": "Contact name is required",
+      "emailRequired": "Business email is required",
+      "nameRequired": "Business name is required"
+    }
   },
   "impersonate": {
     "title": "Change user view",
@@ -209,11 +356,11 @@
   "handbook": {
     "title": "Management Handbook",
     "help": "Help",
-    "edit": "Edit",
+    "editHelp": "Edit",
     "helpSaved": "Help text saved",
     "helpSaveFailed": "Failed to save help text",
     "helpPlaceholder": "Help text (paragraphs separated by blank lines)",
-    "toc": "Table of contents",
+    "tocTitle": "Table of contents",
     "tocDesc": "Searchable overview",
     "print": "Printer-Friendly version",
     "printDesc": "The entire handbook",
@@ -316,7 +463,18 @@
       "columnAuthor": "Author",
       "columnChanged": "Changed",
       "columnLog": "Log",
-      "current": "current"
+      "current": "current",
+      "by": "by",
+      "columnActions": "Actions",
+      "currentVersion": "Current version",
+      "deleteConfirm": "Delete this version? This cannot be undone.",
+      "deleteFailed": "Failed to delete version",
+      "deleted": "Version deleted",
+      "heading": "Versions of the {{title}}",
+      "restore": "Restore",
+      "restoreConfirm": "Restore this version? The current content will be replaced.",
+      "restoreFailed": "Failed to restore version",
+      "restored": "Version restored"
     },
     "translate": {
       "title": "Translate",
@@ -331,13 +489,21 @@
       "add": "Add translation",
       "current": "current",
       "danish": "Danish",
-      "english": "English"
+      "english": "English",
+      "columnTranslation": "Translation",
+      "heading": "Translations of the {{title}}",
+      "originalLanguage": "original language",
+      "published": "Published",
+      "unpublished": "Unpublished",
+      "bulgarian": "Bulgarian"
     },
     "delete": {
       "title": "Delete page",
       "warning": "You are about to delete {{title}}. This action removes the page from its book and unpublishes the node.",
       "confirm": "Are you sure you want to delete this page? This cannot be undone.",
-      "button": "Delete page"
+      "button": "Delete page",
+      "cannotUndo": "This action cannot be undone.",
+      "heading": "Are you sure you want to delete the content element {{title}}?"
     },
     "browse": {
       "book": "Book",
@@ -366,7 +532,11 @@
     "no": "No",
     "prev": "Prev",
     "next": "Next",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "pagination": "Showing {{from}}–{{to}} of {{total}}",
+    "perPage": "per page",
+    "remove": "Remove",
+    "show": "Show"
   },
   "svi": {
     "sectionTitle": "Status & Version Info",
@@ -471,7 +641,9 @@
       "statusLabel": "Status",
       "lastSaved": "Last saved",
       "author": "Author",
-      "published": "Published"
+      "published": "Published",
+      "onlyTest": "Only send as test",
+      "onlyTestHint": "Deliver only to the test addresses below — skip real recipients."
     },
     "format": {
       "simpleHtml": "Simple HTML",
@@ -482,7 +654,8 @@
       "orientation": "Orientation email",
       "reminder": "Reminder",
       "announcement": "Announcement",
-      "other": "Other"
+      "other": "Other",
+      "none": "– Select –"
     },
     "status": {
       "published": "Published",
@@ -508,5 +681,616 @@
       "subjectRequired": "Subject is required.",
       "bodyRequired": "Body text is required."
     }
+  },
+  "companyView": {
+    "additionalManuals": "Additional Manuals",
+    "alwaysShowImageTab": "Always Show Image Tab",
+    "annual": "Annual",
+    "breadcrumb": {
+      "companies": "Companies",
+      "console": "Console"
+    },
+    "change": "Change",
+    "close": "Close",
+    "collapseListsInTheInfoList": "Collapse Lists in the Info List",
+    "companyEmail": "Company Email",
+    "companyPhone": "Company Phone",
+    "freeCourseCompleted": "Free Course Completed",
+    "freeSample": "Free sample",
+    "freeSampleSubtitle": "From the outside – free sample",
+    "from": "From",
+    "giveAccessToCourses": "Give Access to Courses",
+    "haveSeasonalEmployees": "Have Seasonal Employees",
+    "hideDocuments": "Hide Documents",
+    "hideInToDoList": "Hide in To-Do List",
+    "hideLinks": "Hide Links",
+    "hideQuestionsInProgress": "Hide Questions in Progress",
+    "licenses": "Licenses",
+    "loadError": "Failed to load company.",
+    "networking": "Networking",
+    "nextBilling": "Next Billing",
+    "no": "No",
+    "nothing": "Nothing",
+    "numberOfSmsMessages": "Number of SMS Messages",
+    "off": "Off",
+    "on": "On",
+    "optionalDesign": "Optional Design",
+    "paymentMethod": "Payment Method",
+    "primaryContactPerson": "Primary Contact Person",
+    "product": "Product",
+    "senderNameOnSmsMessages": "Sender Name on SMS Messages",
+    "showDocumentsInTheInfoList": "Show Documents in the Info List",
+    "showEmployeesInTheInfoList": "Show Employees in the Info List",
+    "showLinksInTheInfoList": "Show Links in the Info List",
+    "showRelativesInTheInfoList": "Show Relatives in the Info List",
+    "smsCount": "{{count}} SMS",
+    "subscriptionEnd": "Subscription, End",
+    "subscriptionStart": "Subscription, Start",
+    "tabs": {
+      "delete": "Delete",
+      "deleteAll": "Delete All",
+      "edit": "Edit",
+      "toc": "Table of Contents",
+      "versions": "Versions",
+      "view": "View",
+      "wise": "Wise"
+    },
+    "to": "To",
+    "turnOffAnonymous": "Turn off anonymous",
+    "turnOffTracking": "Turn off tracking",
+    "wise": "Wise",
+    "yes": "Yes",
+    "loading": "Loading…"
+  },
+  "crm": {
+    "allUsers": "All Users",
+    "apply": "Apply",
+    "breadcrumb": "CRM To-Do List",
+    "columns": {
+      "activity": "Activity",
+      "business": "Business",
+      "responsible": "Responsible",
+      "type": "Type",
+      "writtenOn": "Written On"
+    },
+    "empty": "No activities found.",
+    "filters": {
+      "activities": "CRM Activities",
+      "all": "All",
+      "followUp": "Follow-up",
+      "period": "Period",
+      "showHidden": "Show Hidden",
+      "status": "Status",
+      "type": "Type",
+      "users": "Users"
+    },
+    "showing": "Showing {{from}}–{{to}} of {{total}} activities",
+    "summary": {
+      "automatic": "Automatic",
+      "meetings": "Meetings",
+      "other": "Other",
+      "total": "Total",
+      "viewing": "Viewing all activities · {{period}}"
+    },
+    "title": "CRM To-Do List"
+  },
+  "crmCreate": {
+    "breadcrumb": {
+      "activities": "Activities",
+      "console": "Console",
+      "create": "Create Activity"
+    },
+    "errors": {
+      "businessRequired": "Please select a business",
+      "saveFailed": "Failed to save activity: {{message}}",
+      "titleRequired": "Activity title is required"
+    },
+    "fields": {
+      "business": "Business",
+      "followupNote": "Note for follow-up",
+      "followupType": "Follow-up type",
+      "mailStatus": "Mail status",
+      "nextActivityDate": "Next activity date",
+      "responsible": "Responsible",
+      "sendMessageToResponsible": "Send message to responsible person(s)",
+      "status": "Status",
+      "title": "Activity Title",
+      "type": "Type"
+    },
+    "files": {
+      "drop": "Drop files here or click to upload",
+      "hint": "PDF, DOCX, images up to 20MB"
+    },
+    "noCompanies": "No businesses found",
+    "placeholders": {
+      "body": "Write your note...",
+      "business": "Search business...",
+      "followupNote": "Add a note for the follow-up...",
+      "title": "Enter activity title"
+    },
+    "save": "Save",
+    "sections": {
+      "categorization": "Categorization",
+      "details": "Activity Details",
+      "files": "Files",
+      "followedBy": "Followed by",
+      "followup": "Follow-up",
+      "mailStatus": "Mail Status",
+      "note": "Note"
+    },
+    "success": "Activity created successfully",
+    "title": "Create CRM Activity"
+  },
+  "editCompany": {
+    "about": {
+      "customerCompany": "Customer company",
+      "cvr": "CVR number",
+      "email": "Company email",
+      "name": "Company name",
+      "noContact": "No primary contact assigned",
+      "phone": "Company phone",
+      "primaryContact": "Primary contact person",
+      "source": "Source",
+      "sourceNone": "- None -",
+      "title": "About the Company"
+    },
+    "address": {
+      "postal": "Postal code",
+      "street": "Street and number",
+      "title": "Address",
+      "town": "Town"
+    },
+    "admin": {
+      "allowWise": "Allow wise",
+      "title": "Administrative Settings"
+    },
+    "backToCompanies": "Back to Companies",
+    "businessGroup": {
+      "a": "Group A",
+      "b": "Group B",
+      "group": "Business group",
+      "none": "— No group —",
+      "title": "Business Group"
+    },
+    "companies": "Companies",
+    "console": "Console",
+    "crmContacts": {
+      "add": "+ Add Another Entry",
+      "contact": "Contact",
+      "empty": "No contacts",
+      "primary": "Primary contact",
+      "search": "Search contacts...",
+      "tag": "CRM contacts",
+      "title": "CRM Contacts"
+    },
+    "edit": "Edit",
+    "goBack": "Go back",
+    "internal": {
+      "demo": "Demo company",
+      "employeesPopup": "Number of employees pop up",
+      "freeDone": "Free course completed",
+      "handbookReady": "The handbook has been published",
+      "helper": "Fields used by the system and not normally edited manually.",
+      "ownHandbook": "Own handbook ready",
+      "test": "Test company",
+      "title": "Internal Fields"
+    },
+    "invoice": {
+      "placeholder": "Add a note that will appear on invoices...",
+      "title": "Note to invoice"
+    },
+    "links": {
+      "additional": "Additional Information",
+      "drivesheet": "Drivesheet link",
+      "fire": "Fire plan link",
+      "gdpr": "GDPR link",
+      "homepage": "Homepage",
+      "intranet": "Intranet link",
+      "subtext": "Links to external resources",
+      "timesheet": "Timesheet link",
+      "title": "Links"
+    },
+    "loadError": "Failed to load company.",
+    "logo": {
+      "alwaysShow": "Always show image tab",
+      "choose": "Choose File",
+      "file": "File",
+      "homepage": "Homepage",
+      "logo": "Logo",
+      "noFile": "No file",
+      "referenceLogo": "Reference logo",
+      "smsSender": "Sender name on SMS messages",
+      "title": "Logo & Images"
+    },
+    "lyrics": {
+      "customTerms": "Custom terms",
+      "description": "Description",
+      "instruction": "The company's own texts. Generally not edited here. See on the company's own handbook form",
+      "nameTemplates": "Name templates",
+      "sexFormat": "Sex format",
+      "title": "Lyrics",
+      "wysiwyg": "WYSIWYG editor placeholder..."
+    },
+    "offers": {
+      "addNew": "Add a new file",
+      "allowed": "Allowed extensions: pdf, doc, docx, xls, xlsx, png, jpg, jpeg, gif, txt",
+      "dragHere": "Drag and drop files here, or click to browse",
+      "title": "Offers, Documents"
+    },
+    "save": "Save",
+    "saveFailed": "Failed to save changes",
+    "saveSuccess": "Changes saved",
+    "saving": "Saving...",
+    "source": {
+      "direct": "Direct",
+      "google": "Google",
+      "linkedin": "LinkedIn",
+      "other": "Other",
+      "referral": "Referral"
+    },
+    "subscription": {
+      "accessToCourses": "Give access to courses",
+      "additionalManuals": "Additional manuals",
+      "annual": "Annual",
+      "collapseLists": "Collapse lists in the info list",
+      "end": "Subscription end",
+      "flagDanish": "Danish",
+      "hideDocuments": "Hide documents",
+      "hideLinks": "Hide links",
+      "hideQuestions": "Hide questions in progress",
+      "langBulgarian": "Bulgarian",
+      "langDanish": "Danish",
+      "langEnglish": "English",
+      "languagesAvailable": "Languages available",
+      "licenses": "Licenses",
+      "monthly": "Monthly",
+      "nextBilling": "Next billing",
+      "none": "None",
+      "optionalDesign": "Optional design",
+      "paymentMethod": "Payment method",
+      "product": "Product",
+      "productFree": "Free Sample",
+      "productFreeNotUsed": "Free Sample Not used",
+      "productNone": "- None -",
+      "productStaff": "The staff handbook",
+      "quarterly": "Quarterly",
+      "seasonalEmployees": "Have seasonal employees",
+      "sending": "Sending",
+      "settings": "Settings",
+      "showDocuments": "Show documents in the info list",
+      "showEmployees": "Show employees in the info list",
+      "showRelatives": "Show relatives in the info list",
+      "smsCount": "Number of SMS",
+      "sopText": "SOP text",
+      "start": "Subscription start",
+      "title": "Subscription",
+      "turnOffTracking": "Turn off tracking"
+    },
+    "tabs": {
+      "delete": "Delete",
+      "deleteAll": "Delete All",
+      "edit": "Edit",
+      "toc": "Table of Contents",
+      "update": "Update",
+      "versions": "Versions",
+      "view": "View"
+    },
+    "title": "Edit Company",
+    "whistleblower": {
+      "contactUid": "Contact user UID",
+      "disableAnon": "Disable anonymous reports",
+      "enable": "Enable",
+      "title": "Whistleblower Scheme",
+      "type": "Type"
+    }
+  },
+  "invoices": {
+    "all": "All",
+    "breadcrumb": "Invoices",
+    "columns": {
+      "addPurchases": "Add. Purchases",
+      "beginner": "Beginner",
+      "business": "Business",
+      "category": "Category",
+      "ends": "Ends",
+      "endsAbout": "Ends About",
+      "invoicing": "Invoicing",
+      "licenses": "Licenses",
+      "notes": "Notes",
+      "payment": "Payment",
+      "when": "When"
+    },
+    "customersOnly": "Customers Only",
+    "empty": "No invoices found.",
+    "exportCsv": "Export CSV",
+    "exporting": "Exporting…",
+    "searchPlaceholder": "Search businesses...",
+    "showing": "Showing {{from}}–{{to}} of {{total}} invoices",
+    "title": "Invoices"
+  },
+  "keyFigures": {
+    "allCompaniesKeywords": "All Companies — Keyword Searches",
+    "cards": {
+      "keywords": "Keywords",
+      "keywordsDesc": "What employees were looking for",
+      "overview": "Key Figures",
+      "overviewDesc": "Key figures for all companies",
+      "traffic": "Traffic",
+      "trafficDesc": "Traffic in the past 24 hours"
+    },
+    "checking": "Checking Key Figures",
+    "col1": "Number of licenses, employees and percentage utilized. Less than 25% utilized is odd.",
+    "col2": "Latest user access (all users). Older than 6 months is weird.",
+    "col3": "Latest edit of content. Older than 6 months is weird.",
+    "col4": "Release status. Either or is not considered odd.",
+    "columns": {
+      "access": "Access",
+      "business": "Business",
+      "editing": "Editing Content",
+      "exploitation": "Exploitation",
+      "lastAccess": "Last Access",
+      "latestSearch": "Latest search",
+      "licenses": "Licenses",
+      "name": "Name",
+      "number": "Number",
+      "published": "Published",
+      "roles": "Roles",
+      "used": "Used",
+      "word": "Word"
+    },
+    "empty": "No companies.",
+    "help": "Help",
+    "helpIntro": "The functions are:",
+    "helpKeyFigures": "Key figures — company licenses, usage and latest access",
+    "helpKeywords": "Keywords — the things users searched for in the handbook",
+    "helpTraffic": "Traffic — user usage in recent days",
+    "no": "No",
+    "noKeywords": "No keywords found.",
+    "noTraffic": "No users accessed in this period.",
+    "overviewHelp": "The overview shows all companies that are registered as customers. The weird ones are pink, their weirdness is highlighted. The columns show:",
+    "period": "Period",
+    "period1day": "1 day",
+    "periodDays": "{{from}}–{{to}} days",
+    "searchKeywords": "Search keywords...",
+    "showing": "Showing {{from}}–{{to}} of {{total}} companies",
+    "showingKeywords": "Showing {{from}}–{{to}} of {{total}} keywords",
+    "showingUsers": "Showing {{from}}–{{to}} of {{total}} users",
+    "sortCount": "Sort: Most searched",
+    "sortLatest": "Sort: Latest search",
+    "sortWord": "Sort: Word (A–Z)",
+    "title": "Key Figures",
+    "userAccessLog": "User Access Log",
+    "yes": "Yes"
+  },
+  "latestCompanies": {
+    "activities": "activities",
+    "breadcrumb": {
+      "companies": "Companies",
+      "console": "Console",
+      "viewAll": "View All"
+    },
+    "col": {
+      "business": "Business",
+      "category": "Category",
+      "created": "Created",
+      "name": "Name",
+      "telephone": "Telephone"
+    },
+    "filter": "Filter",
+    "loadError": "Failed to load companies.",
+    "next": "Next",
+    "noneFound": "No companies found.",
+    "of": "of",
+    "perPage": "per page",
+    "previous": "Previous",
+    "searchPlaceholder": "Search...",
+    "show": "Show",
+    "showing": "Showing",
+    "sort": "Sort",
+    "sortAsc": "Sort ascending",
+    "sortDesc": "Sort descending",
+    "title": "Latest Companies",
+    "tryAgainLater": "Please try again later."
+  },
+  "tickets": {
+    "actions": {
+      "edit": "Edit",
+      "done": "Done"
+    },
+    "breadcrumb": "Support Tickets",
+    "columns": {
+      "actions": "Actions",
+      "author": "Author",
+      "bodyText": "Body text",
+      "date": "Date",
+      "priority": "Priority",
+      "responsible": "Responsible",
+      "status": "Status",
+      "title": "Title"
+    },
+    "create": "Create Ticket",
+    "empty": {
+      "subtitle": "Use the priority, status, list, and responsible filters above to narrow down your support tickets.",
+      "title": "Select filters to view tickets"
+    },
+    "filters": {
+      "lists": "Lists",
+      "orientation": "Orientation",
+      "priority": "Priority",
+      "responsible": "Responsible",
+      "status": "Status"
+    },
+    "noResults": "No tickets found.",
+    "searchPlaceholder": "Search ticket...",
+    "showing": "Showing {{from}}–{{to}} of {{total}} tickets",
+    "tabs": {
+      "chronological": "Chronological",
+      "tickets": "Tickets"
+    },
+    "title": "Support Tickets",
+    "chronoHeader": "All — Sorted by Date (Newest First)",
+    "groupCount": "{{count}} tickets",
+    "showHide": {
+      "label": "Show / Hide",
+      "showAll": "Show all",
+      "hide": "Hide"
+    }
+  },
+  "handbookPrint": {
+    "title": "Printer-Friendly version",
+    "breadcrumb": "Printer-Friendly version",
+    "chooseBook": "Choose a handbook",
+    "nothingSelected": "– Nothing selected –",
+    "loading": "Loading pages ({{loaded}} / {{total}})…",
+    "empty": "This handbook has no pages yet.",
+    "pageError": "Failed to load this page.",
+    "print": "Print"
+  },
+  "companyDashboard": {
+    "actionDelete": "Delete",
+    "actionDeleteAll": "Delete All",
+    "actionEdit": "Edit",
+    "actionReset": "Reset",
+    "actionWise": "Wise",
+    "cancel": "Cancel",
+    "resetConfirmTitle": "Reset company information?",
+    "resetConfirmBody": "Proceeding with this action resets the information for this company. You may lose important information. Continue with caution.",
+    "resetPending": "Reset is not yet available — backend endpoint pending.",
+    "deleteConfirmTitle": "Delete this company?",
+    "deleteConfirmBody": "This action is irreversible. Proceed with caution and make sure you no longer need the data before deleting it.",
+    "deletePending": "Delete is not yet available — backend endpoint pending.",
+    "actions": "Actions",
+    "active": "Active",
+    "activityAndSubscription": "Activity & Subscription",
+    "addActivity": "+ Add Activity",
+    "addContact": "+ Add Contact",
+    "additionalHandbooks": "Additional Handbooks",
+    "allActivities": "All Activities",
+    "allCompanies": "All Companies",
+    "annual": "Annual",
+    "business": "Business",
+    "businessDetails": "Business details",
+    "businessName": "Business Name",
+    "company": "Company",
+    "companyContacts": "Company contacts",
+    "contactColumns": {
+      "actions": "Actions",
+      "email": "Email",
+      "function": "Function",
+      "name": "Name",
+      "telephone": "Telephone"
+    },
+    "contacts": "Contacts",
+    "crm": {
+      "activity": "Activity",
+      "created": "Created",
+      "next": "Next",
+      "of": "Of",
+      "responsible": "Responsible",
+      "status": "Status",
+      "text": "Text"
+    },
+    "crmActivities": "CRM Activities",
+    "customerContext": "Customer: {{name}} – {{id}}",
+    "customerNo": "Customer No.",
+    "cvr": "CVR",
+    "departments": "Departments",
+    "docColumns": {
+      "date": "Date",
+      "description": "Description",
+      "linkedTo": "Linked To"
+    },
+    "documents": "Documents",
+    "editing": "Editing",
+    "editingFrequency": "Editing Frequency",
+    "editingNumber": "Number: {{count}}",
+    "employeeHandbook": "Employee Handbook",
+    "employmentTypes": "Employment Types",
+    "end": "End",
+    "inactive": "Inactive",
+    "invoice": "Invoice",
+    "keyFigures": "Key Figures",
+    "kf": {
+      "access": "Access",
+      "business": "Business",
+      "editingContent": "Editing Content",
+      "exploitation": "Exploitation",
+      "licenses": "Licenses",
+      "published": "Published",
+      "used": "Used"
+    },
+    "languages": "Languages",
+    "lastAccess": "Last Access",
+    "lastUser": "Last User",
+    "licenses": "Licenses",
+    "licensesUsage": "{{used}} used by {{total}}",
+    "links": {
+      "addCrm": "Add CRM Activity",
+      "allPages": "All Pages",
+      "controlPanel": "Control Panel",
+      "createHandbook": "Create Your Handbook",
+      "employees": "Employees"
+    },
+    "nDaysAgo": "{{count}} days ago",
+    "nMonths": "{{count}} months",
+    "nMonthsAgo": "{{count}} months ago",
+    "nWeeksAgo": "{{count}} weeks ago",
+    "next": "Next",
+    "noActivities": "No activities yet.",
+    "noContacts": "No contacts",
+    "noDocuments": "No",
+    "none": "None",
+    "notEntered": "Not entered",
+    "oneMonthAgo": "1 month ago",
+    "oneWeekAgo": "1 week ago",
+    "optionalDesign": "Optional Graphic Design",
+    "primaryContact": "Primary contact person",
+    "product": "Product",
+    "published": "Published",
+    "quickLinks": "Quick Links",
+    "remaining": "Remaining",
+    "sender": "Sender",
+    "sms": "SMSs",
+    "smsUsage": "{{used}} used by {{total}}",
+    "sop": "SOP",
+    "start": "Start",
+    "subscription": "Subscription",
+    "today": "today",
+    "type": "Type",
+    "upload": "↑ Upload",
+    "whistleblower": "Whistleblower",
+    "comingSoon": "Coming soon"
+  },
+  "crmActivities": {
+    "addActivity": "+ Add Activity",
+    "apply": "Apply",
+    "breadcrumb": "Activities",
+    "columns": {
+      "activity": "Activity",
+      "business": "Business",
+      "created": "Created",
+      "next": "Next",
+      "of": "Of",
+      "responsible": "Responsible",
+      "status": "Status",
+      "writtenBy": "Written By"
+    },
+    "createdBy": "Created by",
+    "createdByPlaceholder": "Enter a comma-separated list of usernames...",
+    "empty": "No activities found.",
+    "leaveEmpty": "Leave empty to show all",
+    "showing": "Showing {{from}}–{{to}} of {{total}} activities",
+    "showingForUser": "Showing {{count}} activities for {{name}}",
+    "status": {
+      "done": "Done",
+      "inProgress": "In progress",
+      "paused": "Paused",
+      "pending": "Pending",
+      "scheduled": "Scheduled"
+    },
+    "title": "CRM — Activities",
+    "viewAll": "← View all activities",
+    "show": "Show",
+    "perPage": "per page"
   }
 }

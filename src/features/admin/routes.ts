@@ -5,6 +5,7 @@ export const adminRoutes = {
   createCompany: '/admin/companies/create',
   sources: '/admin/sources',
   crm: '/admin/crm',
+  crmActivities: '/admin/crm/activities',
   invoices: '/admin/invoices',
   tickets: '/admin/support',
   keyFigures: '/admin/key-figures',

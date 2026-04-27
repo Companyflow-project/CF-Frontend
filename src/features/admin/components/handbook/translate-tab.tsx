@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
 import { useAdminHandbookPage } from '../../handbook-hooks';
 import { adminRoutes } from '../../routes';
 
@@ -9,9 +10,12 @@ interface Props {
   langcode?: string;
 }
 
-const SUPPORTED_LANGS: Array<{ code: string; labelKey: string; fallback: string }> = [
+type SupportedLang = { code: string; labelKey: string; fallback: string };
+
+const SUPPORTED_LANGS: SupportedLang[] = [
   { code: 'da', labelKey: 'handbook.translate.danish', fallback: 'Danish' },
   { code: 'en', labelKey: 'handbook.translate.english', fallback: 'English' },
+  { code: 'bg', labelKey: 'handbook.translate.bulgarian', fallback: 'Bulgarian' },
 ];
 
 export const AdminHandbookTranslateTab: React.FC<Props> = ({ nid, langcode }) => {
@@ -21,59 +25,104 @@ export const AdminHandbookTranslateTab: React.FC<Props> = ({ nid, langcode }) =>
 
   if (isLoading || !page) return <div className="text-sm text-gray-500">{t('handbook.common.loading', 'Loading…')}</div>;
 
-  const available = new Set(page.availableLangcodes);
+  const translationByLang = new Map(
+    (page.translations ?? []).map((tr) => [tr.langcode, tr])
+  );
+  const originalLang = page.langcode;
+
+  const openEdit = (code: string) => {
+    navigate(`${adminRoutes.handbookPageTab.replace(':nid', String(nid)).replace(':tab', 'edit')}?lang=${code}`);
+  };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-[#0d0e0e]">{t('handbook.translate.title', 'Translate')}</h2>
-      <p className="text-sm text-gray-600">
-        {t('handbook.translate.description', 'Translations supported for this page. Click Edit to open the version in a specific language — if a translation is missing, opening Edit will let you add it.')}
-      </p>
-      <table className="w-full text-sm">
-        <thead className="text-xs text-gray-500 uppercase">
-          <tr className="border-b border-gray-200">
-            <th className="text-left py-2 px-2">{t('handbook.translate.columnLanguage', 'Language')}</th>
-            <th className="text-left py-2 px-2">{t('handbook.translate.columnCode', 'Code')}</th>
-            <th className="text-left py-2 px-2">{t('handbook.translate.columnStatus', 'Status')}</th>
-            <th className="text-left py-2 px-2">{t('handbook.translate.columnAction', 'Action')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {SUPPORTED_LANGS.map(lang => {
-            const isAvailable = available.has(lang.code);
-            const isCurrent = lang.code === (langcode ?? page.langcode);
-            return (
-              <tr key={lang.code} className="border-b border-gray-100">
-                <td className="py-2 px-2 font-medium">
-                  {t(lang.labelKey, lang.fallback)}
-                  {isCurrent && (
-                    <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-green-50 text-green-700">
-                      {t('handbook.translate.current', 'current')}
-                    </span>
-                  )}
-                </td>
-                <td className="py-2 px-2 text-gray-600 font-mono">{lang.code}</td>
-                <td className="py-2 px-2">
-                  {isAvailable ? (
-                    <span className="text-xs text-green-700">{t('handbook.translate.translated', 'Translated')}</span>
-                  ) : (
-                    <span className="text-xs text-gray-500">{t('handbook.translate.notTranslated', 'Not translated')}</span>
-                  )}
-                </td>
-                <td className="py-2 px-2">
-                  <button
-                    type="button"
-                    onClick={() => navigate(`${adminRoutes.handbookPageTab.replace(':nid', String(nid)).replace(':tab', 'edit')}?lang=${lang.code}`)}
-                    className="text-[#0d0e0e] hover:underline text-sm"
-                  >
-                    {isAvailable ? t('handbook.translate.edit', 'Edit') : t('handbook.translate.add', 'Add translation')}
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <h2 className="text-lg font-semibold text-[#0d0e0e]">
+        {t('handbook.translate.heading', 'Translations of the {{title}}', { title: page.title })}
+      </h2>
+
+      <div className="rounded-xl border border-gray-200 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+            <tr>
+              <th className="text-left py-3 px-4 font-semibold">{t('handbook.translate.columnLanguage', 'Language')}</th>
+              <th className="text-left py-3 px-4 font-semibold">{t('handbook.translate.columnTranslation', 'Translation')}</th>
+              <th className="text-left py-3 px-4 font-semibold">{t('handbook.translate.columnStatus', 'Status')}</th>
+              <th className="text-left py-3 px-4 font-semibold">{t('handbook.translate.columnAction', 'Actions')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SUPPORTED_LANGS.map((lang) => {
+              const tr = translationByLang.get(lang.code);
+              const isOriginal = lang.code === originalLang;
+              const exists = Boolean(tr);
+              const published = tr?.published ?? false;
+
+              return (
+                <tr key={lang.code} className="border-t border-gray-100">
+                  <td className="py-3 px-4 font-medium text-[#0d0e0e]">
+                    {t(lang.labelKey, lang.fallback)}
+                    {isOriginal && (
+                      <span className="ml-2 text-xs text-gray-500 font-normal">
+                        ({t('handbook.translate.originalLanguage', 'original language')})
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4">
+                    {exists ? (
+                      <button
+                        type="button"
+                        onClick={() => openEdit(lang.code)}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {tr!.title}
+                      </button>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4">
+                    {exists ? (
+                      published ? (
+                        <span className="inline-block text-xs font-medium px-2.5 py-0.5 rounded border bg-green-50 text-green-700 border-green-200">
+                          {t('handbook.translate.published', 'Published')}
+                        </span>
+                      ) : (
+                        <span className="inline-block text-xs font-medium px-2.5 py-0.5 rounded border bg-gray-50 text-gray-700 border-gray-200">
+                          {t('handbook.translate.unpublished', 'Unpublished')}
+                        </span>
+                      )
+                    ) : (
+                      <span className="inline-block text-xs font-medium px-2.5 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200">
+                        {t('handbook.translate.notTranslated', 'Not translated')}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4">
+                    {exists ? (
+                      <Button
+                        size="sm"
+                        className="h-8 bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90"
+                        onClick={() => openEdit(lang.code)}
+                      >
+                        {t('handbook.translate.edit', 'Edit')}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8"
+                        onClick={() => openEdit(lang.code)}
+                      >
+                        {t('handbook.translate.add', 'Add')}
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

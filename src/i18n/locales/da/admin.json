@@ -6,62 +6,117 @@
     "invoices": "Fakturaer",
     "newsletters": "Nyhedsbreve",
     "support": "Support",
-    "help": "Hjælp"
+    "help": "Hjælp",
+    "activity": "Aktivitet",
+    "language": "Sprog",
+    "logout": "Log ud",
+    "people": "Personer",
+    "settings": "Indstillinger",
+    "userConsole": "Brugerkonsol",
+    "userAccount": "Brugerkonto",
+    "changeUserView": "Skift brugervisning",
+    "content": "Indhold",
+    "structure": "Struktur",
+    "companyFlow": "CompanyFlow",
+    "comingSoon": "Kommer snart"
   },
   "dashboard": {
     "welcome": "Velkommen tilbage, {{name}}",
+    "welcomeBack": "Velkommen tilbage",
+    "adminFallback": "Administrator",
     "title": "Kontrolpanel",
+    "loading": "Indlæser…",
+    "loadError": "Kunne ikke indlæse kontrolpanelet.",
+    "freeSampleActive": "Gratis prøve er aktiv",
+    "for": "for",
+    "viewInvoices": "Se fakturaer",
+    "createBusiness": "Opret en virksomhed",
+    "informationList": "Informationsliste",
     "infoList": "Informationsliste",
     "keyFigures": "Nøgletal",
     "cards": {
-      "companies": "Virksomheder",
-      "companiesDesc": "Søgbar virksomhedsoversigt og administration.",
-      "goToCompanies": "Gå til Virksomheder →",
-      "createBusiness": "Opret en virksomhed",
-      "sources": "Kilder",
-      "supportTickets": "Support Tickets",
-      "supportDesc": "Se og opret support tickets til dine kunder.",
-      "openTickets": "Åbn Tickets →",
-      "createTicket": "Opret ny ticket",
-      "ticketSettings": "Ticket indstillinger",
-      "crmToDo": "CRM To-Do",
-      "crmDesc": "Liste over CRM-aktiviteter og opfølgninger.",
-      "openCrm": "Åbn CRM →",
-      "addActivity": "Tilføj aktivitet",
-      "newsletters": "Nyhedsbreve",
-      "newslettersDesc": "Se og opret nyhedsbreve.",
-      "openNewsletters": "Åbn Nyhedsbreve →",
-      "createNewsletter": "Opret nyhedsbrev",
-      "handbook": "Lederhåndbogen",
-      "handbookDesc": "Gode råd til virksomhedsledere.",
-      "openHandbook": "Åbn Håndbog →",
-      "browseArticles": "Gennemse artikler"
+      "companies": {
+        "title": "Virksomheder",
+        "desc": "Søgbar virksomhedsoversigt og administration.",
+        "cta": "Gå til virksomheder →",
+        "createBusiness": "Opret en virksomhed",
+        "sources": "Kilder"
+      },
+      "tickets": {
+        "title": "Support Tickets",
+        "desc": "Se og opret support tickets til dine kunder.",
+        "cta": "Åbn tickets →",
+        "create": "Opret ny ticket",
+        "settings": "Ticket-indstillinger"
+      },
+      "crm": {
+        "title": "CRM To-Do",
+        "desc": "Liste over CRM-aktiviteter og opfølgninger.",
+        "cta": "Åbn CRM →",
+        "add": "Tilføj aktivitet"
+      },
+      "newsletters": {
+        "title": "Nyhedsbreve",
+        "desc": "Se og opret nyhedsbreve.",
+        "cta": "Åbn nyhedsbreve →",
+        "create": "Opret nyhedsbrev"
+      },
+      "handbook": {
+        "title": "Lederhåndbogen",
+        "desc": "Gode råd til virksomhedsledere.",
+        "cta": "Administrer håndbog →",
+        "browse": "Gennemse artikler",
+        "print": "Printervenlig version"
+      }
     },
-    "latestCompanies": "Seneste Virksomheder",
-    "viewAll": "Se Alle",
-    "columns": {
+    "latestCompanies": "Seneste virksomheder",
+    "noCompaniesFound": "Ingen virksomheder fundet.",
+    "viewAll": "Se alle",
+    "table": {
       "business": "Virksomhed",
       "name": "Navn",
       "category": "Kategori",
       "tel": "Tlf.",
-      "created": "Oprettet"
-    },
-    "employeeTraffic": "Medarbejder Trafik",
-    "adminTraffic": "Administrator Trafik",
-    "trafficColumns": {
-      "daysAgo": "Dage Siden",
+      "created": "Oprettet",
+      "daysAgo": "Dage siden",
       "number": "Antal"
     },
-    "recentActivities": "Seneste Aktiviteter",
-    "addActivityBtn": "+ Tilføj Aktivitet"
+    "employeesTraffic": "Medarbejdertrafik",
+    "administratorsTraffic": "Administratortrafik",
+    "noData": "Ingen data",
+    "recentActivities": "Seneste aktiviteter",
+    "noRecentActivities": "Ingen seneste aktiviteter.",
+    "addActivity": "+ Tilføj aktivitet",
+    "comingSoon": "Kommer snart"
   },
   "companies": {
     "title": "Virksomheder",
     "sources": "Kilder",
-    "createNew": "+ Opret Ny Virksomhed",
+    "createNew": "+ Opret ny virksomhed",
     "search": "Søg virksomheder...",
-    "sortBy": "Sorter",
+    "searchPlaceholder": "Søg virksomheder...",
+    "sortBy": "Sortér efter",
+    "sortAsc": "Sortér stigende",
+    "sortDesc": "Sortér faldende",
+    "sort": {
+      "name": "Navn",
+      "created": "Oprettet",
+      "customerNumber": "Kundenr."
+    },
+    "filter": "Filter",
     "filterCategory": "Filter",
+    "allSources": "Alle kilder",
+    "source": {
+      "website": "Hjemmeside",
+      "referral": "Henvisning",
+      "partner": "Partner",
+      "direct": "Direkte"
+    },
+    "category": {
+      "all": "Alle",
+      "demoRequested": "Demo anmodet",
+      "freeSample": "Gratis prøve"
+    },
     "all": "Alle",
     "columns": {
       "business": "Virksomhed",
@@ -69,30 +124,60 @@
       "quickLinks": "Genveje",
       "actions": "Handlinger"
     },
+    "field": {
+      "customerNumber": "Kundenr.",
+      "cvr": "CVR",
+      "product": "Produkt",
+      "licenses": "Licenser",
+      "sms": "SMS",
+      "sender": "Afsender",
+      "whistleblower": "Whistleblower"
+    },
+    "subscription": "Abonnement",
+    "quickLinks": "Genveje",
+    "actions": "Handlinger",
+    "start": "Start",
+    "end": "Slut",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "uncategorized": "Ikke kategoriseret",
+    "loadError": "Kunne ikke indlæse virksomheder.",
+    "tryAgainLater": "Prøv venligst igen senere.",
+    "noneFound": "Ingen virksomheder fundet.",
+    "noEndDate": "Ingen slutdato",
+    "expired": "Udløbet",
+    "dayLeft": "dag tilbage",
+    "daysLeft": "dage tilbage",
+    "weekLeft": "uge tilbage",
+    "weeksLeft": "uger tilbage",
+    "monthLeft": "måned tilbage",
+    "monthsLeft": "måneder tilbage",
+    "timeLeft": "{{time}} tilbage",
     "customerNo": "Kundenr.: {{id}}",
     "product": "Produkt: {{name}}",
     "licenses": "Licenser: {{used}} / {{total}}",
     "sms": "SMS: {{used}} / {{cap}}",
     "sender": "Afsender: {{name}}",
     "whistleblower": "Whistleblower: {{status}}",
-    "start": "Start: {{date}}",
-    "end": "Slut: {{date}}",
-    "timeLeft": "{{time}} tilbage",
     "links": {
       "allPages": "Alle sider",
-      "createHandbook": "Opret din håndbog",
+      "createHandbook": "Opret håndbog",
       "controlPanel": "Kontrolpanel",
       "employees": "Medarbejdere",
-      "addCrmActivity": "Tilføj CRM aktivitet"
+      "addCrm": "Tilføj CRM-aktivitet",
+      "addCrmActivity": "Tilføj CRM-aktivitet"
     },
-    "actions": {
-      "edit": "Rediger",
-      "wise": "Wise",
-      "reset": "Nulstil",
-      "deleteAll": "Slet alt"
-    },
-    "showing": "Viser {{from}}–{{to}} af {{total}} virksomheder",
-    "perPage": "pr. side"
+    "edit": "Rediger",
+    "wise": "Wise",
+    "reset": "Nulstil",
+    "deleteAll": "Slet alt",
+    "showing": "Viser",
+    "of": "af",
+    "companiesLower": "virksomheder",
+    "previous": "Forrige",
+    "next": "Næste",
+    "perPage": "pr. side",
+    "comingSoon": "Kommer snart"
   },
   "companyDetail": {
     "back": "← Tilbage til Virksomheder",
@@ -122,13 +207,31 @@
       "role": "Rolle",
       "company": "Virksomhed",
       "status": "Status",
-      "lastActive": "Sidst Aktiv"
+      "lastActive": "Sidst Aktiv",
+      "actions": "Handlinger"
     },
     "active": "Aktiv",
     "inactive": "Inaktiv",
     "activate": "Aktiver",
     "deactivate": "Deaktiver",
-    "moveCompany": "Flyt til Virksomhed"
+    "moveCompany": "Flyt til Virksomhed",
+    "activated": "Bruger aktiveret",
+    "allRoles": "Alle roller",
+    "allStatuses": "Alle statusser",
+    "allUsers": "Alle brugere",
+    "companyIdFilter": "Filtrer efter virksomheds-ID",
+    "deactivated": "Bruger deaktiveret",
+    "description": "Platformens brugere",
+    "never": "Aldrig",
+    "noResults": "Ingen brugere fundet.",
+    "roleUpdateFailed": "Kunne ikke opdatere rolle",
+    "roleUpdated": "Rolle opdateret",
+    "searchPlaceholder": "Søg brugere...",
+    "statusUpdateFailed": "Kunne ikke opdatere status",
+    "statuses": {
+      "active": "Aktiv",
+      "blocked": "Blokeret"
+    }
   },
   "subscriptions": {
     "title": "Abonnementer",
@@ -144,7 +247,10 @@
     },
     "expired": "Udløbet",
     "expiring": "Udløber snart",
-    "active": "Aktiv"
+    "active": "Aktiv",
+    "description": "Alle virksomhedsabonnementer",
+    "noResults": "Ingen abonnementer fundet.",
+    "overview": "Oversigt"
   },
   "activity": {
     "title": "Aktivitetslog",
@@ -156,19 +262,33 @@
       "user_moved": "Flyttede bruger til anden virksomhed",
       "company_created": "Oprettede virksomhed",
       "company_deleted": "Slettede virksomhed"
-    }
+    },
+    "description": "Log over administratoraktivitet",
+    "log": "Log",
+    "noEntries": "Ingen aktivitetsposter"
   },
   "analytics": {
     "title": "Analyser",
     "signupsPerWeek": "Virksomhedstilmeldinger (Sidste 12 Uger)",
     "userGrowth": "Nye Brugere (Sidste 12 Uger)",
-    "smsUsage": "SMS Forbrug (Sidste 6 Måneder)"
+    "smsUsage": "SMS Forbrug (Sidste 6 Måneder)",
+    "description": "Platformens brugsstatistik",
+    "noData": "Ingen data tilgængelige"
   },
   "settings": {
     "title": "Platformindstillinger",
     "trialLength": "Standard prøveperiode (dage)",
     "smsPricing": "SMS Priser",
-    "save": "Gem Indstillinger"
+    "save": "Gem Indstillinger",
+    "days": "dage",
+    "defaultTrialLength": "Standard prøveperiode",
+    "description": "Platformindstillinger",
+    "perSms": "pr. SMS",
+    "platformSettings": "Platformindstillinger",
+    "saveFailed": "Kunne ikke gemme indstillinger",
+    "saved": "Indstillinger gemt",
+    "smsPricingHelp": "Pris pr. sendt SMS",
+    "trialLengthHelp": "Standardlængde på prøveperiode for nye konti"
   },
   "createCompany": {
     "title": "Opret en Virksomhed",
@@ -195,7 +315,34 @@
     "create": "Opret",
     "createAndCrm": "Opret og tilføj CRM aktivitet",
     "createAndAdmin": "Opret og tilføj virksomhedsadministrator",
-    "note": "Bemærk venligst at det kan tage et par minutter at oprette en virksomhed."
+    "note": "Bemærk venligst at det kan tage et par minutter at oprette en virksomhed.",
+    "businessDetails": "Virksomhedsoplysninger",
+    "companyEmail": "Virksomhedsemail",
+    "companyName": "Virksomhedsnavn",
+    "contactEmail": "Kontaktemail",
+    "contactMobile": "Kontaktmobil",
+    "contactName": "Kontaktnavn",
+    "cvrFound": "Virksomhed fundet via CVR-opslag",
+    "cvrLookupFailed": "CVR-opslag mislykkedes",
+    "cvrNotFound": "Ingen virksomhed fundet for det CVR-nummer",
+    "cvrNumber": "CVR-nummer",
+    "description": "Tilføj en ny virksomhed",
+    "failed": "Kunne ikke oprette virksomhed",
+    "lookingUp": "Slår op...",
+    "lookup": "Slå op",
+    "primaryContact": "Primær kontakt",
+    "submit": {
+      "create": "Opret",
+      "createAdmin": "Opret + sæt administrator",
+      "createCrm": "Opret + tilføj CRM"
+    },
+    "success": "Virksomhed oprettet",
+    "validation": {
+      "contactEmailRequired": "Kontaktemail er påkrævet",
+      "contactNameRequired": "Kontaktnavn er påkrævet",
+      "emailRequired": "Virksomhedsemail er påkrævet",
+      "nameRequired": "Virksomhedsnavn er påkrævet"
+    }
   },
   "impersonate": {
     "title": "Skift brugervisning",
@@ -209,11 +356,11 @@
   "handbook": {
     "title": "Lederhåndbogen",
     "help": "Hjælp",
-    "edit": "Rediger",
+    "editHelp": "Rediger",
     "helpSaved": "Hjælpetekst gemt",
     "helpSaveFailed": "Kunne ikke gemme hjælpetekst",
     "helpPlaceholder": "Hjælpetekst (afsnit adskilt af blanke linjer)",
-    "toc": "Indholdsfortegnelse",
+    "tocTitle": "Indholdsfortegnelse",
     "tocDesc": "Søgbart overblik",
     "print": "Printervenlig version",
     "printDesc": "Hele håndbogen",
@@ -316,7 +463,18 @@
       "columnAuthor": "Forfatter",
       "columnChanged": "Ændret",
       "columnLog": "Log",
-      "current": "aktuel"
+      "current": "aktuel",
+      "by": "af",
+      "columnActions": "Handlinger",
+      "currentVersion": "Aktuel version",
+      "deleteConfirm": "Slet denne version? Dette kan ikke fortrydes.",
+      "deleteFailed": "Kunne ikke slette version",
+      "deleted": "Version slettet",
+      "heading": "Versioner af {{title}}",
+      "restore": "Gendan",
+      "restoreConfirm": "Gendan denne version? Det aktuelle indhold vil blive erstattet.",
+      "restoreFailed": "Kunne ikke gendanne version",
+      "restored": "Version gendannet"
     },
     "translate": {
       "title": "Oversæt",
@@ -331,13 +489,21 @@
       "add": "Tilføj oversættelse",
       "current": "aktuel",
       "danish": "Dansk",
-      "english": "Engelsk"
+      "english": "Engelsk",
+      "columnTranslation": "Oversættelse",
+      "heading": "Oversættelser af {{title}}",
+      "originalLanguage": "originalsprog",
+      "published": "Udgivet",
+      "unpublished": "Ikke udgivet",
+      "bulgarian": "Bulgarsk"
     },
     "delete": {
       "title": "Slet side",
       "warning": "Du er ved at slette {{title}}. Handlingen fjerner siden fra bogen og afpubliserer noden.",
       "confirm": "Er du sikker på, at du vil slette denne side? Dette kan ikke fortrydes.",
-      "button": "Slet side"
+      "button": "Slet side",
+      "cannotUndo": "Denne handling kan ikke fortrydes.",
+      "heading": "Er du sikker på, at du vil slette indholdselementet {{title}}?"
     },
     "browse": {
       "book": "Bog",
@@ -366,7 +532,11 @@
     "no": "Nej",
     "prev": "Forrige",
     "next": "Næste",
-    "unknown": "Ukendt"
+    "unknown": "Ukendt",
+    "pagination": "Viser {{from}}–{{to}} af {{total}}",
+    "perPage": "pr. side",
+    "remove": "Fjern",
+    "show": "Vis"
   },
   "svi": {
     "sectionTitle": "Status og versionsinfo",
@@ -471,7 +641,9 @@
       "statusLabel": "Status",
       "lastSaved": "Sidst gemt",
       "author": "Forfatter",
-      "published": "Udgivet"
+      "published": "Udgivet",
+      "onlyTest": "Kun test",
+      "onlyTestHint": "Lever kun til testadresserne nedenfor — spring rigtige modtagere over."
     },
     "format": {
       "simpleHtml": "Simpel HTML",
@@ -482,7 +654,8 @@
       "orientation": "Orienterings-email",
       "reminder": "Påmindelse",
       "announcement": "Meddelelse",
-      "other": "Andet"
+      "other": "Andet",
+      "none": "Ingen"
     },
     "status": {
       "published": "Udgivet",
@@ -508,5 +681,616 @@
       "subjectRequired": "Emne er påkrævet.",
       "bodyRequired": "Brødtekst er påkrævet."
     }
+  },
+  "companyView": {
+    "additionalManuals": "Yderligere manualer",
+    "alwaysShowImageTab": "Vis altid billedfane",
+    "annual": "Årlig",
+    "breadcrumb": {
+      "companies": "Virksomheder",
+      "console": "Konsol"
+    },
+    "change": "Skift",
+    "close": "Luk",
+    "collapseListsInTheInfoList": "Fold lister sammen i infolisten",
+    "companyEmail": "Virksomhedsemail",
+    "companyPhone": "Virksomhedstelefon",
+    "freeCourseCompleted": "Gratis kursus gennemført",
+    "freeSample": "Gratis prøve",
+    "freeSampleSubtitle": "Udefra – gratis prøve",
+    "from": "Fra",
+    "giveAccessToCourses": "Giv adgang til kurser",
+    "haveSeasonalEmployees": "Har sæsonmedarbejdere",
+    "hideDocuments": "Skjul dokumenter",
+    "hideInToDoList": "Skjul i to-do-listen",
+    "hideLinks": "Skjul links",
+    "hideQuestionsInProgress": "Skjul igangværende spørgsmål",
+    "licenses": "Licenser",
+    "loadError": "Kunne ikke indlæse virksomhed.",
+    "networking": "Netværk",
+    "nextBilling": "Næste fakturering",
+    "no": "Nej",
+    "nothing": "Intet",
+    "numberOfSmsMessages": "Antal SMS-beskeder",
+    "off": "Fra",
+    "on": "Til",
+    "optionalDesign": "Valgfrit design",
+    "paymentMethod": "Betalingsmetode",
+    "primaryContactPerson": "Primær kontaktperson",
+    "product": "Produkt",
+    "senderNameOnSmsMessages": "Afsendernavn på SMS-beskeder",
+    "showDocumentsInTheInfoList": "Vis dokumenter i infolisten",
+    "showEmployeesInTheInfoList": "Vis medarbejdere i infolisten",
+    "showLinksInTheInfoList": "Vis links i infolisten",
+    "showRelativesInTheInfoList": "Vis pårørende i infolisten",
+    "smsCount": "{{count}} SMS",
+    "subscriptionEnd": "Abonnement, slut",
+    "subscriptionStart": "Abonnement, start",
+    "tabs": {
+      "delete": "Slet",
+      "deleteAll": "Slet alt",
+      "edit": "Rediger",
+      "toc": "Indholdsfortegnelse",
+      "versions": "Versioner",
+      "view": "Vis",
+      "wise": "Wise"
+    },
+    "to": "Til",
+    "turnOffAnonymous": "Slå anonymitet fra",
+    "turnOffTracking": "Slå sporing fra",
+    "wise": "Wise",
+    "yes": "Ja",
+    "loading": "Indlæser…"
+  },
+  "crm": {
+    "allUsers": "Alle brugere",
+    "apply": "Anvend",
+    "breadcrumb": "CRM to-do-liste",
+    "columns": {
+      "activity": "Aktivitet",
+      "business": "Virksomhed",
+      "responsible": "Ansvarlig",
+      "type": "Type",
+      "writtenOn": "Skrevet"
+    },
+    "empty": "Ingen aktiviteter fundet.",
+    "filters": {
+      "activities": "CRM-aktiviteter",
+      "all": "Alle",
+      "followUp": "Opfølgning",
+      "period": "Periode",
+      "showHidden": "Vis skjulte",
+      "status": "Status",
+      "type": "Type",
+      "users": "Brugere"
+    },
+    "showing": "Viser {{from}}–{{to}} af {{total}}",
+    "summary": {
+      "automatic": "Automatiske",
+      "meetings": "Møder",
+      "other": "Andet",
+      "total": "I alt",
+      "viewing": "Viser"
+    },
+    "title": "CRM to-do-liste"
+  },
+  "crmCreate": {
+    "breadcrumb": {
+      "activities": "Aktiviteter",
+      "console": "Konsol",
+      "create": "Opret"
+    },
+    "errors": {
+      "businessRequired": "Virksomhed er påkrævet",
+      "saveFailed": "Kunne ikke gemme aktivitet",
+      "titleRequired": "Titel er påkrævet"
+    },
+    "fields": {
+      "business": "Virksomhed",
+      "followupNote": "Opfølgningsnote",
+      "followupType": "Opfølgningstype",
+      "mailStatus": "Mail-status",
+      "nextActivityDate": "Næste aktivitetsdato",
+      "responsible": "Ansvarlig",
+      "sendMessageToResponsible": "Send besked til ansvarlig(e)",
+      "status": "Status",
+      "title": "Titel",
+      "type": "Type"
+    },
+    "files": {
+      "drop": "Slip filer her",
+      "hint": "eller klik for at uploade"
+    },
+    "noCompanies": "Ingen virksomheder fundet",
+    "placeholders": {
+      "body": "Skriv en note...",
+      "business": "Søg efter virksomhed...",
+      "followupNote": "Tilføj en note til opfølgningen...",
+      "title": "Angiv en titel"
+    },
+    "save": "Gem aktivitet",
+    "sections": {
+      "categorization": "Kategorisering",
+      "details": "Detaljer",
+      "files": "Filer",
+      "followedBy": "Fulgt op af",
+      "followup": "Opfølgning",
+      "mailStatus": "Mail-status",
+      "note": "Note"
+    },
+    "success": "Aktivitet gemt",
+    "title": "Opret CRM-aktivitet"
+  },
+  "editCompany": {
+    "about": {
+      "customerCompany": "Kundevirksomhed",
+      "cvr": "CVR",
+      "email": "Email",
+      "name": "Navn",
+      "noContact": "Ingen kontakt",
+      "phone": "Telefon",
+      "primaryContact": "Primær kontakt",
+      "source": "Kilde",
+      "sourceNone": "Ingen",
+      "title": "Om virksomheden"
+    },
+    "address": {
+      "postal": "Postnummer",
+      "street": "Gade",
+      "title": "Adresse",
+      "town": "By"
+    },
+    "admin": {
+      "allowWise": "Tillad Wise",
+      "title": "Administrator"
+    },
+    "backToCompanies": "← Tilbage til virksomheder",
+    "businessGroup": {
+      "a": "Gruppe A",
+      "b": "Gruppe B",
+      "group": "Gruppe",
+      "none": "Ingen",
+      "title": "Virksomhedsgruppe"
+    },
+    "companies": "Virksomheder",
+    "console": "Konsol",
+    "crmContacts": {
+      "add": "Tilføj kontakt",
+      "contact": "Kontakt",
+      "empty": "Ingen CRM-kontakter",
+      "primary": "Primær",
+      "search": "Søg kontakter...",
+      "tag": "Tag",
+      "title": "CRM-kontakter"
+    },
+    "edit": "Rediger",
+    "goBack": "Tilbage",
+    "internal": {
+      "demo": "Demo",
+      "employeesPopup": "Medarbejder-popup",
+      "freeDone": "Gratis kursus fuldført",
+      "handbookReady": "Håndbog klar",
+      "helper": "Felter der bruges af systemet og normalt ikke redigeres manuelt.",
+      "ownHandbook": "Egen håndbog",
+      "test": "Test",
+      "title": "Interne indstillinger"
+    },
+    "invoice": {
+      "placeholder": "Fakturanote",
+      "title": "Faktura"
+    },
+    "links": {
+      "additional": "Yderligere links",
+      "drivesheet": "Køreseddel",
+      "fire": "Brand",
+      "gdpr": "GDPR",
+      "homepage": "Hjemmeside",
+      "intranet": "Intranet",
+      "subtext": "Link-tekst",
+      "timesheet": "Timeseddel",
+      "title": "Links"
+    },
+    "loadError": "Kunne ikke indlæse virksomhed.",
+    "logo": {
+      "alwaysShow": "Vis altid",
+      "choose": "Vælg fil",
+      "file": "Fil",
+      "homepage": "Hjemmeside-logo",
+      "logo": "Logo",
+      "noFile": "Ingen fil valgt",
+      "referenceLogo": "Referencelogo",
+      "smsSender": "SMS-afsenderlogo",
+      "title": "Logo"
+    },
+    "lyrics": {
+      "customTerms": "Tilpassede vilkår",
+      "description": "Beskrivelse",
+      "instruction": "Virksomhedens egne tekster. Redigeres normalt ikke her. Se på virksomhedens egen håndbogsformular",
+      "nameTemplates": "Navneskabeloner",
+      "sexFormat": "Kønsformat",
+      "title": "Tekster",
+      "wysiwyg": "WYSIWYG"
+    },
+    "offers": {
+      "addNew": "Tilføj tilbud",
+      "allowed": "Tilladte filtyper: pdf, doc, docx, xls, xlsx, png, jpg, jpeg, gif, txt",
+      "dragHere": "Træk tilbud hertil",
+      "title": "Tilbud"
+    },
+    "save": "Gem",
+    "saveFailed": "Kunne ikke gemme ændringer",
+    "saveSuccess": "Ændringer gemt",
+    "saving": "Gemmer...",
+    "source": {
+      "direct": "Direkte",
+      "google": "Google",
+      "linkedin": "LinkedIn",
+      "other": "Andet",
+      "referral": "Henvisning"
+    },
+    "subscription": {
+      "accessToCourses": "Adgang til kurser",
+      "additionalManuals": "Yderligere manualer",
+      "annual": "Årligt",
+      "collapseLists": "Fold lister sammen",
+      "end": "Slutdato",
+      "flagDanish": "Vis dansk flag",
+      "hideDocuments": "Skjul dokumenter",
+      "hideLinks": "Skjul links",
+      "hideQuestions": "Skjul spørgsmål",
+      "langBulgarian": "Bulgarsk",
+      "langDanish": "Dansk",
+      "langEnglish": "Engelsk",
+      "languagesAvailable": "Tilgængelige sprog",
+      "licenses": "Licenser",
+      "monthly": "Månedligt",
+      "nextBilling": "Næste fakturering",
+      "none": "Ingen",
+      "optionalDesign": "Valgfrit design",
+      "paymentMethod": "Betalingsmetode",
+      "product": "Produkt",
+      "productFree": "Gratis",
+      "productFreeNotUsed": "Gratis (ikke brugt)",
+      "productNone": "Ingen",
+      "productStaff": "Personale",
+      "quarterly": "Kvartalsvis",
+      "seasonalEmployees": "Sæsonmedarbejdere",
+      "sending": "Afsendelse",
+      "settings": "Indstillinger",
+      "showDocuments": "Vis dokumenter",
+      "showEmployees": "Vis medarbejdere",
+      "showRelatives": "Vis pårørende",
+      "smsCount": "SMS-antal",
+      "sopText": "SOP-tekst",
+      "start": "Startdato",
+      "title": "Abonnement",
+      "turnOffTracking": "Slå sporing fra"
+    },
+    "tabs": {
+      "delete": "Slet",
+      "deleteAll": "Slet alt",
+      "edit": "Rediger",
+      "toc": "Indholdsfortegnelse",
+      "update": "Opdater",
+      "versions": "Versioner",
+      "view": "Vis"
+    },
+    "title": "Rediger virksomhed",
+    "whistleblower": {
+      "contactUid": "Kontakt-UID",
+      "disableAnon": "Slå anonymitet fra",
+      "enable": "Aktiver whistleblower",
+      "title": "Whistleblower",
+      "type": "Type"
+    }
+  },
+  "invoices": {
+    "all": "Alle",
+    "breadcrumb": "Fakturaer",
+    "columns": {
+      "addPurchases": "Tilføj køb",
+      "beginner": "Begynder",
+      "business": "Virksomhed",
+      "category": "Kategori",
+      "ends": "Slutter",
+      "endsAbout": "Slutter ca.",
+      "invoicing": "Fakturering",
+      "licenses": "Licenser",
+      "notes": "Noter",
+      "payment": "Betaling",
+      "when": "Hvornår"
+    },
+    "customersOnly": "Kun kunder",
+    "empty": "Ingen fakturaer fundet.",
+    "exportCsv": "Eksporter CSV",
+    "exporting": "Eksporterer...",
+    "searchPlaceholder": "Søg fakturaer...",
+    "showing": "Viser {{from}}–{{to}} af {{total}} fakturaer",
+    "title": "Fakturaer"
+  },
+  "keyFigures": {
+    "allCompaniesKeywords": "Søgeord på tværs af alle virksomheder",
+    "cards": {
+      "keywords": "Søgeord",
+      "keywordsDesc": "Se hvad brugerne søger efter",
+      "overview": "Oversigt",
+      "overviewDesc": "Generelle nøgletal",
+      "traffic": "Trafik",
+      "trafficDesc": "Brugsstatistik over tid"
+    },
+    "checking": "Tjekker...",
+    "col1": "Kolonne 1",
+    "col2": "Kolonne 2",
+    "col3": "Kolonne 3",
+    "col4": "Kolonne 4",
+    "columns": {
+      "access": "Adgang",
+      "business": "Virksomhed",
+      "editing": "Redigering",
+      "exploitation": "Udnyttelse",
+      "lastAccess": "Sidste adgang",
+      "latestSearch": "Seneste søgning",
+      "licenses": "Licenser",
+      "name": "Navn",
+      "number": "Antal",
+      "published": "Udgivet",
+      "roles": "Roller",
+      "used": "Brugt",
+      "word": "Ord"
+    },
+    "empty": "Ingen data.",
+    "help": "Hjælp",
+    "helpIntro": "Nøgletal giver dig et hurtigt overblik over platformens brug.",
+    "helpKeyFigures": "Nøgletal",
+    "helpKeywords": "Søgeord viser de mest hyppige søgninger i systemet.",
+    "helpTraffic": "Trafik viser adgangsmønstre over tid.",
+    "no": "Nej",
+    "noKeywords": "Ingen søgeord registreret.",
+    "noTraffic": "Ingen trafikdata.",
+    "overviewHelp": "Oversigt over platformens nøgletal.",
+    "period": "Periode",
+    "period1day": "1 dag",
+    "periodDays": "{{count}} dage",
+    "searchKeywords": "Søg i søgeord...",
+    "showing": "Viser {{from}}–{{to}} af {{total}}",
+    "showingKeywords": "Viser {{from}}–{{to}} af {{total}} søgeord",
+    "showingUsers": "Viser {{from}}–{{to}} af {{total}} brugere",
+    "sortCount": "Sortér efter antal",
+    "sortLatest": "Sortér efter seneste",
+    "sortWord": "Sortér efter ord",
+    "title": "Nøgletal",
+    "userAccessLog": "Brugeradgangslog",
+    "yes": "Ja"
+  },
+  "latestCompanies": {
+    "activities": "Aktiviteter",
+    "breadcrumb": {
+      "companies": "Virksomheder",
+      "console": "Konsol",
+      "viewAll": "Se alle"
+    },
+    "col": {
+      "business": "Virksomhed",
+      "category": "Kategori",
+      "created": "Oprettet",
+      "name": "Navn",
+      "telephone": "Telefon"
+    },
+    "filter": "Filter",
+    "loadError": "Kunne ikke indlæse virksomheder.",
+    "next": "Næste",
+    "noneFound": "Ingen virksomheder fundet.",
+    "of": "af",
+    "perPage": "pr. side",
+    "previous": "Forrige",
+    "searchPlaceholder": "Søg virksomheder...",
+    "show": "Vis",
+    "showing": "Viser",
+    "sort": "Sortér",
+    "sortAsc": "Sortér stigende",
+    "sortDesc": "Sortér faldende",
+    "title": "Seneste virksomheder",
+    "tryAgainLater": "Prøv venligst igen senere."
+  },
+  "tickets": {
+    "actions": {
+      "edit": "Rediger",
+      "done": "Færdig"
+    },
+    "breadcrumb": "Support tickets",
+    "columns": {
+      "actions": "Handlinger",
+      "author": "Forfatter",
+      "bodyText": "Indhold",
+      "date": "Dato",
+      "priority": "Prioritet",
+      "responsible": "Ansvarlig",
+      "status": "Status",
+      "title": "Titel"
+    },
+    "create": "Opret ticket",
+    "empty": {
+      "subtitle": "Der er endnu ingen tickets at vise.",
+      "title": "Ingen tickets"
+    },
+    "filters": {
+      "lists": "Lister",
+      "orientation": "Orientering",
+      "priority": "Prioritet",
+      "responsible": "Ansvarlig",
+      "status": "Status"
+    },
+    "noResults": "Ingen tickets fundet.",
+    "searchPlaceholder": "Søg tickets...",
+    "showing": "Viser {{from}}–{{to}} af {{total}} tickets",
+    "tabs": {
+      "chronological": "Kronologisk",
+      "tickets": "Tickets"
+    },
+    "title": "Support tickets",
+    "chronoHeader": "Alle — sorteret efter dato (nyeste først)",
+    "groupCount": "{{count}} tickets",
+    "showHide": {
+      "label": "Vis / Skjul",
+      "showAll": "Vis alle",
+      "hide": "Skjul"
+    }
+  },
+  "handbookPrint": {
+    "title": "Printervenlig version",
+    "breadcrumb": "Printervenlig version",
+    "chooseBook": "Vælg en håndbog",
+    "nothingSelected": "– Intet valgt –",
+    "loading": "Indlæser sider ({{loaded}} / {{total}})…",
+    "empty": "Denne håndbog har endnu ingen sider.",
+    "pageError": "Kunne ikke indlæse siden.",
+    "print": "Print"
+  },
+  "companyDashboard": {
+    "actionDelete": "Slet",
+    "actionDeleteAll": "Slet alt",
+    "actionEdit": "Rediger",
+    "actionReset": "Nulstil",
+    "actionWise": "Wise",
+    "cancel": "Annuller",
+    "resetConfirmTitle": "Nulstil virksomhedsoplysninger?",
+    "resetConfirmBody": "Hvis du fortsætter, nulstilles oplysningerne for denne virksomhed. Du kan miste vigtige data. Fortsæt med forsigtighed.",
+    "resetPending": "Nulstilling er endnu ikke tilgængelig — backend endpoint mangler.",
+    "deleteConfirmTitle": "Slet denne virksomhed?",
+    "deleteConfirmBody": "Denne handling kan ikke fortrydes. Fortsæt med forsigtighed og sørg for, at du ikke længere har brug for data, før du sletter dem.",
+    "deletePending": "Sletning er endnu ikke tilgængelig — backend endpoint mangler.",
+    "actions": "Handlinger",
+    "active": "Aktiv",
+    "activityAndSubscription": "Aktivitet & abonnement",
+    "addActivity": "+ Tilføj aktivitet",
+    "addContact": "+ Tilføj kontakt",
+    "additionalHandbooks": "Yderligere håndbøger",
+    "allActivities": "Alle aktiviteter",
+    "allCompanies": "Alle virksomheder",
+    "annual": "Årlig",
+    "business": "Virksomhed",
+    "businessDetails": "Virksomhedsoplysninger",
+    "businessName": "Virksomhedsnavn",
+    "company": "Virksomhed",
+    "companyContacts": "Virksomhedskontakter",
+    "contactColumns": {
+      "actions": "Handlinger",
+      "email": "Email",
+      "function": "Funktion",
+      "name": "Navn",
+      "telephone": "Telefon"
+    },
+    "contacts": "Kontakter",
+    "crm": {
+      "activity": "Aktivitet",
+      "created": "Oprettet",
+      "next": "Næste",
+      "of": "Af",
+      "responsible": "Ansvarlig",
+      "status": "Status",
+      "text": "Tekst"
+    },
+    "crmActivities": "CRM-aktiviteter",
+    "customerContext": "Kunde: {{name}} – {{id}}",
+    "customerNo": "Kundenr.",
+    "cvr": "CVR",
+    "departments": "Afdelinger",
+    "docColumns": {
+      "date": "Dato",
+      "description": "Beskrivelse",
+      "linkedTo": "Knyttet til"
+    },
+    "documents": "Dokumenter",
+    "editing": "Redigering",
+    "editingFrequency": "Redigeringsfrekvens",
+    "editingNumber": "Antal: {{count}}",
+    "employeeHandbook": "Medarbejderhåndbog",
+    "employmentTypes": "Ansættelsestyper",
+    "end": "Slut",
+    "inactive": "Inaktiv",
+    "invoice": "Faktura",
+    "keyFigures": "Nøgletal",
+    "kf": {
+      "access": "Adgang",
+      "business": "Virksomhed",
+      "editingContent": "Redigerer indhold",
+      "exploitation": "Udnyttelse",
+      "licenses": "Licenser",
+      "published": "Udgivet",
+      "used": "Brugt"
+    },
+    "languages": "Sprog",
+    "lastAccess": "Sidste adgang",
+    "lastUser": "Sidste bruger",
+    "licenses": "Licenser",
+    "licensesUsage": "{{used}} brugt af {{total}}",
+    "links": {
+      "addCrm": "Tilføj CRM-aktivitet",
+      "allPages": "Alle sider",
+      "controlPanel": "Kontrolpanel",
+      "createHandbook": "Opret din håndbog",
+      "employees": "Medarbejdere"
+    },
+    "nDaysAgo": "{{count}} dage siden",
+    "nMonths": "{{count}} måneder",
+    "nMonthsAgo": "{{count}} måneder siden",
+    "nWeeksAgo": "{{count}} uger siden",
+    "next": "Næste",
+    "noActivities": "Ingen aktiviteter endnu.",
+    "noContacts": "Ingen kontakter",
+    "noDocuments": "Nej",
+    "none": "Ingen",
+    "notEntered": "Ikke angivet",
+    "oneMonthAgo": "1 måned siden",
+    "oneWeekAgo": "1 uge siden",
+    "optionalDesign": "Valgfrit grafisk design",
+    "primaryContact": "Primær kontaktperson",
+    "product": "Produkt",
+    "published": "Udgivet",
+    "quickLinks": "Genveje",
+    "remaining": "Tilbage",
+    "sender": "Afsender",
+    "sms": "SMS",
+    "smsUsage": "{{used}} brugt af {{total}}",
+    "sop": "SOP",
+    "start": "Start",
+    "subscription": "Abonnement",
+    "today": "i dag",
+    "type": "Type",
+    "upload": "↑ Upload",
+    "whistleblower": "Whistleblower",
+    "comingSoon": "Kommer snart"
+  },
+  "crmActivities": {
+    "addActivity": "+ Tilføj aktivitet",
+    "apply": "Anvend",
+    "breadcrumb": "Aktiviteter",
+    "columns": {
+      "activity": "Aktivitet",
+      "business": "Virksomhed",
+      "created": "Oprettet",
+      "next": "Næste",
+      "of": "Af",
+      "responsible": "Ansvarlig",
+      "status": "Status",
+      "writtenBy": "Skrevet af"
+    },
+    "createdBy": "Oprettet af",
+    "createdByPlaceholder": "Angiv en komma-adskilt liste af brugernavne...",
+    "empty": "Ingen aktiviteter fundet.",
+    "leaveEmpty": "Lad være tom for at vise alle",
+    "showing": "Viser {{from}}–{{to}} af {{total}} aktiviteter",
+    "showingForUser": "Viser {{count}} aktiviteter for {{name}}",
+    "status": {
+      "done": "Færdig",
+      "inProgress": "I gang",
+      "paused": "På pause",
+      "pending": "Afventer",
+      "scheduled": "Planlagt"
+    },
+    "title": "CRM — Aktiviteter",
+    "viewAll": "← Se alle aktiviteter",
+    "show": "Vis",
+    "perPage": "pr. side"
   }
 }

@@ -45,6 +45,13 @@ export interface AdminHandbookPageDetail {
   heroImageUrl: string | null;
 
   availableLangcodes: string[];
+  translations: AdminHandbookTranslationMeta[];
+}
+
+export interface AdminHandbookTranslationMeta {
+  langcode: string;
+  title: string;
+  published: boolean;
 }
 
 export interface UpdateAdminHandbookPagePayload {

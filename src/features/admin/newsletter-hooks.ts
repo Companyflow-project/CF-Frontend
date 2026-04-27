@@ -95,3 +95,10 @@ export const useMarkAdminNewsletterSent = () => {
     },
   });
 };
+
+export const useSendAdminNewsletterTest = () => {
+  return useMutation({
+    mutationFn: ({ nid, recipients }: { nid: number; recipients?: string[] }) =>
+      adminNewsletterApi.sendTest(nid, recipients),
+  });
+};

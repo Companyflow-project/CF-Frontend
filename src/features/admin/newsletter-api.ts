@@ -54,6 +54,14 @@ export const adminNewsletterApi = {
     return unwrap<AdminNewsletterDetail>(res);
   },
 
+  sendTest: async (
+    nid: number,
+    recipients?: string[],
+  ): Promise<{ recipients: string[]; sent: number }> => {
+    const res = await axiosClient.post(`/admin/newsletters/${nid}/send-test`, { recipients });
+    return unwrap<{ recipients: string[]; sent: number }>(res);
+  },
+
   listCategories: async (): Promise<AdminNewsletterCategoryOption[]> => {
     const res = await axiosClient.get('/admin/newsletters/categories');
     return unwrap<AdminNewsletterCategoryOption[]>(res);

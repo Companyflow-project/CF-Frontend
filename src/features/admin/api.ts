@@ -14,6 +14,7 @@ import type {
   AdminAnalytics,
   PlatformSettings,
   CreateCompanyPayload,
+  CrmActivity,
 } from './types';
 
 interface PaginatedResponse<T> {
@@ -163,9 +164,9 @@ export const adminApi = {
     return unwrap(res);
   },
 
-  getCrmActivities: async (params: Record<string, unknown>): Promise<PaginatedResponse<Array<{ id: number; companyId: number; companyName: string; activity: string; type: string; typeKey: string; status: string; fupDate: string | null; writtenOn: string; responsibleUid: number | null; responsibleName: string; colorSeed: string }>>> => {
+  getCrmActivities: async (params: Record<string, unknown>): Promise<PaginatedResponse<CrmActivity[]>> => {
     const res = await axiosClient.get('/admin/crm/activities', { params });
-    return res.data as PaginatedResponse<Array<{ id: number; companyId: number; companyName: string; activity: string; type: string; typeKey: string; status: string; fupDate: string | null; writtenOn: string; responsibleUid: number | null; responsibleName: string; colorSeed: string }>>;
+    return res.data as PaginatedResponse<CrmActivity[]>;
   },
 
   // --- Sources ---

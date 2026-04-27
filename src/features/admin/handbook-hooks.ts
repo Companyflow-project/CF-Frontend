@@ -90,6 +90,30 @@ export const useDeleteAdminHandbookPage = () => {
   });
 };
 
+export const useDeleteAdminHandbookVersion = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ nid, vid }: { nid: number; vid: number }) =>
+      adminHandbookApi.deleteVersion(nid, vid),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ['admin-handbook-versions', vars.nid] });
+    },
+  });
+};
+
+export const useRestoreAdminHandbookVersion = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ nid, vid }: { nid: number; vid: number }) =>
+      adminHandbookApi.restoreVersion(nid, vid),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ['admin-handbook-versions', vars.nid] });
+      qc.invalidateQueries({ queryKey: ['admin-handbook-page', vars.nid] });
+      qc.invalidateQueries({ queryKey: ['admin-handbook-book-tree'] });
+    },
+  });
+};
+
 export const useUpdateAdminHandbookMetaTags = () => {
   const qc = useQueryClient();
   return useMutation({

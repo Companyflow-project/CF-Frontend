@@ -38,8 +38,22 @@ function CategoryBadge({ category }: { category: string }) {
   );
 }
 
-/** Card link row — text on left, icon on right, bordered */
-function CardLink({ to, label, icon }: { to: string; label: string; icon?: 'arrow' | 'plus' }) {
+/** Card link row — text on left, icon on right, bordered. Pass `disabled` to render as a non-clickable placeholder. */
+function CardLink({ to, label, icon, disabled }: { to: string; label: string; icon?: 'arrow' | 'plus'; disabled?: boolean }) {
+  const iconEl = icon === 'plus'
+    ? <Plus className="h-4 w-4 text-gray-300" />
+    : <ArrowRight className="h-4 w-4 text-gray-300" />;
+  if (disabled) {
+    return (
+      <div
+        aria-disabled="true"
+        className="flex items-center justify-between px-4 py-3 border border-gray-200 rounded-lg text-sm text-gray-400 bg-gray-50 cursor-not-allowed select-none"
+      >
+        <span>{label}</span>
+        {iconEl}
+      </div>
+    );
+  }
   return (
     <Link
       to={to}
@@ -92,11 +106,11 @@ export const AdminDashboardPage: React.FC = () => {
           </span>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <Button variant="outline" size="sm">
-            {t('dashboard.viewInvoices', 'View Invoices')}
+          <Button variant="outline" size="sm" asChild>
+            <Link to={adminRoutes.invoices}>{t('dashboard.viewInvoices', 'View Invoices')}</Link>
           </Button>
-          <Button size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90">
-            {t('dashboard.createBusiness', 'Create a Business')}
+          <Button size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90" asChild>
+            <Link to={adminRoutes.createCompany}>{t('dashboard.createBusiness', 'Create a Business')}</Link>
           </Button>
         </div>
       </div>
@@ -110,8 +124,15 @@ export const AdminDashboardPage: React.FC = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">{t('dashboard.title', 'Control Panel')}</h1>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <Button variant="outline" size="sm" className="rounded-lg" asChild>
-            <Link to={adminRoutes.activity}>{t('dashboard.informationList', 'Information List')}</Link>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-lg text-gray-400 bg-gray-50 cursor-not-allowed hover:bg-gray-50"
+            disabled
+            aria-disabled="true"
+            title={t('dashboard.comingSoon', 'Coming soon')}
+          >
+            {t('dashboard.informationList', 'Information List')}
           </Button>
           <Button variant="outline" size="sm" className="rounded-lg" asChild>
             <Link to={adminRoutes.keyFigures}>{t('dashboard.keyFigures', 'Key Figures')}</Link>
@@ -127,12 +148,12 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.companies.title', 'Companies')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.companies.desc', 'Searchable company overview and management.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto" asChild>
+          <Button className="bg-[#e6f4ec] text-[#1a5948] hover:bg-[#d5ebde] rounded-lg w-full sm:w-auto" asChild>
             <Link to={adminRoutes.companies}>{t('dashboard.cards.companies.cta', 'Go to Companies →')}</Link>
           </Button>
           <div className="space-y-2">
             <CardLink to={adminRoutes.createCompany} label={t('dashboard.cards.companies.createBusiness', 'Create a business')} icon="arrow" />
-            <CardLink to={`${adminRoutes.companies}?view=sources`} label={t('dashboard.cards.companies.sources', 'Sources')} icon="arrow" />
+            <CardLink to={adminRoutes.sources} label={t('dashboard.cards.companies.sources', 'Sources')} icon="arrow" />
           </div>
         </div>
 
@@ -142,12 +163,14 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.tickets.title', 'Support Tickets')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.tickets.desc', 'View and create support tickets for your customers.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
-            {t('dashboard.cards.tickets.cta', 'Open Tickets →')}
+          <Button asChild className="bg-[#e6f4ec] text-[#1a5948] hover:bg-[#d5ebde] rounded-lg w-full sm:w-auto">
+            <Link to={adminRoutes.tickets}>
+              {t('dashboard.cards.tickets.cta', 'Open Tickets →')}
+            </Link>
           </Button>
           <div className="space-y-2">
-            <CardLink to="/admin/tickets/create" label={t('dashboard.cards.tickets.create', 'Create new ticket')} icon="arrow" />
-            <CardLink to="/admin/tickets/settings" label={t('dashboard.cards.tickets.settings', 'Ticket settings')} icon="arrow" />
+            <CardLink to="" disabled label={t('dashboard.cards.tickets.create', 'Create new ticket')} icon="arrow" />
+            <CardLink to="" disabled label={t('dashboard.cards.tickets.settings', 'Ticket settings')} icon="arrow" />
           </div>
         </div>
       </div>
@@ -160,10 +183,12 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.crm.title', 'CRM To-Do')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.crm.desc', 'List of CRM activities and follow-ups.')}</p>
           </div>
-          <Button className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
-            {t('dashboard.cards.crm.cta', 'Open CRM →')}
+          <Button asChild className="bg-[#e6f4ec] text-[#1a5948] hover:bg-[#d5ebde] rounded-lg w-full sm:w-auto">
+            <Link to={adminRoutes.crmActivities}>
+              {t('dashboard.cards.crm.cta', 'Open CRM →')}
+            </Link>
           </Button>
-          <CardLink to="/admin/crm/add" label={t('dashboard.cards.crm.add', 'Add activity')} icon="plus" />
+          <CardLink to={adminRoutes.crmCreate} label={t('dashboard.cards.crm.add', 'Add activity')} icon="plus" />
         </div>
 
         {/* Newsletters */}
@@ -172,7 +197,7 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.newsletters.title', 'Newsletters')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.newsletters.desc', 'View and create newsletters.')}</p>
           </div>
-          <Button asChild className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+          <Button asChild className="bg-[#e6f4ec] text-[#1a5948] hover:bg-[#d5ebde] rounded-lg w-full sm:w-auto">
             <Link to={adminRoutes.newsletters}>
               {t('dashboard.cards.newsletters.cta', 'Open Newsletters →')}
             </Link>
@@ -186,12 +211,12 @@ export const AdminDashboardPage: React.FC = () => {
             <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.cards.handbook.title', 'Management Handbook')}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.handbook.desc', 'Good advice for business leaders.')}</p>
           </div>
-          <Button asChild className="bg-[#1a5948] text-white hover:bg-[#154a3c] rounded-lg w-full sm:w-auto">
+          <Button asChild className="bg-[#e6f4ec] text-[#1a5948] hover:bg-[#d5ebde] rounded-lg w-full sm:w-auto">
             <Link to={adminRoutes.handbook}>
-              {t('dashboard.cards.handbook.cta', 'Open Handbook →')}
+              {t('dashboard.cards.handbook.cta', 'Manage Handbook →')}
             </Link>
           </Button>
-          <CardLink to={adminRoutes.handbookTableOfContents} label={t('dashboard.cards.handbook.browse', 'Browse articles')} icon="arrow" />
+          <CardLink to={adminRoutes.handbookPrint} label={t('dashboard.cards.handbook.print', 'Printer-friendly version')} icon="arrow" />
         </div>
       </div>
 

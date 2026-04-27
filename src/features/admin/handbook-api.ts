@@ -60,6 +60,14 @@ export const adminHandbookApi = {
     return unwrap<AdminHandbookVersion[]>(res);
   },
 
+  deleteVersion: async (nid: number, vid: number): Promise<void> => {
+    await axiosClient.delete(`/admin/handbooks/pages/${nid}/versions/${vid}`);
+  },
+
+  restoreVersion: async (nid: number, vid: number): Promise<void> => {
+    await axiosClient.post(`/admin/handbooks/pages/${nid}/versions/${vid}/restore`);
+  },
+
   getMetaTags: async (nid: number): Promise<AdminHandbookMetaTags> => {
     const res = await axiosClient.get(`/admin/handbooks/pages/${nid}/meta`);
     return unwrap<AdminHandbookMetaTags>(res);

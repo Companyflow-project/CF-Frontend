@@ -401,12 +401,16 @@ export interface CrmActivity {
   responsibleUid: number | null;
   responsibleName: string;
   colorSeed: string;
+  authorUid: number | null;
+  authorName: string;
+  authorColorSeed: string;
 }
 
 export interface CrmListParams {
   page?: number;
   limit?: number;
   userId?: string;
+  authorUid?: string;
   period?: 'previous' | 'latest_week' | 'next_week' | 'next_month' | 'all_upcoming';
   status?: string;
   followUp?: 'all' | 'fup_date' | 'no_fup_date';

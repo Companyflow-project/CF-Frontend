@@ -28,7 +28,9 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
   const { user, logout, updateLanguage } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isSwitchOpen, setIsSwitchOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const switchRef = useRef<HTMLDivElement>(null);
   const { viewAsEmployee } = useViewAsEmployee();
   const { t, i18n } = useTranslation('common');
   const isAdmin = isAdminRole(user?.role);
@@ -45,12 +47,15 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
       if (langRef.current && !langRef.current.contains(e.target as Node)) {
         setIsLangOpen(false);
       }
+      if (switchRef.current && !switchRef.current.contains(e.target as Node)) {
+        setIsSwitchOpen(false);
+      }
     };
-    if (isLangOpen) {
+    if (isLangOpen || isSwitchOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isLangOpen]);
+  }, [isLangOpen, isSwitchOpen]);
 
   const getNavItems = () => {
     if (showEmployeeView) {
@@ -188,29 +193,57 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                 )}
               </div>
               {user.role === 'administrator' ? (
-                <Link
-                  to="/admin"
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
-                  style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
-                  title={t('nav.switchToAdmin', 'Switch to Admin Console')}
-                >
-                  {getInitials(user.name)}
-                </Link>
-              ) : (
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
-                  {getInitials(user.name)}
+                <div className="relative" ref={switchRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsSwitchOpen((prev) => !prev)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
+                    title={t('nav.switchTo', 'Switch to')}
+                    aria-haspopup="menu"
+                    aria-expanded={isSwitchOpen}
+                  >
+                    {getInitials(user.name)}
+                  </button>
+                  {isSwitchOpen && (
+                    <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      <div className="px-4 py-2 text-sm font-semibold text-gray-900">
+                        {t('nav.switchTo', 'Switch to')}
+                      </div>
+                      <Link
+                        to="/admin"
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.adminAccount', 'Admin Account')}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => { setIsSwitchOpen(false); logout(); }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('logOut')}
+                      </button>
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
+                    {getInitials(user.name)}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-transparent hover:opacity-80 text-sm"
+                    style={{ color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
+                    onClick={() => logout()}
+                  >
+                    {t('logOut')}
+                  </Button>
+                </>
               )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="bg-transparent hover:opacity-80 text-sm"
-                style={{ color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
-                onClick={() => logout()}
-              >
-                {t('logOut')}
-              </Button>
             </div>
           )}
         </div>

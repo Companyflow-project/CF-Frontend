@@ -13,6 +13,7 @@ import {
   useAdminNewsletter,
   useAdminNewsletterCategories,
   useCreateAdminNewsletter,
+  useSendAdminNewsletterTest,
   useUpdateAdminNewsletter,
 } from '../newsletter-hooks';
 import type {
@@ -106,6 +107,7 @@ export const AdminNewsletterEditorPage: React.FC = () => {
   const { data: categories = [] } = useAdminNewsletterCategories();
   const createMut = useCreateAdminNewsletter();
   const updateMut = useUpdateAdminNewsletter();
+  const sendTestMut = useSendAdminNewsletterTest();
 
   // Form state
   const [title, setTitle] = useState('');
@@ -218,6 +220,26 @@ export const AdminNewsletterEditorPage: React.FC = () => {
   };
 
   const saving = createMut.isPending || updateMut.isPending;
+
+  const handleSendTest = async () => {
+    if (!isEdit || nid == null) {
+      toast.error(t('newsletters.editor.sendTestRequiresSave', 'Save the newsletter first, then send a test.'));
+      return;
+    }
+    const recipients = parseCsvEmails(testAddressesRaw);
+    if (recipients.length === 0) {
+      toast.error(t('newsletters.validation.testAddressesRequired', 'Add at least one test address first.'));
+      return;
+    }
+    try {
+      const result = await sendTestMut.mutateAsync({ nid, recipients });
+      toast.success(
+        t('newsletters.editor.testSent', 'Test sent to {{count}} recipient(s)', { count: result.sent }),
+      );
+    } catch {
+      toast.error(t('newsletters.editor.testSendFailed', 'Failed to send test'));
+    }
+  };
 
   if (isEdit && loadingDetail) {
     return (
@@ -606,6 +628,17 @@ export const AdminNewsletterEditorPage: React.FC = () => {
           >
             {t('common.cancel', 'Cancel')}
           </Button>
+          {isEdit && (
+            <Button
+              variant="outline"
+              onClick={handleSendTest}
+              disabled={saving || sendTestMut.isPending}
+            >
+              {sendTestMut.isPending
+                ? t('newsletters.editor.sendingTest', 'Sending test…')
+                : t('newsletters.editor.sendTest', 'Send test')}
+            </Button>
+          )}
           <Button
             onClick={handleSave}
             disabled={saving}

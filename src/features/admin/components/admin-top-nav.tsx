@@ -48,7 +48,7 @@ export const AdminTopNav: React.FC = () => {
   const navItems = [
     { path: adminRoutes.dashboard, label: t('nav.console'), enabled: true },
     { path: adminRoutes.companies, label: t('nav.companies'), enabled: true },
-    { path: adminRoutes.crm, label: t('nav.crm'), enabled: true },
+    { path: adminRoutes.crmActivities, label: t('nav.crm'), enabled: true },
     { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true },
     { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true },
     { path: adminRoutes.tickets, label: t('nav.support'), enabled: true },
@@ -170,22 +170,38 @@ export const AdminTopNav: React.FC = () => {
                   {getInitials(user.name)}
                 </button>
                 {isSwitchOpen && (
-                  <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                  <div className="absolute right-0 top-12 w-60 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     <div className="px-4 py-2 text-sm font-semibold text-gray-900">{t('switchTo', 'Switch to')}</div>
                     <Link
                       to="/"
                       onClick={() => setIsSwitchOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      {t('nav.userConsole', 'User Console')}
+                      {t('nav.userAccount', 'User account')}
                     </Link>
-                    <Link
-                      to={adminRoutes.users}
-                      onClick={() => setIsSwitchOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    <div className="my-1 border-t border-gray-100" />
+                    <span
+                      aria-disabled="true"
+                      title={t('nav.comingSoon', 'Coming soon')}
+                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
                     >
-                      {t('nav.people', 'People')}
-                    </Link>
+                      {t('nav.changeUserView', 'Change user view')}
+                    </span>
+                    <div className="my-1 border-t border-gray-100" />
+                    <span
+                      aria-disabled="true"
+                      title={t('nav.comingSoon', 'Coming soon')}
+                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
+                    >
+                      {t('nav.content', 'Content')}
+                    </span>
+                    <span
+                      aria-disabled="true"
+                      title={t('nav.comingSoon', 'Coming soon')}
+                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
+                    >
+                      {t('nav.structure', 'Structure')}
+                    </span>
                     <Link
                       to={adminRoutes.settings}
                       onClick={() => setIsSwitchOpen(false)}
@@ -194,25 +210,36 @@ export const AdminTopNav: React.FC = () => {
                       {t('nav.settings', 'Settings')}
                     </Link>
                     <Link
-                      to={adminRoutes.activity}
+                      to={adminRoutes.users}
                       onClick={() => setIsSwitchOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      {t('nav.activity', 'Activity')}
+                      {t('nav.people', 'People')}
                     </Link>
+                    <span
+                      aria-disabled="true"
+                      title={t('nav.comingSoon', 'Coming soon')}
+                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
+                    >
+                      {t('nav.help', 'Help')}
+                    </span>
+                    <Link
+                      to={adminRoutes.dashboard}
+                      onClick={() => setIsSwitchOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      {t('nav.companyFlow', 'CompanyFlow')}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => { setIsSwitchOpen(false); logout(); }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      {t('nav.logout', 'Log out')}
+                    </button>
                   </div>
                 )}
               </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="bg-transparent hover:opacity-80 text-sm text-white border-white/20"
-                onClick={() => logout()}
-              >
-                {t('nav.logout', 'Log out')}
-              </Button>
             </div>
           )}
         </div>

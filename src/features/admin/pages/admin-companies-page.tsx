@@ -10,7 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Search, ArrowUpDown, ArrowRight } from 'lucide-react';
 import type { AdminCompanyListItem } from '../types';
 
-const CATEGORIES = ['All', 'Demo Requested', 'Free Sample'] as const;
+// DB stores categories as Danish taxonomy term names (vid='customer_category').
+// Quick-filter chips use the actual Danish names so the backend filter matches.
+const CATEGORIES = ['All', 'Anmodet om demo', 'Gratis prøve'] as const;
 
 const SORT_OPTIONS = [
   { value: 'title', labelKey: 'companies.sort.name', fallback: 'Name' },
@@ -91,7 +93,6 @@ export const AdminCompaniesPage: React.FC = () => {
   const [sort, setSort] = useState('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [category, setCategory] = useState('All');
-  const [source, setSource] = useState('');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -116,7 +117,6 @@ export const AdminCompaniesPage: React.FC = () => {
     search: debouncedSearch || undefined,
     sort: sortDirection === 'desc' ? `-${sort}` : sort,
     category: category !== 'All' ? category : undefined,
-    source: source || undefined,
   };
 
   const { data, isLoading, isError } = useAdminCompanies(params);
@@ -151,8 +151,8 @@ export const AdminCompaniesPage: React.FC = () => {
 
   const categoryLabel = (cat: string): string => {
     if (cat === 'All') return t('companies.category.all', 'All');
-    if (cat === 'Demo Requested') return t('companies.category.demoRequested', 'Demo Requested');
-    if (cat === 'Free Sample') return t('companies.category.freeSample', 'Free Sample');
+    if (cat === 'Anmodet om demo') return t('companies.category.demoRequested', 'Demo Requested');
+    if (cat === 'Gratis prøve') return t('companies.category.freeSample', 'Free Sample');
     return cat;
   };
 
@@ -160,7 +160,16 @@ export const AdminCompaniesPage: React.FC = () => {
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{t('companies.title', 'Companies')}</h1>
+        <div>
+          <div className="text-sm text-gray-500">
+            <Link to={adminRoutes.dashboard} className="hover:underline">
+              {t('nav.console', 'Console')}
+            </Link>
+            {' › '}
+            <span className="text-gray-700">{t('companies.title', 'Companies')}</span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{t('companies.title', 'Companies')}</h1>
+        </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <Button variant="outline" size="sm" asChild>
             <Link to="/admin/sources">{t('companies.sources', 'Sources')}</Link>
@@ -228,19 +237,30 @@ export const AdminCompaniesPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Source filter */}
+        {/* Category filter (full list) */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-500">{t('companies.filter', 'Filter')}</span>
           <select
-            value={source}
-            onChange={(e) => { setSource(e.target.value); setPage(1); }}
+            value={category}
+            onChange={(e) => { setCategory(e.target.value); setPage(1); }}
             className="h-10 flex-1 lg:flex-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <option value="">{t('companies.allSources', 'All Sources')}</option>
-            <option value="website">{t('companies.source.website', 'Website')}</option>
-            <option value="referral">{t('companies.source.referral', 'Referral')}</option>
-            <option value="partner">{t('companies.source.partner', 'Partner')}</option>
-            <option value="direct">{t('companies.source.direct', 'Direct')}</option>
+            <option value="All">{t('companies.allCategories', 'All Categories')}</option>
+            <option value="Potentiel kunde">{t('companies.category.potentialCustomer', 'Potential customer')}</option>
+            <option value="Anmodet om demo">{t('companies.category.demoRequested', 'Demo Requested')}</option>
+            <option value="Demo aftalt">{t('companies.category.demoAgreed', 'Demo agreed')}</option>
+            <option value="Ønsker kontakt">{t('companies.category.wantContact', 'Want contact')}</option>
+            <option value="Accepteret">{t('companies.category.accepted', 'Accepted')}</option>
+            <option value="Tilbud afsendt">{t('companies.category.offerSent', 'Offer sent')}</option>
+            <option value="Tilbud afvist">{t('companies.category.offerRejected', 'Offer rejected')}</option>
+            <option value="Dialog">{t('companies.category.dialogue', 'Dialogue')}</option>
+            <option value="Aftalt møde">{t('companies.category.meetingScheduled', 'Meeting scheduled')}</option>
+            <option value="Gratis prøve">{t('companies.category.freeSample', 'Free Sample')}</option>
+            <option value="Kunde">{t('companies.category.customer', 'Customer')}</option>
+            <option value="Partner">{t('companies.category.partner', 'Partner')}</option>
+            <option value="Ikke kunde">{t('companies.category.notACustomer', 'Not a customer')}</option>
+            <option value="Opsagt">{t('companies.category.terminated', 'Terminated')}</option>
+            <option value="Intern test">{t('companies.category.internalTesting', 'Internal testing')}</option>
           </select>
         </div>
       </div>
@@ -359,20 +379,32 @@ export const AdminCompaniesPage: React.FC = () => {
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{t('companies.quickLinks', 'Quick Links')}</p>
                       <div className="space-y-1.5">
                         {[
-                          { label: t('companies.links.allPages', 'All pages'), to: `/admin/companies/${company.nid}/pages` },
-                          { label: t('companies.links.createHandbook', 'Create handbook'), to: `/admin/companies/${company.nid}/handbooks/create` },
-                          { label: t('companies.links.controlPanel', 'Control panel'), to: `/admin/companies/${company.nid}/control` },
-                          { label: t('companies.links.employees', 'Employees'), to: `/admin/companies/${company.nid}/employees` },
-                          { label: t('companies.links.addCrm', 'Add CRM activity'), to: `/admin/companies/${company.nid}/crm/add` },
+                          { label: t('companies.links.allPages', 'All pages'), to: null },
+                          { label: t('companies.links.createHandbook', 'Create handbook'), to: null },
+                          { label: t('companies.links.controlPanel', 'Control panel'), to: adminRoutes.companyDetail.replace(':id', String(company.nid)) },
+                          { label: t('companies.links.employees', 'Employees'), to: null },
+                          { label: t('companies.links.addCrm', 'Add CRM activity'), to: `${adminRoutes.crmCreate}?companyId=${company.nid}` },
                         ].map((link) => (
-                          <Link
-                            key={link.label}
-                            to={link.to}
-                            className="flex items-center gap-2 text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            {link.label}
-                            <ArrowRight className="h-3 w-3" />
-                          </Link>
+                          link.to ? (
+                            <Link
+                              key={link.label}
+                              to={link.to}
+                              className="flex items-center gap-2 text-xs sm:text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              {link.label}
+                              <ArrowRight className="h-3 w-3" />
+                            </Link>
+                          ) : (
+                            <span
+                              key={link.label}
+                              aria-disabled="true"
+                              title={t('companies.comingSoon', 'Coming soon')}
+                              className="flex items-center gap-2 text-xs sm:text-sm text-gray-400 cursor-not-allowed select-none"
+                            >
+                              {link.label}
+                              <ArrowRight className="h-3 w-3" />
+                            </span>
+                          )
                         ))}
                       </div>
                     </div>
@@ -386,31 +418,37 @@ export const AdminCompaniesPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         className="w-full justify-start"
-                        onClick={() => navigate(adminRoutes.companyDetail.replace(':id', String(company.nid)))}
+                        onClick={() => navigate(adminRoutes.companyEdit.replace(':id', String(company.nid)))}
                       >
                         {t('companies.edit', 'Edit')}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full justify-start"
-                        onClick={() => navigate(`/admin/companies/${company.nid}/wise`)}
+                        className="w-full justify-start text-gray-400 bg-gray-50 cursor-not-allowed hover:bg-gray-50"
+                        disabled
+                        aria-disabled="true"
+                        title={t('companies.comingSoon', 'Coming soon')}
                       >
                         {t('companies.wise', 'Wise')}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full justify-start"
-                        onClick={() => navigate(`/admin/companies/${company.nid}/reset`)}
+                        className="w-full justify-start text-gray-400 bg-gray-50 cursor-not-allowed hover:bg-gray-50"
+                        disabled
+                        aria-disabled="true"
+                        title={t('companies.comingSoon', 'Coming soon')}
                       >
                         {t('companies.reset', 'Reset')}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                        onClick={() => navigate(`/admin/companies/${company.nid}/delete`)}
+                        className="w-full justify-start text-gray-300 bg-gray-50 cursor-not-allowed hover:bg-gray-50 border-gray-200"
+                        disabled
+                        aria-disabled="true"
+                        title={t('companies.comingSoon', 'Coming soon')}
                       >
                         {t('companies.deleteAll', 'Delete everything')}
                       </Button>

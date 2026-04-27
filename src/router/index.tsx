@@ -31,10 +31,12 @@ const AdminInvoicesPage = lazy(() => import('@/features/admin/pages/admin-invoic
 const AdminTicketsPage = lazy(() => import('@/features/admin/pages/admin-tickets-page').then((m) => ({ default: m.AdminTicketsPage })));
 const AdminKeyFiguresPage = lazy(() => import('@/features/admin/pages/admin-key-figures-page').then((m) => ({ default: m.AdminKeyFiguresPage })));
 const AdminCreateCrmActivityPage = lazy(() => import('@/features/admin/pages/admin-create-crm-activity-page').then((m) => ({ default: m.AdminCreateCrmActivityPage })));
+const AdminCrmActivitiesPage = lazy(() => import('@/features/admin/pages/admin-crm-activities-page').then((m) => ({ default: m.AdminCrmActivitiesPage })));
 const AdminLatestCompaniesPage = lazy(() => import('@/features/admin/pages/admin-latest-companies-page').then((m) => ({ default: m.AdminLatestCompaniesPage })));
 const AdminEditCompanyPage = lazy(() => import('@/features/admin/pages/admin-edit-company-page').then((m) => ({ default: m.AdminEditCompanyPage })));
 const AdminHandbookPage = lazy(() => import('@/features/admin/pages/admin-handbook-page').then((m) => ({ default: m.AdminHandbookPage })));
 const AdminHandbookBrowsePage = lazy(() => import('@/features/admin/pages/admin-handbook-browse-page').then((m) => ({ default: m.AdminHandbookBrowsePage })));
+const AdminHandbookPrintPage = lazy(() => import('@/features/admin/pages/admin-handbook-print-page').then((m) => ({ default: m.AdminHandbookPrintPage })));
 const AdminHandbookEditorPage = lazy(() => import('@/features/admin/pages/admin-handbook-editor-page').then((m) => ({ default: m.AdminHandbookEditorPage })));
 const AdminHandbookMetaPage = lazy(() => import('@/features/admin/pages/admin-handbook-meta-page').then((m) => ({ default: m.AdminHandbookMetaPage })));
 const AdminNewslettersPage = lazy(() => import('@/features/admin/pages/admin-newsletters-page').then((m) => ({ default: m.AdminNewslettersPage })));
@@ -817,6 +819,18 @@ export const AppRouter: React.FC = () => {
             }
           />
           <Route
+            path={adminRoutes.handbookPrint}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminHandbookPrintPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
             path={adminRoutes.handbookPageMeta}
             element={
               <RequireAuth>
@@ -919,6 +933,18 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminInvoicesPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.crmActivities}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCrmActivitiesPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

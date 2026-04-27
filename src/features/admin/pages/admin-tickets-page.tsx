@@ -56,6 +56,7 @@ export const AdminTicketsPage: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [hiddenStatusKeys, setHiddenStatusKeys] = useState<Set<string>>(new Set());
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -86,6 +87,37 @@ export const AdminTicketsPage: React.FC = () => {
   const totalPages = total ? Math.ceil(total / perPage) : 1;
   const from = total === 0 ? 0 : (page - 1) * perPage + 1;
   const to = Math.min(page * perPage, total);
+
+  const visibleTickets = useMemo(
+    () => tickets.filter(tk => !hiddenStatusKeys.has(tk.statusKey)),
+    [tickets, hiddenStatusKeys]
+  );
+
+  const priorityGroups = useMemo(() => {
+    const order: string[] = [];
+    const groups = new Map<string, { key: string; label: string; rows: typeof visibleTickets }>();
+    for (const tk of visibleTickets) {
+      const key = tk.priorityKey || 'other';
+      if (!groups.has(key)) {
+        order.push(key);
+        groups.set(key, { key, label: tk.priority || key, rows: [] });
+      }
+      groups.get(key)!.rows.push(tk);
+    }
+    return order.map(k => groups.get(k)!);
+  }, [visibleTickets]);
+
+  const allStatuses = filtersQuery.data?.statuses ?? [];
+  const toggleHideStatus = (key: string) => {
+    setHiddenStatusKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+  const showAllStatuses = () => setHiddenStatusKeys(new Set());
+  const allShown = hiddenStatusKeys.size === 0;
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -281,6 +313,46 @@ export const AdminTicketsPage: React.FC = () => {
           </p>
         </div>
       ) : (
+        <>
+          {tab === 'chronological' && (
+            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              {t('tickets.chronoHeader', 'All — Sorted by Date (Newest First)')}
+            </div>
+          )}
+
+          {/* Show / Hide status toggles */}
+          {allStatuses.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide mr-1">
+                {t('tickets.showHide.label', 'Show / Hide')}
+              </span>
+              <button
+                type="button"
+                onClick={showAllStatuses}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  allShown ? 'bg-green-50 text-green-700 border-green-200' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                {t('tickets.showHide.showAll', 'Show all')}
+              </button>
+              {allStatuses.map(s => {
+                const hidden = hiddenStatusKeys.has(s.key);
+                return (
+                  <button
+                    key={s.tid}
+                    type="button"
+                    onClick={() => toggleHideStatus(s.key)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      hidden ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {t('tickets.showHide.hide', 'Hide')} {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
         <div className="border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
@@ -301,55 +373,30 @@ export const AdminTicketsPage: React.FC = () => {
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-gray-400 py-8">{t('common.loading', 'Loading…')}</TableCell>
                   </TableRow>
-                ) : tickets.length === 0 ? (
+                ) : visibleTickets.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-gray-400 py-8">{t('tickets.noResults', 'No tickets found.')}</TableCell>
                   </TableRow>
-                ) : (
-                  tickets.map(tk => {
-                    const dot = PRIORITY_DOT[tk.priorityKey] ?? '#9ca3af';
-                    const statusCls = STATUS_BADGE[tk.statusKey] ?? 'bg-gray-50 text-gray-700 border-gray-200';
-                    return (
-                      <TableRow key={tk.nid} className="hover:bg-gray-50">
-                        <TableCell className="text-gray-600 text-xs whitespace-nowrap">{formatDate(tk.created)}</TableCell>
-                        <TableCell className="font-medium text-[#0d0e0e] max-w-[220px]">
-                          <div className="truncate">{tk.title}</div>
-                          {tk.listName && (
-                            <div className="text-xs text-gray-400 mt-0.5">{tk.listName}</div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-gray-600 text-sm max-w-[320px]">
-                          <div className="line-clamp-2">{tk.body}</div>
-                        </TableCell>
-                        <TableCell>
-                          {tk.responsibleName ? (
-                            <span className="inline-flex items-center gap-2 text-xs">
-                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ef4444' }} />
-                              <span className="text-gray-700">{tk.responsibleName}</span>
+                ) : tab === 'tickets' ? (
+                  priorityGroups.flatMap(group => {
+                    const groupDot = PRIORITY_DOT[group.key] ?? '#9ca3af';
+                    return [
+                      <TableRow key={`group-${group.key}`} className="bg-gray-50/60 hover:bg-gray-50/60">
+                        <TableCell colSpan={8} className="py-2.5">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-[#0d0e0e]">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: groupDot }} />
+                            <span>{group.label}</span>
+                            <span className="text-xs text-gray-500 font-normal">
+                              {t('tickets.groupCount', '{{count}} tickets', { count: group.rows.length })}
                             </span>
-                          ) : <span className="text-gray-400 text-xs">—</span>}
-                        </TableCell>
-                        <TableCell className="text-gray-700 text-xs">{tk.authorName}</TableCell>
-                        <TableCell>
-                          <span className="inline-flex items-center gap-1.5 text-xs text-gray-700">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: dot }} />
-                            {tk.priority}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded border ${statusCls}`}>
-                            {tk.status}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="h-7 text-xs">{t('tickets.actions.edit', 'Edit')}</Button>
-                            <Button variant="outline" size="sm" className="h-7 text-xs">{t('tickets.actions.view', 'View')}</Button>
                           </div>
                         </TableCell>
-                      </TableRow>
-                    );
+                      </TableRow>,
+                      ...group.rows.map(tk => renderTicketRow(tk, t)),
+                    ];
                   })
+                ) : (
+                  visibleTickets.map(tk => renderTicketRow(tk, t))
                 )}
               </TableBody>
             </Table>
@@ -381,7 +428,67 @@ export const AdminTicketsPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );
 };
+
+type TicketRowData = {
+  nid: number;
+  created: number;
+  title: string;
+  listName?: string | null;
+  body: string;
+  responsibleName?: string | null;
+  authorName: string;
+  priority: string;
+  priorityKey: string;
+  status: string;
+  statusKey: string;
+};
+
+function renderTicketRow(tk: TicketRowData, t: (key: string, fallback: string) => string) {
+  const dot = PRIORITY_DOT[tk.priorityKey] ?? '#9ca3af';
+  const statusCls = STATUS_BADGE[tk.statusKey] ?? 'bg-gray-50 text-gray-700 border-gray-200';
+  return (
+    <TableRow key={tk.nid} className="hover:bg-gray-50">
+      <TableCell className="text-gray-600 text-xs whitespace-nowrap">{formatDate(tk.created)}</TableCell>
+      <TableCell className="font-medium text-[#0d0e0e] max-w-[220px]">
+        <div className="truncate">{tk.title}</div>
+        {tk.listName && (
+          <div className="text-xs text-gray-400 mt-0.5">{tk.listName}</div>
+        )}
+      </TableCell>
+      <TableCell className="text-gray-600 text-sm max-w-[320px]">
+        <div className="line-clamp-2">{tk.body}</div>
+      </TableCell>
+      <TableCell>
+        {tk.responsibleName ? (
+          <span className="inline-flex items-center gap-2 text-xs">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ef4444' }} />
+            <span className="text-gray-700">{tk.responsibleName}</span>
+          </span>
+        ) : <span className="text-gray-400 text-xs">—</span>}
+      </TableCell>
+      <TableCell className="text-gray-700 text-xs">{tk.authorName}</TableCell>
+      <TableCell>
+        <span className="inline-flex items-center gap-1.5 text-xs text-gray-700">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: dot }} />
+          {tk.priority}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded border ${statusCls}`}>
+          {tk.status}
+        </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="h-7 text-xs">{t('tickets.actions.edit', 'Edit')}</Button>
+          <Button variant="outline" size="sm" className="h-7 text-xs">{t('tickets.actions.done', 'Done')}</Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}

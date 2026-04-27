@@ -118,7 +118,7 @@ export const AdminHandbookPage: React.FC = () => {
                     className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90"
                     onClick={() => setIsEditing(true)}
                   >
-                    {t('handbook.edit', 'Edit')}
+                    {t('handbook.editHelp', 'Edit')}
                   </Button>
                 </div>
               </>
@@ -135,7 +135,7 @@ export const AdminHandbookPage: React.FC = () => {
         >
           <List className="h-8 w-8 text-[#0d0e0e] mb-4" />
           <h3 className="font-semibold text-[#0d0e0e]">
-            {t('handbook.toc', 'Table of contents')}
+            {t('handbook.tocTitle', 'Table of contents')}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
             {t('handbook.tocDesc', 'Searchable overview')}
