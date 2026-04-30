@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { adminRoutes } from '../routes';
 import { useAdminHandbookBooks, useAdminHandbookBookTree } from '../handbook-hooks';
 import type { AdminHandbookTreeNode } from '../handbook-types';
+import { HandbookHelpSection } from '../components/handbook/help-section';
 
 function flatten(nodes: AdminHandbookTreeNode[], parentChain: string[] = []): Array<{ node: AdminHandbookTreeNode; path: string[] }> {
   const out: Array<{ node: AdminHandbookTreeNode; path: string[] }> = [];
@@ -71,6 +72,8 @@ export const AdminHandbookBrowsePage: React.FC = () => {
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">{t('handbook.title', 'Management Handbook')}</h1>
       </div>
+
+      <HandbookHelpSection />
 
       <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
         <div className="flex-1">

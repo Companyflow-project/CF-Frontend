@@ -29,8 +29,10 @@ const AdminSourcesPage = lazy(() => import('@/features/admin/pages/admin-sources
 const AdminCrmPage = lazy(() => import('@/features/admin/pages/admin-crm-page').then((m) => ({ default: m.AdminCrmPage })));
 const AdminInvoicesPage = lazy(() => import('@/features/admin/pages/admin-invoices-page').then((m) => ({ default: m.AdminInvoicesPage })));
 const AdminTicketsPage = lazy(() => import('@/features/admin/pages/admin-tickets-page').then((m) => ({ default: m.AdminTicketsPage })));
+const AdminCreateTicketPage = lazy(() => import('@/features/admin/pages/admin-create-ticket-page').then((m) => ({ default: m.AdminCreateTicketPage })));
 const AdminKeyFiguresPage = lazy(() => import('@/features/admin/pages/admin-key-figures-page').then((m) => ({ default: m.AdminKeyFiguresPage })));
 const AdminCreateCrmActivityPage = lazy(() => import('@/features/admin/pages/admin-create-crm-activity-page').then((m) => ({ default: m.AdminCreateCrmActivityPage })));
+const AdminEditCrmActivityPage = AdminCreateCrmActivityPage;
 const AdminCrmActivitiesPage = lazy(() => import('@/features/admin/pages/admin-crm-activities-page').then((m) => ({ default: m.AdminCrmActivitiesPage })));
 const AdminLatestCompaniesPage = lazy(() => import('@/features/admin/pages/admin-latest-companies-page').then((m) => ({ default: m.AdminLatestCompaniesPage })));
 const AdminEditCompanyPage = lazy(() => import('@/features/admin/pages/admin-edit-company-page').then((m) => ({ default: m.AdminEditCompanyPage })));
@@ -879,6 +881,18 @@ export const AppRouter: React.FC = () => {
             }
           />
           <Route
+            path={adminRoutes.crmActivityEdit}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminEditCrmActivityPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
             path={adminRoutes.latestCompanies}
             element={
               <RequireAuth>
@@ -921,6 +935,18 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminTicketsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.createTicket}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCreateTicketPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

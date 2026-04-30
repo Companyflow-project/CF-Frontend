@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Search, ChevronLeft, ChevronRight, Plus, Ticket } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { useTicketFilters, useTickets } from '../hooks';
 import { adminRoutes } from '../routes';
 
@@ -46,6 +46,7 @@ function formatDate(unix: number) {
 
 export const AdminTicketsPage: React.FC = () => {
   const { t } = useTranslation('admin');
+  const navigate = useNavigate();
   const [tab, setTab] = useState<'tickets' | 'chronological'>('tickets');
   const [priority, setPriority] = useState<string | undefined>();
   const [statusTid, setStatusTid] = useState<string | undefined>();
@@ -78,8 +79,26 @@ export const AdminTicketsPage: React.FC = () => {
     sort: tab === 'chronological' ? 'created_desc' : undefined,
   }), [page, perPage, priority, statusTid, listTid, responsibleUid, authorUid, debouncedSearch, tab]);
 
-  const hasFilters = tab === 'chronological' || Boolean(priority || statusTid || listTid || responsibleUid || authorUid || debouncedSearch);
-  const ticketsQuery = useTickets(params, hasFilters);
+  // Always load tickets — Drupal parity (no "select a filter first" gate).
+  const ticketsQuery = useTickets(params, true);
+
+  const activeFilterCount =
+    (priority ? 1 : 0) +
+    (statusTid ? 1 : 0) +
+    (listTid ? 1 : 0) +
+    (responsibleUid ? 1 : 0) +
+    (authorUid ? 1 : 0) +
+    (debouncedSearch ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setPriority(undefined);
+    setStatusTid(undefined);
+    setListTid(undefined);
+    setResponsibleUid(undefined);
+    setAuthorUid(undefined);
+    setSearch('');
+    setPage(1);
+  };
 
   const tickets = ticketsQuery.data?.data ?? [];
   const meta = ticketsQuery.data?.meta;
@@ -133,7 +152,11 @@ export const AdminTicketsPage: React.FC = () => {
             {t('tickets.title', 'Support Tickets')}
           </h1>
         </div>
-        <Button size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg">
+        <Button
+          size="sm"
+          className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg"
+          onClick={() => navigate(adminRoutes.createTicket)}
+        >
           <Plus className="h-4 w-4 mr-1" />
           {t('tickets.create', 'Create Ticket')}
         </Button>
@@ -299,21 +322,25 @@ export const AdminTicketsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Results */}
-      {!hasFilters ? (
-        <div className="border border-gray-200 rounded-xl py-16 px-6 flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-lg bg-amber-50 flex items-center justify-center mb-4">
-            <Ticket className="h-8 w-8 text-amber-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-[#0d0e0e] mb-1">
-            {t('tickets.empty.title', 'Select filters to view tickets')}
-          </h3>
-          <p className="text-sm text-gray-500 max-w-md">
-            {t('tickets.empty.subtitle', 'Use the priority, status, list, and responsible filters above to narrow down your support tickets.')}
-          </p>
+      {/* Active filter summary chip row */}
+      {activeFilterCount > 0 && (
+        <div className="flex items-center gap-2 -mt-2">
+          <span className="text-xs text-gray-500">
+            {t('tickets.filters.activeCount', '{{count}} active filter(s)', { count: activeFilterCount })}
+          </span>
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="inline-flex items-center gap-1 text-xs text-gray-700 hover:text-[#0d0e0e] underline"
+          >
+            <X className="h-3 w-3" />
+            {t('tickets.filters.clearAll', 'Clear all')}
+          </button>
         </div>
-      ) : (
-        <>
+      )}
+
+      {/* Results */}
+      <>
           {tab === 'chronological' && (
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               {t('tickets.chronoHeader', 'All — Sorted by Date (Newest First)')}
@@ -428,8 +455,7 @@ export const AdminTicketsPage: React.FC = () => {
             </div>
           </div>
         </div>
-        </>
-      )}
+      </>
     </div>
   );
 };

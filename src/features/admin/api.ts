@@ -15,6 +15,10 @@ import type {
   PlatformSettings,
   CreateCompanyPayload,
   CrmActivity,
+  CrmActivityDetail,
+  UpdateCrmActivityPayload,
+  TicketCreateOptions,
+  CreateTicketPayload,
 } from './types';
 
 interface PaginatedResponse<T> {
@@ -75,6 +79,10 @@ export const adminApi = {
 
   deleteCompany: async (id: string): Promise<void> => {
     await axiosClient.delete(`/admin/companies/${id}`);
+  },
+
+  resetCompany: async (id: string): Promise<void> => {
+    await axiosClient.post(`/admin/companies/${id}/reset`);
   },
 
   // --- Users (Phase 2) ---
@@ -142,6 +150,16 @@ export const adminApi = {
     return res.data as PaginatedResponse<Array<{ nid: number; title: string; body: string; created: number; priority: string; priorityKey: string; status: string; statusKey: string; listName: string | null; responsibleUid: number | null; responsibleName: string; authorUid: number; authorName: string }>>;
   },
 
+  getTicketCreateOptions: async (): Promise<TicketCreateOptions> => {
+    const res = await axiosClient.get('/admin/tickets/create-options');
+    return unwrap<TicketCreateOptions>(res);
+  },
+
+  createTicket: async (data: CreateTicketPayload): Promise<{ nid: number }> => {
+    const res = await axiosClient.post('/admin/tickets', data);
+    return unwrap<{ nid: number }>(res);
+  },
+
   // --- Invoices ---
   getInvoices: async (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }): Promise<PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>> => {
     const res = await axiosClient.get('/admin/invoices', { params });
@@ -167,6 +185,16 @@ export const adminApi = {
   getCrmActivities: async (params: Record<string, unknown>): Promise<PaginatedResponse<CrmActivity[]>> => {
     const res = await axiosClient.get('/admin/crm/activities', { params });
     return res.data as PaginatedResponse<CrmActivity[]>;
+  },
+
+  getCrmActivity: async (id: number): Promise<CrmActivityDetail> => {
+    const res = await axiosClient.get(`/admin/crm/activities/${id}`);
+    return unwrap<CrmActivityDetail>(res);
+  },
+
+  updateCrmActivity: async (id: number, data: UpdateCrmActivityPayload): Promise<{ nid: number }> => {
+    const res = await axiosClient.patch(`/admin/crm/activities/${id}`, data);
+    return unwrap<{ nid: number }>(res);
   },
 
   // --- Sources ---

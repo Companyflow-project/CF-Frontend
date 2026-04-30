@@ -248,7 +248,12 @@ export const AdminCrmActivitiesPage: React.FC = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-gray-700 max-w-[320px]">
-                      <div className="font-medium">{a.activity}</div>
+                      <Link
+                        to={adminRoutes.crmActivityEdit.replace(':id', String(a.id))}
+                        className="font-medium hover:underline text-[#0d0e0e]"
+                      >
+                        {a.activity}
+                      </Link>
                       {a.type && (
                         <div className="text-xs text-gray-500 mt-0.5">{a.type}</div>
                       )}
@@ -258,6 +263,11 @@ export const AdminCrmActivitiesPage: React.FC = () => {
                         <span className="inline-flex items-center gap-1.5 text-xs text-gray-700">
                           <span className="w-2 h-2 rounded-full" style={{ backgroundColor: a.colorSeed }} />
                           {a.responsibleName}
+                        </span>
+                      ) : a.authorName ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 italic">
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: a.authorColorSeed }} />
+                          {a.authorName}
                         </span>
                       ) : <span className="text-gray-400 text-xs">—</span>}
                     </TableCell>

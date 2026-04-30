@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
@@ -19,13 +19,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   useCreateCrmActivity,
+  useUpdateCrmActivity,
+  useCrmActivity,
   useCrmTaxonomy,
   useCrmUsers,
   useAdminCompanies,
 } from '../hooks';
 import { adminRoutes } from '../routes';
 import { useAuth } from '@/features/auth/hooks';
-import type { CreateCrmActivityPayload } from '../types';
+import type { CreateCrmActivityPayload, UpdateCrmActivityPayload } from '../types';
 import {
   StatusVersionInfoCard,
   defaultStatusVersionInfoValue,
@@ -187,8 +189,16 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { id: idParam } = useParams<{ id?: string }>();
+  const editId = idParam ? Number(idParam) : null;
+  const isEditMode = editId !== null && Number.isFinite(editId);
 
-  // Form state
+  const currentUserUid = useMemo(() => {
+    const uid = user?.id ? Number(user.id) : NaN;
+    return Number.isFinite(uid) ? uid : null;
+  }, [user]);
+
+  // Form state — Responsible defaults to the logged-in user on create.
   const [title, setTitle] = useState('');
   const [companyId, setCompanyId] = useState<number | null>(null);
   const [companyName, setCompanyName] = useState('');
@@ -198,7 +208,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
 
   const [statusKey, setStatusKey] = useState<string>('in_progress');
   const [typeKey, setTypeKey] = useState<string>('not_determined');
-  const [responsibleUid, setResponsibleUid] = useState<number | null>(null);
+  const [responsibleUid, setResponsibleUid] = useState<number | null>(currentUserUid);
   const [followedByUid, setFollowedByUid] = useState<number | null>(null);
 
   const [body, setBody] = useState('');
@@ -226,6 +236,36 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
     limit: 20,
   });
   const createMutation = useCreateCrmActivity();
+  const updateMutation = useUpdateCrmActivity();
+  const activityQuery = useCrmActivity(isEditMode ? editId : null);
+
+  // Default Responsible to current user once auth resolves (create mode only).
+  useEffect(() => {
+    if (!isEditMode && responsibleUid === null && currentUserUid !== null) {
+      setResponsibleUid(currentUserUid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserUid, isEditMode]);
+
+  // Populate form from server when editing.
+  useEffect(() => {
+    if (!isEditMode) return;
+    const a = activityQuery.data;
+    if (!a) return;
+    setTitle(a.title);
+    setBody(a.body || '');
+    setCompanyId(a.companyId);
+    setCompanyName(a.companyName || '');
+    setResponsibleUid(a.responsibleUid);
+    setFupDate(a.fupDate ? a.fupDate.slice(0, 10) : '');
+    setPublished(a.published);
+    if (a.statusName) {
+      setStatusKey(normalizeKey(a.statusName));
+    }
+    if (a.typeName) {
+      setTypeKey(normalizeKey(a.typeName));
+    }
+  }, [isEditMode, activityQuery.data]);
 
   const companyResults = companiesQuery.data?.data ?? [];
 
@@ -274,32 +314,46 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
     setFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  // Submit
+  // Submit (create or update)
   const handleSubmit = async () => {
     if (!title.trim()) {
       toast.error(t('crmCreate.errors.titleRequired', 'Activity title is required'));
       return;
     }
-    if (!companyId) {
+    if (!isEditMode && !companyId) {
       toast.error(t('crmCreate.errors.businessRequired', 'Please select a business'));
       return;
     }
 
-    const payload: CreateCrmActivityPayload = {
-      title: title.trim(),
-      companyId,
-      statusTid,
-      typeTid,
-      responsibleUid: responsibleUid ?? undefined,
-      body: body.trim() ? `<p>${body.trim()}</p>` : undefined,
-      fupDate: fupDate || undefined,
-      published,
-    };
-
     try {
-      await createMutation.mutateAsync(payload as unknown as Record<string, unknown>);
-      toast.success(t('crmCreate.success', 'Activity created successfully'));
-      navigate('/admin/crm');
+      if (isEditMode && editId !== null) {
+        const updatePayload: UpdateCrmActivityPayload = {
+          title: title.trim(),
+          body: body.trim() ? `<p>${body.trim()}</p>` : '',
+          statusTid: statusTid ?? null,
+          typeTid: typeTid ?? null,
+          responsibleUid: responsibleUid ?? null,
+          fupDate: fupDate || null,
+          published,
+        };
+        await updateMutation.mutateAsync({ id: editId, data: updatePayload });
+        toast.success(t('crmEdit.success', 'Activity updated'));
+        navigate('/admin/crm');
+      } else {
+        const payload: CreateCrmActivityPayload = {
+          title: title.trim(),
+          companyId: companyId as number,
+          statusTid,
+          typeTid,
+          responsibleUid: responsibleUid ?? undefined,
+          body: body.trim() ? `<p>${body.trim()}</p>` : undefined,
+          fupDate: fupDate || undefined,
+          published,
+        };
+        await createMutation.mutateAsync(payload as unknown as Record<string, unknown>);
+        toast.success(t('crmCreate.success', 'Activity created successfully'));
+        navigate('/admin/crm');
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       toast.error(t('crmCreate.errors.saveFailed', 'Failed to save activity: {{message}}', { message }));
@@ -310,7 +364,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
     navigate('/admin/crm');
   };
 
-  const saving = createMutation.isPending;
+  const saving = createMutation.isPending || updateMutation.isPending;
   const users = usersQuery.data ?? [];
 
   return (
@@ -327,12 +381,19 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
           </Link>
           {' › '}
           <span className="text-gray-700">
-            {t('crmCreate.breadcrumb.create', 'Create Activity')}
+            {isEditMode
+              ? t('crmEdit.breadcrumb', 'Edit Activity')
+              : t('crmCreate.breadcrumb.create', 'Create Activity')}
           </span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">
-          {t('crmCreate.title', 'Create CRM Activity')}
+          {isEditMode
+            ? t('crmEdit.title', 'Edit CRM Activity')
+            : t('crmCreate.title', 'Create CRM Activity')}
         </h1>
+        {isEditMode && activityQuery.isLoading && (
+          <p className="text-sm text-gray-500 mt-1">{t('common.loading', 'Loading…')}</p>
+        )}
       </div>
 
       {/* Activity Details */}
@@ -367,12 +428,13 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
           <div className="relative">
             <Label htmlFor="activity-business">
               {t('crmCreate.fields.business', 'Business')}{' '}
-              <span className="text-red-500">*</span>
+              {!isEditMode && <span className="text-red-500">*</span>}
             </Label>
             <Input
               id="activity-business"
               value={companyDropdownOpen ? companySearch : companyName}
               onChange={(e) => {
+                if (isEditMode) return;
                 setCompanySearch(e.target.value);
                 setCompanyDropdownOpen(true);
                 if (!e.target.value) {
@@ -381,6 +443,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
                 }
               }}
               onFocus={() => {
+                if (isEditMode) return;
                 setCompanyDropdownOpen(true);
                 setCompanySearch(companyName);
               }}
@@ -391,8 +454,10 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
               placeholder={t('crmCreate.placeholders.business', 'Search business...')}
               className="mt-1"
               autoComplete="off"
+              readOnly={isEditMode}
+              disabled={isEditMode}
             />
-            {companyDropdownOpen && (
+            {!isEditMode && companyDropdownOpen && (
               <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                 {companiesQuery.isLoading ? (
                   <div className="px-3 py-2 text-sm text-gray-400">

@@ -6,6 +6,8 @@ import type {
   AdminUserListParams,
   UpdateAdminUserPayload,
   PlatformSettings,
+  CreateTicketPayload,
+  UpdateCrmActivityPayload,
 } from './types';
 
 // --- Dashboard ---
@@ -54,6 +56,28 @@ export const useUpdateCompany = () => {
       adminApi.updateCompany(companyId, data),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin-company', vars.companyId] });
+      qc.invalidateQueries({ queryKey: ['admin-companies'] });
+    },
+  });
+};
+
+export const useResetCompany = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (companyId: string | number) => adminApi.resetCompany(String(companyId)),
+    onSuccess: (_d, companyId) => {
+      qc.invalidateQueries({ queryKey: ['admin-company', String(companyId)] });
+      qc.invalidateQueries({ queryKey: ['admin-companies'] });
+    },
+  });
+};
+
+export const useDeleteCompany = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (companyId: string | number) => adminApi.deleteCompany(String(companyId)),
+    onSuccess: (_d, companyId) => {
+      qc.invalidateQueries({ queryKey: ['admin-company', String(companyId)] });
       qc.invalidateQueries({ queryKey: ['admin-companies'] });
     },
   });
@@ -169,6 +193,25 @@ export const useTickets = (params: Record<string, unknown>, enabled: boolean) =>
   });
 };
 
+export const useTicketCreateOptions = () => {
+  return useQuery({
+    queryKey: ['admin-ticket-create-options'],
+    queryFn: () => adminApi.getTicketCreateOptions(),
+    staleTime: 5 * 60_000,
+  });
+};
+
+export const useCreateTicket = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateTicketPayload) => adminApi.createTicket(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-tickets'] });
+      qc.invalidateQueries({ queryKey: ['admin-ticket-filters'] });
+    },
+  });
+};
+
 // --- Invoices ---
 export const useInvoices = (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }) => {
   return useQuery({
@@ -200,6 +243,26 @@ export const useCrmActivities = (params: Record<string, unknown>) => {
     queryKey: ['admin-crm-activities', params],
     queryFn: () => adminApi.getCrmActivities(params),
     placeholderData: keepPreviousData,
+  });
+};
+
+export const useCrmActivity = (id: number | null) => {
+  return useQuery({
+    queryKey: ['admin-crm-activity', id],
+    queryFn: () => adminApi.getCrmActivity(id as number),
+    enabled: id !== null && Number.isFinite(id),
+  });
+};
+
+export const useUpdateCrmActivity = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateCrmActivityPayload }) =>
+      adminApi.updateCrmActivity(id, data),
+    onSuccess: (_res, { id }) => {
+      qc.invalidateQueries({ queryKey: ['admin-crm-activities'] });
+      qc.invalidateQueries({ queryKey: ['admin-crm-activity', id] });
+    },
   });
 };
 

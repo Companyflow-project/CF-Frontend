@@ -54,6 +54,7 @@ export interface AdminCompanyListItem {
   productName: string | null;
   senderName: string;
   whistleblowerAccess: boolean;
+  allowReset: boolean;
   countryCode: string;
   category: string;
   customerNumber: number;
@@ -137,6 +138,7 @@ export interface AdminCompanyDetail extends AdminCompanyListItem {
     demoCompany: boolean;
     testCompany: boolean;
     customTerms: boolean;
+    allowReset: boolean;
   };
 }
 
@@ -188,6 +190,7 @@ export interface UpdateCompanyPayload {
   demoCompany?: boolean;
   testCompany?: boolean;
   customTerms?: boolean;
+  allowReset?: boolean;
   status?: number;
 }
 
@@ -200,6 +203,39 @@ export interface CreateCrmActivityPayload {
   body?: string;
   fupDate?: string;
   nextActionDate?: string;
+  published?: boolean;
+}
+
+export interface CrmActivityDetail {
+  id: number;
+  title: string;
+  body: string;
+  bodyFormat: string;
+  companyId: number | null;
+  companyName: string;
+  typeTid: number | null;
+  typeName: string;
+  statusTid: number | null;
+  statusName: string;
+  responsibleUid: number | null;
+  responsibleName: string;
+  fupDate: string | null;
+  nextActionDate: string | null;
+  published: boolean;
+  authorUid: number;
+  authorName: string;
+  created: number;
+  changed: number;
+}
+
+export interface UpdateCrmActivityPayload {
+  title?: string;
+  body?: string;
+  typeTid?: number | null;
+  statusTid?: number | null;
+  responsibleUid?: number | null;
+  fupDate?: string | null;
+  nextActionDate?: string | null;
   published?: boolean;
 }
 
@@ -347,6 +383,26 @@ export interface TicketListParams {
   authorUid?: string;
   search?: string;
   sort?: string;
+}
+
+export interface TicketCreateOptions {
+  priorities: Array<{ key: string; label: string }>;
+  statuses: Array<{ tid: number; key: string; label: string }>;
+  lists: Array<{ tid: number; name: string }>;
+  staff: Array<{ uid: number; name: string; colorSeed: string }>;
+}
+
+export interface CreateTicketPayload {
+  title: string;
+  body?: string;
+  priority?: string;
+  statusTid?: number;
+  responsibleUid?: number;
+  orientedUids?: number[];
+  listTids?: number[];
+  connectedToNids?: number[];
+  sendMail?: boolean;
+  published?: boolean;
 }
 
 // --- Invoices ---

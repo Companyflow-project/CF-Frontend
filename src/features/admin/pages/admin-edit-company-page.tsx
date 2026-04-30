@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAdminCompany, useUpdateCompany } from '../hooks';
@@ -87,7 +87,7 @@ interface InvoiceForm {
 }
 
 interface AdminForm {
-  whistleblowerAccess: boolean;
+  allowReset: boolean;
 }
 
 interface StatusForm {
@@ -183,10 +183,18 @@ const TabLink: React.FC<{ to?: string; active?: boolean; disabled?: boolean; chi
 export const AdminEditCompanyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('admin');
 
   const { data: company, isLoading, isError } = useAdminCompany(id);
   const updateCompany = useUpdateCompany();
+
+  // Scroll to anchor (e.g. #admin-allow-reset) once data has rendered.
+  useEffect(() => {
+    if (!company || !location.hash) return;
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [company, location.hash]);
 
   // --- Section forms ---
   const [aboutForm, setAboutForm] = useState<AboutForm>({
@@ -233,7 +241,7 @@ export const AdminEditCompanyPage: React.FC = () => {
   });
 
   const [invoiceForm, setInvoiceForm] = useState<InvoiceForm>({ invoiceNote: '' });
-  const [adminForm, setAdminForm] = useState<AdminForm>({ whistleblowerAccess: false });
+  const [adminForm, setAdminForm] = useState<AdminForm>({ allowReset: false });
   const [statusForm, setStatusForm] = useState<StatusForm>({ handbookReady: false, published: true });
 
   const [businessGroupForm, setBusinessGroupForm] = useState<BusinessGroupForm>({ customerGroup: '' });
@@ -299,7 +307,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       subscriptionStart: formatDateForInput(company.subscriptionStart),
       subscriptionEnd: formatDateForInput(company.subscriptionEnd),
     }));
-    setAdminForm({ whistleblowerAccess: !!company.whistleblowerAccess });
+    setAdminForm({ allowReset: !!company.extended?.allowReset });
     setStatusForm({
       handbookReady: !!company.keyFigures?.published,
       published: company.status === 1,
@@ -398,7 +406,7 @@ export const AdminEditCompanyPage: React.FC = () => {
   };
 
   const handleSaveAdmin = () => {
-    void saveSection('admin', { whistleblowerAccess: adminForm.whistleblowerAccess });
+    void saveSection('admin', { allowReset: adminForm.allowReset });
   };
 
   const handleSaveStatus = () => {
@@ -532,9 +540,7 @@ export const AdminEditCompanyPage: React.FC = () => {
             {t('editCompany.tabs.edit', 'Edit')}
           </TabLink>
           <TabLink disabled>{t('editCompany.tabs.toc', 'Table of Contents')}</TabLink>
-          <TabLink disabled>{t('editCompany.tabs.update', 'Update')}</TabLink>
           <TabLink disabled>{t('editCompany.tabs.delete', 'Delete')}</TabLink>
-          <TabLink disabled>{t('editCompany.tabs.deleteAll', 'Delete All')}</TabLink>
           <TabLink disabled>{t('editCompany.tabs.versions', 'Versions')}</TabLink>
         </div>
       </div>
@@ -1483,21 +1489,27 @@ export const AdminEditCompanyPage: React.FC = () => {
       </Card>
 
       {/* Administrative Settings */}
-      <Card>
+      <Card id="admin-allow-reset">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
             {t('editCompany.admin.title', 'Administrative Settings')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+        <CardContent className="space-y-3">
+          <label className="flex items-start gap-2 text-sm text-gray-700">
             <Checkbox
-              checked={adminForm.whistleblowerAccess}
+              className="mt-0.5"
+              checked={adminForm.allowReset}
               onChange={(e) =>
-                setAdminForm({ whistleblowerAccess: e.target.checked })
+                setAdminForm({ allowReset: e.target.checked })
               }
             />
-            {t('editCompany.admin.allowWise', 'Allow wise')}
+            <span>
+              <span className="font-medium">{t('editCompany.admin.allowReset', 'Allow reset')}</span>
+              <span className="block text-xs text-gray-500">
+                {t('editCompany.admin.allowResetHint', 'Check here to enable resetting of company data.')}
+              </span>
+            </span>
           </label>
           <div className="flex justify-end">
             <Button
