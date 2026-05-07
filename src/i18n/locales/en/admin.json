@@ -92,7 +92,7 @@
   "companies": {
     "title": "Companies",
     "sources": "Sources",
-    "createNew": "+ Create New Business",
+    "createNew": "Create New Business",
     "search": "Search companies...",
     "searchPlaceholder": "Search companies...",
     "sortBy": "Sort by",
@@ -587,7 +587,7 @@
   },
   "newsletters": {
     "title": "Newsletters",
-    "create": "+ Create Newsletter",
+    "create": "Create Newsletter",
     "searchPlaceholder": "Search newsletters…",
     "searchBtn": "Search",
     "empty": "No newsletters yet.",
@@ -1257,7 +1257,7 @@
     "subscription": "Subscription",
     "today": "today",
     "type": "Type",
-    "upload": "↑ Upload",
+    "upload": "Upload",
     "whistleblower": "Whistleblower",
     "comingSoon": "Coming soon"
   },
