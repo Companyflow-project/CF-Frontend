@@ -14,6 +14,10 @@ const DEFAULT_HELP_PARAGRAPHS = [
   'We ensure that the content is updated in relation to legislation.',
 ];
 
+// Fallback nid for the Management Handbook help intro page (Drupal node).
+// Used when admin settings haven't been seeded with handbookHelpPageNid yet.
+const MANAGEMENT_HANDBOOK_HELP_NID = 28328;
+
 export const HandbookHelpSection: React.FC = () => {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
@@ -24,10 +28,10 @@ export const HandbookHelpSection: React.FC = () => {
   // The Help section is backed by a real handbook page. Settings stores its
   // nid so admins can edit it via the same page editor used elsewhere — keeps
   // the edit flow consistent and avoids a parallel "settings text" model.
-  const helpPageNid: number | null = (() => {
+  const helpPageNid: number = (() => {
     const raw = (settings as Record<string, unknown> | undefined)?.handbookHelpPageNid;
     const n = typeof raw === 'string' || typeof raw === 'number' ? Number(raw) : NaN;
-    return Number.isFinite(n) && n > 0 ? n : null;
+    return Number.isFinite(n) && n > 0 ? n : MANAGEMENT_HANDBOOK_HELP_NID;
   })();
 
   const { data: page } = useAdminHandbookPage(helpPageNid);
@@ -42,17 +46,11 @@ export const HandbookHelpSection: React.FC = () => {
   const fallbackParagraphs = fallbackText.split(/\n\n+/).filter((p) => p.trim().length > 0);
 
   const handleEdit = () => {
-    if (helpPageNid) {
-      navigate(
-        adminRoutes.handbookPageTab
-          .replace(':nid', String(helpPageNid))
-          .replace(':tab', 'edit'),
-      );
-      return;
-    }
-    // No designated help page — open admin settings so an admin can configure
-    // which page acts as the help intro.
-    navigate(adminRoutes.settings);
+    navigate(
+      adminRoutes.handbookPageTab
+        .replace(':nid', String(helpPageNid))
+        .replace(':tab', 'edit'),
+    );
   };
 
   return (

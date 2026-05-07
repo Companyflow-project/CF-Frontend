@@ -36,6 +36,14 @@ export const useAdminCompany = (id: string | undefined) => {
   });
 };
 
+export const useAdminCompanyInfoListEmployees = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ['admin-company-info-list-employees', id],
+    queryFn: () => adminApi.getCompanyInfoListEmployees(id!),
+    enabled: !!id,
+  });
+};
+
 export const useUpdateSubscription = () => {
   const qc = useQueryClient();
   return useMutation({

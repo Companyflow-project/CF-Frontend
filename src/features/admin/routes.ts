@@ -31,4 +31,6 @@ export const adminRoutes = {
   newsletters: '/admin/newsletters',
   newsletterCreate: '/admin/newsletters/create',
   newsletterEdit: '/admin/newsletters/:nid/edit',
+  informationList: '/admin/information-list',
+  companyInformationList: '/admin/companies/:id/information-list',
 } as const;

@@ -16,6 +16,7 @@ import {
   Settings as SettingsIcon,
   Users as UsersIcon,
   CalendarPlus,
+  ListChecks,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -105,10 +106,22 @@ const KvRow: React.FC<KvRowProps> = ({ label, children }) => (
 
 interface SectionLabelProps {
   children: React.ReactNode;
+  editHref?: string;
 }
-const SectionLabel: React.FC<SectionLabelProps> = ({ children }) => (
-  <div className="px-4 sm:px-5 pt-4 pb-2 text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
-    {children}
+const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref }) => (
+  <div className="flex items-center justify-between gap-2 px-4 sm:px-5 pt-4 pb-2">
+    <div className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
+      {children}
+    </div>
+    {editHref && (
+      <Link
+        to={editHref}
+        className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0d0e0e]"
+      >
+        <Pencil className="h-3 w-3" />
+        Edit
+      </Link>
+    )}
   </div>
 );
 
@@ -272,7 +285,7 @@ export const AdminCompanyDetailPage: React.FC = () => {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Business Details */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <SectionLabel>{t('companyView.businessDetails', 'Business details')}</SectionLabel>
+          <SectionLabel editHref={`${editPath}#about-section`}>{t('companyView.businessDetails', 'Business details')}</SectionLabel>
           <KvRow label={t('companyView.field.businessName', 'Business Name')}>
             <div className="flex items-center gap-2 justify-end flex-wrap">
               <span className="font-medium">{company.title}</span>
@@ -342,7 +355,7 @@ export const AdminCompanyDetailPage: React.FC = () => {
 
         {/* Activity & Subscription */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <SectionLabel>{t('companyView.activitySubscription', 'Activity & Subscription')}</SectionLabel>
+          <SectionLabel editHref={`${editPath}#subscription-section`}>{t('companyView.activitySubscription', 'Activity & Subscription')}</SectionLabel>
           <KvRow label={t('companyView.field.lastAccess', 'Last Access')}>
             {formatRelativeFromUnix(company.keyFigures?.lastAccess, t)}
           </KvRow>
@@ -356,7 +369,7 @@ export const AdminCompanyDetailPage: React.FC = () => {
             <span className="text-gray-500">—</span>
           </KvRow>
 
-          <SectionLabel>{t('companyView.subscription', 'Subscription')}</SectionLabel>
+          <SectionLabel editHref={`${editPath}#subscription-section`}>{t('companyView.subscription', 'Subscription')}</SectionLabel>
           <KvRow label={t('companyView.field.start', 'Start')}>
             <PlainValue value={formatDate(company.subscriptionStart)} />
           </KvRow>
@@ -373,7 +386,7 @@ export const AdminCompanyDetailPage: React.FC = () => {
             ) : <span className="text-gray-400">—</span>}
           </KvRow>
 
-          <SectionLabel>{t('companyView.invoice', 'Invoice')}</SectionLabel>
+          <SectionLabel editHref={`${editPath}#invoice-section`}>{t('companyView.invoice', 'Invoice')}</SectionLabel>
           <KvRow label={t('companyView.field.type', 'Type')}>
             <span className="inline-block text-[11px] font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
               {t('companyView.value.annual', 'Annual')}
@@ -436,6 +449,12 @@ export const AdminCompanyDetailPage: React.FC = () => {
               <Link to={addCrmUrl}>
                 <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
                 {t('companyView.quick.addCrm', 'Add CRM Activity')}
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to={adminRoutes.companyInformationList.replace(':id', String(company.nid))}>
+                <ListChecks className="h-3.5 w-3.5 mr-1.5" />
+                {t('companyView.quick.infoList', 'Info List')}
               </Link>
             </Button>
           </div>

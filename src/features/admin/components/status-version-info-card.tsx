@@ -44,12 +44,12 @@ interface Props {
   value: StatusVersionInfoValue;
   onChange: (next: StatusVersionInfoValue) => void;
   published: boolean;
-  onPublishedChange: (next: boolean) => void;
+  onPublishedChange?: (next: boolean) => void;
   authorDisplay: string;
   lastSavedLabel?: string;
   bookOptions?: BookOption[];
-  onSave: () => void;
-  onCancel: () => void;
+  onSave?: () => void;
+  onCancel?: () => void;
   saving?: boolean;
 }
 
@@ -348,38 +348,45 @@ export const StatusVersionInfoCard: React.FC<Props> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-200 bg-white">
-        <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={published}
-            onChange={(e) => onPublishedChange(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300"
-          />
-          {t('svi.published', 'Published')}
-        </label>
+      {(onSave || onCancel) && (
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-200 bg-white">
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={published}
+              onChange={(e) => onPublishedChange?.(e.target.checked)}
+              disabled={!onPublishedChange}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            {t('svi.published', 'Published')}
+          </label>
 
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90"
-            onClick={onSave}
-            disabled={saving}
-          >
-            {saving
-              ? t('common.saving', 'Saving…')
-              : t('svi.saveActivity', 'Save Activity')}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={saving}
-          >
-            {t('common.cancel', 'Cancel')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {onSave && (
+              <Button
+                type="button"
+                className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90"
+                onClick={onSave}
+                disabled={saving}
+              >
+                {saving
+                  ? t('common.saving', 'Saving…')
+                  : t('svi.saveActivity', 'Save Activity')}
+              </Button>
+            )}
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={saving}
+              >
+                {t('common.cancel', 'Cancel')}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

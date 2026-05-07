@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks';
 import { useAdminDashboard } from '../hooks';
 import { adminRoutes } from '../routes';
-import { employeesRoutes } from '@/features/employees/routes';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -126,7 +125,7 @@ export const AdminDashboardPage: React.FC = () => {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button variant="outline" size="sm" className="rounded-lg" asChild>
-            <Link to={employeesRoutes.informationList}>{t('dashboard.informationList', 'Information List')}</Link>
+            <Link to={adminRoutes.informationList}>{t('dashboard.informationList', 'Information List')}</Link>
           </Button>
           <Button variant="outline" size="sm" className="rounded-lg" asChild>
             <Link to={adminRoutes.keyFigures}>{t('dashboard.keyFigures', 'Key Figures')}</Link>

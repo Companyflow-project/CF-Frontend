@@ -43,6 +43,8 @@ const AdminHandbookEditorPage = lazy(() => import('@/features/admin/pages/admin-
 const AdminHandbookMetaPage = lazy(() => import('@/features/admin/pages/admin-handbook-meta-page').then((m) => ({ default: m.AdminHandbookMetaPage })));
 const AdminNewslettersPage = lazy(() => import('@/features/admin/pages/admin-newsletters-page').then((m) => ({ default: m.AdminNewslettersPage })));
 const AdminNewsletterEditorPage = lazy(() => import('@/features/admin/pages/admin-newsletter-editor-page').then((m) => ({ default: m.AdminNewsletterEditorPage })));
+const AdminInformationListPage = lazy(() => import('@/features/admin/pages/admin-information-list-page').then((m) => ({ default: m.AdminInformationListPage })));
+const AdminCompanyInformationListPage = lazy(() => import('@/features/admin/pages/admin-company-information-list-page').then((m) => ({ default: m.AdminCompanyInformationListPage })));
 
 const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
@@ -731,6 +733,30 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminCompanyDetailPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.informationList}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminInformationListPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.companyInformationList}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminCompanyInformationListPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

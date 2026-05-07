@@ -381,10 +381,6 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
     }
   };
 
-  const handleCancel = () => {
-    navigate('/admin/crm');
-  };
-
   const saving = createMutation.isPending || updateMutation.isPending;
   const users = usersQuery.data ?? [];
 
@@ -794,9 +790,6 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
         published={published}
         onPublishedChange={setPublished}
         authorDisplay={authorDisplay}
-        onSave={handleSubmit}
-        onCancel={handleCancel}
-        saving={saving}
       />
     </div>
   );

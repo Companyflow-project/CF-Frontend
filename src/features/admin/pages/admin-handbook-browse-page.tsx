@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Printer } from 'lucide-react';
 import { adminRoutes } from '../routes';
 import { useAdminHandbookBooks, useAdminHandbookBookTree } from '../handbook-hooks';
 import type { AdminHandbookTreeNode } from '../handbook-types';
 import { HandbookHelpSection } from '../components/handbook/help-section';
+
+const MANAGEMENT_HANDBOOK_BID = 206;
 
 function flatten(nodes: AdminHandbookTreeNode[], parentChain: string[] = []): Array<{ node: AdminHandbookTreeNode; path: string[] }> {
   const out: Array<{ node: AdminHandbookTreeNode; path: string[] }> = [];
@@ -49,7 +52,9 @@ export const AdminHandbookBrowsePage: React.FC = () => {
   const [selectedBid, setSelectedBid] = useState<number | null>(null);
   const [search, setSearch] = useState('');
 
-  const bid = selectedBid ?? books[0]?.nid ?? null;
+  const managementHandbookBook = books.find((b) => b.nid === MANAGEMENT_HANDBOOK_BID);
+  const defaultBid = managementHandbookBook?.nid ?? books[0]?.nid ?? null;
+  const bid = selectedBid ?? defaultBid;
   const { data: tree = [], isLoading: treeLoading } = useAdminHandbookBookTree(bid);
 
   const filtered = useMemo(() => {
@@ -62,15 +67,23 @@ export const AdminHandbookBrowsePage: React.FC = () => {
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-4">
-      <div>
-        <div className="text-sm text-gray-500">
-          <Link to={adminRoutes.dashboard} className="hover:underline">{t('nav.console', 'Console')}</Link>
-          {' › '}
-          <Link to={adminRoutes.handbook} className="hover:underline">{t('handbook.title', 'Management Handbook')}</Link>
-          {' › '}
-          <span className="text-gray-700">{t('handbook.tabs.toc', 'Table of Contents')}</span>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <div className="text-sm text-gray-500">
+            <Link to={adminRoutes.dashboard} className="hover:underline">{t('nav.console', 'Console')}</Link>
+            {' › '}
+            <Link to={adminRoutes.handbook} className="hover:underline">{t('handbook.title', 'Management Handbook')}</Link>
+            {' › '}
+            <span className="text-gray-700">{t('handbook.tabs.toc', 'Table of Contents')}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">{t('handbook.title', 'Management Handbook')}</h1>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">{t('handbook.title', 'Management Handbook')}</h1>
+        <Button variant="outline" size="sm" asChild className="self-start sm:self-auto">
+          <Link to={adminRoutes.handbookPrint}>
+            <Printer className="h-4 w-4 mr-1.5" />
+            {t('handbook.print', 'Printer-Friendly version')}
+          </Link>
+        </Button>
       </div>
 
       <HandbookHelpSection />

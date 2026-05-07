@@ -67,6 +67,14 @@ export interface AdminCompanyListItem {
   latestActivityFup: string | null;
 }
 
+export interface AdminInfoListEmployee {
+  id: number;
+  name: string;
+  email: string | null;
+  mobileNumber: string | null;
+  isPublic: boolean;
+}
+
 export interface AdminCompanyEmployee {
   uid: number;
   name: string;

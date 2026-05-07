@@ -351,12 +351,8 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
         value={sviValue}
         onChange={setSviValue}
         published={status}
-        onPublishedChange={setStatus}
         authorDisplay={page.authorName || '—'}
         lastSavedLabel={page.changed ? new Date(page.changed * 1000).toISOString().slice(0, 10) : undefined}
-        onSave={handleSave}
-        onCancel={() => navigate(adminRoutes.handbook)}
-        saving={updatePage.isPending}
       />
 
       {/* Bottom action row — Published toggle + Cancel/Delete/Save Activity */}

@@ -219,11 +219,18 @@ export const AdminEditCompanyPage: React.FC = () => {
     setSearchParams(sp, { replace: true });
   };
 
-  // Scroll to anchor (e.g. #admin-allow-reset) once data has rendered.
+  // Scroll to anchor (e.g. #about-section) once data has rendered, and briefly
+  // highlight the target so the admin can see which section is being edited.
   useEffect(() => {
     if (!company || !location.hash) return;
     const target = document.getElementById(location.hash.slice(1));
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.classList.add('ring-2', 'ring-[#0d0e0e]', 'ring-offset-2', 'transition-shadow', 'duration-500');
+    const tid = window.setTimeout(() => {
+      target.classList.remove('ring-2', 'ring-[#0d0e0e]', 'ring-offset-2');
+    }, 2000);
+    return () => window.clearTimeout(tid);
   }, [company, location.hash]);
 
   // --- Section forms ---
@@ -668,7 +675,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       {activeTab === 'edit' && (<>
 
       {/* About the Company */}
-      <Card>
+      <Card id="about-section">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
             {t('editCompany.about.title', 'About the Company')}
@@ -778,7 +785,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       </Card>
 
       {/* Address */}
-      <Card>
+      <Card id="address-section">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
             {t('editCompany.address.title', 'Address')}
@@ -826,7 +833,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       </Card>
 
       {/* Subscription */}
-      <Card>
+      <Card id="subscription-section">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
             {t('editCompany.subscription.title', 'Subscription')}
@@ -1076,7 +1083,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       </Card>
 
       {/* Note to invoice */}
-      <Card>
+      <Card id="invoice-section">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
             {t('editCompany.invoice.title', 'Note to invoice')}

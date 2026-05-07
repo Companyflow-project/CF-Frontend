@@ -5,6 +5,7 @@ import type {
   AdminCompanyListItem,
   AdminCompanyListParams,
   AdminCompanyDetail,
+  AdminInfoListEmployee,
   UpdateSubscriptionPayload,
   AdminUser,
   AdminUserListParams,
@@ -52,6 +53,11 @@ export const adminApi = {
   getCompany: async (id: string): Promise<AdminCompanyDetail> => {
     const res = await axiosClient.get(`/admin/companies/${id}`);
     return unwrap<AdminCompanyDetail>(res);
+  },
+
+  getCompanyInfoListEmployees: async (id: string): Promise<AdminInfoListEmployee[]> => {
+    const res = await axiosClient.get(`/admin/companies/${id}/info-list-employees`);
+    return unwrap<AdminInfoListEmployee[]>(res);
   },
 
   updateSubscription: async (companyId: string, data: UpdateSubscriptionPayload): Promise<void> => {
