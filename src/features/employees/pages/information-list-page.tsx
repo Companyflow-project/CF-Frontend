@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Table,
     TableHeader,
@@ -12,297 +11,250 @@ import {
     TableBody,
     TableCell,
 } from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
-import { useEmployees } from '@/lib/api-hooks';
+import { useEmployees, useCompany, useCompanyInfoListLinks } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
-import { ArrowLeft, Search, ArrowUpDown, ArrowDownWideNarrow, Edit } from 'lucide-react';
-import { EmptyState } from '@/components/common/empty-state';
+import { handbookRoutes } from '@/features/handbook/routes';
+import { adminRoutes } from '@/features/admin/routes';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
-import { isAdminRole, isAdminEmployeeRole } from '@/lib/utils';
+import { isAdminRole } from '@/lib/utils';
 
 export const InformationListPage: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation('employees');
-    const { t: tCommon } = useTranslation('common');
     const { user } = useAuth();
     const isAdmin = isAdminRole(user?.role);
-    const [search, setSearch] = useState('');
-    const [sortField, setSortField] = useState<'name' | 'email' | 'employment'>('name');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const companyId = user?.companyId ? String(user.companyId) : null;
 
-    const { data: apiEmployees, loading, error } = useEmployees({ limit: 1000 });
+    const { data: company } = useCompany(companyId);
+    const { data: companyLinks } = useCompanyInfoListLinks(companyId);
+    const { data: apiEmployees, loading: employeesLoading, error: employeesError } = useEmployees({ limit: 1000 });
 
-    const employees = useMemo(() => {
-        if (!apiEmployees) return [];
-        const allEmployees = (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
-        // Info list only shows public profiles — private employees appear in Manage Employees but not here
-        return allEmployees.filter((emp) => emp.isPublic !== false);
-    }, [apiEmployees]);
+    // Flatten the saved company links into rows for the General links table.
+    const generalLinks: Array<{ key: string; label: string; href: string }> = [];
+    if (companyLinks) {
+        if (companyLinks.homepage) generalLinks.push({ key: 'homepage', label: t('infoList.linkHomepage', 'Homepage'), href: companyLinks.homepage });
+        if (companyLinks.drivesheet) generalLinks.push({ key: 'drivesheet', label: t('infoList.linkDrivesheet', 'Drivesheet'), href: companyLinks.drivesheet });
+        if (companyLinks.firePlan) generalLinks.push({ key: 'firePlan', label: t('infoList.linkFirePlan', 'Fire plan'), href: companyLinks.firePlan });
+        if (companyLinks.gdpr) generalLinks.push({ key: 'gdpr', label: t('infoList.linkGdpr', 'GDPR'), href: companyLinks.gdpr });
+        if (companyLinks.intranet) generalLinks.push({ key: 'intranet', label: t('infoList.linkIntranet', 'Intranet'), href: companyLinks.intranet });
+        if (companyLinks.timesheet) generalLinks.push({ key: 'timesheet', label: t('infoList.linkTimesheet', 'Timesheet'), href: companyLinks.timesheet });
+    }
 
-    const filteredEmployees = useMemo(() => {
-        if (!search.trim()) return employees;
-        const q = search.trim().toLowerCase();
-        return employees.filter(
-            (emp) =>
-                emp.name.toLowerCase().includes(q) ||
-                emp.email.toLowerCase().includes(q) ||
-                (emp.telephone && emp.telephone.includes(q)) ||
-                (emp.mobileNumber && emp.mobileNumber.includes(q))
-        );
-    }, [employees, search]);
+    const [linksOpen, setLinksOpen] = useState(true);
+    const [employeesOpen, setEmployeesOpen] = useState(true);
 
-    const sortedEmployees = useMemo(() => {
-        const getKey = (emp: ReturnType<typeof transformEmployee>) => {
-            if (sortField === 'name') return emp.name ?? '';
-            if (sortField === 'email') return emp.email ?? '';
-            return emp.employmentTitle || emp.employmentType || '';
-        };
-        return [...filteredEmployees].sort((a, b) => {
-            // Admins/owners always stay at the top, regardless of sort direction or field.
-            const aIsAdmin = isAdminEmployeeRole(a.role);
-            const bIsAdmin = isAdminEmployeeRole(b.role);
-            if (aIsAdmin && !bIsAdmin) return -1;
-            if (!aIsAdmin && bIsAdmin) return 1;
+    const employees = (apiEmployees ?? [])
+        .map((e) => transformEmployee(e as unknown as BackendEmployeeLike))
+        .filter((e) => e.isPublic !== false);
 
-            const av = getKey(a).toLowerCase();
-            const bv = getKey(b).toLowerCase();
-            if (!av && !bv) return 0;
-            if (!av) return 1;
-            if (!bv) return -1;
-            const cmp = av.localeCompare(bv, undefined, { sensitivity: 'base' });
-            return sortDirection === 'asc' ? cmp : -cmp;
-        });
-    }, [filteredEmployees, sortField, sortDirection]);
+    const companyName = company?.name ?? '';
+
+    const handleEditLinks = () => {
+        if (!companyId) return;
+        // Land on the admin edit page anchored to the Links section. The
+        // page's existing location.hash effect scrolls it into view.
+        navigate(`${adminRoutes.companyEdit.replace(':id', companyId)}#links-section`);
+    };
+
+    const handleEditEmployees = () => {
+        // The user's Manage Employees page (admins use the same route).
+        navigate(employeesRoutes.list);
+    };
+
+    const handleEntireHandbook = () => {
+        navigate(handbookRoutes.tableOfContents);
+    };
 
     return (
         <PageShell>
-            {/* Page header — back button + title */}
-            <div className="flex items-center gap-3 mb-6">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(employeesRoutes.list)}
-                    className="flex items-center gap-1.5 rounded-[10px] border-[rgba(15,23,42,0.12)] text-[#0d0e0e] h-9 px-3 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
-                >
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    <span className="text-[13px] font-medium">{tCommon('back')}</span>
-                </Button>
-                <h1 className="text-2xl font-bold text-[#0d0e0e] tracking-tight">{t('infoList.title')}</h1>
-            </div>
-
-            {/* Help banner */}
-            <div className="mb-6 bg-[#fff9f0] rounded-[16px] border border-[#f59e0b] border-l-[6px] shadow-[0_18px_40px_rgba(219,145,0,0.15)] px-5 py-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">{tCommon('help')}</span>{' '}
-                        {t('infoList.helpDesc')}
-                    </p>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
-                    >
-                        {tCommon('userManual')}
-                    </Button>
+            <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 space-y-6">
+                {/* Breadcrumb */}
+                <div className="text-sm text-gray-500">
+                    <Link to="/" className="hover:underline">{t('infoList.console', 'Console')}</Link>
+                    <span className="mx-1">›</span>
+                    <span className="text-gray-700">{t('infoList.title', 'Info List')}</span>
                 </div>
-            </div>
 
-            {/* Main card */}
-            <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] flex flex-col overflow-hidden">
-                <CardContent className="pt-5 pb-5 flex flex-col gap-4">
+                {/* Page title */}
+                <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">
+                    {t('infoList.heading', 'Info list')}
+                </h1>
 
-                    {/* Sort + search toolbar */}
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-[#0d0e0e]">{tCommon('sort')}</span>
+                {/* Links card */}
+                <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+                    <header className="flex items-center justify-between px-5 sm:px-6 py-4">
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 text-base font-semibold text-[#0d0e0e]"
+                            onClick={() => setLinksOpen((v) => !v)}
+                            aria-expanded={linksOpen}
+                        >
+                            {linksOpen ? (
+                                <ChevronDown className="h-4 w-4 text-gray-500" />
+                            ) : (
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                            )}
+                            {t('infoList.linksTitle', 'Links')}
+                        </button>
+                        {isAdmin && (
                             <Button
-                                variant="outline"
                                 size="sm"
-                                className="border-[rgba(15,23,42,0.18)] text-[#242727] rounded-[10px] px-4 py-[9px] h-auto bg-white shadow-[0_6px_14px_rgba(15,23,42,0.05)]"
-                                onClick={() =>
-                                    setSortField((prev) =>
-                                        prev === 'name' ? 'email' : prev === 'email' ? 'employment' : 'name',
-                                    )
-                                }
+                                className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg"
+                                onClick={handleEditLinks}
+                                disabled={!companyId}
                             >
-                                {sortField === 'name' ? tCommon('sort.name') : sortField === 'email' ? tCommon('sort.email') : tCommon('sort.employment')}
+                                {t('infoList.editLinks', 'Edit links')}
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                                aria-label={t('manage.toggleSortDir')}
-                                onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-                            >
-                                <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                                aria-label={t('manage.resetSort')}
-                                onClick={() => {
-                                    setSortField('name');
-                                    setSortDirection('asc');
-                                }}
-                            >
-                                <ArrowDownWideNarrow className="h-4 w-4" />
-                            </Button>
-                        </div>
-
-                        {/* Search */}
-                        <div className="relative w-full sm:w-auto sm:min-w-[280px]">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#7b8a85]" />
-                            <Input
-                                placeholder={t('infoList.searchPlaceholder')}
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10 h-10 rounded-[999px] border border-[#c8d8d3] bg-white text-sm w-full"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Table */}
-                    {loading ? (
-                        <div className="flex items-center justify-center py-12 text-sm text-[#6b7475]">
-                            {t('infoList.loading')}
-                        </div>
-                    ) : error ? (
-                        <div className="flex items-center justify-center py-12 text-sm text-red-500">
-                            {t('infoList.failedToLoad', { message: error.message })}
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table className="w-full table-fixed text-[13px]">
-                                <TableHeader className="bg-[#f5fbf8]">
-                                    <TableRow className="border-b border-[#dbe8e1]">
-                                        <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[18%]">
-                                            <div className="flex items-center gap-1">
-                                                {t('infoList.colName')}
-                                                <span className="text-[#f77c19] text-xs">↑</span>
-                                            </div>
-                                        </TableHead>
-                                        <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[22%]">
-                                            {t('infoList.colEmail')}
-                                        </TableHead>
-                                        <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[15%]">
-                                            {t('infoList.colTelephone')}
-                                        </TableHead>
-                                        <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[18%]">
-                                            {t('infoList.colRelative')}
-                                        </TableHead>
-                                        <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[18%]">
-                                            {t('infoList.colRelativeContact')}
-                                        </TableHead>
-                                        {isAdmin && (
-                                            <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[9%] text-center">
-                                                {t('infoList.colActions')}
-                                            </TableHead>
-                                        )}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {sortedEmployees.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={6}>
-                                                <EmptyState
-                                                    title={t('infoList.noEmployees')}
-                                                    description={t('infoList.noEmployeesDesc')}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        sortedEmployees.map((employee) => {
-                                            const phone =
-                                                employee.telephone ||
-                                                employee.mobileNumber ||
-                                                employee.alternateNumber;
-
-                                            const relativeName: string | undefined =
-                                                (employee as unknown as Record<string, unknown>)['emergencyContactName'] as string | undefined;
-                                            const relativeContact: string | undefined =
-                                                (employee as unknown as Record<string, unknown>)['emergencyContactMobile'] as string | undefined;
-
-                                            return (
-                                                <TableRow
-                                                    key={employee.id}
-                                                    className="border-b border-[#ebf3ef] hover:bg-[#f6fbf9]"
-                                                >
-                                                    <TableCell className="w-[18%]">
-                                                        <span className="font-medium text-[#111827] truncate block" title={employee.name}>
-                                                            {employee.name}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="w-[22%] text-[#111b18] break-words">
-                                                        <div className="line-clamp-2" title={employee.email}>
-                                                            {employee.email || <span className="text-[#9fa4a4]">{t('infoList.notAvailable')}</span>}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="w-[15%]">
-                                                        {phone ? (
-                                                            <span className="text-[#111b18]">{phone}</span>
-                                                        ) : (
-                                                            <span className="text-[#9fa4a4]">{t('infoList.notAvailable')}</span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="w-[18%]">
-                                                        {relativeName ? (
-                                                            <span className="text-[#111b18]">{relativeName}</span>
-                                                        ) : (
-                                                            <span className="text-[#9fa4a4]">{t('infoList.notAvailable')}</span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="w-[18%]">
-                                                        {relativeContact ? (
-                                                            <span className="text-[#111b18]">{relativeContact}</span>
-                                                        ) : (
-                                                            <span className="text-[#9fa4a4]">{t('infoList.notAvailable')}</span>
-                                                        )}
-                                                    </TableCell>
-                                                    {isAdmin && (
-                                                        <TableCell className="w-[9%] text-center">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0] mx-auto"
-                                                                aria-label={t('infoList.editEmployee')}
-                                                                onClick={() => navigate(employeesRoutes.edit(employee.id))}
-                                                            >
-                                                                <Edit className="h-3.5 w-3.5" />
-                                                            </Button>
-                                                        </TableCell>
-                                                    )}
-                                                </TableRow>
-                                            );
-                                        })
-                                    )}
-                                </TableBody>
-                            </Table>
+                        )}
+                    </header>
+                    {linksOpen && (
+                        <div className="border-t border-gray-100">
+                            <div className="bg-gray-50 px-5 sm:px-6 py-3 text-sm font-semibold text-[#0d0e0e]">
+                                {t('infoList.generalLinks', 'General links')}
+                            </div>
+                            <ul className="divide-y divide-gray-100">
+                                <li className="px-5 sm:px-6 py-3 text-sm">
+                                    <Link to="/" className="text-blue-600 hover:underline">
+                                        {t('infoList.home', 'Home')}
+                                    </Link>
+                                </li>
+                                {generalLinks.map((link) => (
+                                    <li key={link.key} className="px-5 sm:px-6 py-3 text-sm">
+                                        <a
+                                            href={link.href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline"
+                                        >
+                                            {link.label}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                            {companyLinks?.additionalInfo && (
+                                <div className="px-5 sm:px-6 py-3 text-sm text-gray-700 border-t border-gray-100 whitespace-pre-line">
+                                    {companyLinks.additionalInfo}
+                                </div>
+                            )}
                         </div>
                     )}
-                </CardContent>
-            </Card>
+                </section>
 
-            {/* Footer actions */}
-            {isAdmin && (
-                <div className="mt-5 flex items-center justify-end gap-2">
+                {/* Employees card */}
+                <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+                    <header className="flex items-center justify-between px-5 sm:px-6 py-4">
+                        <button
+                            type="button"
+                            className="flex items-center gap-2 text-base font-semibold text-[#0d0e0e]"
+                            onClick={() => setEmployeesOpen((v) => !v)}
+                            aria-expanded={employeesOpen}
+                        >
+                            {employeesOpen ? (
+                                <ChevronDown className="h-4 w-4 text-gray-500" />
+                            ) : (
+                                <ChevronRight className="h-4 w-4 text-gray-500" />
+                            )}
+                            {companyName
+                                ? t('infoList.employeesAt', 'Employees at {{company}}', { company: companyName })
+                                : t('infoList.employees', 'Employees')}
+                        </button>
+                        {isAdmin && (
+                            <Button
+                                size="sm"
+                                className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg"
+                                onClick={handleEditEmployees}
+                            >
+                                {t('infoList.editEmployees', 'Edit employees')}
+                            </Button>
+                        )}
+                    </header>
+                    {employeesOpen && (
+                        <div className="border-t border-gray-100">
+                            <p className="px-5 sm:px-6 pt-4 text-sm text-gray-600">
+                                {t(
+                                    'infoList.adminListNote',
+                                    'You may see this list — or see more names in the list than employees do — because you have permission to manage it.',
+                                )}
+                            </p>
+                            <div className="px-2 sm:px-4 pb-4 pt-2">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead className="text-xs font-semibold text-[#0d0e0e]">
+                                                {t('infoList.colName', 'Name')}
+                                            </TableHead>
+                                            <TableHead className="text-xs font-semibold text-[#0d0e0e]">
+                                                {t('infoList.colEmail', 'Email')}
+                                            </TableHead>
+                                            <TableHead className="text-xs font-semibold text-[#0d0e0e]">
+                                                {t('infoList.colTelephone', 'Telephone')}
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {employeesLoading ? (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="py-6 text-center text-sm text-gray-500">
+                                                    {t('infoList.loading', 'Loading…')}
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : employeesError ? (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="py-6 text-center text-sm text-red-500">
+                                                    {employeesError.message}
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : employees.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="py-6 text-center text-sm text-gray-500">
+                                                    {t('infoList.noEmployees', 'No employees')}
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            employees.map((emp) => {
+                                                const phone = emp.telephone || emp.mobileNumber || emp.alternateNumber || '';
+                                                return (
+                                                    <TableRow key={emp.id} className="border-t border-gray-100">
+                                                        <TableCell className="text-sm text-[#0d0e0e]">{emp.name}</TableCell>
+                                                        <TableCell className="text-sm">
+                                                            {emp.email ? (
+                                                                <a
+                                                                    href={`mailto:${emp.email}`}
+                                                                    className="text-blue-600 hover:underline"
+                                                                >
+                                                                    {emp.email}
+                                                                </a>
+                                                            ) : (
+                                                                <span className="text-gray-400">—</span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="text-sm text-[#0d0e0e]">
+                                                            {phone || <span className="text-gray-400">—</span>}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </div>
+                    )}
+                </section>
+
+                {/* Bottom-right action */}
+                <div className="flex justify-end pt-2">
                     <Button
-                        variant="outline"
-                        onClick={() => navigate(employeesRoutes.informationListLinks)}
-                        className="border-[rgba(15,23,42,0.12)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
+                        size="sm"
+                        className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg"
+                        onClick={handleEntireHandbook}
                     >
-                        {t('infoList.editLinks')}
-                    </Button>
-                    <Button
-                        onClick={() => navigate(employeesRoutes.list)}
-                        className="rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] shadow-[0_10px_20px_rgba(23,102,79,0.35)]"
-                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
-                    >
-                        {t('infoList.editEmployees')}
+                        {t('infoList.entireHandbook', 'The entire handbook')}
                     </Button>
                 </div>
-            )}
+            </div>
         </PageShell>
     );
 };

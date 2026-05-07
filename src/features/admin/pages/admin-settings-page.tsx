@@ -16,6 +16,7 @@ export const AdminSettingsPage: React.FC = () => {
 
   const [trialLength, setTrialLength] = useState<number>(30);
   const [smsPricing, setSmsPricing] = useState<number>(0);
+  const [helpPageNid, setHelpPageNid] = useState<string>('');
 
   useEffect(() => {
     if (settings) {
@@ -29,14 +30,18 @@ export const AdminSettingsPage: React.FC = () => {
           ? settings.smsPricePerUnit
           : 0
       );
+      const raw = (settings as Record<string, unknown>).handbookHelpPageNid;
+      setHelpPageNid(raw == null || raw === '' ? '' : String(raw));
     }
   }, [settings]);
 
   const handleSave = () => {
+    const parsedHelpNid = helpPageNid.trim() ? Number(helpPageNid) : null;
     const payload: PlatformSettings = {
       ...settings,
       defaultTrialLengthDays: trialLength,
       smsPricePerUnit: smsPricing,
+      handbookHelpPageNid: Number.isFinite(parsedHelpNid as number) ? parsedHelpNid : null,
     };
     updateSettings.mutate(payload, {
       onSuccess: () => toast.success(t('settings.saved')),
@@ -117,6 +122,27 @@ export const AdminSettingsPage: React.FC = () => {
                   {t('settings.smsPricingHelp', 'Price charged per SMS sent')}
                 </p>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="help-page-nid">
+                {t('settings.helpPageNid', 'Handbook Help page (nid)')}
+              </Label>
+              <Input
+                id="help-page-nid"
+                type="number"
+                min={1}
+                value={helpPageNid}
+                onChange={(e) => setHelpPageNid(e.target.value)}
+                className="w-full max-w-[12rem]"
+                placeholder="e.g. 60385"
+              />
+              <p className="text-xs text-gray-400">
+                {t(
+                  'settings.helpPageNidHelp',
+                  'Designate which handbook page powers the Help section on the Management Handbook page. Leave empty to use the default text.'
+                )}
+              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">

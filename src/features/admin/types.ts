@@ -58,6 +58,13 @@ export interface AdminCompanyListItem {
   countryCode: string;
   category: string;
   customerNumber: number;
+  employmentTypesCount: number;
+  ownHandbooksCount: number;
+  optionalDesign: boolean;
+  hasSop: boolean;
+  languageCodes: string[];
+  latestActivityTitle: string | null;
+  latestActivityFup: string | null;
 }
 
 export interface AdminCompanyEmployee {
@@ -128,6 +135,7 @@ export interface AdminCompanyDetail extends AdminCompanyListItem {
     linkDrivesheet: string;
     linkFirePlan: string;
     linkTimesheet: string;
+    additionalInfo: string;
     phonebookShowEmployees: boolean;
     phonebookShowLinks: boolean;
     phonebookShowDocuments: boolean;
@@ -179,6 +187,7 @@ export interface UpdateCompanyPayload {
   linkDrivesheet?: string;
   linkFirePlan?: string;
   linkTimesheet?: string;
+  additionalInfo?: string;
   phonebookShowEmployees?: boolean;
   phonebookShowLinks?: boolean;
   phonebookShowDocuments?: boolean;

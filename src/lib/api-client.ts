@@ -59,6 +59,35 @@ export const apiClient = {
   },
 
   /**
+   * Get the company-level links shown on the user-side Info List.
+   * GET /api/companies/:companyId/info-list-links
+   */
+  async getCompanyInfoListLinks(companyId: string): Promise<
+    ApiResponse<{
+      homepage: string;
+      drivesheet: string;
+      firePlan: string;
+      gdpr: string;
+      intranet: string;
+      timesheet: string;
+      additionalInfo: string;
+    }>
+  > {
+    const response = await axiosClient.get<
+      ApiResponse<{
+        homepage: string;
+        drivesheet: string;
+        firePlan: string;
+        gdpr: string;
+        intranet: string;
+        timesheet: string;
+        additionalInfo: string;
+      }>
+    >(`/companies/${companyId}/info-list-links`);
+    return response.data;
+  },
+
+  /**
    * Get contacts for a specific company
    * GET /api/companies/:companyId/contacts?page&limit
    */

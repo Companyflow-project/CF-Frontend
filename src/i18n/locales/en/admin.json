@@ -86,7 +86,7 @@
     "noData": "No data",
     "recentActivities": "Recent Activities",
     "noRecentActivities": "No recent activities.",
-    "addActivity": "+ Add Activity",
+    "addActivity": "Add Activity",
     "comingSoon": "Coming soon"
   },
   "companies": {
@@ -855,7 +855,7 @@
     "companies": "Companies",
     "console": "Console",
     "crmContacts": {
-      "add": "+ Add Another Entry",
+      "add": "Add Another Entry",
       "contact": "Contact",
       "empty": "No contacts",
       "primary": "Primary contact",
@@ -1162,8 +1162,8 @@
     "actions": "Actions",
     "active": "Active",
     "activityAndSubscription": "Activity & Subscription",
-    "addActivity": "+ Add Activity",
-    "addContact": "+ Add Contact",
+    "addActivity": "Add Activity",
+    "addContact": "Add Contact",
     "additionalHandbooks": "Additional Handbooks",
     "allActivities": "All Activities",
     "allCompanies": "All Companies",
@@ -1262,7 +1262,7 @@
     "comingSoon": "Coming soon"
   },
   "crmActivities": {
-    "addActivity": "+ Add Activity",
+    "addActivity": "Add Activity",
     "apply": "Apply",
     "breadcrumb": "Activities",
     "columns": {

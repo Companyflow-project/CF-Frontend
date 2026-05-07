@@ -18,7 +18,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Search, ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
+import { Search, ArrowUp, ArrowDown, ArrowRight, Plus } from 'lucide-react';
 import type { AdminCompanyListItem } from '../types';
 
 // DB stores categories as Danish taxonomy term names (vid='customer_category').
@@ -207,10 +207,11 @@ export const AdminCompaniesPage: React.FC = () => {
           </Button>
           <Button
             size="sm"
-            className="bg-gray-900 text-white hover:bg-gray-800"
+            className="bg-gray-900 text-white hover:bg-gray-800 inline-flex items-center gap-1"
             onClick={() => navigate(adminRoutes.createCompany)}
           >
-            {t('companies.createNew', '+ Create New Business')}
+            <Plus className="h-3.5 w-3.5" />
+            {t('companies.createNew', 'Create New Business')}
           </Button>
         </div>
       </div>
@@ -423,9 +424,65 @@ export const AdminCompaniesPage: React.FC = () => {
                           : t('companies.whistleblower.no', 'No')}
                       </dd>
                     </div>
+                    <div>
+                      <dt className="inline text-gray-500">{t('companies.field.employmentTypes', 'Employment types')}: </dt>
+                      <dd className="inline text-gray-700">{company.employmentTypesCount}</dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-gray-500">{t('companies.field.extraHandbooks', 'Extra handbooks')}: </dt>
+                      <dd className="inline text-gray-700">
+                        {company.ownHandbooksCount > 0
+                          ? company.ownHandbooksCount
+                          : t('companies.none', 'None')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-gray-500">{t('companies.field.optionalDesign', 'Optional design')}: </dt>
+                      <dd className="inline text-gray-700">
+                        {company.optionalDesign
+                          ? t('companies.yes', 'Yes')
+                          : t('companies.no', 'No')}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="inline text-gray-500">{t('companies.field.sop', 'SOP')}: </dt>
+                      <dd className="inline text-gray-700">
+                        {company.hasSop
+                          ? t('companies.yes', 'Yes')
+                          : t('companies.no', 'No')}
+                      </dd>
+                    </div>
+                    {company.languageCodes.length > 0 && (
+                      <div>
+                        <dt className="inline text-gray-500">{t('companies.field.languages', 'Languages')}: </dt>
+                        <dd className="inline">
+                          {company.languageCodes.map((code) => (
+                            <span key={code} className="mr-1 text-base leading-none align-middle">
+                              {getCountryFlag(code === 'da' ? 'dk' : code)}
+                            </span>
+                          ))}
+                        </dd>
+                      </div>
+                    )}
                   </dl>
                   {company.countryCode && (
                     <div className="mt-3 text-xl leading-none">{getCountryFlag(company.countryCode)}</div>
+                  )}
+                  {(company.latestActivityTitle || company.latestActivityFup) && (
+                    <div className="mt-3 rounded-md bg-amber-50 border border-amber-100 px-3 py-2 text-xs text-amber-800">
+                      {company.latestActivityTitle && (
+                        <div>
+                          <span className="font-semibold">{t('companies.field.activity', 'Activity')}: </span>
+                          {company.latestActivityTitle}
+                        </div>
+                      )}
+                      {company.latestActivityFup && (
+                        <div className="mt-0.5">
+                          <span className="font-semibold">{t('companies.field.fup', 'FUP')}: </span>
+                          {formatDate(company.latestActivityFup)}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -454,32 +511,22 @@ export const AdminCompaniesPage: React.FC = () => {
                 <div className="px-5 py-5 border-t xl:border-t-0 xl:border-l border-gray-100">
                   <div className="space-y-1.5">
                     {[
-                      { label: t('companies.links.allPages', 'All pages'), to: handbookRoutes.pages },
-                      { label: t('companies.links.createHandbook', 'Create your handbook'), to: '/' },
-                      { label: t('companies.links.controlPanel', 'Control panel'), to: detailUrl },
-                      { label: t('companies.links.employees', 'Employees'), to: employeesRoutes.list },
-                      { label: t('companies.links.addCrm', 'Add CRM activity'), to: `${adminRoutes.crmCreate}?companyId=${company.nid}` },
+                      { label: t('companies.links.allPages', 'All pages'), href: `${handbookRoutes.pages}?asCompany=${company.nid}`, external: true },
+                      { label: t('companies.links.createHandbook', 'Create your handbook'), href: `${handbookRoutes.manage}?asCompany=${company.nid}`, external: true },
+                      { label: t('companies.links.controlPanel', 'Control panel'), href: `/?asCompany=${company.nid}`, external: true },
+                      { label: t('companies.links.employees', 'Employees'), href: `${employeesRoutes.list}?asCompany=${company.nid}`, external: true },
+                      { label: t('companies.links.addCrm', 'Add CRM activity'), href: `${adminRoutes.crmCreate}?companyId=${company.nid}`, external: false },
                     ].map((link) => (
-                      link.to ? (
-                        <Link
-                          key={link.label}
-                          to={link.to}
-                          className="flex items-center gap-1 text-sm text-green-700 hover:text-green-800 hover:underline"
-                        >
-                          {link.label}
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                      ) : (
-                        <span
-                          key={link.label}
-                          aria-disabled="true"
-                          title={t('companies.comingSoon', 'Coming soon')}
-                          className="flex items-center gap-1 text-sm text-gray-400 cursor-not-allowed select-none"
-                        >
-                          {link.label}
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </span>
-                      )
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-sm text-green-700 hover:text-green-800 hover:underline"
+                      >
+                        {link.label}
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </a>
                     ))}
                   </div>
                 </div>

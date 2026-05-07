@@ -164,13 +164,19 @@ export const AdminSourcesPage: React.FC = () => {
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Source</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Created</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">MUP Date</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Follow-up Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {listQuery.isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading…</TableCell>
+                </TableRow>
+              ) : listQuery.isError ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-red-600 py-8">
+                    Failed to load companies: {(listQuery.error as Error)?.message ?? 'Unknown error'}
+                  </TableCell>
                 </TableRow>
               ) : companies.length === 0 ? (
                 <TableRow>

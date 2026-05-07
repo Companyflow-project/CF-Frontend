@@ -169,8 +169,7 @@ export const AdminDashboardPage: React.FC = () => {
             </Link>
           </Button>
           <div className="space-y-2">
-            <CardLink to="" disabled label={t('dashboard.cards.tickets.create', 'Create new ticket')} icon="arrow" />
-            <CardLink to="" disabled label={t('dashboard.cards.tickets.settings', 'Ticket settings')} icon="arrow" />
+            <CardLink to={adminRoutes.createTicket} label={t('dashboard.cards.tickets.create', 'Create new ticket')} icon="plus" />
           </div>
         </div>
       </div>
@@ -340,8 +339,11 @@ export const AdminDashboardPage: React.FC = () => {
       <div className="border border-gray-200 rounded-xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 sm:py-5">
           <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">{t('dashboard.recentActivities', 'Recent Activities')}</h2>
-          <Button variant="outline" size="sm" className="rounded-lg self-start sm:self-auto">
-            {t('dashboard.addActivity', '+ Add Activity')}
+          <Button variant="outline" size="sm" className="rounded-lg self-start sm:self-auto" asChild>
+            <Link to={adminRoutes.crmCreate} className="inline-flex items-center gap-1">
+              <Plus className="h-3.5 w-3.5" />
+              {t('dashboard.addActivity', 'Add Activity')}
+            </Link>
           </Button>
         </div>
         <div className="px-4 sm:px-6 pb-5 sm:pb-6">

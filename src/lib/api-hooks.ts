@@ -96,6 +96,58 @@ export const useCompany = (id: string | null): UseApiState<Company> => {
   return { data, meta, loading, error, refetch: fetchData };
 };
 
+export interface CompanyInfoListLinks {
+  homepage: string;
+  drivesheet: string;
+  firePlan: string;
+  gdpr: string;
+  intranet: string;
+  timesheet: string;
+  additionalInfo: string;
+}
+
+/**
+ * Fetch the company-level Info List links (homepage, drivesheet, fire plan,
+ * GDPR, intranet, timesheet, additional info). Same data the admin Edit
+ * Company page writes to, exposed read-only on the user side.
+ */
+export const useCompanyInfoListLinks = (
+  companyId: string | null,
+): UseApiState<CompanyInfoListLinks> => {
+  const [data, setData] = useState<CompanyInfoListLinks | null>(null);
+  const [meta, setMeta] = useState<ApiResponse<CompanyInfoListLinks>['meta']>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!companyId) {
+      setData(null);
+      setMeta(undefined);
+      setLoading(false);
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.getCompanyInfoListLinks(companyId);
+      setData(response.data);
+      setMeta(response.meta);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to fetch info list links'));
+      setData(null);
+      setMeta(undefined);
+    } finally {
+      setLoading(false);
+    }
+  }, [companyId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, meta, loading, error, refetch: fetchData };
+};
+
 /**
  * Hook for fetching company contacts
  */

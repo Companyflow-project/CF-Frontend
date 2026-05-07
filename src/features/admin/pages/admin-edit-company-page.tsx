@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams, useNavigate, useLocation, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useAdminCompany, useUpdateCompany } from '../hooks';
+import { useAdminCompany, useUpdateCompany, useDeleteCompany } from '../hooks';
+import { useAdminHandbookBookTree, useAdminHandbookVersions } from '../handbook-hooks';
 import { adminRoutes } from '../routes';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { axiosClient } from '@/lib/axios-client';
+import { X, Upload as UploadIcon, AlertTriangle } from 'lucide-react';
+import type { AdminHandbookTreeNode } from '../handbook-types';
 import type { UpdateCompanyPayload } from '../types';
 import {
   StatusVersionInfoCard,
@@ -155,29 +159,44 @@ const SECTION_LABELS = {
 
 type SectionKey = keyof typeof SECTION_LABELS;
 
-const TabLink: React.FC<{ to?: string; active?: boolean; disabled?: boolean; children: React.ReactNode }> = ({
-  to,
-  active,
-  disabled,
-  children,
-}) => {
+const TabLink: React.FC<{
+  to?: string;
+  active?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  children: React.ReactNode;
+}> = ({ to, active, disabled, onClick, children }) => {
   const base =
     'px-3 py-2 text-sm border-b-2 -mb-px transition-colors whitespace-nowrap';
   if (active) {
     return <span className={`${base} border-gray-900 text-gray-900 font-medium`}>{children}</span>;
   }
-  if (disabled || !to) {
+  if (disabled) {
     return (
       <span className={`${base} border-transparent text-gray-300 cursor-not-allowed select-none`} aria-disabled="true">
         {children}
       </span>
     );
   }
-  return (
-    <Link to={to} className={`${base} border-transparent text-gray-500 hover:text-gray-700`}>
-      {children}
-    </Link>
-  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${base} border-transparent text-gray-500 hover:text-gray-700`}
+      >
+        {children}
+      </button>
+    );
+  }
+  if (to) {
+    return (
+      <Link to={to} className={`${base} border-transparent text-gray-500 hover:text-gray-700`}>
+        {children}
+      </Link>
+    );
+  }
+  return null;
 };
 
 export const AdminEditCompanyPage: React.FC = () => {
@@ -188,6 +207,17 @@ export const AdminEditCompanyPage: React.FC = () => {
 
   const { data: company, isLoading, isError } = useAdminCompany(id);
   const updateCompany = useUpdateCompany();
+  const deleteCompany = useDeleteCompany();
+
+  // Sub-tab driven by ?tab= so deep links work; default is the Edit form.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'edit' | 'toc' | 'delete' | 'versions' | null) ?? 'edit';
+  const setTab = (next: 'edit' | 'toc' | 'delete' | 'versions') => {
+    const sp = new URLSearchParams(searchParams);
+    if (next === 'edit') sp.delete('tab');
+    else sp.set('tab', next);
+    setSearchParams(sp, { replace: true });
+  };
 
   // Scroll to anchor (e.g. #admin-allow-reset) once data has rendered.
   useEffect(() => {
@@ -279,6 +309,65 @@ export const AdminEditCompanyPage: React.FC = () => {
 
   const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
 
+  // Offers/Documents dropzone state. Uploads go through the shared /files
+  // endpoint; rows here are in-memory until persisted to the company entity.
+  type UploadedDoc = { fid: number; name: string; url?: string };
+  const [docs, setDocs] = useState<UploadedDoc[]>([]);
+  const [docsUploading, setDocsUploading] = useState(false);
+  const [docsDragOver, setDocsDragOver] = useState(false);
+  const docsInputRef = useRef<HTMLInputElement | null>(null);
+
+  const ALLOWED_DOC_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg', 'gif', 'txt'];
+
+  const uploadDocs = async (files: File[]) => {
+    if (!files.length) return;
+    setDocsUploading(true);
+    try {
+      const next: UploadedDoc[] = [];
+      for (const f of files) {
+        const ext = f.name.split('.').pop()?.toLowerCase() ?? '';
+        if (!ALLOWED_DOC_EXT.includes(ext)) {
+          toast.error(t('editCompany.offers.badType', '{{name}}: file type not allowed', { name: f.name }));
+          continue;
+        }
+        const fd = new FormData();
+        fd.append('file', f);
+        const resp = await axiosClient.post<{ fid: number; uri?: string }>('/files', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        if (resp.data?.fid) {
+          next.push({ fid: resp.data.fid, name: f.name, url: resp.data.uri });
+        }
+      }
+      if (next.length) {
+        setDocs((prev) => [...prev, ...next]);
+        toast.success(t('editCompany.offers.uploaded', '{{count}} file(s) uploaded', { count: next.length }));
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(t('editCompany.offers.uploadFailed', 'Upload failed: {{message}}', { message: msg }));
+    } finally {
+      setDocsUploading(false);
+    }
+  };
+
+  const handleDocsDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setDocsDragOver(false);
+    const files = Array.from(e.dataTransfer.files ?? []);
+    void uploadDocs(files);
+  };
+
+  const handleDocsFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = '';
+    void uploadDocs(files);
+  };
+
+  const removeDoc = (fid: number) => {
+    setDocs((prev) => prev.filter((d) => d.fid !== fid));
+  };
+
   const [sviValue, setSviValue] = useState<StatusVersionInfoValue>(() =>
     defaultStatusVersionInfoValue(''),
   );
@@ -343,7 +432,7 @@ export const AdminEditCompanyPage: React.FC = () => {
         linkGdpr: ext.linkGdpr ?? '',
         linkIntranet: ext.linkIntranet ?? '',
         linkTimesheet: ext.linkTimesheet ?? '',
-        additionalInfo: '',
+        additionalInfo: ext.additionalInfo ?? '',
       });
       setInternalForm({
         handbookReady: !!company.keyFigures?.published,
@@ -458,6 +547,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       linkGdpr: linksForm.linkGdpr,
       linkIntranet: linksForm.linkIntranet,
       linkTimesheet: linksForm.linkTimesheet,
+      additionalInfo: linksForm.additionalInfo,
     });
   };
 
@@ -503,7 +593,6 @@ export const AdminEditCompanyPage: React.FC = () => {
   }
 
   const companyDetailPath = adminRoutes.companyDetail.replace(':id', id);
-  const companyEditPath = adminRoutes.companyEdit.replace(':id', id);
   const isSaving = (section: SectionKey) => savingSection === section;
 
   return (
@@ -536,14 +625,47 @@ export const AdminEditCompanyPage: React.FC = () => {
       <div className="border-b border-gray-200 overflow-x-auto">
         <div className="flex items-center gap-1 min-w-max">
           <TabLink to={companyDetailPath}>{t('editCompany.tabs.view', 'View')}</TabLink>
-          <TabLink to={companyEditPath} active>
+          <TabLink active={activeTab === 'edit'} onClick={() => setTab('edit')}>
             {t('editCompany.tabs.edit', 'Edit')}
           </TabLink>
-          <TabLink disabled>{t('editCompany.tabs.toc', 'Table of Contents')}</TabLink>
-          <TabLink disabled>{t('editCompany.tabs.delete', 'Delete')}</TabLink>
-          <TabLink disabled>{t('editCompany.tabs.versions', 'Versions')}</TabLink>
+          <TabLink active={activeTab === 'toc'} onClick={() => setTab('toc')}>
+            {t('editCompany.tabs.toc', 'Table of Contents')}
+          </TabLink>
+          <TabLink active={activeTab === 'delete'} onClick={() => setTab('delete')}>
+            {t('editCompany.tabs.delete', 'Delete')}
+          </TabLink>
+          <TabLink active={activeTab === 'versions'} onClick={() => setTab('versions')}>
+            {t('editCompany.tabs.versions', 'Versions')}
+          </TabLink>
         </div>
       </div>
+
+      {activeTab === 'toc' && (
+        <CompanyTocPanel companyHandbooks={company.handbooks} />
+      )}
+      {activeTab === 'delete' && (
+        <CompanyDeletePanel
+          companyId={Number(id)}
+          companyTitle={company.title}
+          onDeleted={() => navigate(adminRoutes.companies)}
+          deleting={deleteCompany.isPending}
+          onConfirm={async () => {
+            try {
+              await deleteCompany.mutateAsync(id);
+              toast.success(t('editCompany.delete.success', 'Company queued for deletion'));
+              navigate(adminRoutes.companies);
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              toast.error(t('editCompany.delete.failed', 'Delete failed: {{message}}', { message: msg }));
+            }
+          }}
+        />
+      )}
+      {activeTab === 'versions' && (
+        <CompanyVersionsPanel companyHandbooks={company.handbooks} />
+      )}
+
+      {activeTab === 'edit' && (<>
 
       {/* About the Company */}
       <Card>
@@ -1143,7 +1265,7 @@ export const AdminEditCompanyPage: React.FC = () => {
             )}
           </div>
           <Button type="button" variant="outline" size="sm" disabled>
-            {t('editCompany.crmContacts.add', '+ Add Another Entry')}
+            {t('editCompany.crmContacts.add', 'Add Another Entry')}
           </Button>
         </CardContent>
       </Card>
@@ -1156,14 +1278,67 @@ export const AdminEditCompanyPage: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="rounded-md border-2 border-dashed border-gray-300 px-4 py-10 text-center">
-            <p className="text-sm font-medium text-gray-700">
-              {t('editCompany.offers.addNew', 'Add a new file')}
+          <input
+            ref={docsInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt"
+            className="hidden"
+            onChange={handleDocsFileInput}
+          />
+          <label
+            htmlFor="company-docs-upload"
+            onClick={(e) => {
+              e.preventDefault();
+              docsInputRef.current?.click();
+            }}
+            onDragOver={(e) => { e.preventDefault(); setDocsDragOver(true); }}
+            onDragLeave={() => setDocsDragOver(false)}
+            onDrop={handleDocsDrop}
+            className={`block cursor-pointer rounded-md border-2 border-dashed px-4 py-10 text-center transition-colors ${
+              docsDragOver ? 'border-gray-500 bg-gray-50' : 'border-gray-300 hover:border-gray-400'
+            } ${docsUploading ? 'opacity-60 pointer-events-none' : ''}`}
+          >
+            <UploadIcon className="h-5 w-5 mx-auto text-gray-400" />
+            <p className="text-sm font-medium text-gray-700 mt-2">
+              {docsUploading
+                ? t('editCompany.offers.uploading', 'Uploading…')
+                : t('editCompany.offers.addNew', 'Add a new file')}
             </p>
             <p className="text-xs text-gray-500 mt-1">
               {t('editCompany.offers.dragHere', 'Drag and drop files here, or click to browse')}
             </p>
-          </div>
+          </label>
+
+          {docs.length > 0 && (
+            <ul className="divide-y divide-gray-100 rounded-md border border-gray-200">
+              {docs.map((d) => (
+                <li key={d.fid} className="flex items-center justify-between px-3 py-2 text-sm">
+                  {d.url ? (
+                    <a
+                      href={d.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-800 hover:underline truncate"
+                    >
+                      {d.name}
+                    </a>
+                  ) : (
+                    <span className="text-gray-800 truncate">{d.name}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeDoc(d.fid)}
+                    className="text-gray-400 hover:text-red-600"
+                    aria-label={t('common.remove', 'Remove')}
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <p className="text-xs text-gray-500">
             {t(
               'editCompany.offers.allowed',
@@ -1320,7 +1495,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       </Card>
 
       {/* Links */}
-      <Card>
+      <Card id="links-section">
         <CardHeader>
           <CardTitle className="text-base sm:text-lg">
             &#9660; {t('editCompany.links.title', 'Links')}
@@ -1543,7 +1718,173 @@ export const AdminEditCompanyPage: React.FC = () => {
         onCancel={() => navigate(companyDetailPath)}
         saving={isSaving('status')}
       />
+      </>)}
     </div>
+  );
+};
+
+// ─── Sub-tab panels (TOC / Delete / Versions) ────────────────────────────────
+
+const CompanyTocPanel: React.FC<{ companyHandbooks: Array<{ nid: number; title: string }> }> = ({ companyHandbooks }) => {
+  const { t } = useTranslation('admin');
+  const primary = companyHandbooks[0];
+  const { data: tree = [], isLoading } = useAdminHandbookBookTree(primary ? primary.nid : null);
+
+  if (!primary) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-sm text-gray-500 text-center">
+          {t('editCompany.toc.empty', 'This company has no handbook assigned yet.')}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const renderTree = (nodes: AdminHandbookTreeNode[]) => (
+    <ul className="text-sm">
+      {nodes.map((n) => (
+        <li key={n.nid} className="py-0.5">
+          <span className="text-gray-500 mr-1">·</span>
+          <Link
+            to={adminRoutes.handbookPage.replace(':nid', String(n.nid))}
+            className="text-[#0d0e0e] hover:underline"
+          >
+            {n.title}
+          </Link>
+          {n.children.length > 0 && (
+            <div className="pl-5 border-l border-gray-100 ml-1 mt-0.5">{renderTree(n.children)}</div>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base sm:text-lg">
+          {t('editCompany.toc.title', 'Table of Contents')} — {primary.title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-sm text-gray-500">{t('common.loading', 'Loading…')}</p>
+        ) : tree.length === 0 ? (
+          <p className="text-sm text-gray-500">{t('editCompany.toc.noPages', 'This handbook has no pages yet.')}</p>
+        ) : (
+          renderTree(tree)
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+const CompanyDeletePanel: React.FC<{
+  companyId: number;
+  companyTitle: string;
+  onDeleted: () => void;
+  onConfirm: () => Promise<void>;
+  deleting: boolean;
+}> = ({ companyTitle, onConfirm, deleting }) => {
+  const { t } = useTranslation('admin');
+  const [confirmTitle, setConfirmTitle] = useState('');
+  const matches = confirmTitle.trim() === companyTitle.trim();
+
+  return (
+    <Card className="border-red-200">
+      <CardHeader>
+        <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-red-700">
+          <AlertTriangle className="h-5 w-5" />
+          {t('editCompany.delete.title', 'Delete this company')}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-gray-700">
+          {t(
+            'editCompany.delete.warning',
+            'Deleting this company is permanent for end users. The record is soft-deleted and will be retained for 30 days, after which it cannot be recovered.',
+          )}
+        </p>
+        <div className="space-y-2">
+          <Label htmlFor="confirm-title">
+            {t('editCompany.delete.confirmLabel', 'Type the company name to confirm')}
+          </Label>
+          <Input
+            id="confirm-title"
+            value={confirmTitle}
+            onChange={(e) => setConfirmTitle(e.target.value)}
+            placeholder={companyTitle}
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            disabled={!matches || deleting}
+            onClick={() => void onConfirm()}
+            className="bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300"
+          >
+            {deleting
+              ? t('editCompany.delete.deleting', 'Deleting…')
+              : t('editCompany.delete.confirmButton', 'Delete company')}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const CompanyVersionsPanel: React.FC<{ companyHandbooks: Array<{ nid: number; title: string }> }> = ({ companyHandbooks }) => {
+  const { t } = useTranslation('admin');
+  const primary = companyHandbooks[0];
+  const { data: versions = [], isLoading } = useAdminHandbookVersions(primary ? primary.nid : null);
+
+  if (!primary) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-sm text-gray-500 text-center">
+          {t('editCompany.versions.empty', 'No handbook assigned — no versions to show.')}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base sm:text-lg">
+          {t('editCompany.versions.title', 'Versions')} — {primary.title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <p className="text-sm text-gray-500">{t('common.loading', 'Loading…')}</p>
+        ) : versions.length === 0 ? (
+          <p className="text-sm text-gray-500">{t('editCompany.versions.none', 'No versions recorded yet.')}</p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {versions.map((v) => (
+              <li key={v.vid} className="py-2 flex items-center justify-between text-sm">
+                <div>
+                  <div className="font-medium text-gray-900">{v.title || `#${v.vid}`}</div>
+                  <div className="text-xs text-gray-500">
+                    {v.authorName || 'Unknown'} · {new Date(v.changed * 1000).toLocaleString()}
+                  </div>
+                  {v.logMessage && <div className="text-xs text-gray-400 mt-0.5">{v.logMessage}</div>}
+                </div>
+                <span className="text-xs text-gray-500 flex items-center gap-2">
+                  {v.isCurrent && (
+                    <span className="px-1.5 py-0.5 rounded bg-green-50 text-green-700">
+                      {t('editCompany.versions.current', 'Current')}
+                    </span>
+                  )}
+                  vid {v.vid}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

@@ -46,7 +46,10 @@ export const AdminHandbookPrintPage: React.FC = () => {
 
   const loadedCount = pageQueries.filter((q) => q.data).length;
   const totalCount = flatNodes.length;
-  const allLoaded = bid !== null && totalCount > 0 && loadedCount === totalCount;
+  // Settled = the query has either resolved or errored. We never want to lock
+  // the Print button forever just because one page failed to fetch.
+  const settledCount = pageQueries.filter((q) => !q.isPending).length;
+  const allSettled = bid !== null && totalCount > 0 && settledCount === totalCount;
 
   const selectedBook = books.find((b) => b.nid === bid);
 
@@ -58,10 +61,12 @@ export const AdminHandbookPrintPage: React.FC = () => {
     <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-6 space-y-6">
       <style>{`
         @media print {
+          @page { margin: 2cm; }
           .print-hidden { display: none !important; }
           .print-page { page-break-after: always; }
           .print-page:last-child { page-break-after: auto; }
           body { background: white; }
+          .print-article { padding: 0; }
         }
       `}</style>
 
@@ -79,7 +84,7 @@ export const AdminHandbookPrintPage: React.FC = () => {
           </h1>
           <Button
             onClick={handlePrint}
-            disabled={!allLoaded}
+            disabled={bid === null}
             className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90"
           >
             <Printer className="h-4 w-4 mr-2" />
@@ -103,7 +108,7 @@ export const AdminHandbookPrintPage: React.FC = () => {
           ))}
         </select>
 
-        {bid && !allLoaded && (
+        {bid && !allSettled && (
           <p className="text-xs text-gray-500 mt-3">
             {t('handbookPrint.loading', 'Loading pages ({{loaded}} / {{total}})…', { loaded: loadedCount, total: totalCount })}
           </p>
@@ -111,7 +116,7 @@ export const AdminHandbookPrintPage: React.FC = () => {
       </div>
 
       {bid !== null && selectedBook && (
-        <article className="bg-white">
+        <article className="print-article bg-white border border-gray-200 rounded-xl p-6 sm:p-10 print:border-0 print:rounded-none">
           <h1 className="text-3xl font-bold text-[#0d0e0e] mb-6 print-page">
             {selectedBook.title}
           </h1>

@@ -86,13 +86,13 @@
     "noData": "Ingen data",
     "recentActivities": "Seneste aktiviteter",
     "noRecentActivities": "Ingen seneste aktiviteter.",
-    "addActivity": "+ Tilføj aktivitet",
+    "addActivity": "Tilføj aktivitet",
     "comingSoon": "Kommer snart"
   },
   "companies": {
     "title": "Virksomheder",
     "sources": "Kilder",
-    "createNew": "+ Opret ny virksomhed",
+    "createNew": "Opret ny virksomhed",
     "search": "Søg virksomheder...",
     "searchPlaceholder": "Søg virksomheder...",
     "sortBy": "Sortér efter",
@@ -587,7 +587,7 @@
   },
   "newsletters": {
     "title": "Nyhedsbreve",
-    "create": "+ Opret nyhedsbrev",
+    "create": "Opret nyhedsbrev",
     "searchPlaceholder": "Søg nyhedsbreve…",
     "searchBtn": "Søg",
     "empty": "Ingen nyhedsbreve endnu.",
@@ -1162,8 +1162,8 @@
     "actions": "Handlinger",
     "active": "Aktiv",
     "activityAndSubscription": "Aktivitet & abonnement",
-    "addActivity": "+ Tilføj aktivitet",
-    "addContact": "+ Tilføj kontakt",
+    "addActivity": "Tilføj aktivitet",
+    "addContact": "Tilføj kontakt",
     "additionalHandbooks": "Yderligere håndbøger",
     "allActivities": "Alle aktiviteter",
     "allCompanies": "Alle virksomheder",
@@ -1262,7 +1262,7 @@
     "comingSoon": "Kommer snart"
   },
   "crmActivities": {
-    "addActivity": "+ Tilføj aktivitet",
+    "addActivity": "Tilføj aktivitet",
     "apply": "Anvend",
     "breadcrumb": "Aktiviteter",
     "columns": {

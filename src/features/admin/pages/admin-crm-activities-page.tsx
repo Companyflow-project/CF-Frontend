@@ -141,7 +141,7 @@ export const AdminCrmActivitiesPage: React.FC = () => {
         <Button asChild size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg">
           <Link to={adminRoutes.crmCreate}>
             <Plus className="h-4 w-4 mr-1" />
-            {t('crmActivities.addActivity', '+ Add Activity')}
+            {t('crmActivities.addActivity', 'Add Activity')}
           </Link>
         </Button>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
@@ -24,6 +24,7 @@ import {
   useCrmTaxonomy,
   useCrmUsers,
   useAdminCompanies,
+  useAdminCompany,
 } from '../hooks';
 import { adminRoutes } from '../routes';
 import { useAuth } from '@/features/auth/hooks';
@@ -193,6 +194,17 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
   const editId = idParam ? Number(idParam) : null;
   const isEditMode = editId !== null && Number.isFinite(editId);
 
+  // Read ?companyId=... so admins can deep-link from the Companies page.
+  // When set, the business field is locked to that company.
+  const [searchParams] = useSearchParams();
+  const presetCompanyIdRaw = searchParams.get('companyId');
+  const presetCompanyId = useMemo(() => {
+    const n = presetCompanyIdRaw ? Number(presetCompanyIdRaw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [presetCompanyIdRaw]);
+  const businessLocked = !isEditMode && presetCompanyId !== null;
+  const presetCompanyQuery = useAdminCompany(presetCompanyId ? String(presetCompanyId) : undefined);
+
   const currentUserUid = useMemo(() => {
     const uid = user?.id ? Number(user.id) : NaN;
     return Number.isFinite(uid) ? uid : null;
@@ -246,6 +258,15 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserUid, isEditMode]);
+
+  // Seed company from ?companyId=... in URL (create mode).
+  useEffect(() => {
+    if (isEditMode || presetCompanyId === null) return;
+    if (companyId !== presetCompanyId) setCompanyId(presetCompanyId);
+    const fetched = presetCompanyQuery.data?.title;
+    if (fetched && fetched !== companyName) setCompanyName(fetched);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, presetCompanyId, presetCompanyQuery.data]);
 
   // Populate form from server when editing.
   useEffect(() => {
@@ -434,7 +455,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
               id="activity-business"
               value={companyDropdownOpen ? companySearch : companyName}
               onChange={(e) => {
-                if (isEditMode) return;
+                if (isEditMode || businessLocked) return;
                 setCompanySearch(e.target.value);
                 setCompanyDropdownOpen(true);
                 if (!e.target.value) {
@@ -443,7 +464,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
                 }
               }}
               onFocus={() => {
-                if (isEditMode) return;
+                if (isEditMode || businessLocked) return;
                 setCompanyDropdownOpen(true);
                 setCompanySearch(companyName);
               }}
@@ -454,10 +475,10 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
               placeholder={t('crmCreate.placeholders.business', 'Search business...')}
               className="mt-1"
               autoComplete="off"
-              readOnly={isEditMode}
-              disabled={isEditMode}
+              readOnly={isEditMode || businessLocked}
+              disabled={isEditMode || businessLocked}
             />
-            {!isEditMode && companyDropdownOpen && (
+            {!isEditMode && !businessLocked && companyDropdownOpen && (
               <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
                 {companiesQuery.isLoading ? (
                   <div className="px-3 py-2 text-sm text-gray-400">
