@@ -9,7 +9,6 @@ import { Select } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { adminApi } from '../api';
 import { adminRoutes } from '../routes';
-import { Search } from 'lucide-react';
 
 // ---- Category definitions (matches Drupal "Create a Business" form) ----
 const CATEGORIES = [
@@ -245,7 +244,6 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 disabled={cvrLoading || !form.cvr.trim()}
                 className="w-full sm:w-auto"
               >
-                <Search className="h-4 w-4 mr-2" />
                 {cvrLoading
                   ? t('createCompany.lookingUp', 'Looking up...')
                   : t('createCompany.lookup', 'Look up')}

@@ -8,6 +8,8 @@ import type {
   AdminHandbookMetaTags,
   AdminHandbookVersion,
   AdminHandbookCategoryOption,
+  AdminHandbookTaxonomyTerm,
+  BulkReorderBookItem,
 } from './handbook-types';
 
 function unwrap<T>(res: { data: { data?: T } | T }): T {
@@ -36,6 +38,11 @@ export const adminHandbookApi = {
     return unwrap<AdminHandbookCategoryOption[]>(res);
   },
 
+  listVocabulary: async (vid: string): Promise<AdminHandbookTaxonomyTerm[]> => {
+    const res = await axiosClient.get(`/admin/handbooks/vocabulary/${vid}`);
+    return unwrap<AdminHandbookTaxonomyTerm[]>(res);
+  },
+
   getPage: async (nid: number, langcode?: string): Promise<AdminHandbookPageDetail> => {
     const res = await axiosClient.get(`/admin/handbooks/pages/${nid}`, {
       params: langcode ? { langcode } : undefined,
@@ -49,6 +56,10 @@ export const adminHandbookApi = {
 
   updateToc: async (nid: number, payload: UpdateAdminHandbookTocPayload): Promise<void> => {
     await axiosClient.patch(`/admin/handbooks/pages/${nid}/toc`, payload);
+  },
+
+  bulkReorderBook: async (bid: number, items: BulkReorderBookItem[]): Promise<void> => {
+    await axiosClient.patch(`/admin/handbooks/books/${bid}/reorder`, { items });
   },
 
   deletePage: async (nid: number): Promise<void> => {

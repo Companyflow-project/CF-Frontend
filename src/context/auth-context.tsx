@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useTranslation } from 'react-i18next';
 import { User } from '@/types/models';
 import { authApi } from '@/features/auth/api';
+import { clearImpersonation } from '@/features/admin/impersonation';
 
 interface AuthContextType {
   user: User | null;
@@ -53,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     // Clear any stale session before logging in as a new user
     localStorage.removeItem('token');
+    clearImpersonation();
     try { sessionStorage.removeItem('auth_user_company'); } catch { /* ignore */ }
     setUser(null);
 
@@ -87,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       await authApi.logout();
     } finally {
       // Always clear user state even if the logout API call fails
+      clearImpersonation();
       setUser(null);
     }
   };

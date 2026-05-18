@@ -4,6 +4,7 @@ import type {
   UpdateAdminHandbookPagePayload,
   UpdateAdminHandbookTocPayload,
   AdminHandbookMetaTags,
+  BulkReorderBookItem,
 } from './handbook-types';
 
 export const useAdminHandbookBooks = () => {
@@ -34,6 +35,15 @@ export const useAdminHandbookHelpCategories = () => {
   return useQuery({
     queryKey: ['admin-handbook-help-categories'],
     queryFn: () => adminHandbookApi.listHelpCategories(),
+    staleTime: 5 * 60_000,
+  });
+};
+
+export const useAdminHandbookVocabulary = (vid: string | null) => {
+  return useQuery({
+    queryKey: ['admin-handbook-vocab', vid],
+    queryFn: () => adminHandbookApi.listVocabulary(vid!),
+    enabled: vid != null && vid.length > 0,
     staleTime: 5 * 60_000,
   });
 };
@@ -74,6 +84,18 @@ export const useUpdateAdminHandbookToc = () => {
       adminHandbookApi.updateToc(nid, payload),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin-handbook-page', vars.nid] });
+      qc.invalidateQueries({ queryKey: ['admin-handbook-book-tree'] });
+    },
+  });
+};
+
+export const useBulkReorderAdminHandbookBook = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bid, items }: { bid: number; items: BulkReorderBookItem[] }) =>
+      adminHandbookApi.bulkReorderBook(bid, items),
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ['admin-handbook-book-tree', vars.bid] });
       qc.invalidateQueries({ queryKey: ['admin-handbook-book-tree'] });
     },
   });

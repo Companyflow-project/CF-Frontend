@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TopNav } from '@/components/layout/top-nav';
+import { ImpersonationBanner } from '@/components/layout/impersonation-banner';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
 import { useAuth } from '@/context/auth-context';
 import { useCompanyProfile } from '@/features/companies/hooks';
@@ -55,6 +56,7 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <TopNav companyLogoUrl={companyLogoUrl} companyName={companyName} />
+      <ImpersonationBanner />
       <ViewAsEmployeeBanner />
       <main className="flex-1 bg-gray-50">{children}</main>
       <footer className="border-t py-4 text-center text-sm" style={{ backgroundColor: 'var(--cf-nav-bg, #000000)', color: 'var(--cf-nav-text, #ffffff)' }}>

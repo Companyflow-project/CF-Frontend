@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAdminCompanies, useResetCompany, useDeleteCompany } from '../hooks';
 import { DeleteCompanyDialog } from '../components/delete-company-dialog';
 import { adminRoutes } from '../routes';
+import { enterCompanyConsole } from '../impersonation';
 import { handbookRoutes } from '@/features/handbook/routes';
 import { employeesRoutes } from '@/features/employees/routes';
 import { Button } from '@/components/ui/button';
@@ -119,17 +120,33 @@ export const AdminCompaniesPage: React.FC = () => {
   const [limit, setLimit] = useState(5);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
   const [sort, setSort] = useState('title');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [category, setCategory] = useState('All');
   const [resetTarget, setResetTarget] = useState<AdminCompanyListItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminCompanyListItem | null>(null);
+  const [viewingAsNid, setViewingAsNid] = useState<number | null>(null);
   const resetCompany = useResetCompany();
   const deleteCompany = useDeleteCompany();
 
+  const handleViewAs = useCallback(async (company: AdminCompanyListItem, targetPath: string) => {
+    if (viewingAsNid != null) return;
+    setViewingAsNid(company.nid);
+    try {
+      await enterCompanyConsole({
+        companyId: company.nid,
+        companyName: company.title,
+        targetPath,
+        returnTo: adminRoutes.companyDetail.replace(':id', String(company.nid)),
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('companies.viewAsError', 'Could not open this company’s console.');
+      toast.error(msg);
+      setViewingAsNid(null);
+    }
+  }, [viewingAsNid, t]);
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
@@ -143,10 +160,6 @@ export const AdminCompaniesPage: React.FC = () => {
   useEffect(() => () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   }, []);
-
-  useEffect(() => {
-    if (searchOpen && searchInputRef.current) searchInputRef.current.focus();
-  }, [searchOpen]);
 
   const params = {
     page,
@@ -221,28 +234,15 @@ export const AdminCompaniesPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 lg:gap-4">
           {/* Search */}
           <div className="flex items-center">
-            {searchOpen ? (
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  ref={searchInputRef}
-                  placeholder={t('companies.searchPlaceholder', 'Search companies...')}
-                  value={search}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  onBlur={() => { if (!search) setSearchOpen(false); }}
-                  className="pl-9 h-9"
-                />
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                aria-label={t('companies.search', 'Search')}
-                className="h-9 w-9 inline-flex items-center justify-center rounded-md text-gray-500 hover:bg-gray-100"
-              >
-                <Search className="h-4 w-4" />
-              </button>
-            )}
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder={t('companies.searchPlaceholder', 'Search companies...')}
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
           </div>
 
           {/* Sort */}
@@ -511,23 +511,29 @@ export const AdminCompaniesPage: React.FC = () => {
                 <div className="px-5 py-5 border-t xl:border-t-0 xl:border-l border-gray-100">
                   <div className="space-y-1.5">
                     {[
-                      { label: t('companies.links.allPages', 'All pages'), href: `${handbookRoutes.pages}?asCompany=${company.nid}`, external: true },
-                      { label: t('companies.links.createHandbook', 'Create your handbook'), href: `${handbookRoutes.manage}?asCompany=${company.nid}`, external: true },
-                      { label: t('companies.links.controlPanel', 'Control panel'), href: `/?asCompany=${company.nid}`, external: true },
-                      { label: t('companies.links.employees', 'Employees'), href: `${employeesRoutes.list}?asCompany=${company.nid}`, external: true },
-                      { label: t('companies.links.addCrm', 'Add CRM activity'), href: `${adminRoutes.crmCreate}?companyId=${company.nid}`, external: false },
+                      { label: t('companies.links.allPages', 'All pages'), path: handbookRoutes.pages },
+                      { label: t('companies.links.createHandbook', 'Create your handbook'), path: handbookRoutes.manage },
+                      { label: t('companies.links.controlPanel', 'Control panel'), path: '/' },
+                      { label: t('companies.links.employees', 'Employees'), path: employeesRoutes.list },
                     ].map((link) => (
-                      <a
+                      <button
                         key={link.label}
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-sm text-green-700 hover:text-green-800 hover:underline"
+                        type="button"
+                        disabled={viewingAsNid != null}
+                        onClick={() => handleViewAs(company, link.path)}
+                        className="flex items-center gap-1 text-sm text-green-700 hover:text-green-800 hover:underline disabled:opacity-50 disabled:cursor-default"
                       >
                         {link.label}
                         <ArrowRight className="h-3.5 w-3.5" />
-                      </a>
+                      </button>
                     ))}
+                    <Link
+                      to={`${adminRoutes.crmCreate}?companyId=${company.nid}`}
+                      className="flex items-center gap-1 text-sm text-green-700 hover:text-green-800 hover:underline"
+                    >
+                      {t('companies.links.addCrm', 'Add CRM activity')}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
                 </div>
 

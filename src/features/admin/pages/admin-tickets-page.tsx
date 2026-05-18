@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Search, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
-import { useTicketFilters, useTickets } from '../hooks';
+import { toast } from 'sonner';
+import { generatePath } from 'react-router-dom';
+import { useTicketFilters, useTickets, useTicketCreateOptions, useUpdateAnyTicket } from '../hooks';
 import { adminRoutes } from '../routes';
 
 const PRIORITY_DOT: Record<string, string> = {
@@ -81,6 +83,33 @@ export const AdminTicketsPage: React.FC = () => {
 
   // Always load tickets — Drupal parity (no "select a filter first" gate).
   const ticketsQuery = useTickets(params, true);
+  const optionsQuery = useTicketCreateOptions();
+  const updateMutation = useUpdateAnyTicket();
+  const doneStatusTid = useMemo(
+    () => optionsQuery.data?.statuses.find(s => s.key === 'done')?.tid,
+    [optionsQuery.data]
+  );
+
+  const handleEdit = (nid: number) => {
+    navigate(generatePath(adminRoutes.editTicket, { nid: String(nid) }));
+  };
+
+  const handleMarkDone = async (nid: number) => {
+    if (!doneStatusTid) {
+      toast.error(t('tickets.errors.noDoneStatus', 'Done status is not configured.'));
+      return;
+    }
+    try {
+      await updateMutation.mutateAsync({ nid, data: { statusTid: doneStatusTid } });
+      toast.success(t('tickets.markedDone', 'Ticket #{{nid}} marked as done', { nid }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(t('tickets.errors.markDoneFailed', 'Failed to mark done: {{message}}', { message }));
+    }
+  };
+
+  const updatingNid = updateMutation.variables?.nid;
+  const isUpdating = updateMutation.isPending;
 
   const activeFilterCount =
     (priority ? 1 : 0) +
@@ -419,11 +448,19 @@ export const AdminTicketsPage: React.FC = () => {
                           </div>
                         </TableCell>
                       </TableRow>,
-                      ...group.rows.map(tk => renderTicketRow(tk, t)),
+                      ...group.rows.map(tk => renderTicketRow(tk, t, {
+                      onEdit: handleEdit,
+                      onDone: handleMarkDone,
+                      busy: isUpdating && updatingNid === tk.nid,
+                    })),
                     ];
                   })
                 ) : (
-                  visibleTickets.map(tk => renderTicketRow(tk, t))
+                  visibleTickets.map(tk => renderTicketRow(tk, t, {
+                    onEdit: handleEdit,
+                    onDone: handleMarkDone,
+                    busy: isUpdating && updatingNid === tk.nid,
+                  }))
                 )}
               </TableBody>
             </Table>
@@ -474,9 +511,14 @@ type TicketRowData = {
   statusKey: string;
 };
 
-function renderTicketRow(tk: TicketRowData, t: (key: string, fallback: string) => string) {
+function renderTicketRow(
+  tk: TicketRowData,
+  t: (key: string, fallback: string) => string,
+  handlers: { onEdit: (nid: number) => void; onDone: (nid: number) => void; busy: boolean }
+) {
   const dot = PRIORITY_DOT[tk.priorityKey] ?? '#9ca3af';
   const statusCls = STATUS_BADGE[tk.statusKey] ?? 'bg-gray-50 text-gray-700 border-gray-200';
+  const isDone = tk.statusKey === 'done';
   return (
     <TableRow key={tk.nid} className="hover:bg-gray-50">
       <TableCell className="text-gray-600 text-xs whitespace-nowrap">{formatDate(tk.created)}</TableCell>
@@ -511,8 +553,24 @@ function renderTicketRow(tk: TicketRowData, t: (key: string, fallback: string) =
       </TableCell>
       <TableCell>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="h-7 text-xs">{t('tickets.actions.edit', 'Edit')}</Button>
-          <Button variant="outline" size="sm" className="h-7 text-xs">{t('tickets.actions.done', 'Done')}</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => handlers.onEdit(tk.nid)}
+            disabled={handlers.busy}
+          >
+            {t('tickets.actions.edit', 'Edit')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => handlers.onDone(tk.nid)}
+            disabled={handlers.busy || isDone}
+          >
+            {t('tickets.actions.done', 'Done')}
+          </Button>
         </div>
       </TableCell>
     </TableRow>

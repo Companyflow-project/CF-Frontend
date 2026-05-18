@@ -7,7 +7,11 @@ import type {
   UpdateAdminUserPayload,
   PlatformSettings,
   CreateTicketPayload,
+  UpdateTicketPayload,
   UpdateCrmActivityPayload,
+  CreateVocabularyPayload,
+  CreateTermPayload,
+  UpdateTermPayload,
 } from './types';
 
 // --- Dashboard ---
@@ -220,6 +224,40 @@ export const useCreateTicket = () => {
   });
 };
 
+export const useTicket = (nid: number | string | undefined) => {
+  return useQuery({
+    queryKey: ['admin-ticket', String(nid ?? '')],
+    queryFn: () => adminApi.getTicket(nid!),
+    enabled: nid !== undefined && nid !== null && nid !== '',
+  });
+};
+
+export const useUpdateTicket = (nid: number | string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateTicketPayload) => adminApi.updateTicket(nid, data),
+    onSuccess: (data) => {
+      qc.setQueryData(['admin-ticket', String(nid)], data);
+      qc.invalidateQueries({ queryKey: ['admin-tickets'] });
+      qc.invalidateQueries({ queryKey: ['admin-ticket-filters'] });
+    },
+  });
+};
+
+// Variant for use across rows (e.g. inline "Done" buttons in the list).
+export const useUpdateAnyTicket = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ nid, data }: { nid: number | string; data: UpdateTicketPayload }) =>
+      adminApi.updateTicket(nid, data),
+    onSuccess: (data, variables) => {
+      qc.setQueryData(['admin-ticket', String(variables.nid)], data);
+      qc.invalidateQueries({ queryKey: ['admin-tickets'] });
+      qc.invalidateQueries({ queryKey: ['admin-ticket-filters'] });
+    },
+  });
+};
+
 // --- Invoices ---
 export const useInvoices = (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }) => {
   return useQuery({
@@ -305,6 +343,116 @@ export const useUpdateAdminSettings = () => {
     mutationFn: (data: PlatformSettings) => adminApi.updateSettings(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-settings'] });
+    },
+  });
+};
+
+// --- Taxonomy ---
+export const useAdminTaxonomyVocabularies = () => {
+  return useQuery({
+    queryKey: ['admin-taxonomy-vocabularies'],
+    queryFn: () => adminApi.getTaxonomyVocabularies(),
+    staleTime: 60_000,
+  });
+};
+
+export const useCreateTaxonomyVocabulary = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateVocabularyPayload) => adminApi.createTaxonomyVocabulary(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-vocabularies'] });
+    },
+  });
+};
+
+export const useDeleteTaxonomyVocabulary = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vid: string) => adminApi.deleteTaxonomyVocabulary(vid),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-vocabularies'] });
+    },
+  });
+};
+
+export const useReorderTaxonomyVocabularies = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (items: Array<{ vid: string; weight: number }>) =>
+      adminApi.reorderTaxonomyVocabularies(items),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-vocabularies'] });
+    },
+  });
+};
+
+export const useAdminTaxonomyTerms = (vid: string | undefined) => {
+  return useQuery({
+    queryKey: ['admin-taxonomy-terms', vid],
+    queryFn: () => adminApi.getTaxonomyTerms(vid!),
+    enabled: !!vid,
+  });
+};
+
+export const useCreateTaxonomyTerm = (vid: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateTermPayload) => adminApi.createTaxonomyTerm(vid, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-terms', vid] });
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-vocabularies'] });
+    },
+  });
+};
+
+export const useUpdateTaxonomyTerm = (vid: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ tid, data }: { tid: number; data: UpdateTermPayload }) =>
+      adminApi.updateTaxonomyTerm(tid, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-terms', vid] });
+    },
+  });
+};
+
+export const useDeleteTaxonomyTerm = (vid: string) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (tid: number) => adminApi.deleteTaxonomyTerm(tid),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-terms', vid] });
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-vocabularies'] });
+    },
+  });
+};
+
+export const useAdminTaxonomyTermVersions = (tid: number | null | undefined) => {
+  return useQuery({
+    queryKey: ['admin-taxonomy-term-versions', tid],
+    queryFn: () => adminApi.getTaxonomyTermVersions(tid!),
+    enabled: !!tid,
+  });
+};
+
+export const useRestoreTaxonomyTermVersion = (tid: number) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (revisionId: number) => adminApi.restoreTaxonomyTermVersion(tid, revisionId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-term-versions', tid] });
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-terms'] });
+    },
+  });
+};
+
+export const useDeleteTaxonomyTermVersion = (tid: number) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (revisionId: number) => adminApi.deleteTaxonomyTermVersion(tid, revisionId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-taxonomy-term-versions', tid] });
     },
   });
 };

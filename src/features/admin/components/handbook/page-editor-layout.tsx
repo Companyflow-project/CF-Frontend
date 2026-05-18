@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminRoutes } from '../../routes';
+import { useAdminHandbookBooks, useAdminHandbookPage } from '../../handbook-hooks';
 
 export type HandbookTab = 'preview' | 'edit' | 'lix' | 'toc' | 'delete' | 'versions' | 'translate';
 
@@ -38,18 +39,36 @@ export const AdminHandbookPageEditorLayout: React.FC<Props> = ({ nid, bookTitle,
   const { t } = useTranslation('admin');
   const langSuffix = langcode && langcode !== 'da' ? `?lang=${langcode}` : '';
 
+  const { data: page } = useAdminHandbookPage(nid, langcode);
+  const { data: books = [] } = useAdminHandbookBooks();
+  const bookNid = page?.bid ?? null;
+  const parentBook = bookNid != null ? books.find((b) => b.nid === bookNid) : undefined;
+  const parentBookTitle = parentBook?.title ?? '';
+  const pageTitle = page?.title ?? bookTitle;
+
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-4">
       <div>
         <div className="text-sm text-gray-500">
           <Link to={adminRoutes.dashboard} className="hover:underline">{t('nav.console', 'Console')}</Link>
           {' › '}
-          <Link to={adminRoutes.handbook} className="hover:underline">{t('handbook.title', 'Management Handbook')}</Link>
+          <Link to={adminRoutes.books} className="hover:underline">{t('books.indexTitle', 'Books')}</Link>
+          {parentBookTitle && (
+            <>
+              {' › '}
+              <Link
+                to={adminRoutes.bookEditOrder.replace(':bid', String(bookNid))}
+                className="hover:underline"
+              >
+                {parentBookTitle}
+              </Link>
+            </>
+          )}
           {' › '}
           <span className="text-gray-700">{t(`handbook.tabs.${activeTab}`, TAB_DEFAULT[activeTab])}</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">
-          {t('handbook.editorHeading', 'Edit Simple Page')} {bookTitle || t('handbook.title', 'Management Handbook')}
+          {pageTitle || t('handbook.title', 'Management Handbook')}
         </h1>
       </div>
 

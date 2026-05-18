@@ -2,22 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import {
-  ArrowLeft,
-  Plus,
-  FileText,
-  Upload as UploadIcon,
-  Pencil,
-  Eye,
-  RefreshCw,
-  Trash2,
-  Files as FilesIcon,
-  BookOpen,
-  Settings as SettingsIcon,
-  Users as UsersIcon,
-  CalendarPlus,
-  ListChecks,
-} from 'lucide-react';
+import { FileText, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,10 +20,17 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { useAdminCompany, useDeleteCompany } from '../hooks';
+import {
+  useAdminCompany,
+  useDeleteCompany,
+  useUpdateCompany,
+  useAdminTaxonomyTerms,
+} from '../hooks';
+import type { AdminTaxonomyTerm } from '../types';
 import { adminRoutes } from '../routes';
 import { handbookRoutes } from '@/features/handbook/routes';
 import { employeesRoutes } from '@/features/employees/routes';
+import { enterCompanyConsole } from '../impersonation';
 import { DeleteCompanyDialog } from '../components/delete-company-dialog';
 import type { AdminCompanyDetail } from '../types';
 
@@ -118,7 +110,6 @@ const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref }) => (
         to={editHref}
         className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0d0e0e]"
       >
-        <Pencil className="h-3 w-3" />
         Edit
       </Link>
     )}
@@ -143,8 +134,11 @@ export const AdminCompanyDetailPage: React.FC = () => {
     isError: boolean;
   };
   const deleteCompany = useDeleteCompany();
+  const updateCompany = useUpdateCompany();
   const [resetOpen, setResetOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [enteringConsole, setEnteringConsole] = useState(false);
+  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -188,11 +182,24 @@ export const AdminCompanyDetailPage: React.FC = () => {
     });
   };
 
-  const handbookListUrl = `${handbookRoutes.pages}?asCompany=${id}`;
-  const handbookHomeUrl = `${handbookRoutes.manage}?asCompany=${id}`;
-  const userPanelHomeUrl = `/?asCompany=${id}`;
-  const employeesUrl = `${employeesRoutes.list}?asCompany=${id}`;
   const addCrmUrl = `${adminRoutes.crmCreate}?companyId=${id}`;
+
+  const handleViewAs = async (targetPath: string) => {
+    if (!id || enteringConsole) return;
+    setEnteringConsole(true);
+    try {
+      await enterCompanyConsole({
+        companyId: id,
+        companyName: company.title,
+        targetPath,
+        returnTo: adminRoutes.companyDetail.replace(':id', id),
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('companyView.viewAsError', 'Could not open this company’s console.');
+      toast.error(msg);
+      setEnteringConsole(false);
+    }
+  };
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -215,7 +222,6 @@ export const AdminCompanyDetailPage: React.FC = () => {
           </h1>
         </div>
         <Button variant="outline" size="sm" onClick={() => navigate(adminRoutes.companies)}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
           {t('companyView.allCompanies', 'All Companies')}
         </Button>
       </div>
@@ -289,11 +295,11 @@ export const AdminCompanyDetailPage: React.FC = () => {
           <KvRow label={t('companyView.field.businessName', 'Business Name')}>
             <div className="flex items-center gap-2 justify-end flex-wrap">
               <span className="font-medium">{company.title}</span>
-              {company.category && (
-                <span className="inline-block text-[11px] font-medium px-2 py-0.5 rounded border bg-green-50 text-green-700 border-green-200">
-                  {company.category}
-                </span>
-              )}
+              <CategoryBadgeButton
+                label={company.category}
+                onClick={() => setCategoryPickerOpen(true)}
+                isUpdating={updateCompany.isPending}
+              />
             </div>
           </KvRow>
           <KvRow label={t('companyView.field.customerNo', 'Customer No.')}>
@@ -421,39 +427,25 @@ export const AdminCompanyDetailPage: React.FC = () => {
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <SectionLabel>{t('companyView.quickLinks', 'Quick Links')}</SectionLabel>
           <div className="p-4 sm:p-5 flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <a href={handbookListUrl} target="_blank" rel="noopener noreferrer">
-                <FilesIcon className="h-3.5 w-3.5 mr-1.5" />
-                {t('companyView.quick.allPages', 'All Pages')}
-              </a>
+            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs(handbookRoutes.pages)}>
+              {t('companyView.quick.allPages', 'All Pages')}
             </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a href={handbookHomeUrl} target="_blank" rel="noopener noreferrer">
-                <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-                {t('companyView.quick.createHandbook', 'Create Your Handbook')}
-              </a>
+            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs(handbookRoutes.manage)}>
+              {t('companyView.quick.createHandbook', 'Create Your Handbook')}
             </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a href={userPanelHomeUrl} target="_blank" rel="noopener noreferrer">
-                <SettingsIcon className="h-3.5 w-3.5 mr-1.5" />
-                {t('companyView.quick.controlPanel', 'Control Panel')}
-              </a>
+            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs('/')}>
+              {t('companyView.quick.controlPanel', 'Control Panel')}
             </Button>
-            <Button variant="outline" size="sm" asChild>
-              <a href={employeesUrl} target="_blank" rel="noopener noreferrer">
-                <UsersIcon className="h-3.5 w-3.5 mr-1.5" />
-                {t('companyView.quick.employees', 'Employees')}
-              </a>
+            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs(employeesRoutes.list)}>
+              {t('companyView.quick.employees', 'Employees')}
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to={addCrmUrl}>
-                <CalendarPlus className="h-3.5 w-3.5 mr-1.5" />
                 {t('companyView.quick.addCrm', 'Add CRM Activity')}
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to={adminRoutes.companyInformationList.replace(':id', String(company.nid))}>
-                <ListChecks className="h-3.5 w-3.5 mr-1.5" />
                 {t('companyView.quick.infoList', 'Info List')}
               </Link>
             </Button>
@@ -465,12 +457,10 @@ export const AdminCompanyDetailPage: React.FC = () => {
           <div className="p-4 sm:p-5 flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link to={editPath}>
-                <Pencil className="h-3.5 w-3.5 mr-1.5" />
                 {t('companyView.actionEdit', 'Edit')}
               </Link>
             </Button>
-            <Button variant="outline" size="sm" disabled>
-              <Eye className="h-3.5 w-3.5 mr-1.5" />
+            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs('/')}>
               {t('companyView.actionView', 'View')}
             </Button>
             <Button
@@ -479,7 +469,6 @@ export const AdminCompanyDetailPage: React.FC = () => {
               className="text-red-600 border-red-200 hover:bg-red-50"
               onClick={() => setResetOpen(true)}
             >
-              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
               {t('companyView.actionReset', 'Reset')}
             </Button>
             <Button
@@ -488,7 +477,6 @@ export const AdminCompanyDetailPage: React.FC = () => {
               className="text-red-600 border-red-200 hover:bg-red-50"
               onClick={() => setDeleteOpen(true)}
             >
-              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
               {t('companyView.actionDeleteAll', 'Delete All')}
             </Button>
           </div>
@@ -512,7 +500,6 @@ export const AdminCompanyDetailPage: React.FC = () => {
             </Button>
             <Button size="sm" className="bg-green-100 text-green-800 hover:bg-green-200 border border-green-200" asChild>
               <Link to={addCrmUrl}>
-                <Plus className="h-4 w-4 mr-1" />
                 {t('companyDashboard.addActivity', 'Add Activity')}
               </Link>
             </Button>
@@ -558,8 +545,8 @@ export const AdminCompanyDetailPage: React.FC = () => {
                         {a.statusName || t('crmActivities.status.done', 'Done')}
                       </span>
                     </TableCell>
-                    <TableCell className="text-gray-600 text-xs max-w-[280px]">
-                      <div className="line-clamp-2">{a.body}</div>
+                    <TableCell className="text-gray-600 text-xs">
+                      <div className="whitespace-pre-wrap break-words">{a.body}</div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -585,7 +572,6 @@ export const AdminCompanyDetailPage: React.FC = () => {
             aria-disabled="true"
             title={t('companyDashboard.comingSoon', 'Coming soon')}
           >
-            <Plus className="h-4 w-4 mr-1" />
             {t('companyDashboard.addContact', 'Add Contact')}
           </Button>
         </div>
@@ -645,7 +631,6 @@ export const AdminCompanyDetailPage: React.FC = () => {
             asChild
           >
             <Link to={`${editPath}#documents-section`}>
-              <UploadIcon className="h-4 w-4 mr-1" />
               {t('companyDashboard.upload', 'Upload')}
             </Link>
           </Button>
@@ -705,6 +690,141 @@ export const AdminCompanyDetailPage: React.FC = () => {
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
       />
+
+      {/* Customer category picker */}
+      {categoryPickerOpen && (
+        <CustomerCategoryPicker
+          currentTid={company.extended?.customerCategory ?? null}
+          onClose={() => setCategoryPickerOpen(false)}
+          onPick={async (term) => {
+            try {
+              await updateCompany.mutateAsync({
+                companyId: String(id),
+                data: { customerCategory: term ? term.tid : null },
+              });
+              toast.success(
+                t('companyView.categoryUpdated', { defaultValue: 'Category set to {{name}}', name: term?.name ?? '—' }),
+              );
+              setCategoryPickerOpen(false);
+            } catch (err) {
+              const e = err as { response?: { data?: { error?: { message?: string } } }; message?: string };
+              toast.error(e?.response?.data?.error?.message ?? e?.message ?? t('companyView.categoryUpdateFailed', 'Failed to update category.'));
+            }
+          }}
+          pending={updateCompany.isPending}
+        />
+      )}
     </div>
+  );
+};
+
+// ----- Category badge button -----
+
+interface CategoryBadgeButtonProps {
+  label: string | null | undefined;
+  onClick: () => void;
+  isUpdating: boolean;
+}
+
+const CategoryBadgeButton: React.FC<CategoryBadgeButtonProps> = ({ label, onClick, isUpdating }) => {
+  const { t } = useTranslation('admin');
+  // Backend returns the raw Danish term name (e.g. "Ikke kunde"). Translate via
+  // the per-vocab term map so the badge reads in the current UI language.
+  const localized = label
+    ? t(`taxonomy.term.customer_category.${label}`, { defaultValue: label })
+    : '';
+  const display = localized || t('companyView.noCategory', 'Set category');
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isUpdating}
+      className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border transition-colors ${
+        label
+          ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+          : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+      } ${isUpdating ? 'opacity-60 cursor-wait' : ''}`}
+      title={t('companyView.changeCategory', 'Change customer category')}
+    >
+      <span>{display}</span>
+      <ChevronDown className="h-3 w-3" />
+    </button>
+  );
+};
+
+// ----- Customer category picker dialog -----
+
+interface CustomerCategoryPickerProps {
+  currentTid: number | null;
+  pending: boolean;
+  onClose: () => void;
+  onPick: (term: AdminTaxonomyTerm | null) => void;
+}
+
+const CustomerCategoryPicker: React.FC<CustomerCategoryPickerProps> = ({
+  currentTid, pending, onClose, onPick,
+}) => {
+  const { t } = useTranslation('admin');
+  const { data: terms = [], isLoading, isError } = useAdminTaxonomyTerms('customer_category');
+  const localizeTerm = (name: string) =>
+    t(`taxonomy.term.customer_category.${name}`, { defaultValue: name });
+  const current = terms.find(term => term.tid === currentTid) ?? null;
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="w-[min(420px,92vw)] max-h-[80vh] flex flex-col p-0">
+        <DialogHeader className="px-5 pt-5 pb-2">
+          <DialogTitle className="text-lg font-semibold">
+            {t('companyView.categoryPickerTitle', 'Customer category')}
+          </DialogTitle>
+          <DialogDescription>
+            {current
+              ? t('companyView.categoryCurrent', { defaultValue: 'Currently: {{name}}', name: localizeTerm(current.name) })
+              : t('companyView.categoryNoneCurrent', 'No category set')}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1.5">
+          {isLoading && (
+            <p className="text-sm text-gray-500 text-center py-6">{t('common.loading', 'Loading…')}</p>
+          )}
+          {isError && (
+            <p className="text-sm text-red-600 text-center py-6">
+              {t('companyView.categoryPickerError', 'Failed to load categories.')}
+            </p>
+          )}
+          {!isLoading && !isError && terms.map((term) => {
+            const isCurrent = term.tid === currentTid;
+            const bg = term.color ?? '#e5e7eb';
+            const fg = term.textColor ?? '#0d0e0e';
+            return (
+              <button
+                key={term.tid}
+                type="button"
+                disabled={pending}
+                onClick={() => onPick(term)}
+                className={`w-full text-left px-3 py-2 rounded-md border text-sm font-medium transition-opacity ${
+                  pending ? 'opacity-60 cursor-wait' : 'hover:opacity-80'
+                } ${isCurrent ? 'ring-2 ring-offset-1 ring-gray-700' : ''}`}
+                style={{ backgroundColor: bg, color: fg, borderColor: 'rgba(0,0,0,0.08)' }}
+              >
+                {localizeTerm(term.name)}
+              </button>
+            );
+          })}
+          {!isLoading && !isError && currentTid !== null && (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => onPick(null)}
+              className={`w-full text-left px-3 py-2 rounded-md border text-sm text-gray-600 hover:bg-gray-50 ${
+                pending ? 'opacity-60 cursor-wait' : ''
+              }`}
+            >
+              {t('companyView.clearCategory', '— Clear category —')}
+            </button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

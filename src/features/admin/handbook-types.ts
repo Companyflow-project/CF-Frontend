@@ -44,8 +44,52 @@ export interface AdminHandbookPageDetail {
   heroImageFid: number | null;
   heroImageUrl: string | null;
 
+  // Choice
+  updatedDate: string | null;
+  includeByDefault: boolean;
+  optOutWarning: boolean;
+  endHerePageNid: number | null;
+  requiredProductTid: number | null;
+  areasOfResponsibility: number[];
+
+  // Help and inspiration
+  helpText: string;
+  helpTextFormat: string;
+  inspirationalText: string;
+  inspirationalTextFormat: string;
+  helpTextForm: string;
+  helpTextFormFormat: string;
+  introText: string;
+  managementHandbookPageNids: number[];
+
+  // Visual elements and files
+  picturePlacement: string;
+  attachedDocumentFids: number[];
+  videos: string[];
+
+  // Technical fields
+  smartLinkPageNids: number[];
+  sop: string;
+  businessTypeTid: number | null;
+  departmentNids: number[];
+  employmentTypeTids: number[];
+  archivedFlag: number;
+  archivedTime: string;
+  machineTranslated: string;
+  contactNids: number[];
+  outroBody: string;
+  outroBodyFormat: string;
+  placeInManagementHandbook: boolean;
+  machineTranslatedLangs: string[];
+
   availableLangcodes: string[];
   translations: AdminHandbookTranslationMeta[];
+}
+
+export interface AdminHandbookTaxonomyTerm {
+  tid: number;
+  name: string;
+  vid: string;
 }
 
 export interface AdminHandbookTranslationMeta {
@@ -67,12 +111,57 @@ export interface UpdateAdminHandbookPagePayload {
   userManual?: string;
   routeUrl?: string;
   heroImageFid?: number | null;
+
+  // Choice
+  updatedDate?: string | null;
+  includeByDefault?: boolean;
+  optOutWarning?: boolean;
+  endHerePageNid?: number | null;
+  requiredProductTid?: number | null;
+  areasOfResponsibility?: number[];
+
+  // Help and inspiration
+  helpText?: string;
+  helpTextFormat?: string;
+  inspirationalText?: string;
+  inspirationalTextFormat?: string;
+  helpTextForm?: string;
+  helpTextFormFormat?: string;
+  introText?: string;
+  managementHandbookPageNids?: number[];
+
+  // Visual elements and files
+  picturePlacement?: string;
+  attachedDocumentFids?: number[];
+  videos?: string[];
+
+  // Technical fields
+  smartLinkPageNids?: number[];
+  sop?: string;
+  businessTypeTid?: number | null;
+  departmentNids?: number[];
+  employmentTypeTids?: number[];
+  archivedFlag?: number;
+  archivedTime?: string;
+  machineTranslated?: string;
+  contactNids?: number[];
+  outroBody?: string;
+  outroBodyFormat?: string;
+  placeInManagementHandbook?: boolean;
+  machineTranslatedLangs?: string[];
 }
 
 export interface UpdateAdminHandbookTocPayload {
   bid: number | null;
   pid?: number | null;
   weight?: number;
+}
+
+export interface BulkReorderBookItem {
+  nid: number;
+  pid: number | null;
+  weight: number;
+  title?: string;
 }
 
 export type AdminHandbookMetaTags = Record<string, string>;

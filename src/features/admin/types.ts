@@ -422,6 +422,42 @@ export interface CreateTicketPayload {
   published?: boolean;
 }
 
+export interface UpdateTicketPayload {
+  title?: string;
+  body?: string;
+  priority?: string;
+  statusTid?: number;
+  responsibleUid?: number | null;
+  orientedUids?: number[];
+  listTids?: number[];
+  connectedToNids?: number[];
+  sendMail?: boolean;
+  published?: boolean;
+}
+
+export interface TicketDetail {
+  nid: number;
+  title: string;
+  body: string;
+  bodyFormat: string;
+  created: number;
+  changed: number;
+  published: boolean;
+  priority: string | null;
+  priorityLabel: string | null;
+  statusTid: number | null;
+  statusKey: string;
+  statusLabel: string;
+  responsibleUid: number | null;
+  responsibleName: string;
+  orientedUids: number[];
+  listTids: number[];
+  connectedToNids: number[];
+  sendMail: boolean;
+  authorUid: number;
+  authorName: string;
+}
+
 // --- Invoices ---
 export interface InvoiceRow {
   nid: number;
@@ -488,6 +524,61 @@ export interface CrmListParams {
   status?: string;
   followUp?: 'all' | 'fup_date' | 'no_fup_date';
   type?: string;
+}
+
+// --- Taxonomy ---
+export interface AdminTaxonomyVocabulary {
+  vid: string;
+  name: string;
+  description: string | null;
+  weight: number;
+  termCount: number;
+}
+
+export interface AdminTaxonomyTerm {
+  tid: number;
+  vid: string;
+  name: string;
+  description: string | null;
+  weight: number;
+  parentTid: number;
+  status: boolean;
+  langcode: string;
+  color: string | null;
+  textColor: string | null;
+}
+
+export interface CreateVocabularyPayload {
+  vid: string;
+  name: string;
+  description?: string;
+}
+
+export interface CreateTermPayload {
+  name: string;
+  description?: string;
+  weight?: number;
+  parentTid?: number;
+  status?: boolean;
+}
+
+export interface UpdateTermPayload {
+  name?: string;
+  description?: string | null;
+  weight?: number;
+  parentTid?: number;
+  status?: boolean;
+}
+
+export interface AdminTaxonomyTermVersion {
+  revisionId: number;
+  name: string;
+  status: boolean;
+  changed: number;
+  uid: number;
+  authorName: string;
+  logMessage: string;
+  isCurrent: boolean;
 }
 
 // --- Create Company (Phase 4) ---

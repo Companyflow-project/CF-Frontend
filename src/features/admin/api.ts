@@ -20,6 +20,14 @@ import type {
   UpdateCrmActivityPayload,
   TicketCreateOptions,
   CreateTicketPayload,
+  UpdateTicketPayload,
+  TicketDetail,
+  AdminTaxonomyVocabulary,
+  AdminTaxonomyTerm,
+  AdminTaxonomyTermVersion,
+  CreateVocabularyPayload,
+  CreateTermPayload,
+  UpdateTermPayload,
 } from './types';
 
 interface PaginatedResponse<T> {
@@ -166,6 +174,16 @@ export const adminApi = {
     return unwrap<{ nid: number }>(res);
   },
 
+  getTicket: async (nid: number | string): Promise<TicketDetail> => {
+    const res = await axiosClient.get(`/admin/tickets/${nid}`);
+    return unwrap<TicketDetail>(res);
+  },
+
+  updateTicket: async (nid: number | string, data: UpdateTicketPayload): Promise<TicketDetail> => {
+    const res = await axiosClient.patch(`/admin/tickets/${nid}`, data);
+    return unwrap<TicketDetail>(res);
+  },
+
   // --- Invoices ---
   getInvoices: async (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }): Promise<PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>> => {
     const res = await axiosClient.get('/admin/invoices', { params });
@@ -214,9 +232,76 @@ export const adminApi = {
     return res.data as PaginatedResponse<Array<{ nid: number; title: string; source: string; category: string; created: number; mupDate: string | null }>>;
   },
 
+  // --- Taxonomy ---
+  getTaxonomyVocabularies: async (): Promise<AdminTaxonomyVocabulary[]> => {
+    const res = await axiosClient.get('/admin/taxonomy/vocabularies');
+    return unwrap<AdminTaxonomyVocabulary[]>(res);
+  },
+
+  createTaxonomyVocabulary: async (data: CreateVocabularyPayload): Promise<AdminTaxonomyVocabulary> => {
+    const res = await axiosClient.post('/admin/taxonomy/vocabularies', data);
+    return unwrap<AdminTaxonomyVocabulary>(res);
+  },
+
+  deleteTaxonomyVocabulary: async (vid: string): Promise<void> => {
+    await axiosClient.delete(`/admin/taxonomy/vocabularies/${vid}`);
+  },
+
+  reorderTaxonomyVocabularies: async (items: Array<{ vid: string; weight: number }>): Promise<void> => {
+    await axiosClient.patch('/admin/taxonomy/vocabularies/reorder', { items });
+  },
+
+  getTaxonomyTerms: async (vid: string): Promise<AdminTaxonomyTerm[]> => {
+    const res = await axiosClient.get(`/admin/taxonomy/vocabularies/${vid}/terms`);
+    return unwrap<AdminTaxonomyTerm[]>(res);
+  },
+
+  getTaxonomyTerm: async (tid: number): Promise<AdminTaxonomyTerm> => {
+    const res = await axiosClient.get(`/admin/taxonomy/terms/${tid}`);
+    return unwrap<AdminTaxonomyTerm>(res);
+  },
+
+  createTaxonomyTerm: async (vid: string, data: CreateTermPayload): Promise<AdminTaxonomyTerm> => {
+    const res = await axiosClient.post(`/admin/taxonomy/vocabularies/${vid}/terms`, data);
+    return unwrap<AdminTaxonomyTerm>(res);
+  },
+
+  updateTaxonomyTerm: async (tid: number, data: UpdateTermPayload): Promise<AdminTaxonomyTerm> => {
+    const res = await axiosClient.patch(`/admin/taxonomy/terms/${tid}`, data);
+    return unwrap<AdminTaxonomyTerm>(res);
+  },
+
+  deleteTaxonomyTerm: async (tid: number): Promise<void> => {
+    await axiosClient.delete(`/admin/taxonomy/terms/${tid}`);
+  },
+
+  reorderTaxonomyTerms: async (vid: string, items: Array<{ tid: number; weight: number; parentTid: number }>): Promise<void> => {
+    await axiosClient.patch(`/admin/taxonomy/vocabularies/${vid}/terms/reorder`, { items });
+  },
+
+  getTaxonomyTermVersions: async (tid: number): Promise<AdminTaxonomyTermVersion[]> => {
+    const res = await axiosClient.get(`/admin/taxonomy/terms/${tid}/versions`);
+    return unwrap<AdminTaxonomyTermVersion[]>(res);
+  },
+
+  restoreTaxonomyTermVersion: async (tid: number, revisionId: number): Promise<AdminTaxonomyTerm> => {
+    const res = await axiosClient.post(`/admin/taxonomy/terms/${tid}/versions/${revisionId}/restore`);
+    return unwrap<AdminTaxonomyTerm>(res);
+  },
+
+  deleteTaxonomyTermVersion: async (tid: number, revisionId: number): Promise<void> => {
+    await axiosClient.delete(`/admin/taxonomy/terms/${tid}/versions/${revisionId}`);
+  },
+
   // --- Impersonation (Phase 4) ---
   impersonate: async (userId: number): Promise<{ token: string }> => {
     const res = await axiosClient.post(`/admin/impersonate/${userId}`);
     return unwrap<{ token: string }>(res);
+  },
+
+  /** Mint a JWT for a company's account owner so an admin can view the user console as that company. */
+  impersonateCompany: async (companyId: string | number): Promise<{ token: string; user: { uid: number; name: string } }> => {
+    const res = await axiosClient.post(`/admin/companies/${companyId}/impersonate`);
+    return unwrap<{ token: string; user: { uid: number; name: string } }>(res);
   },
 };

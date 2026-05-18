@@ -30,12 +30,18 @@ const AdminCrmPage = lazy(() => import('@/features/admin/pages/admin-crm-page').
 const AdminInvoicesPage = lazy(() => import('@/features/admin/pages/admin-invoices-page').then((m) => ({ default: m.AdminInvoicesPage })));
 const AdminTicketsPage = lazy(() => import('@/features/admin/pages/admin-tickets-page').then((m) => ({ default: m.AdminTicketsPage })));
 const AdminCreateTicketPage = lazy(() => import('@/features/admin/pages/admin-create-ticket-page').then((m) => ({ default: m.AdminCreateTicketPage })));
+const AdminEditTicketPage = lazy(() => import('@/features/admin/pages/admin-edit-ticket-page').then((m) => ({ default: m.AdminEditTicketPage })));
 const AdminKeyFiguresPage = lazy(() => import('@/features/admin/pages/admin-key-figures-page').then((m) => ({ default: m.AdminKeyFiguresPage })));
 const AdminCreateCrmActivityPage = lazy(() => import('@/features/admin/pages/admin-create-crm-activity-page').then((m) => ({ default: m.AdminCreateCrmActivityPage })));
 const AdminEditCrmActivityPage = AdminCreateCrmActivityPage;
 const AdminCrmActivitiesPage = lazy(() => import('@/features/admin/pages/admin-crm-activities-page').then((m) => ({ default: m.AdminCrmActivitiesPage })));
 const AdminLatestCompaniesPage = lazy(() => import('@/features/admin/pages/admin-latest-companies-page').then((m) => ({ default: m.AdminLatestCompaniesPage })));
 const AdminEditCompanyPage = lazy(() => import('@/features/admin/pages/admin-edit-company-page').then((m) => ({ default: m.AdminEditCompanyPage })));
+const AdminBooksPage = lazy(() => import('@/features/admin/pages/admin-books-page').then((m) => ({ default: m.AdminBooksPage })));
+const AdminTaxonomyPage = lazy(() => import('@/features/admin/pages/admin-taxonomy-page').then((m) => ({ default: m.AdminTaxonomyPage })));
+const AdminTaxonomyTermsPage = lazy(() => import('@/features/admin/pages/admin-taxonomy-terms-page').then((m) => ({ default: m.AdminTaxonomyTermsPage })));
+const AdminTaxonomyTermEditPage = lazy(() => import('@/features/admin/pages/admin-taxonomy-term-edit-page').then((m) => ({ default: m.AdminTaxonomyTermEditPage })));
+const AdminBookEditOrderPage = lazy(() => import('@/features/admin/pages/admin-book-edit-order-page').then((m) => ({ default: m.AdminBookEditOrderPage })));
 const AdminHandbookPage = lazy(() => import('@/features/admin/pages/admin-handbook-page').then((m) => ({ default: m.AdminHandbookPage })));
 const AdminHandbookBrowsePage = lazy(() => import('@/features/admin/pages/admin-handbook-browse-page').then((m) => ({ default: m.AdminHandbookBrowsePage })));
 const AdminHandbookPrintPage = lazy(() => import('@/features/admin/pages/admin-handbook-print-page').then((m) => ({ default: m.AdminHandbookPrintPage })));
@@ -823,6 +829,78 @@ export const AppRouter: React.FC = () => {
             }
           />
           <Route
+            path={adminRoutes.books}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminBooksPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.taxonomy}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminTaxonomyPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.taxonomyTermCreate}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminTaxonomyTermEditPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.taxonomyTermEdit}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminTaxonomyTermEditPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.taxonomyTerms}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminTaxonomyTermsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.bookEditOrder}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminBookEditOrderPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
             path={adminRoutes.handbook}
             element={
               <RequireAuth>
@@ -973,6 +1051,18 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminCreateTicketPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.editTicket}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminEditTicketPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

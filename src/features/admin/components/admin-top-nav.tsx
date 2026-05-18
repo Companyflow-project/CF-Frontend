@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Lock } from 'lucide-react';
 import { adminRoutes } from '../routes';
+import { ChangeUserViewDialog } from './change-user-view-dialog';
 import logoUrl from '/assets/Logo.svg';
 
 const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDefault?: boolean }[] = [
@@ -23,6 +24,7 @@ export const AdminTopNav: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSwitchOpen, setIsSwitchOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isChangeViewOpen, setIsChangeViewOpen] = useState(false);
   const switchRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation('admin');
@@ -180,28 +182,28 @@ export const AdminTopNav: React.FC = () => {
                       {t('nav.userAccount', 'User account')}
                     </Link>
                     <div className="my-1 border-t border-gray-100" />
-                    <span
-                      aria-disabled="true"
-                      title={t('nav.comingSoon', 'Coming soon')}
-                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
+                    <button
+                      type="button"
+                      onClick={() => { setIsSwitchOpen(false); setIsChangeViewOpen(true); }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       {t('nav.changeUserView', 'Change user view')}
-                    </span>
+                    </button>
                     <div className="my-1 border-t border-gray-100" />
-                    <span
-                      aria-disabled="true"
-                      title={t('nav.comingSoon', 'Coming soon')}
-                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
+                    <Link
+                      to={adminRoutes.books}
+                      onClick={() => setIsSwitchOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      {t('nav.content', 'Content')}
-                    </span>
-                    <span
-                      aria-disabled="true"
-                      title={t('nav.comingSoon', 'Coming soon')}
-                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
+                      {t('nav.books', 'Books')}
+                    </Link>
+                    <Link
+                      to={adminRoutes.taxonomy}
+                      onClick={() => setIsSwitchOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      {t('nav.structure', 'Structure')}
-                    </span>
+                      {t('nav.taxonomy', 'Taxonomy')}
+                    </Link>
                     <Link
                       to={adminRoutes.settings}
                       onClick={() => setIsSwitchOpen(false)}
@@ -263,6 +265,13 @@ export const AdminTopNav: React.FC = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {isChangeViewOpen && (
+        <ChangeUserViewDialog
+          open={isChangeViewOpen}
+          onClose={() => setIsChangeViewOpen(false)}
+        />
       )}
     </nav>
   );
