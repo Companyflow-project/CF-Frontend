@@ -702,8 +702,11 @@ export const AdminCompanyDetailPage: React.FC = () => {
                 companyId: String(id),
                 data: { customerCategory: term ? term.tid : null },
               });
+              const localizedName = term
+                ? t(`taxonomy.term.customer_category.${term.name}`, { defaultValue: term.name })
+                : '—';
               toast.success(
-                t('companyView.categoryUpdated', { defaultValue: 'Category set to {{name}}', name: term?.name ?? '—' }),
+                t('companyView.categoryUpdated', { defaultValue: 'Category set to {{name}}', name: localizedName }),
               );
               setCategoryPickerOpen(false);
             } catch (err) {

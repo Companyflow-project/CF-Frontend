@@ -37,6 +37,8 @@ function arrayMove<T>(arr: readonly T[], from: number, to: number): T[] {
   return next;
 }
 
+const DEFAULT_PAGE_SIZE = 25;
+
 export const AdminTaxonomyPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { data: vocabularies = [], isLoading, isError } = useAdminTaxonomyVocabularies();
@@ -49,7 +51,36 @@ export const AdminTaxonomyPage: React.FC = () => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const baselineRef = useRef<string>('');
+
+  const total = order.length;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const currentPage = Math.min(page, totalPages);
+  const startIdx = (currentPage - 1) * limit;
+  const pageItems = useMemo(
+    () => order.slice(startIdx, startIdx + limit),
+    [order, startIdx, limit],
+  );
+  const showingFrom = total === 0 ? 0 : startIdx + 1;
+  const showingTo = Math.min(startIdx + limit, total);
+
+  const getPageNumbers = (): (number | '...')[] => {
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push('...');
+      for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+        pages.push(i);
+      }
+      if (currentPage < totalPages - 2) pages.push('...');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
 
   useEffect(() => {
     // Reset working list whenever the server list updates.
@@ -141,7 +172,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 </TableCell>
               </TableRow>
             )}
-            {!isLoading && !isError && order.map((v, idx) => (
+            {!isLoading && !isError && pageItems.map((v, idx) => (
               <TableRow
                 key={v.vid}
                 className={`hover:bg-gray-50 ${hoverIndex === idx && dragIndex !== null && dragIndex !== idx ? 'bg-blue-50' : ''}`}
@@ -153,7 +184,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onDrop={(e) => {
                   e.preventDefault();
                   if (dragIndex !== null && dragIndex !== idx) {
-                    setOrder(arrayMove(order, dragIndex, idx));
+                    setOrder(arrayMove(order, startIdx + dragIndex, startIdx + idx));
                   }
                   setDragIndex(null);
                   setHoverIndex(null);
@@ -198,6 +229,77 @@ export const AdminTaxonomyPage: React.FC = () => {
           </TableBody>
         </Table>
       </div>
+
+      {!isLoading && !isError && total > 0 && (
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-gray-500 text-center lg:text-left">
+            {t('common.showing', 'Showing')}{' '}
+            <span className="font-medium text-gray-700">{showingFrom}–{showingTo}</span>{' '}
+            {t('common.of', 'of')}{' '}
+            <span className="font-medium text-gray-700">{total}</span>{' '}
+            {t('taxonomy.vocabulariesLower', 'vocabularies')}
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={currentPage <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              ← {t('common.previous', 'Prev')}
+            </Button>
+
+            {getPageNumbers().map((pg, idx) =>
+              pg === '...' ? (
+                <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+              ) : (
+                <Button
+                  key={pg}
+                  variant={pg === currentPage ? 'default' : 'ghost'}
+                  size="sm"
+                  className={pg === currentPage
+                    ? 'bg-gray-900 text-white hover:bg-gray-800 h-8 w-8 p-0 rounded-md'
+                    : 'text-gray-600 hover:text-gray-900 h-8 w-8 p-0 rounded-md'}
+                  onClick={() => setPage(pg)}
+                >
+                  {pg}
+                </Button>
+              ),
+            )}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={currentPage >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              {t('common.next', 'Next')} →
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">{t('common.show', 'Show')}</span>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={limit}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val >= 1 && val <= 100) {
+                  setLimit(val);
+                  setPage(1);
+                }
+              }}
+              className="w-16 h-9 text-center"
+            />
+            <span className="text-sm text-gray-500">{t('common.perPage', 'per page')}</span>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-end">
         <Button
