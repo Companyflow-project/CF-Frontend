@@ -115,6 +115,14 @@ export const useCrmTaxonomy = () => {
 };
 
 // --- Users (Phase 2) ---
+export const useAdminUserStats = () => {
+  return useQuery({
+    queryKey: ['admin-user-stats'],
+    queryFn: () => adminApi.getUserStats(),
+    staleTime: 60_000,
+  });
+};
+
 export const useAdminUsers = (params: AdminUserListParams) => {
   return useQuery({
     queryKey: ['admin-users', params],
@@ -130,6 +138,7 @@ export const useUpdateAdminUser = () => {
       adminApi.updateUser(userId, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-users'] });
+      qc.invalidateQueries({ queryKey: ['admin-user-stats'] });
       qc.invalidateQueries({ queryKey: ['admin-dashboard'] });
     },
   });
@@ -149,6 +158,14 @@ export const useAdminActivity = (params: { page?: number; limit?: number }) => {
   return useQuery({
     queryKey: ['admin-activity', params],
     queryFn: () => adminApi.getActivity(params),
+    placeholderData: keepPreviousData,
+  });
+};
+
+export const useUserConsoleActivity = (params: { page?: number; limit?: number }) => {
+  return useQuery({
+    queryKey: ['admin-user-console-activity', params],
+    queryFn: () => adminApi.getUserConsoleActivity(params),
     placeholderData: keepPreviousData,
   });
 };

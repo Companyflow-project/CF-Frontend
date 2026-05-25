@@ -226,11 +226,13 @@ export const AdminTopNav: React.FC = () => {
                       {t('nav.help', 'Help')}
                     </span>
                     <Link
-                      to={adminRoutes.dashboard}
+                      to={adminRoutes.accountDashboard}
                       onClick={() => setIsSwitchOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      {t('nav.companyFlow', 'CompanyFlow')}
+                      {user.role === 'administrator'
+                        ? t('nav.superadmin', 'Superadmin')
+                        : t('nav.admin', 'Admin')}
                     </Link>
                     <button
                       type="button"

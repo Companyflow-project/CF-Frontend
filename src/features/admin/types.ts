@@ -283,6 +283,18 @@ export interface AdminUser {
   companyName: string | null;
   created: number;
   access: number;
+  /** Last successful login (unix). 0 = never logged in. */
+  login: number;
+  /** Derived lifecycle status: 'suspended' | 'invited' | 'active'. */
+  accountStatus: 'active' | 'invited' | 'suspended';
+}
+
+/** Role/status headline counts for the dashboard stat cards. */
+export interface AdminUserStats {
+  totalUsers: number;
+  admins: number;
+  users: number;
+  crmUsers: number;
 }
 
 export interface AdminUserListParams {
@@ -324,6 +336,17 @@ export interface AdminActivityLogEntry {
   details: Record<string, unknown> | null;
   createdAt: string;
   adminName: string;
+}
+
+/** User-console activity (company-user actions: handbook/employee/company). */
+export interface UserConsoleActivityEntry {
+  id: number;
+  title: string;
+  description: string;
+  companyName: string;
+  cvr: string;
+  userName: string;
+  createdAt: string;
 }
 
 // --- Analytics (Phase 3) ---

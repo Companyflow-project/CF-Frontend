@@ -26,6 +26,7 @@ export const adminRoutes = {
   keyFiguresTab: '/admin/key-figures/overview',
   keyFiguresTraffic: '/admin/key-figures/traffic',
   keyFiguresKeywords: '/admin/key-figures/keywords',
+  accountDashboard: '/admin/dashboard',
   users: '/admin/users',
   subscriptions: '/admin/subscriptions',
   activity: '/admin/activity',

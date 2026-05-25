@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks';
 import { cn, isAdminRole } from '@/lib/utils';
+import { resolveRbacRole, canAccessAdminConsole } from '@/lib/rbac';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Lock } from 'lucide-react';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
@@ -192,7 +193,7 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                   </div>
                 )}
               </div>
-              {user.role === 'administrator' ? (
+              {canAccessAdminConsole(resolveRbacRole(user.role)) ? (
                 <div className="relative" ref={switchRef}>
                   <button
                     type="button"

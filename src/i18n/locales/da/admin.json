@@ -18,7 +18,9 @@
     "books": "Bøger",
     "taxonomy": "Taksonomi",
     "companyFlow": "CompanyFlow",
-    "comingSoon": "Kommer snart"
+    "comingSoon": "Kommer snart",
+    "superadmin": "Superadmin",
+    "admin": "Admin"
   },
   "dashboard": {
     "welcome": "Velkommen tilbage, {{name}}",
@@ -1503,5 +1505,79 @@
     "viewAll": "← Se alle aktiviteter",
     "show": "Vis",
     "perPage": "pr. side"
+  },
+  "accountDashboard": {
+    "breadcrumbConsole": "Konsol",
+    "titleSuperadmin": "Superadmin-dashboard",
+    "titleAdmin": "Admin-dashboard",
+    "addUser": "Tilføj bruger",
+    "addUserComingSoon": "Brugerinvitationer kommer snart.",
+    "editComingSoon": "Redigering af brugere kommer snart.",
+    "usersRoles": "Brugere og roller",
+    "activityLog": "Aktivitetslog",
+    "loading": "Indlæser…",
+    "noUsers": "Ingen brugere fundet.",
+    "noActivities": "Ingen aktivitet endnu.",
+    "pending": "Afventer",
+    "never": "Aldrig",
+    "prev": "← Forrige",
+    "next": "Næste →",
+    "roleUpdated": "Rolle opdateret",
+    "roleUpdateFailed": "Kunne ikke opdatere rolle",
+    "statusUpdateFailed": "Kunne ikke opdatere status",
+    "suspended": "Bruger suspenderet",
+    "revoked": "Invitation tilbagekaldt",
+    "reactivated": "Bruger genaktiveret",
+    "stats": {
+      "totalUsers": "Brugere i alt",
+      "totalUsersSub": "På tværs af alle roller",
+      "admins": "Administratorer",
+      "adminsSub": "Fuld paneladgang",
+      "users": "Brugere",
+      "usersSub": "Standardadgang",
+      "crmUsers": "Kun CRM-brugere",
+      "crmUsersSub": "CRM-moduladgang"
+    },
+    "cols": {
+      "user": "Bruger",
+      "role": "Rolle",
+      "status": "Status",
+      "lastActive": "Sidst aktiv",
+      "actions": "Handlinger"
+    },
+    "statuses": {
+      "active": "Aktiv",
+      "invited": "Inviteret",
+      "suspended": "Suspenderet"
+    },
+    "actions": {
+      "edit": "Rediger",
+      "suspend": "Suspendér",
+      "revoke": "Tilbagekald",
+      "reactivate": "Genaktivér"
+    },
+    "roles": {
+      "superadmin": "Superadmin",
+      "admin": "Admin",
+      "user": "Bruger",
+      "crmUser": "Kun CRM-bruger"
+    },
+    "tabs": {
+      "adminPanel": "Adminpanel",
+      "userConsole": "Brugerkonsol"
+    },
+    "activityCols": {
+      "activity": "Aktivitet",
+      "user": "Bruger",
+      "role": "Rolle",
+      "companyName": "Virksomhed",
+      "timestamp": "Tidspunkt"
+    },
+    "pagination": {
+      "showing": "Viser {{from}}–{{to}} af {{total}} brugere",
+      "showingActivities": "Viser {{from}}–{{to}} af {{total}} aktiviteter",
+      "show": "Vis",
+      "perPage": "pr. side"
+    }
   }
 }

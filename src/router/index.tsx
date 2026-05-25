@@ -14,9 +14,11 @@ import { companiesRoutes } from '@/features/companies/routes';
 import { userManualRoutes } from '@/features/user-manual/routes';
 import { adminRoutes } from '@/features/admin/routes';
 import { AdminLayout } from '@/features/admin/layouts/admin-layout';
+import { resolveRbacRole, canAccessAdminConsole } from '@/lib/rbac';
 
 // Admin pages (lazy-loaded)
 const AdminDashboardPage = lazy(() => import('@/features/admin/pages/admin-dashboard-page').then((m) => ({ default: m.AdminDashboardPage })));
+const AccountDashboardPage = lazy(() => import('@/features/admin/pages/account-dashboard-page').then((m) => ({ default: m.AccountDashboardPage })));
 const AdminCompaniesPage = lazy(() => import('@/features/admin/pages/admin-companies-page').then((m) => ({ default: m.AdminCompaniesPage })));
 const AdminCompanyDetailPage = lazy(() => import('@/features/admin/pages/admin-company-detail-page').then((m) => ({ default: m.AdminCompanyDetailPage })));
 const AdminCreateCompanyPage = lazy(() => import('@/features/admin/pages/admin-create-company-page').then((m) => ({ default: m.AdminCreateCompanyPage })));
@@ -188,7 +190,8 @@ const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children 
 const RequirePlatformAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageFallback />;
-  if (!user || user.role !== 'administrator') {
+  // Per the RBAC matrix, the /admin console is open to Superadmin + Admin.
+  if (!user || !canAccessAdminConsole(resolveRbacRole(user.role))) {
     return <Navigate to="/" replace />;
   }
   return <>{children}</>;
@@ -775,6 +778,18 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminCompaniesPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.accountDashboard}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AccountDashboardPage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

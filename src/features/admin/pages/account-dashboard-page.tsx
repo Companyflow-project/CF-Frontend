@@ -1,0 +1,613 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { useAuth } from '@/features/auth/hooks';
+import {
+  useAdminUserStats,
+  useAdminUsers,
+  useUpdateAdminUser,
+  useAdminActivity,
+  useUserConsoleActivity,
+} from '../hooks';
+import type { AdminUser, AdminActivityLogEntry, UserConsoleActivityEntry } from '../types';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { resolveRbacRole, permissionLevel, type RbacRole } from '@/lib/rbac';
+import {
+  Plus,
+  Pencil,
+  UserPlus,
+  Trash2,
+  Settings,
+  LogIn,
+  ArrowRight,
+  Activity as ActivityIcon,
+} from 'lucide-react';
+
+/* -------------------------------------------------------------------------- */
+/*  Role helpers — mockup labels mapped onto existing Drupal role machine names.
+    NOTE: "CRM User Only" has no dedicated role yet; it's a display label for
+    now (crm/seller). Role model to be finalised later.                       */
+/* -------------------------------------------------------------------------- */
+
+type RoleKey = RbacRole;
+
+/** Display label -> RBAC key, derived from the canonical role mapping. */
+const roleKey = (role: string): RoleKey => resolveRbacRole(role);
+
+/** Display label -> machine role written back via updateUser. */
+const ROLE_OPTIONS: { value: string; key: RoleKey }[] = [
+  { value: 'administrator', key: 'superadmin' },
+  { value: 'platform_admin', key: 'admin' },
+  { value: 'EMPLOYEE', key: 'user' },
+  { value: 'crm_user', key: 'crmUser' },
+];
+
+const roleBadgeClass: Record<RoleKey, string> = {
+  superadmin: 'bg-amber-100 text-amber-800 border-amber-200',
+  admin: 'bg-blue-100 text-blue-800 border-blue-200',
+  user: 'bg-gray-100 text-gray-700 border-gray-200',
+  crmUser: 'bg-pink-100 text-pink-700 border-pink-200',
+};
+
+const AVATAR_COLORS = [
+  '#3d997d', '#2563eb', '#9333ea', '#16a34a', '#db2777',
+  '#ca8a04', '#dc2626', '#0891b2', '#7c3aed', '#ea580c',
+];
+
+function avatarColor(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function initials(name: string): string {
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatDateTime(input: string | number): string {
+  const date = typeof input === 'number' ? new Date(input * 1000) : new Date(input);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('da-DK', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Small presentational pieces                                               */
+/* -------------------------------------------------------------------------- */
+
+function StatCard({ label, value, sub }: { label: string; value: number | string; sub: string }) {
+  return (
+    <div className="border border-gray-200 rounded-xl p-4 sm:p-5">
+      <p className="text-xs sm:text-sm text-gray-500">{label}</p>
+      <p className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">{value}</p>
+      <p className="text-xs text-gray-400 mt-1">{sub}</p>
+    </div>
+  );
+}
+
+function Avatar({ name }: { name: string }) {
+  return (
+    <span
+      className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white flex-shrink-0"
+      style={{ backgroundColor: avatarColor(name || '?') }}
+    >
+      {initials(name || '?')}
+    </span>
+  );
+}
+
+const ACTION_ICON: { match: string; icon: React.ElementType; color: string }[] = [
+  { match: 'edit', icon: Pencil, color: 'bg-blue-50 text-blue-600' },
+  { match: 'updat', icon: Pencil, color: 'bg-blue-50 text-blue-600' },
+  { match: 'creat', icon: Plus, color: 'bg-green-50 text-green-600' },
+  { match: 'add', icon: UserPlus, color: 'bg-green-50 text-green-600' },
+  { match: 'invit', icon: UserPlus, color: 'bg-green-50 text-green-600' },
+  { match: 'delet', icon: Trash2, color: 'bg-red-50 text-red-600' },
+  { match: 'remov', icon: Trash2, color: 'bg-red-50 text-red-600' },
+  { match: 'publish', icon: ArrowRight, color: 'bg-emerald-50 text-emerald-600' },
+  { match: 'login', icon: LogIn, color: 'bg-purple-50 text-purple-600' },
+  { match: 'role', icon: Settings, color: 'bg-amber-50 text-amber-600' },
+];
+
+function ActionIcon({ action }: { action: string }) {
+  const lower = action.toLowerCase();
+  const found = ACTION_ICON.find((a) => lower.includes(a.match));
+  const Icon = found?.icon ?? ActivityIcon;
+  const color = found?.color ?? 'bg-gray-50 text-gray-500';
+  return (
+    <span className={cn('w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', color)}>
+      <Icon className="h-4 w-4" />
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Page                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export const AccountDashboardPage: React.FC = () => {
+  const { t } = useTranslation('admin');
+  const { user } = useAuth();
+
+  const viewerRole = resolveRbacRole(user?.role);
+  const isSuperadmin = viewerRole === 'superadmin';
+  const title = isSuperadmin
+    ? t('accountDashboard.titleSuperadmin', 'Superadmin Dashboard')
+    : t('accountDashboard.titleAdmin', 'Admin Dashboard');
+
+  // User-management update level drives who this viewer may edit and which
+  // roles they can assign. 'all' = Superadmin; 'allExceptSuperadmin' = Admin.
+  const umUpdateLevel = permissionLevel(viewerRole, 'userManagement', 'update');
+  const roleOptions = umUpdateLevel === 'all'
+    ? ROLE_OPTIONS
+    : ROLE_OPTIONS.filter((o) => o.key !== 'superadmin');
+
+  /* Users table state */
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data: stats } = useAdminUserStats();
+  const { data: usersData, isLoading: usersLoading } = useAdminUsers({ page, limit: pageSize });
+  const updateUser = useUpdateAdminUser();
+
+  const users = usersData?.data ?? [];
+  const usersTotal = usersData?.meta?.total ?? 0;
+  const usersPages = Math.max(1, Math.ceil(usersTotal / pageSize));
+
+  /* Activity tabs */
+  const [tab, setTab] = useState<'admin' | 'userConsole'>('admin');
+
+  /* Permission: can the current viewer manage this row? */
+  const isSelf = (u: AdminUser) => String(u.uid) === String(user?.id ?? '');
+  const canManage = (u: AdminUser) => {
+    if (isSelf(u)) return false;
+    if (umUpdateLevel === 'all') return true;
+    // Admins: full access except Superadmin accounts.
+    if (umUpdateLevel === 'allExceptSuperadmin') return roleKey(u.role) !== 'superadmin';
+    return false;
+  };
+
+  const handleRoleChange = (uid: number, role: string) => {
+    updateUser.mutate(
+      { userId: uid, data: { role } },
+      {
+        onSuccess: () => toast.success(t('accountDashboard.roleUpdated', 'Role updated')),
+        onError: () => toast.error(t('accountDashboard.roleUpdateFailed', 'Could not update role')),
+      },
+    );
+  };
+
+  const handleStatusChange = (uid: number, status: number, kind: 'suspend' | 'revoke' | 'reactivate') => {
+    updateUser.mutate(
+      { userId: uid, data: { status } },
+      {
+        onSuccess: () =>
+          toast.success(
+            kind === 'reactivate'
+              ? t('accountDashboard.reactivated', 'User reactivated')
+              : kind === 'revoke'
+              ? t('accountDashboard.revoked', 'Invitation revoked')
+              : t('accountDashboard.suspended', 'User suspended'),
+          ),
+        onError: () => toast.error(t('accountDashboard.statusUpdateFailed', 'Could not update status')),
+      },
+    );
+  };
+
+  const statusBadge = (s: AdminUser['accountStatus']) => {
+    const map = {
+      active: { cls: 'bg-green-50 text-green-700 border-green-200', label: t('accountDashboard.statuses.active', 'Active') },
+      invited: { cls: 'bg-amber-50 text-amber-700 border-amber-200', label: t('accountDashboard.statuses.invited', 'Invited') },
+      suspended: { cls: 'bg-red-50 text-red-700 border-red-200', label: t('accountDashboard.statuses.suspended', 'Suspended') },
+    }[s];
+    return (
+      <span className={cn('inline-block text-xs font-medium px-2.5 py-0.5 rounded-full border', map.cls)}>
+        {map.label}
+      </span>
+    );
+  };
+
+  return (
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6 sm:space-y-8">
+      {/* Breadcrumb */}
+      <p className="text-xs sm:text-sm text-gray-500">
+        {t('accountDashboard.breadcrumbConsole', 'Console')} <span className="mx-1">›</span> {title}
+      </p>
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">{title}</h1>
+        <Button
+          className="bg-[#1a8a5a] hover:bg-[#16774e] text-white rounded-lg self-start sm:self-auto"
+          onClick={() => toast.info(t('accountDashboard.addUserComingSoon', 'User invitations are coming soon.'))}
+        >
+          <Plus className="h-4 w-4 mr-1.5" />
+          {t('accountDashboard.addUser', 'Add user')}
+        </Button>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCard
+          label={t('accountDashboard.stats.totalUsers', 'Total users')}
+          value={stats?.totalUsers ?? '—'}
+          sub={t('accountDashboard.stats.totalUsersSub', 'Across all roles')}
+        />
+        <StatCard
+          label={t('accountDashboard.stats.admins', 'Admins')}
+          value={stats?.admins ?? '—'}
+          sub={t('accountDashboard.stats.adminsSub', 'Full panel access')}
+        />
+        <StatCard
+          label={t('accountDashboard.stats.users', 'Users')}
+          value={stats?.users ?? '—'}
+          sub={t('accountDashboard.stats.usersSub', 'Standard access')}
+        />
+        <StatCard
+          label={t('accountDashboard.stats.crmUsers', 'CRM users only')}
+          value={stats?.crmUsers ?? '—'}
+          sub={t('accountDashboard.stats.crmUsersSub', 'CRM module access')}
+        />
+      </div>
+
+      {/* Users & roles */}
+      <div className="border border-gray-200 rounded-xl">
+        <div className="px-4 sm:px-6 py-4 sm:py-5">
+          <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">
+            {t('accountDashboard.usersRoles', 'Users & roles')}
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-50">
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.user', 'User')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.role', 'Role')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.status', 'Status')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.lastActive', 'Last active')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('accountDashboard.cols.actions', 'Actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {usersLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-400 py-10">
+                    {t('accountDashboard.loading', 'Loading…')}
+                  </TableCell>
+                </TableRow>
+              ) : users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-gray-400 py-10">
+                    {t('accountDashboard.noUsers', 'No users found.')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                users.map((u) => {
+                  const manageable = canManage(u);
+                  const rk = roleKey(u.role);
+                  return (
+                    <TableRow key={u.uid} className="hover:bg-gray-50">
+                      {/* User */}
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar name={u.name} />
+                          <div className="min-w-0">
+                            <p className="font-medium text-[#0d0e0e] truncate">{u.name || '—'}</p>
+                            <p className="text-xs text-gray-500 truncate">{u.mail}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      {/* Role */}
+                      <TableCell>
+                        {manageable ? (
+                          <Select
+                            value={ROLE_OPTIONS.find((o) => o.key === rk)?.value ?? 'EMPLOYEE'}
+                            onChange={(e) => handleRoleChange(u.uid, e.target.value)}
+                            disabled={updateUser.isPending}
+                            className="w-40 h-8 text-xs"
+                          >
+                            {roleOptions.map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {t(`accountDashboard.roles.${o.key}`)}
+                              </option>
+                            ))}
+                          </Select>
+                        ) : (
+                          <span className={cn('inline-block text-xs font-medium px-2.5 py-0.5 rounded-full border', roleBadgeClass[rk])}>
+                            {t(`accountDashboard.roles.${rk}`)}
+                          </span>
+                        )}
+                      </TableCell>
+                      {/* Status */}
+                      <TableCell>{statusBadge(u.accountStatus)}</TableCell>
+                      {/* Last active */}
+                      <TableCell className="text-gray-600 text-sm whitespace-nowrap">
+                        {u.accountStatus === 'invited'
+                          ? t('accountDashboard.pending', 'Pending')
+                          : u.access
+                          ? formatDateTime(u.access)
+                          : t('accountDashboard.never', 'Never')}
+                      </TableCell>
+                      {/* Actions */}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={!manageable}
+                            onClick={() => toast.info(t('accountDashboard.editComingSoon', 'User editing is coming soon.'))}
+                          >
+                            {t('accountDashboard.actions.edit', 'Edit')}
+                          </Button>
+                          {manageable && u.accountStatus === 'active' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-200 hover:bg-red-50"
+                              disabled={updateUser.isPending}
+                              onClick={() => handleStatusChange(u.uid, 0, 'suspend')}
+                            >
+                              {t('accountDashboard.actions.suspend', 'Suspend')}
+                            </Button>
+                          )}
+                          {manageable && u.accountStatus === 'invited' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-200 hover:bg-red-50"
+                              disabled={updateUser.isPending}
+                              onClick={() => handleStatusChange(u.uid, 0, 'revoke')}
+                            >
+                              {t('accountDashboard.actions.revoke', 'Revoke')}
+                            </Button>
+                          )}
+                          {manageable && u.accountStatus === 'suspended' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-green-700 border-green-200 hover:bg-green-50"
+                              disabled={updateUser.isPending}
+                              onClick={() => handleStatusChange(u.uid, 1, 'reactivate')}
+                            >
+                              {t('accountDashboard.actions.reactivate', 'Reactivate')}
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Users pagination */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-100">
+          <p className="text-sm text-gray-500">
+            {t('accountDashboard.pagination.showing', {
+              defaultValue: 'Showing {{from}}–{{to}} of {{total}} users',
+              from: usersTotal === 0 ? 0 : (page - 1) * pageSize + 1,
+              to: Math.min(page * pageSize, usersTotal),
+              total: usersTotal,
+            })}
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                {t('accountDashboard.prev', '← Prev')}
+              </Button>
+              <span className="text-sm text-gray-600 px-2 tabular-nums">
+                {page} / {usersPages}
+              </span>
+              <Button variant="outline" size="sm" disabled={page >= usersPages} onClick={() => setPage((p) => p + 1)}>
+                {t('accountDashboard.next', 'Next →')}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>{t('accountDashboard.pagination.show', 'Show')}</span>
+              <Select
+                value={String(pageSize)}
+                onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                className="w-20 h-8 text-xs"
+              >
+                {[10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+              </Select>
+              <span>{t('accountDashboard.pagination.perPage', 'per page')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity log */}
+      <div className="border border-gray-200 rounded-xl">
+        <div className="px-4 sm:px-6 py-4 sm:py-5">
+          <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">
+            {t('accountDashboard.activityLog', 'Activity log')}
+          </h2>
+        </div>
+
+        {/* Tabs */}
+        <div className="px-4 sm:px-6">
+          <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50">
+            {(['admin', 'userConsole'] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setTab(key)}
+                className={cn(
+                  'px-4 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  tab === key ? 'bg-black text-white' : 'text-gray-600 hover:text-gray-900',
+                )}
+              >
+                {key === 'admin'
+                  ? t('accountDashboard.tabs.adminPanel', 'Admin panel')
+                  : t('accountDashboard.tabs.userConsole', 'User console')}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          {tab === 'admin' ? <AdminPanelFeed /> : <UserConsoleFeed />}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Activity feeds                                                            */
+/* -------------------------------------------------------------------------- */
+
+function ActivityPagination({
+  page, total, pageSize, onPrev, onNext,
+}: { page: number; total: number; pageSize: number; onPrev: () => void; onNext: () => void }) {
+  const { t } = useTranslation('admin');
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  return (
+    <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-t border-gray-100">
+      <p className="text-sm text-gray-500">
+        {t('accountDashboard.pagination.showingActivities', {
+          defaultValue: 'Showing {{from}}–{{to}} of {{total}} activities',
+          from: total === 0 ? 0 : (page - 1) * pageSize + 1,
+          to: Math.min(page * pageSize, total),
+          total,
+        })}
+      </p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" disabled={page <= 1} onClick={onPrev}>
+          {t('accountDashboard.prev', '← Prev')}
+        </Button>
+        <span className="text-sm text-gray-600 px-2 tabular-nums">{page} / {pages}</span>
+        <Button variant="outline" size="sm" disabled={page >= pages} onClick={onNext}>
+          {t('accountDashboard.next', 'Next →')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+const ACTIVITY_PAGE_SIZE = 10;
+
+const AdminPanelFeed: React.FC = () => {
+  const { t } = useTranslation('admin');
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useAdminActivity({ page, limit: ACTIVITY_PAGE_SIZE });
+  const entries: AdminActivityLogEntry[] = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.activity', 'Activity')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.user', 'User')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('accountDashboard.activityCols.timestamp', 'Timestamp')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-10">{t('accountDashboard.loading', 'Loading…')}</TableCell></TableRow>
+            ) : entries.length === 0 ? (
+              <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-10">{t('accountDashboard.noActivities', 'No activity yet.')}</TableCell></TableRow>
+            ) : (
+              entries.map((e) => (
+                <TableRow key={e.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <div className="flex items-start gap-3">
+                      <ActionIcon action={e.action} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-[#0d0e0e]">{e.action}</p>
+                        {(e.targetType || e.targetId) && (
+                          <p className="text-xs text-gray-400">
+                            {e.targetType}{e.targetId ? ` #${e.targetId}` : ''}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-700 whitespace-nowrap">{e.adminName}</TableCell>
+                  <TableCell className="text-sm text-gray-500 text-right whitespace-nowrap">{formatDateTime(e.createdAt)}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <ActivityPagination
+        page={page} total={total} pageSize={ACTIVITY_PAGE_SIZE}
+        onPrev={() => setPage((p) => p - 1)} onNext={() => setPage((p) => p + 1)}
+      />
+    </>
+  );
+};
+
+const UserConsoleFeed: React.FC = () => {
+  const { t } = useTranslation('admin');
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useUserConsoleActivity({ page, limit: ACTIVITY_PAGE_SIZE });
+  const entries: UserConsoleActivityEntry[] = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.activity', 'Activity')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.companyName', 'Company name')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.user', 'User')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('accountDashboard.activityCols.timestamp', 'Timestamp')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-10">{t('accountDashboard.loading', 'Loading…')}</TableCell></TableRow>
+            ) : entries.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-10">{t('accountDashboard.noActivities', 'No activity yet.')}</TableCell></TableRow>
+            ) : (
+              entries.map((e) => (
+                <TableRow key={e.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <p className="text-sm font-medium text-[#0d0e0e]">{e.title}</p>
+                    {e.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{e.description}</p>}
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-sm font-medium text-[#0d0e0e]">{e.companyName || '—'}</p>
+                    {e.cvr && <p className="text-xs text-gray-400">CVR: {e.cvr}</p>}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {e.userName && <Avatar name={e.userName} />}
+                      <span className="text-sm text-gray-700 whitespace-nowrap">{e.userName || '—'}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-500 text-right whitespace-nowrap">{formatDateTime(e.createdAt)}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <ActivityPagination
+        page={page} total={total} pageSize={ACTIVITY_PAGE_SIZE}
+        onPrev={() => setPage((p) => p - 1)} onNext={() => setPage((p) => p + 1)}
+      />
+    </>
+  );
+};

@@ -8,10 +8,12 @@ import type {
   AdminInfoListEmployee,
   UpdateSubscriptionPayload,
   AdminUser,
+  AdminUserStats,
   AdminUserListParams,
   UpdateAdminUserPayload,
   AdminSubscriptionItem,
   AdminActivityLogEntry,
+  UserConsoleActivityEntry,
   AdminAnalytics,
   PlatformSettings,
   CreateCompanyPayload,
@@ -100,6 +102,11 @@ export const adminApi = {
   },
 
   // --- Users (Phase 2) ---
+  getUserStats: async (): Promise<AdminUserStats> => {
+    const res = await axiosClient.get('/admin/users/stats');
+    return unwrap<AdminUserStats>(res);
+  },
+
   getUsers: async (params: AdminUserListParams): Promise<PaginatedResponse<AdminUser[]>> => {
     const res = await axiosClient.get('/admin/users', { params });
     return res.data as PaginatedResponse<AdminUser[]>;
@@ -119,6 +126,11 @@ export const adminApi = {
   getActivity: async (params: { page?: number; limit?: number }): Promise<PaginatedResponse<AdminActivityLogEntry[]>> => {
     const res = await axiosClient.get('/admin/activity', { params });
     return res.data as PaginatedResponse<AdminActivityLogEntry[]>;
+  },
+
+  getUserConsoleActivity: async (params: { page?: number; limit?: number }): Promise<PaginatedResponse<UserConsoleActivityEntry[]>> => {
+    const res = await axiosClient.get('/admin/activity/user-console', { params });
+    return res.data as PaginatedResponse<UserConsoleActivityEntry[]>;
   },
 
   // --- Analytics (Phase 3) ---

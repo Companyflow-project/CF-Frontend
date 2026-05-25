@@ -18,7 +18,9 @@
     "books": "Books",
     "taxonomy": "Taxonomy",
     "companyFlow": "CompanyFlow",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "superadmin": "Superadmin",
+    "admin": "Admin"
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}",
@@ -1503,5 +1505,79 @@
     "viewAll": "← View all activities",
     "show": "Show",
     "perPage": "per page"
+  },
+  "accountDashboard": {
+    "breadcrumbConsole": "Console",
+    "titleSuperadmin": "Superadmin Dashboard",
+    "titleAdmin": "Admin Dashboard",
+    "addUser": "Add user",
+    "addUserComingSoon": "User invitations are coming soon.",
+    "editComingSoon": "User editing is coming soon.",
+    "usersRoles": "Users & roles",
+    "activityLog": "Activity log",
+    "loading": "Loading…",
+    "noUsers": "No users found.",
+    "noActivities": "No activity yet.",
+    "pending": "Pending",
+    "never": "Never",
+    "prev": "← Prev",
+    "next": "Next →",
+    "roleUpdated": "Role updated",
+    "roleUpdateFailed": "Could not update role",
+    "statusUpdateFailed": "Could not update status",
+    "suspended": "User suspended",
+    "revoked": "Invitation revoked",
+    "reactivated": "User reactivated",
+    "stats": {
+      "totalUsers": "Total users",
+      "totalUsersSub": "Across all roles",
+      "admins": "Admins",
+      "adminsSub": "Full panel access",
+      "users": "Users",
+      "usersSub": "Standard access",
+      "crmUsers": "CRM users only",
+      "crmUsersSub": "CRM module access"
+    },
+    "cols": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "lastActive": "Last active",
+      "actions": "Actions"
+    },
+    "statuses": {
+      "active": "Active",
+      "invited": "Invited",
+      "suspended": "Suspended"
+    },
+    "actions": {
+      "edit": "Edit",
+      "suspend": "Suspend",
+      "revoke": "Revoke",
+      "reactivate": "Reactivate"
+    },
+    "roles": {
+      "superadmin": "Superadmin",
+      "admin": "Admin",
+      "user": "User",
+      "crmUser": "CRM User Only"
+    },
+    "tabs": {
+      "adminPanel": "Admin panel",
+      "userConsole": "User console"
+    },
+    "activityCols": {
+      "activity": "Activity",
+      "user": "User",
+      "role": "Role",
+      "companyName": "Company name",
+      "timestamp": "Timestamp"
+    },
+    "pagination": {
+      "showing": "Showing {{from}}–{{to}} of {{total}} users",
+      "showingActivities": "Showing {{from}}–{{to}} of {{total}} activities",
+      "show": "Show",
+      "perPage": "per page"
+    }
   }
 }
