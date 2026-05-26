@@ -309,7 +309,8 @@
     "internalName": "Internt navn",
     "internalNameDesc": "Det interne brugernavn oprettes automatisk",
     "mobilePhone": "Mobiltelefon",
-    "sendEmail": "Send email til primær kontaktperson",
+    "sendEmail": "Send loginoplysninger til virksomhedens e-mail",
+    "sendEmailHint": "Opretter en konsolkonto for virksomhedens e-mail og sender et link til at oprette en adgangskode.",
     "subscription": "Abonnement",
     "product": "Produkt",
     "licenses": "Licenser",
@@ -329,6 +330,11 @@
     "cvrLookupFailed": "CVR-opslag mislykkedes",
     "cvrNotFound": "Ingen virksomhed fundet for det CVR-nummer",
     "cvrNumber": "CVR-nummer",
+    "cvrAlreadyRegistered": "Dette CVR findes allerede i systemet og er registreret på {{name}}. Tjek den eksisterende virksomhed i stedet.",
+    "cvrExistingTitle": "Dette CVR findes allerede i systemet",
+    "viewExisting": "Åbn eksisterende virksomhed",
+    "duplicate": "Disse oplysninger findes allerede i systemet. Tjek den eksisterende virksomhed og opdater den, eller opret en ny virksomhed med andre oplysninger.",
+    "duplicateField": "Det {{field}} du har indtastet findes allerede i systemet og er registreret på {{name}}. Tjek den eksisterende virksomhed og opdater den, eller opret en ny virksomhed med andre oplysninger.",
     "description": "Tilføj en ny virksomhed",
     "failed": "Kunne ikke oprette virksomhed",
     "lookingUp": "Slår op...",
@@ -895,6 +901,20 @@
     }
   },
   "companyView": {
+    "actions": "Handlinger",
+    "actionEdit": "Rediger",
+    "actionView": "Vis",
+    "actionReset": "Nulstil",
+    "actionDeleteAll": "Slet alt",
+    "quickLinks": "Genveje",
+    "quick": {
+      "allPages": "Alle sider",
+      "createHandbook": "Opret din håndbog",
+      "controlPanel": "Kontrolpanel",
+      "employees": "Medarbejdere",
+      "addCrm": "Tilføj CRM-aktivitet",
+      "infoList": "Infoliste"
+    },
     "additionalManuals": "Yderligere manualer",
     "alwaysShowImageTab": "Vis altid billedfane",
     "annual": "Årlig",
@@ -1035,6 +1055,12 @@
     "title": "Opret CRM-aktivitet"
   },
   "editCompany": {
+    "emailConfirm": {
+      "title": "Send loginoplysninger?",
+      "body": "Loginoplysninger til håndbogskonsollen sendes til {{email}}. Kontaktpersonen kan bruge dem til at oprette en adgangskode og få adgang til deres konsol.",
+      "cancel": "Annullér",
+      "confirm": "Gem & send"
+    },
     "about": {
       "customerCompany": "Kundevirksomhed",
       "cvr": "CVR",
@@ -1198,7 +1224,6 @@
     }
   },
   "invoices": {
-    "all": "Alle",
     "breadcrumb": "Fakturaer",
     "columns": {
       "addPurchases": "Tilføj køb",
@@ -1213,12 +1238,17 @@
       "payment": "Betaling",
       "when": "Hvornår"
     },
-    "customersOnly": "Kun kunder",
     "empty": "Ingen fakturaer fundet.",
     "exportCsv": "Eksporter CSV",
     "exporting": "Eksporterer...",
     "searchPlaceholder": "Søg fakturaer...",
     "showing": "Viser {{from}}–{{to}} af {{total}} fakturaer",
+    "sortBy": "Sortér efter",
+    "sort": {
+      "business": "Virksomhed",
+      "begin": "Startdato",
+      "end": "Slutdato"
+    },
     "title": "Fakturaer"
   },
   "keyFigures": {
@@ -1560,7 +1590,8 @@
       "superadmin": "Superadmin",
       "admin": "Admin",
       "user": "Bruger",
-      "crmUser": "Kun CRM-bruger"
+      "crmUser": "Kun CRM-bruger",
+      "none": "Kunde"
     },
     "tabs": {
       "adminPanel": "Adminpanel",
@@ -1578,6 +1609,26 @@
       "showingActivities": "Viser {{from}}–{{to}} af {{total}} aktiviteter",
       "show": "Vis",
       "perPage": "pr. side"
-    }
+    },
+    "addUserTitle": "Tilføj bruger",
+    "editUserTitle": "Rediger bruger",
+    "userCreated": "Bruger oprettet",
+    "userCreateFailed": "Kunne ikke oprette bruger",
+    "userUpdated": "Bruger opdateret",
+    "userUpdateFailed": "Kunne ikke opdatere bruger",
+    "form": {
+      "name": "Navn",
+      "email": "E-mail",
+      "tempPassword": "Midlertidig adgangskode",
+      "passwordHint": "Mindst 8 tegn",
+      "role": "Rolle",
+      "status": "Status",
+      "cancel": "Annullér",
+      "create": "Opret bruger",
+      "creating": "Opretter…",
+      "save": "Gem",
+      "saving": "Gemmer…"
+    },
+    "noAccess": "Du har ikke adgang til brugeradministration."
   }
 }

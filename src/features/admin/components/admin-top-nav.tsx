@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Lock } from 'lucide-react';
 import { adminRoutes } from '../routes';
+import { resolveRbacRole, can, canAccessAccountDashboard, type RbacModule } from '@/lib/rbac';
 import { ChangeUserViewDialog } from './change-user-view-dialog';
 import logoUrl from '/assets/Logo.svg';
 
@@ -47,15 +48,17 @@ export const AdminTopNav: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isSwitchOpen, isLangOpen]);
 
-  const navItems = [
-    { path: adminRoutes.dashboard, label: t('nav.console'), enabled: true },
-    { path: adminRoutes.companies, label: t('nav.companies'), enabled: true },
-    { path: adminRoutes.crmActivities, label: t('nav.crm'), enabled: true },
-    { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true },
-    { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true },
-    { path: adminRoutes.tickets, label: t('nav.support'), enabled: true },
+  const viewerRole = resolveRbacRole(user?.role);
+  const allNavItems: { path: string; label: string; enabled: boolean; module?: RbacModule }[] = [
+    { path: adminRoutes.dashboard, label: t('nav.console'), enabled: true, module: 'dashboard' },
+    { path: adminRoutes.companies, label: t('nav.companies'), enabled: true, module: 'companies' },
+    { path: adminRoutes.crmActivities, label: t('nav.crm'), enabled: true, module: 'crm' },
+    { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true, module: 'invoices' },
+    { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true, module: 'newsletters' },
+    { path: adminRoutes.tickets, label: t('nav.support'), enabled: true, module: 'tickets' },
     { path: '/admin/help', label: t('nav.help'), enabled: false },
   ];
+  const navItems = allNavItems.filter((item) => !item.module || can(viewerRole, item.module, 'read'));
 
   const getInitials = (name: string) =>
     name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -179,7 +182,7 @@ export const AdminTopNav: React.FC = () => {
                       onClick={() => setIsSwitchOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      {t('nav.userAccount', 'User account')}
+                      {t('nav.userAccount', 'User Console')}
                     </Link>
                     <div className="my-1 border-t border-gray-100" />
                     <button
@@ -225,15 +228,17 @@ export const AdminTopNav: React.FC = () => {
                     >
                       {t('nav.help', 'Help')}
                     </span>
-                    <Link
-                      to={adminRoutes.accountDashboard}
-                      onClick={() => setIsSwitchOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      {user.role === 'administrator'
-                        ? t('nav.superadmin', 'Superadmin')
-                        : t('nav.admin', 'Admin')}
-                    </Link>
+                    {canAccessAccountDashboard(viewerRole) && (
+                      <Link
+                        to={adminRoutes.accountDashboard}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {user.role === 'administrator'
+                          ? t('nav.superadmin', 'Superadmin')
+                          : t('nav.admin', 'Admin')}
+                      </Link>
+                    )}
                     <button
                       type="button"
                       onClick={() => { setIsSwitchOpen(false); logout(); }}

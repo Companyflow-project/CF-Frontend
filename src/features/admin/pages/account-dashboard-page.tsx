@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/hooks';
 import {
   useAdminUserStats,
   useAdminUsers,
+  useCreateAdminUser,
   useUpdateAdminUser,
   useAdminActivity,
   useUserConsoleActivity,
@@ -12,6 +13,9 @@ import {
 import type { AdminUser, AdminActivityLogEntry, UserConsoleActivityEntry } from '../types';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
   Table,
   TableHeader,
@@ -21,7 +25,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { resolveRbacRole, permissionLevel, type RbacRole } from '@/lib/rbac';
+import { resolveRbacRole, permissionLevel, can, type RbacRole } from '@/lib/rbac';
 import {
   Plus,
   Pencil,
@@ -34,9 +38,9 @@ import {
 } from 'lucide-react';
 
 /* -------------------------------------------------------------------------- */
-/*  Role helpers — mockup labels mapped onto existing Drupal role machine names.
-    NOTE: "CRM User Only" has no dedicated role yet; it's a display label for
-    now (crm/seller). Role model to be finalised later.                       */
+/*  Role helpers. The assignable values are the Drupal role machine names that
+    the canonical RBAC mapping (resolveRbacRole) recognises as admin-console
+    roles. Keep these in sync with src/lib/rbac.ts.                            */
 /* -------------------------------------------------------------------------- */
 
 type RoleKey = RbacRole;
@@ -44,11 +48,13 @@ type RoleKey = RbacRole;
 /** Display label -> RBAC key, derived from the canonical role mapping. */
 const roleKey = (role: string): RoleKey => resolveRbacRole(role);
 
-/** Display label -> machine role written back via updateUser. */
+/** Assignable role -> machine name written back via updateUser. Each value must
+ *  round-trip through resolveRbacRole to the matching RBAC key, otherwise the
+ *  assignee gets no admin-console access. */
 const ROLE_OPTIONS: { value: string; key: RoleKey }[] = [
   { value: 'administrator', key: 'superadmin' },
   { value: 'platform_admin', key: 'admin' },
-  { value: 'EMPLOYEE', key: 'user' },
+  { value: 'staff_user', key: 'user' },
   { value: 'crm_user', key: 'crmUser' },
 ];
 
@@ -57,6 +63,7 @@ const roleBadgeClass: Record<RoleKey, string> = {
   admin: 'bg-blue-100 text-blue-800 border-blue-200',
   user: 'bg-gray-100 text-gray-700 border-gray-200',
   crmUser: 'bg-pink-100 text-pink-700 border-pink-200',
+  none: 'bg-gray-100 text-gray-500 border-gray-200',
 };
 
 const AVATAR_COLORS = [
@@ -143,7 +150,7 @@ export const AccountDashboardPage: React.FC = () => {
   const viewerRole = resolveRbacRole(user?.role);
   const isSuperadmin = viewerRole === 'superadmin';
   const title = isSuperadmin
-    ? t('accountDashboard.titleSuperadmin', 'Superadmin Dashboard')
+    ? t('accountDashboard.titleSuperadmin', 'Team Management')
     : t('accountDashboard.titleAdmin', 'Admin Dashboard');
 
   // User-management update level drives who this viewer may edit and which
@@ -167,6 +174,11 @@ export const AccountDashboardPage: React.FC = () => {
 
   /* Activity tabs */
   const [tab, setTab] = useState<'admin' | 'userConsole'>('admin');
+
+  /* Add / Edit user dialogs */
+  const [addOpen, setAddOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<AdminUser | null>(null);
+  const canCreateUsers = umUpdateLevel === 'all' || umUpdateLevel === 'allExceptSuperadmin';
 
   /* Permission: can the current viewer manage this row? */
   const isSelf = (u: AdminUser) => String(u.uid) === String(user?.id ?? '');
@@ -218,6 +230,15 @@ export const AccountDashboardPage: React.FC = () => {
     );
   };
 
+  // This dashboard is User Management — only roles that can read it may view it.
+  if (!can(viewerRole, 'userManagement', 'read')) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-16 text-center">
+        <p className="text-gray-500">{t('accountDashboard.noAccess', 'You do not have access to user management.')}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6 sm:space-y-8">
       {/* Breadcrumb */}
@@ -228,13 +249,15 @@ export const AccountDashboardPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">{title}</h1>
-        <Button
-          className="bg-[#1a8a5a] hover:bg-[#16774e] text-white rounded-lg self-start sm:self-auto"
-          onClick={() => toast.info(t('accountDashboard.addUserComingSoon', 'User invitations are coming soon.'))}
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          {t('accountDashboard.addUser', 'Add user')}
-        </Button>
+        {canCreateUsers && (
+          <Button
+            className="bg-[#1a8a5a] hover:bg-[#16774e] text-white rounded-lg self-start sm:self-auto"
+            onClick={() => setAddOpen(true)}
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            {t('accountDashboard.addUser', 'Add user')}
+          </Button>
+        )}
       </div>
 
       {/* Stat cards */}
@@ -346,7 +369,7 @@ export const AccountDashboardPage: React.FC = () => {
                             variant="outline"
                             size="sm"
                             disabled={!manageable}
-                            onClick={() => toast.info(t('accountDashboard.editComingSoon', 'User editing is coming soon.'))}
+                            onClick={() => setEditTarget(u)}
                           >
                             {t('accountDashboard.actions.edit', 'Edit')}
                           </Button>
@@ -463,7 +486,139 @@ export const AccountDashboardPage: React.FC = () => {
           {tab === 'admin' ? <AdminPanelFeed /> : <UserConsoleFeed />}
         </div>
       </div>
+
+      <AddUserDialog open={addOpen} onClose={() => setAddOpen(false)} roleOptions={roleOptions} />
+      <EditUserDialog user={editTarget} onClose={() => setEditTarget(null)} roleOptions={roleOptions} />
     </div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Add / Edit user dialogs                                                   */
+/* -------------------------------------------------------------------------- */
+
+type RoleOption = { value: string; key: RoleKey };
+
+const AddUserDialog: React.FC<{ open: boolean; onClose: () => void; roleOptions: RoleOption[] }> = ({ open, onClose, roleOptions }) => {
+  const { t } = useTranslation('admin');
+  const createUser = useCreateAdminUser();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('EMPLOYEE');
+
+  React.useEffect(() => {
+    if (open) { setName(''); setEmail(''); setPassword(''); setRole('EMPLOYEE'); }
+  }, [open]);
+
+  const valid = name.trim().length > 0 && email.trim().length > 2 && password.length >= 8;
+
+  const submit = () => {
+    if (!valid) return;
+    createUser.mutate(
+      { name: name.trim(), email: email.trim(), password, role },
+      {
+        onSuccess: () => { toast.success(t('accountDashboard.userCreated', 'User created')); onClose(); },
+        onError: (e: unknown) => {
+          const msg = (e as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+          toast.error(msg ?? t('accountDashboard.userCreateFailed', 'Could not create user'));
+        },
+      },
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-md p-6 space-y-4">
+        <h2 className="text-lg font-bold text-[#0d0e0e]">{t('accountDashboard.addUserTitle', 'Add user')}</h2>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="au-name">{t('accountDashboard.form.name', 'Name')}</Label>
+            <Input id="au-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="au-email">{t('accountDashboard.form.email', 'Email')}</Label>
+            <Input id="au-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="au-pass">{t('accountDashboard.form.tempPassword', 'Temporary password')}</Label>
+            <Input id="au-pass" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('accountDashboard.form.passwordHint', 'At least 8 characters')} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="au-role">{t('accountDashboard.form.role', 'Role')}</Label>
+            <Select id="au-role" value={role} onChange={(e) => setRole(e.target.value)}>
+              {roleOptions.map((o) => <option key={o.value} value={o.value}>{t(`accountDashboard.roles.${o.key}`)}</option>)}
+            </Select>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-1">
+          <Button variant="outline" onClick={onClose}>{t('accountDashboard.form.cancel', 'Cancel')}</Button>
+          <Button disabled={!valid || createUser.isPending} onClick={submit} className="bg-[#1a8a5a] hover:bg-[#16774e] text-white">
+            {createUser.isPending ? t('accountDashboard.form.creating', 'Creating…') : t('accountDashboard.form.create', 'Create user')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const EditUserDialog: React.FC<{ user: AdminUser | null; onClose: () => void; roleOptions: RoleOption[] }> = ({ user, onClose, roleOptions }) => {
+  const { t } = useTranslation('admin');
+  const updateUser = useUpdateAdminUser();
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('EMPLOYEE');
+  const [status, setStatus] = useState('1');
+
+  React.useEffect(() => {
+    if (user) {
+      setName(user.name ?? '');
+      setRole(ROLE_OPTIONS.find((o) => o.key === roleKey(user.role))?.value ?? 'EMPLOYEE');
+      setStatus(String(user.status));
+    }
+  }, [user]);
+
+  const submit = () => {
+    if (!user) return;
+    updateUser.mutate(
+      { userId: user.uid, data: { name: name.trim(), role, status: Number(status) } },
+      {
+        onSuccess: () => { toast.success(t('accountDashboard.userUpdated', 'User updated')); onClose(); },
+        onError: () => toast.error(t('accountDashboard.userUpdateFailed', 'Could not update user')),
+      },
+    );
+  };
+
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-md p-6 space-y-4">
+        <h2 className="text-lg font-bold text-[#0d0e0e]">{t('accountDashboard.editUserTitle', 'Edit user')}</h2>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="eu-name">{t('accountDashboard.form.name', 'Name')}</Label>
+            <Input id="eu-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="eu-role">{t('accountDashboard.form.role', 'Role')}</Label>
+            <Select id="eu-role" value={role} onChange={(e) => setRole(e.target.value)}>
+              {roleOptions.map((o) => <option key={o.value} value={o.value}>{t(`accountDashboard.roles.${o.key}`)}</option>)}
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="eu-status">{t('accountDashboard.form.status', 'Status')}</Label>
+            <Select id="eu-status" value={status} onChange={(e) => setStatus(e.target.value)}>
+              <option value="1">{t('accountDashboard.statuses.active', 'Active')}</option>
+              <option value="0">{t('accountDashboard.statuses.suspended', 'Suspended')}</option>
+            </Select>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 pt-1">
+          <Button variant="outline" onClick={onClose}>{t('accountDashboard.form.cancel', 'Cancel')}</Button>
+          <Button disabled={updateUser.isPending || !name.trim()} onClick={submit} className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90">
+            {updateUser.isPending ? t('accountDashboard.form.saving', 'Saving…') : t('accountDashboard.form.save', 'Save')}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

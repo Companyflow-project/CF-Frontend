@@ -10,7 +10,7 @@
  * incrementally — the matrix already describes their intended rules.
  */
 
-export type RbacRole = 'superadmin' | 'admin' | 'user' | 'crmUser';
+export type RbacRole = 'superadmin' | 'admin' | 'user' | 'crmUser' | 'none';
 
 export type RbacModule =
   | 'dashboard'
@@ -96,15 +96,21 @@ const crmUser: ModuleMatrix = {
   userManagement: OWN_PROFILE,
 };
 
-export const PERMISSION_MATRIX: Record<RbacRole, ModuleMatrix> = { superadmin, admin, user, crmUser };
+/** Customers / unmapped Drupal roles: no admin-console access at all. */
+const none: ModuleMatrix = {
+  dashboard: NO_ACCESS, companies: NO_ACCESS, crm: NO_ACCESS, newsletters: NO_ACCESS,
+  tickets: NO_ACCESS, blog: NO_ACCESS, invoices: NO_ACCESS, handbook: NO_ACCESS,
+  books: NO_ACCESS, bookChapters: NO_ACCESS, taxonomy: NO_ACCESS, infoList: NO_ACCESS,
+  keyFigures: NO_ACCESS, userManagement: NO_ACCESS,
+};
+
+export const PERMISSION_MATRIX: Record<RbacRole, ModuleMatrix> = { superadmin, admin, user, crmUser, none };
 
 /**
- * Map a Drupal role machine name to an RBAC role.
- *
- * Superadmin = `administrator`, Admin = `platform_admin` (dedicated
- * internal-staff role), CRM/Sales = `crm_user`. Everything else — including
- * the tenant-scoped `company_admin`/`account_owner` and `EMPLOYEE` —
- * resolves to `user` and is NOT granted /admin access.
+ * Map a Drupal role machine name to an RBAC role. The four matrix roles are
+ * dedicated internal-staff roles: administrator=>superadmin,
+ * platform_admin=>admin, staff_user=>user, crm_user=>crmUser. Everything else
+ * (customers: company_admin/account_owner/EMPLOYEE) => `none`: no /admin access.
  */
 export function resolveRbacRole(drupalRole: string | null | undefined): RbacRole {
   switch (drupalRole) {
@@ -112,10 +118,12 @@ export function resolveRbacRole(drupalRole: string | null | undefined): RbacRole
       return 'superadmin';
     case 'platform_admin':
       return 'admin';
+    case 'staff_user':
+      return 'user';
     case 'crm_user':
       return 'crmUser';
     default:
-      return 'user';
+      return 'none';
   }
 }
 
@@ -127,7 +135,15 @@ export function can(role: RbacRole, module: RbacModule, action: RbacAction): boo
   return permissionLevel(role, module, action) !== 'none';
 }
 
-/** Roles allowed into the /admin console. */
+/** Roles allowed into the /admin console — all four internal-staff roles; only
+ *  the `none` bucket (customers) is shut out. */
 export function canAccessAdminConsole(role: RbacRole): boolean {
+  return role !== 'none';
+}
+
+/** The Superadmin/Admin account dashboard (user provisioning + activity tracking)
+ *  is restricted to Superadmin and Admin. User/CRM-Sales roles use the operational
+ *  console + their permitted modules, but never this hub. */
+export function canAccessAccountDashboard(role: RbacRole): boolean {
   return role === 'superadmin' || role === 'admin';
 }

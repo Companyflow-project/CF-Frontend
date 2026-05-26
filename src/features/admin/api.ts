@@ -10,6 +10,7 @@ import type {
   AdminUser,
   AdminUserStats,
   AdminUserListParams,
+  CreateAdminUserPayload,
   UpdateAdminUserPayload,
   AdminSubscriptionItem,
   AdminActivityLogEntry,
@@ -17,6 +18,7 @@ import type {
   AdminAnalytics,
   PlatformSettings,
   CreateCompanyPayload,
+  CvrLookupResult,
   CrmActivity,
   CrmActivityDetail,
   UpdateCrmActivityPayload,
@@ -93,6 +95,11 @@ export const adminApi = {
     return unwrap<{ nid: number }>(res);
   },
 
+  lookupCvr: async (cvr: string): Promise<CvrLookupResult> => {
+    const res = await axiosClient.get('/admin/companies/lookup-cvr', { params: { cvr } });
+    return unwrap<CvrLookupResult>(res);
+  },
+
   deleteCompany: async (id: string): Promise<void> => {
     await axiosClient.delete(`/admin/companies/${id}`);
   },
@@ -110,6 +117,11 @@ export const adminApi = {
   getUsers: async (params: AdminUserListParams): Promise<PaginatedResponse<AdminUser[]>> => {
     const res = await axiosClient.get('/admin/users', { params });
     return res.data as PaginatedResponse<AdminUser[]>;
+  },
+
+  createUser: async (data: CreateAdminUserPayload): Promise<{ uid: number }> => {
+    const res = await axiosClient.post('/admin/users', data);
+    return unwrap<{ uid: number }>(res);
   },
 
   updateUser: async (userId: number, data: UpdateAdminUserPayload): Promise<void> => {
@@ -197,12 +209,12 @@ export const adminApi = {
   },
 
   // --- Invoices ---
-  getInvoices: async (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }): Promise<PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>> => {
+  getInvoices: async (params: { page?: number; limit?: number; sort?: 'business' | 'begin' | 'end'; search?: string }): Promise<PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>> => {
     const res = await axiosClient.get('/admin/invoices', { params });
     return res.data as PaginatedResponse<Array<{ nid: number; business: string; category: string; licenses: number; addPurchases: string; payment: string; paymentKey: string; beginner: string | null; ends: string | null; endsAboutMonths: number | null; invoicing: string | null; whenMonths: number | null; notes: string }>>;
   },
 
-  exportInvoicesCsv: async (params: { customersOnly?: boolean; search?: string }): Promise<Blob> => {
+  exportInvoicesCsv: async (params: { sort?: 'business' | 'begin' | 'end'; search?: string }): Promise<Blob> => {
     const res = await axiosClient.get('/admin/invoices/export', { params, responseType: 'blob' });
     return res.data as Blob;
   },

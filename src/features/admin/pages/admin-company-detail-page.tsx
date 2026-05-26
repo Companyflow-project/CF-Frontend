@@ -2,7 +2,19 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { FileText, ChevronDown } from 'lucide-react';
+import {
+  FileText,
+  ChevronDown,
+  Pencil,
+  CreditCard,
+  RotateCcw,
+  Trash2,
+  BookOpen,
+  Settings,
+  Users,
+  FilePlus,
+  List,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -99,22 +111,56 @@ const KvRow: React.FC<KvRowProps> = ({ label, children }) => (
 interface SectionLabelProps {
   children: React.ReactNode;
   editHref?: string;
+  right?: React.ReactNode;
 }
-const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref }) => (
+const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref, right }) => (
   <div className="flex items-center justify-between gap-2 px-4 sm:px-5 pt-4 pb-2">
     <div className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
       {children}
     </div>
-    {editHref && (
-      <Link
-        to={editHref}
-        className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0d0e0e]"
-      >
-        Edit
-      </Link>
-    )}
+    <div className="flex items-center gap-2">
+      {right}
+      {editHref && (
+        <Link
+          to={editHref}
+          className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0d0e0e]"
+        >
+          Edit
+        </Link>
+      )}
+    </div>
   </div>
 );
+
+/** Full-width stacked button used in the Actions / Quick Links column. */
+const StackedButton: React.FC<{
+  icon: React.ElementType;
+  label: string;
+  onClick?: () => void;
+  href?: string;
+  disabled?: boolean;
+  danger?: boolean;
+}> = ({ icon: Icon, label, onClick, href, disabled, danger }) => {
+  const className = `w-full justify-start gap-2 ${
+    danger ? 'text-red-600 border-red-200 hover:bg-red-50' : ''
+  }`;
+  if (href) {
+    return (
+      <Button variant="outline" size="sm" className={className} asChild>
+        <Link to={href}>
+          <Icon className="h-4 w-4" />
+          {label}
+        </Link>
+      </Button>
+    );
+  }
+  return (
+    <Button variant="outline" size="sm" className={className} disabled={disabled} onClick={onClick}>
+      <Icon className="h-4 w-4" />
+      {label}
+    </Button>
+  );
+};
 
 const PlainValue: React.FC<{ value: React.ReactNode }> = ({ value }) =>
   value === '' || value == null ? <span className="text-gray-400">—</span> : <>{value}</>;
@@ -287,20 +333,24 @@ export const AdminCompanyDetailPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Business Details + Activity & Subscription */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Business Details + Activity & Subscription + Actions */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Business Details */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <SectionLabel editHref={`${editPath}#about-section`}>{t('companyView.businessDetails', 'Business details')}</SectionLabel>
-          <KvRow label={t('companyView.field.businessName', 'Business Name')}>
-            <div className="flex items-center gap-2 justify-end flex-wrap">
-              <span className="font-medium">{company.title}</span>
+          <SectionLabel
+            editHref={`${editPath}#about-section`}
+            right={
               <CategoryBadgeButton
                 label={company.category}
                 onClick={() => setCategoryPickerOpen(true)}
                 isUpdating={updateCompany.isPending}
               />
-            </div>
+            }
+          >
+            {t('companyView.businessDetails', 'Business details')}
+          </SectionLabel>
+          <KvRow label={t('companyView.field.businessName', 'Business Name')}>
+            <span className="font-medium">{company.title}</span>
           </KvRow>
           <KvRow label={t('companyView.field.customerNo', 'Customer No.')}>
             {company.customerNumber}
@@ -420,65 +470,30 @@ export const AdminCompanyDetailPage: React.FC = () => {
             </span>
           </KvRow>
         </div>
-      </section>
 
-      {/* Quick Links + Actions */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <SectionLabel>{t('companyView.quickLinks', 'Quick Links')}</SectionLabel>
-          <div className="p-4 sm:p-5 flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs(handbookRoutes.pages)}>
-              {t('companyView.quick.allPages', 'All Pages')}
-            </Button>
-            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs(handbookRoutes.manage)}>
-              {t('companyView.quick.createHandbook', 'Create Your Handbook')}
-            </Button>
-            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs('/')}>
-              {t('companyView.quick.controlPanel', 'Control Panel')}
-            </Button>
-            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs(employeesRoutes.list)}>
-              {t('companyView.quick.employees', 'Employees')}
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to={addCrmUrl}>
-                {t('companyView.quick.addCrm', 'Add CRM Activity')}
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to={adminRoutes.companyInformationList.replace(':id', String(company.nid))}>
-                {t('companyView.quick.infoList', 'Info List')}
-              </Link>
-            </Button>
-          </div>
-        </div>
-
+        {/* Actions + Quick Links */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <SectionLabel>{t('companyView.actions', 'Actions')}</SectionLabel>
-          <div className="p-4 sm:p-5 flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link to={editPath}>
-                {t('companyView.actionEdit', 'Edit')}
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" disabled={enteringConsole} onClick={() => handleViewAs('/')}>
-              {t('companyView.actionView', 'View')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => setResetOpen(true)}
-            >
-              {t('companyView.actionReset', 'Reset')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => setDeleteOpen(true)}
-            >
-              {t('companyView.actionDeleteAll', 'Delete All')}
-            </Button>
+          <div className="px-4 sm:px-5 pb-4 flex flex-col gap-2">
+            <StackedButton icon={Pencil} href={editPath} label={t('companyView.actionEdit', 'Edit')} />
+            <StackedButton
+              icon={CreditCard}
+              disabled={enteringConsole}
+              onClick={() => handleViewAs('/')}
+              label={t('companyView.actionView', 'View')}
+            />
+            <StackedButton icon={RotateCcw} danger onClick={() => setResetOpen(true)} label={t('companyView.actionReset', 'Reset')} />
+            <StackedButton icon={Trash2} danger onClick={() => setDeleteOpen(true)} label={t('companyView.actionDeleteAll', 'Delete All')} />
+          </div>
+
+          <SectionLabel>{t('companyView.quickLinks', 'Quick Links')}</SectionLabel>
+          <div className="px-4 sm:px-5 pb-4 flex flex-col gap-2">
+            <StackedButton icon={FileText} disabled={enteringConsole} onClick={() => handleViewAs(handbookRoutes.pages)} label={t('companyView.quick.allPages', 'All Pages')} />
+            <StackedButton icon={BookOpen} disabled={enteringConsole} onClick={() => handleViewAs(handbookRoutes.manage)} label={t('companyView.quick.createHandbook', 'Create Your Handbook')} />
+            <StackedButton icon={Settings} disabled={enteringConsole} onClick={() => handleViewAs('/')} label={t('companyView.quick.controlPanel', 'Control Panel')} />
+            <StackedButton icon={Users} disabled={enteringConsole} onClick={() => handleViewAs(employeesRoutes.list)} label={t('companyView.quick.employees', 'Employees')} />
+            <StackedButton icon={FilePlus} href={addCrmUrl} label={t('companyView.quick.addCrm', 'Add CRM Activity')} />
+            <StackedButton icon={List} href={adminRoutes.companyInformationList.replace(':id', String(company.nid))} label={t('companyView.quick.infoList', 'Info List')} />
           </div>
         </div>
       </section>
@@ -534,7 +549,14 @@ export const AdminCompanyDetailPage: React.FC = () => {
                         {new Date(a.created * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium text-[#0d0e0e]">{a.title}</TableCell>
+                    <TableCell className="font-medium text-[#0d0e0e]">
+                      <Link
+                        to={adminRoutes.crmActivityEdit.replace(':id', String(a.id))}
+                        className="hover:underline"
+                      >
+                        {a.title}
+                      </Link>
+                    </TableCell>
                     <TableCell className="text-gray-700 text-xs">{a.responsibleName || '—'}</TableCell>
                     <TableCell className="text-gray-600 text-xs">
                       {a.fupDate ? formatDate(new Date(a.fupDate).toISOString()) : '—'}

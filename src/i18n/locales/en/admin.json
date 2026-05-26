@@ -13,7 +13,7 @@
     "people": "People",
     "settings": "Settings",
     "userConsole": "User Console",
-    "userAccount": "User account",
+    "userAccount": "User Console",
     "changeUserView": "Change user view",
     "books": "Books",
     "taxonomy": "Taxonomy",
@@ -309,7 +309,8 @@
     "internalName": "Internal name",
     "internalNameDesc": "The internal username is created automatically",
     "mobilePhone": "Mobile phone",
-    "sendEmail": "Send email to primary contact person",
+    "sendEmail": "Send login credentials to the company email",
+    "sendEmailHint": "Creates a console account for the company email and emails a link to set a password.",
     "subscription": "Subscription",
     "product": "Product",
     "licenses": "Licenses",
@@ -329,6 +330,11 @@
     "cvrLookupFailed": "CVR lookup failed",
     "cvrNotFound": "No business found for that CVR number",
     "cvrNumber": "CVR number",
+    "cvrAlreadyRegistered": "This CVR is already in the system, registered to {{name}}. Check the existing company instead.",
+    "cvrExistingTitle": "This CVR is already in the system",
+    "viewExisting": "Open existing company",
+    "duplicate": "This information is already in the system. Please check the existing company and update it, or register a new company with different information.",
+    "duplicateField": "The {{field}} you entered is already in the system, registered to {{name}}. Please check the existing company and update it, or register a new company with different information.",
     "description": "Onboard a new business",
     "failed": "Failed to create business",
     "lookingUp": "Looking up...",
@@ -360,7 +366,7 @@
     "viewAsAction": "View as"
   },
   "switchTo": "Switch to",
-  "adminAccount": "Admin Account",
+  "adminAccount": "Admin Console",
   "viewInvoices": "View Invoices",
   "createBusiness": "Create a Business",
   "taxonomy": {
@@ -895,6 +901,20 @@
     }
   },
   "companyView": {
+    "actions": "Actions",
+    "actionEdit": "Edit",
+    "actionView": "View",
+    "actionReset": "Reset",
+    "actionDeleteAll": "Delete All",
+    "quickLinks": "Quick Links",
+    "quick": {
+      "allPages": "All Pages",
+      "createHandbook": "Create Your Handbook",
+      "controlPanel": "Control Panel",
+      "employees": "Employees",
+      "addCrm": "Add CRM Activity",
+      "infoList": "Info List"
+    },
     "additionalManuals": "Additional Manuals",
     "alwaysShowImageTab": "Always Show Image Tab",
     "annual": "Annual",
@@ -1035,6 +1055,12 @@
     "title": "Create CRM Activity"
   },
   "editCompany": {
+    "emailConfirm": {
+      "title": "Send login credentials?",
+      "body": "Login credentials for the handbook console will be sent to {{email}}. The contact person can use them to set a password and access their console.",
+      "cancel": "Cancel",
+      "confirm": "Save & send"
+    },
     "about": {
       "customerCompany": "Customer company",
       "cvr": "CVR number",
@@ -1198,7 +1224,6 @@
     }
   },
   "invoices": {
-    "all": "All",
     "breadcrumb": "Invoices",
     "columns": {
       "addPurchases": "Add. Purchases",
@@ -1213,12 +1238,17 @@
       "payment": "Payment",
       "when": "When"
     },
-    "customersOnly": "Customers Only",
     "empty": "No invoices found.",
     "exportCsv": "Export CSV",
     "exporting": "Exporting…",
     "searchPlaceholder": "Search businesses...",
     "showing": "Showing {{from}}–{{to}} of {{total}} invoices",
+    "sortBy": "Sort by",
+    "sort": {
+      "business": "Business",
+      "begin": "Begin date",
+      "end": "End date"
+    },
     "title": "Invoices"
   },
   "keyFigures": {
@@ -1508,7 +1538,7 @@
   },
   "accountDashboard": {
     "breadcrumbConsole": "Console",
-    "titleSuperadmin": "Superadmin Dashboard",
+    "titleSuperadmin": "Team Management",
     "titleAdmin": "Admin Dashboard",
     "addUser": "Add user",
     "addUserComingSoon": "User invitations are coming soon.",
@@ -1560,7 +1590,8 @@
       "superadmin": "Superadmin",
       "admin": "Admin",
       "user": "User",
-      "crmUser": "CRM User Only"
+      "crmUser": "CRM User Only",
+      "none": "Customer"
     },
     "tabs": {
       "adminPanel": "Admin panel",
@@ -1578,6 +1609,26 @@
       "showingActivities": "Showing {{from}}–{{to}} of {{total}} activities",
       "show": "Show",
       "perPage": "per page"
-    }
+    },
+    "addUserTitle": "Add user",
+    "editUserTitle": "Edit user",
+    "userCreated": "User created",
+    "userCreateFailed": "Could not create user",
+    "userUpdated": "User updated",
+    "userUpdateFailed": "Could not update user",
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "tempPassword": "Temporary password",
+      "passwordHint": "At least 8 characters",
+      "role": "Role",
+      "status": "Status",
+      "cancel": "Cancel",
+      "create": "Create user",
+      "creating": "Creating…",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "noAccess": "You do not have access to user management."
   }
 }

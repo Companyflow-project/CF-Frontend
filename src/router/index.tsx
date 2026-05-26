@@ -14,7 +14,7 @@ import { companiesRoutes } from '@/features/companies/routes';
 import { userManualRoutes } from '@/features/user-manual/routes';
 import { adminRoutes } from '@/features/admin/routes';
 import { AdminLayout } from '@/features/admin/layouts/admin-layout';
-import { resolveRbacRole, canAccessAdminConsole } from '@/lib/rbac';
+import { resolveRbacRole, canAccessAdminConsole, canAccessAccountDashboard } from '@/lib/rbac';
 
 // Admin pages (lazy-loaded)
 const AdminDashboardPage = lazy(() => import('@/features/admin/pages/admin-dashboard-page').then((m) => ({ default: m.AdminDashboardPage })));
@@ -190,9 +190,21 @@ const RequireStrictAdmin: React.FC<{ children: React.ReactNode }> = ({ children 
 const RequirePlatformAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <PageFallback />;
-  // Per the RBAC matrix, the /admin console is open to Superadmin + Admin.
+  // The /admin console is open to all four internal-staff roles; only the
+  // `none` bucket (customers) is shut out. Per-module limits are applied below.
   if (!user || !canAccessAdminConsole(resolveRbacRole(user.role))) {
     return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
+};
+
+/** The account dashboard (user provisioning + activity) is Superadmin/Admin only.
+ *  User/CRM-Sales roles are bounced back to the operational console landing. */
+const RequireAccountDashboard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <PageFallback />;
+  if (!user || !canAccessAccountDashboard(resolveRbacRole(user.role))) {
+    return <Navigate to="/admin" replace />;
   }
   return <>{children}</>;
 };
@@ -788,9 +800,11 @@ export const AppRouter: React.FC = () => {
             element={
               <RequireAuth>
                 <RequirePlatformAdmin>
-                  <AdminLayout>
-                    <AccountDashboardPage />
-                  </AdminLayout>
+                  <RequireAccountDashboard>
+                    <AdminLayout>
+                      <AccountDashboardPage />
+                    </AdminLayout>
+                  </RequireAccountDashboard>
                 </RequirePlatformAdmin>
               </RequireAuth>
             }

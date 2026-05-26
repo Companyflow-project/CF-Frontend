@@ -216,7 +216,7 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                         onClick={() => setIsSwitchOpen(false)}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
-                        {t('nav.adminAccount', 'Admin Account')}
+                        {t('nav.adminAccount', 'Admin Console')}
                       </Link>
                       <button
                         type="button"

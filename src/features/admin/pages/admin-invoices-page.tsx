@@ -24,7 +24,7 @@ function monthsLabel(n: number | null): { label: string; highlighted: boolean } 
 
 export const AdminInvoicesPage: React.FC = () => {
   const { t } = useTranslation('admin');
-  const [customersOnly, setCustomersOnly] = useState(true);
+  const [sortBy, setSortBy] = useState<'business' | 'begin' | 'end'>('business');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -44,7 +44,7 @@ export const AdminInvoicesPage: React.FC = () => {
   const { data, isLoading } = useInvoices({
     page,
     limit: perPage,
-    customersOnly,
+    sort: sortBy,
     search: debouncedSearch || undefined,
   });
 
@@ -59,7 +59,7 @@ export const AdminInvoicesPage: React.FC = () => {
     try {
       setExporting(true);
       const blob = await adminApi.exportInvoicesCsv({
-        customersOnly,
+        sort: sortBy,
         search: debouncedSearch || undefined,
       });
       const url = URL.createObjectURL(blob);
@@ -105,29 +105,28 @@ export const AdminInvoicesPage: React.FC = () => {
 
       {/* Filter bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => { setCustomersOnly(true); setPage(1); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-              customersOnly
-                ? 'bg-[#0d0e0e] text-white border-[#0d0e0e]'
-                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            {t('invoices.customersOnly', 'Customers Only')}
-          </button>
-          <button
-            type="button"
-            onClick={() => { setCustomersOnly(false); setPage(1); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-              !customersOnly
-                ? 'bg-[#0d0e0e] text-white border-[#0d0e0e]'
-                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            {t('invoices.all', 'All')}
-          </button>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-500">
+            {t('invoices.sortBy', 'Sort by')}:
+          </span>
+          {([
+            { key: 'business', label: t('invoices.sort.business', 'Business') },
+            { key: 'begin', label: t('invoices.sort.begin', 'Begin date') },
+            { key: 'end', label: t('invoices.sort.end', 'End date') },
+          ] as const).map((opt) => (
+            <button
+              key={opt.key}
+              type="button"
+              onClick={() => { setSortBy(opt.key); setPage(1); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                sortBy === opt.key
+                  ? 'bg-[#0d0e0e] text-white border-[#0d0e0e]'
+                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

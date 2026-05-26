@@ -307,8 +307,17 @@ export interface AdminUserListParams {
 }
 
 export interface UpdateAdminUserPayload {
+  name?: string;
   role?: string;
   status?: number;
+  companyId?: number;
+}
+
+export interface CreateAdminUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  role?: string;
   companyId?: number;
 }
 
@@ -501,7 +510,7 @@ export interface InvoiceRow {
 export interface InvoiceListParams {
   page?: number;
   limit?: number;
-  customersOnly?: boolean;
+  sort?: 'business' | 'begin' | 'end';
   search?: string;
 }
 
@@ -602,6 +611,22 @@ export interface AdminTaxonomyTermVersion {
   authorName: string;
   logMessage: string;
   isCurrent: boolean;
+}
+
+// --- CVR lookup ---
+export interface ExistingCompanySummary {
+  nid: number;
+  name: string;
+  cvr: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface CvrLookupResult {
+  /** A company already registered in CompanyFlow with this CVR, if any. */
+  existing: ExistingCompanySummary | null;
+  /** Data pulled from the Danish CVR registry (cvrapi.dk), if found. */
+  registry: { name: string; email: string | null; phone: string | null } | null;
 }
 
 // --- Create Company (Phase 4) ---

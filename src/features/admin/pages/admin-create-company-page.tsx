@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { adminApi } from '../api';
 import { adminRoutes } from '../routes';
+import type { ExistingCompanySummary } from '../types';
 
 // ---- Category definitions (matches Drupal "Create a Business" form) ----
 const CATEGORIES = [
@@ -87,6 +88,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
   const [form, setForm] = useState<FormState>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [cvrLoading, setCvrLoading] = useState(false);
+  const [cvrExisting, setCvrExisting] = useState<ExistingCompanySummary | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -106,22 +108,25 @@ export const AdminCreateCompanyPage: React.FC = () => {
   const handleCvrLookup = async () => {
     if (!form.cvr.trim()) return;
     setCvrLoading(true);
+    setCvrExisting(null);
     try {
-      const res = await fetch(
-        `https://cvrapi.dk/api?search=${encodeURIComponent(form.cvr)}&country=dk`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        if (data.name) {
-          set('name', data.name);
-          if (data.email) set('email', data.email);
-          if (data.phone) set('phone', String(data.phone));
-          toast.success(t('createCompany.cvrFound'));
-        } else {
-          toast.error(t('createCompany.cvrNotFound'));
-        }
+      const { existing, registry } = await adminApi.lookupCvr(form.cvr);
+
+      if (existing) {
+        // Already registered in CompanyFlow — surface it so the admin can update
+        // the existing record instead of creating a duplicate.
+        setCvrExisting(existing);
+        set('name', existing.name);
+        if (existing.email) set('email', existing.email);
+        if (existing.phone) set('phone', existing.phone);
+        toast.error(t('createCompany.cvrAlreadyRegistered', { name: existing.name }));
+      } else if (registry) {
+        set('name', registry.name);
+        if (registry.email) set('email', registry.email);
+        if (registry.phone) set('phone', registry.phone);
+        toast.success(t('createCompany.cvrFound'));
       } else {
-        toast.error(t('createCompany.cvrLookupFailed'));
+        toast.error(t('createCompany.cvrNotFound'));
       }
     } catch {
       toast.error(t('createCompany.cvrLookupFailed'));
@@ -190,8 +195,28 @@ export const AdminCreateCompanyPage: React.FC = () => {
           navigate(`/admin/companies/${result.nid}`);
           break;
       }
-    } catch {
-      toast.error(t('createCompany.failed'));
+    } catch (err) {
+      const apiError = (err as {
+        apiError?: { code?: string; message?: string; details?: { field?: string; company?: { name?: string } } };
+      }).apiError;
+      if (apiError?.code === 'CONFLICT') {
+        // Duplicate CVR / email / phone — build a localized, actionable message
+        // from the structured details the backend returns.
+        const field = apiError.details?.field;
+        const fieldLabel =
+          field === 'cvr' ? t('createCompany.cvrNumber')
+          : field === 'email' ? t('createCompany.companyEmail')
+          : field === 'phone' ? t('createCompany.telephone')
+          : '';
+        const name = apiError.details?.company?.name;
+        if (fieldLabel && name) {
+          toast.error(t('createCompany.duplicateField', { field: fieldLabel, name }));
+        } else {
+          toast.error(t('createCompany.duplicate'));
+        }
+      } else {
+        toast.error(t('createCompany.failed'));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -249,6 +274,25 @@ export const AdminCreateCompanyPage: React.FC = () => {
                   : t('createCompany.lookup', 'Look up')}
               </Button>
             </div>
+
+            {cvrExisting && (
+              <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm">
+                <p className="font-medium text-amber-900">
+                  {t('createCompany.cvrExistingTitle', 'This CVR is already in the system')}
+                </p>
+                <div className="mt-1 space-y-0.5 text-amber-800">
+                  <p>{cvrExisting.name}</p>
+                  {cvrExisting.email && <p>{cvrExisting.email}</p>}
+                  {cvrExisting.phone && <p>{cvrExisting.phone}</p>}
+                </div>
+                <Link
+                  to={`/admin/companies/${cvrExisting.nid}`}
+                  className="mt-2 inline-block font-medium text-amber-900 underline hover:text-amber-950"
+                >
+                  {t('createCompany.viewExisting', 'Open existing company')}
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -393,15 +437,18 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-start gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.sendEmail}
                     onChange={(e) => set('sendEmail', e.target.checked)}
-                    className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                    className="mt-0.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                   />
                   <span className="text-sm text-gray-700">
-                    {t('createCompany.sendEmail', 'Send welcome email')}
+                    {t('createCompany.sendEmail', 'Send login credentials to the company email')}
+                    <span className="block text-xs text-gray-400">
+                      {t('createCompany.sendEmailHint', 'Creates a console account for the company email and emails a link to set a password.')}
+                    </span>
                   </span>
                 </label>
               </div>

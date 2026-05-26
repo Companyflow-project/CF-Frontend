@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { axiosClient } from '@/lib/axios-client';
 import { X, Upload as UploadIcon, AlertTriangle } from 'lucide-react';
 import type { AdminHandbookTreeNode } from '../handbook-types';
@@ -454,27 +455,49 @@ export const AdminEditCompanyPage: React.FC = () => {
 
   const primaryContact = company?.contacts?.find((c) => c.isPrimary) ?? company?.contacts?.[0];
 
+  // Confirm dialog shown when the admin changes the company email (login
+  // credentials for the handbook console are sent to the new address).
+  const [emailConfirmOpen, setEmailConfirmOpen] = useState(false);
+
   const saveSection = async (section: SectionKey, payload: UpdateCompanyPayload) => {
     if (!id) return;
     setSavingSection(section);
     try {
       await updateCompany.mutateAsync({ companyId: id, data: payload as Record<string, unknown> });
       toast.success(t('editCompany.saveSuccess', 'Changes saved'));
-    } catch {
-      toast.error(t('editCompany.saveFailed', 'Failed to save changes'));
+    } catch (err) {
+      const apiError = (err as { apiError?: { code?: string; message?: string } }).apiError;
+      toast.error(
+        apiError?.code === 'CONFLICT' && apiError.message
+          ? apiError.message
+          : t('editCompany.saveFailed', 'Failed to save changes'),
+      );
     } finally {
       setSavingSection(null);
     }
   };
 
+  const buildAboutPayload = (): UpdateCompanyPayload => ({
+    title: aboutForm.title,
+    phone: aboutForm.phone,
+    email: aboutForm.email,
+    cvr: aboutForm.cvr,
+  });
+
   const handleSaveAbout = () => {
-    const payload: UpdateCompanyPayload = {
-      title: aboutForm.title,
-      phone: aboutForm.phone,
-      email: aboutForm.email,
-      cvr: aboutForm.cvr,
-    };
-    void saveSection('about', payload);
+    const emailTrimmed = aboutForm.email.trim();
+    const emailChanged = emailTrimmed !== (company?.email ?? '').trim();
+    // Changing to a non-empty email triggers a set-password invite — confirm first.
+    if (emailChanged && emailTrimmed.length > 0) {
+      setEmailConfirmOpen(true);
+      return;
+    }
+    void saveSection('about', buildAboutPayload());
+  };
+
+  const confirmSaveAbout = () => {
+    setEmailConfirmOpen(false);
+    void saveSection('about', buildAboutPayload());
   };
 
   const handleSaveAddress = () => {
@@ -1726,6 +1749,36 @@ export const AdminEditCompanyPage: React.FC = () => {
         saving={isSaving('status')}
       />
       </>)}
+
+      {/* Confirm sending login credentials when the company email changes */}
+      <Dialog open={emailConfirmOpen} onOpenChange={(o) => { if (!o) setEmailConfirmOpen(false); }}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4">
+          <h2 className="text-lg font-bold text-gray-900">
+            {t('editCompany.emailConfirm.title', 'Send login credentials?')}
+          </h2>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            {t(
+              'editCompany.emailConfirm.body',
+              'Login credentials for the handbook console will be sent to {{email}}. The contact person can use them to set a password and access their console.',
+              { email: aboutForm.email.trim() },
+            )}
+          </p>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="outline" onClick={() => setEmailConfirmOpen(false)}>
+              {t('editCompany.emailConfirm.cancel', 'Cancel')}
+            </Button>
+            <Button
+              className="bg-gray-900 text-white hover:bg-gray-800"
+              disabled={isSaving('about')}
+              onClick={confirmSaveAbout}
+            >
+              {isSaving('about')
+                ? t('editCompany.saving', 'Saving...')
+                : t('editCompany.emailConfirm.confirm', 'Save & send')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

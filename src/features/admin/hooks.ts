@@ -4,6 +4,7 @@ import type {
   AdminCompanyListParams,
   UpdateSubscriptionPayload,
   AdminUserListParams,
+  CreateAdminUserPayload,
   UpdateAdminUserPayload,
   PlatformSettings,
   CreateTicketPayload,
@@ -128,6 +129,18 @@ export const useAdminUsers = (params: AdminUserListParams) => {
     queryKey: ['admin-users', params],
     queryFn: () => adminApi.getUsers(params),
     placeholderData: keepPreviousData,
+  });
+};
+
+export const useCreateAdminUser = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateAdminUserPayload) => adminApi.createUser(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-users'] });
+      qc.invalidateQueries({ queryKey: ['admin-user-stats'] });
+      qc.invalidateQueries({ queryKey: ['admin-dashboard'] });
+    },
   });
 };
 
@@ -276,7 +289,7 @@ export const useUpdateAnyTicket = () => {
 };
 
 // --- Invoices ---
-export const useInvoices = (params: { page?: number; limit?: number; customersOnly?: boolean; search?: string }) => {
+export const useInvoices = (params: { page?: number; limit?: number; sort?: 'business' | 'begin' | 'end'; search?: string }) => {
   return useQuery({
     queryKey: ['admin-invoices', params],
     queryFn: () => adminApi.getInvoices(params),
