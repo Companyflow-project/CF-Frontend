@@ -127,23 +127,23 @@ export const AdminCrmActivitiesPage: React.FC = () => {
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <div className="text-sm text-gray-500">
-            <Link to={adminRoutes.dashboard} className="hover:underline">{t('nav.console', 'Console')}</Link>
-            {' › '}
-            <span className="text-gray-700">{t('crmActivities.breadcrumb', 'Activities')}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">
+      <div className="space-y-1">
+        <div className="text-sm text-gray-500">
+          <Link to={adminRoutes.dashboard} className="hover:underline">{t('nav.console', 'Console')}</Link>
+          {' › '}
+          <span className="text-gray-700">{t('crmActivities.breadcrumb', 'Activities')}</span>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">
             {t('crmActivities.title', 'CRM — Activities')}
           </h1>
+          <Button asChild size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg shrink-0">
+            <Link to={adminRoutes.crmCreate}>
+              <Plus className="h-4 w-4 mr-1" />
+              {t('crmActivities.addActivity', 'Add Activity')}
+            </Link>
+          </Button>
         </div>
-        <Button asChild size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg">
-          <Link to={adminRoutes.crmCreate}>
-            <Plus className="h-4 w-4 mr-1" />
-            {t('crmActivities.addActivity', 'Add Activity')}
-          </Link>
-        </Button>
       </div>
 
       {/* Filter card */}

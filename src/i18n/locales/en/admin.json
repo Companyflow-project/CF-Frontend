@@ -1560,7 +1560,7 @@
     "reactivated": "User reactivated",
     "stats": {
       "totalUsers": "Total users",
-      "totalUsersSub": "Across all roles",
+      "totalUsersSub": "Across all console roles",
       "admins": "Admins",
       "adminsSub": "Full panel access",
       "users": "Users",
@@ -1578,7 +1578,8 @@
     "statuses": {
       "active": "Active",
       "invited": "Invited",
-      "suspended": "Suspended"
+      "suspended": "Suspended",
+      "inactive": "Inactive"
     },
     "actions": {
       "edit": "Edit",
@@ -1591,7 +1592,7 @@
       "admin": "Admin",
       "user": "User",
       "crmUser": "CRM User Only",
-      "none": "Customer"
+      "none": "No access"
     },
     "tabs": {
       "adminPanel": "Admin panel",

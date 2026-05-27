@@ -1560,7 +1560,7 @@
     "reactivated": "Bruger genaktiveret",
     "stats": {
       "totalUsers": "Brugere i alt",
-      "totalUsersSub": "På tværs af alle roller",
+      "totalUsersSub": "På tværs af alle konsolroller",
       "admins": "Administratorer",
       "adminsSub": "Fuld paneladgang",
       "users": "Brugere",
@@ -1578,7 +1578,8 @@
     "statuses": {
       "active": "Aktiv",
       "invited": "Inviteret",
-      "suspended": "Suspenderet"
+      "suspended": "Suspenderet",
+      "inactive": "Inaktiv"
     },
     "actions": {
       "edit": "Rediger",
@@ -1591,7 +1592,7 @@
       "admin": "Admin",
       "user": "Bruger",
       "crmUser": "Kun CRM-bruger",
-      "none": "Kunde"
+      "none": "Ingen adgang"
     },
     "tabs": {
       "adminPanel": "Adminpanel",

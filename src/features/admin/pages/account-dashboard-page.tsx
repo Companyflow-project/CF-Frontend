@@ -56,6 +56,9 @@ const ROLE_OPTIONS: { value: string; key: RoleKey }[] = [
   { value: 'platform_admin', key: 'admin' },
   { value: 'staff_user', key: 'user' },
   { value: 'crm_user', key: 'crmUser' },
+  // 'none' is the "No access" tier: backend strips all console roles for this value.
+  // Assigning it demotes a console user to no admin-console access.
+  { value: 'none', key: 'none' },
 ];
 
 const roleBadgeClass: Record<RoleKey, string> = {
@@ -217,11 +220,12 @@ export const AccountDashboardPage: React.FC = () => {
     );
   };
 
-  const statusBadge = (s: AdminUser['accountStatus']) => {
+  const statusBadge = (s: AdminUser['accountStatus'] | 'inactive') => {
     const map = {
       active: { cls: 'bg-green-50 text-green-700 border-green-200', label: t('accountDashboard.statuses.active', 'Active') },
       invited: { cls: 'bg-amber-50 text-amber-700 border-amber-200', label: t('accountDashboard.statuses.invited', 'Invited') },
       suspended: { cls: 'bg-red-50 text-red-700 border-red-200', label: t('accountDashboard.statuses.suspended', 'Suspended') },
+      inactive: { cls: 'bg-gray-100 text-gray-500 border-gray-200', label: t('accountDashboard.statuses.inactive', 'Inactive') },
     }[s];
     return (
       <span className={cn('inline-block text-xs font-medium px-2.5 py-0.5 rounded-full border', map.cls)}>
@@ -331,9 +335,13 @@ export const AccountDashboardPage: React.FC = () => {
                           </div>
                         </div>
                       </TableCell>
-                      {/* Role */}
+                      {/* Role. Only show the editable picker for actual admin-console
+                          roles; users with no console role (rk === 'none' — i.e. customers
+                          like account_owner) render the read-only "Customer" badge. Without
+                          this guard their value matches no <option> and the <select> falls
+                          back to showing its first option ("Superadmin"). */}
                       <TableCell>
-                        {manageable ? (
+                        {manageable && rk !== 'none' ? (
                           <Select
                             value={ROLE_OPTIONS.find((o) => o.key === rk)?.value ?? 'EMPLOYEE'}
                             onChange={(e) => handleRoleChange(u.uid, e.target.value)}
@@ -352,8 +360,10 @@ export const AccountDashboardPage: React.FC = () => {
                           </span>
                         )}
                       </TableCell>
-                      {/* Status */}
-                      <TableCell>{statusBadge(u.accountStatus)}</TableCell>
+                      {/* Status. No-access users (customers) can't use the admin console,
+                          so they default to a read-only "Inactive" badge here — their real
+                          account status is unchanged. */}
+                      <TableCell>{statusBadge(rk === 'none' ? 'inactive' : u.accountStatus)}</TableCell>
                       {/* Last active */}
                       <TableCell className="text-gray-600 text-sm whitespace-nowrap">
                         {u.accountStatus === 'invited'
@@ -368,7 +378,10 @@ export const AccountDashboardPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            disabled={!manageable}
+                            // Customers (no console role) are read-only here; the Edit modal
+                            // shares the role-picker bug and its save destructively replaces
+                            // all of a user's roles (would strip account_owner).
+                            disabled={!manageable || rk === 'none'}
                             onClick={() => setEditTarget(u)}
                           >
                             {t('accountDashboard.actions.edit', 'Edit')}
@@ -505,10 +518,10 @@ const AddUserDialog: React.FC<{ open: boolean; onClose: () => void; roleOptions:
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('EMPLOYEE');
+  const [role, setRole] = useState('staff_user');
 
   React.useEffect(() => {
-    if (open) { setName(''); setEmail(''); setPassword(''); setRole('EMPLOYEE'); }
+    if (open) { setName(''); setEmail(''); setPassword(''); setRole('staff_user'); }
   }, [open]);
 
   const valid = name.trim().length > 0 && email.trim().length > 2 && password.length >= 8;
