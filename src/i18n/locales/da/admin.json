@@ -309,8 +309,8 @@
     "internalName": "Internt navn",
     "internalNameDesc": "Det interne brugernavn oprettes automatisk",
     "mobilePhone": "Mobiltelefon",
-    "sendEmail": "Send loginoplysninger til virksomhedens e-mail",
-    "sendEmailHint": "Opretter en konsolkonto for virksomhedens e-mail og sender et link til at oprette en adgangskode.",
+    "sendEmail": "Send loginoplysninger til kontaktens e-mail",
+    "sendEmailHint": "Opretter en konsolkonto for kontaktens e-mail og sender et link til at oprette en adgangskode.",
     "subscription": "Abonnement",
     "product": "Produkt",
     "licenses": "Licenser",
@@ -335,6 +335,7 @@
     "viewExisting": "Åbn eksisterende virksomhed",
     "duplicate": "Disse oplysninger findes allerede i systemet. Tjek den eksisterende virksomhed og opdater den, eller opret en ny virksomhed med andre oplysninger.",
     "duplicateField": "Det {{field}} du har indtastet findes allerede i systemet og er registreret på {{name}}. Tjek den eksisterende virksomhed og opdater den, eller opret en ny virksomhed med andre oplysninger.",
+    "contactEmailInUse": "Denne kontaktemail tilhører allerede en anden konto. Brug en anden e-mail, da det er den adresse, der modtager loginoplysningerne.",
     "description": "Tilføj en ny virksomhed",
     "failed": "Kunne ikke oprette virksomhed",
     "lookingUp": "Slår op...",
@@ -348,8 +349,10 @@
     "success": "Virksomhed oprettet",
     "validation": {
       "contactEmailRequired": "Kontaktemail er påkrævet",
+      "contactEmailInvalid": "Indtast en gyldig kontaktemail",
       "contactNameRequired": "Kontaktnavn er påkrævet",
       "emailRequired": "Virksomhedsemail er påkrævet",
+      "emailInvalid": "Indtast en gyldig virksomhedsemail",
       "nameRequired": "Virksomhedsnavn er påkrævet"
     }
   },

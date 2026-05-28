@@ -309,8 +309,8 @@
     "internalName": "Internal name",
     "internalNameDesc": "The internal username is created automatically",
     "mobilePhone": "Mobile phone",
-    "sendEmail": "Send login credentials to the company email",
-    "sendEmailHint": "Creates a console account for the company email and emails a link to set a password.",
+    "sendEmail": "Send login credentials to the contact email",
+    "sendEmailHint": "Creates a console account for the contact email and emails a link to set a password.",
     "subscription": "Subscription",
     "product": "Product",
     "licenses": "Licenses",
@@ -335,6 +335,7 @@
     "viewExisting": "Open existing company",
     "duplicate": "This information is already in the system. Please check the existing company and update it, or register a new company with different information.",
     "duplicateField": "The {{field}} you entered is already in the system, registered to {{name}}. Please check the existing company and update it, or register a new company with different information.",
+    "contactEmailInUse": "This contact email already belongs to another account. Use a different email, since this is the address that receives the login credentials.",
     "description": "Onboard a new business",
     "failed": "Failed to create business",
     "lookingUp": "Looking up...",
@@ -348,8 +349,10 @@
     "success": "Business created",
     "validation": {
       "contactEmailRequired": "Contact email is required",
+      "contactEmailInvalid": "Enter a valid contact email address",
       "contactNameRequired": "Contact name is required",
       "emailRequired": "Business email is required",
+      "emailInvalid": "Enter a valid company email address",
       "nameRequired": "Business name is required"
     }
   },

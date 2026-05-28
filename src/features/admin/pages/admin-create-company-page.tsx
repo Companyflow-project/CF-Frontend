@@ -140,6 +140,8 @@ export const AdminCreateCompanyPage: React.FC = () => {
     }
   };
 
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
   const validate = (): boolean => {
     if (!form.name.trim()) {
       toast.error(t('createCompany.validation.nameRequired'));
@@ -149,12 +151,20 @@ export const AdminCreateCompanyPage: React.FC = () => {
       toast.error(t('createCompany.validation.emailRequired'));
       return false;
     }
+    if (!isValidEmail(form.email)) {
+      toast.error(t('createCompany.validation.emailInvalid'));
+      return false;
+    }
     if (!form.contactName.trim()) {
       toast.error(t('createCompany.validation.contactNameRequired'));
       return false;
     }
     if (!form.contactEmail.trim()) {
       toast.error(t('createCompany.validation.contactEmailRequired'));
+      return false;
+    }
+    if (!isValidEmail(form.contactEmail)) {
+      toast.error(t('createCompany.validation.contactEmailInvalid'));
       return false;
     }
     return true;
@@ -208,16 +218,21 @@ export const AdminCreateCompanyPage: React.FC = () => {
         // Duplicate CVR / email / phone — build a localized, actionable message
         // from the structured details the backend returns.
         const field = apiError.details?.field;
-        const fieldLabel =
-          field === 'cvr' ? t('createCompany.cvrNumber')
-          : field === 'email' ? t('createCompany.companyEmail')
-          : field === 'phone' ? t('createCompany.telephone')
-          : '';
         const name = apiError.details?.company?.name;
-        if (fieldLabel && name) {
-          toast.error(t('createCompany.duplicateField', { field: fieldLabel, name }));
+        if (field === 'contactEmail') {
+          // The contact email is the console login identity; it's already taken.
+          toast.error(t('createCompany.contactEmailInUse'));
         } else {
-          toast.error(t('createCompany.duplicate'));
+          const fieldLabel =
+            field === 'cvr' ? t('createCompany.cvrNumber')
+            : field === 'email' ? t('createCompany.companyEmail')
+            : field === 'phone' ? t('createCompany.telephone')
+            : '';
+          if (fieldLabel && name) {
+            toast.error(t('createCompany.duplicateField', { field: fieldLabel, name }));
+          } else {
+            toast.error(t('createCompany.duplicate'));
+          }
         }
       } else {
         toast.error(t('createCompany.failed'));
@@ -472,9 +487,9 @@ export const AdminCreateCompanyPage: React.FC = () => {
                     className="mt-0.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                   />
                   <span className="text-sm text-gray-700">
-                    {t('createCompany.sendEmail', 'Send email to primary contact person')}
+                    {t('createCompany.sendEmail', 'Send login credentials to the contact email')}
                     <span className="block text-xs text-gray-400">
-                      {t('createCompany.sendEmailHint', 'Creates a console account for the company email and emails a link to set a password.')}
+                      {t('createCompany.sendEmailHint', 'Creates a console account for the contact email and emails a link to set a password.')}
                     </span>
                   </span>
                 </label>
