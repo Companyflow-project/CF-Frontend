@@ -9,11 +9,11 @@ import {
   TableHeader,
   TableBody,
   TableRow,
-  TableHead,
   TableCell,
 } from '@/components/ui/table';
 import { useCrmActivities, useCrmUsers } from '../hooks';
 import { adminRoutes } from '../routes';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 const PAGE_SIZE = 10;
 
@@ -54,6 +54,8 @@ export const AdminCrmActivitiesPage: React.FC = () => {
   const [appliedCreatedBy, setAppliedCreatedBy] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(PAGE_SIZE);
+  const [sortColumn, setSortColumn] = useState<'created' | 'business' | 'activity' | 'responsible' | 'next' | 'of' | 'status' | 'writtenBy'>('created');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const { data: users = [] } = useCrmUsers();
 
@@ -83,6 +85,56 @@ export const AdminCrmActivitiesPage: React.FC = () => {
 
   const { data, isLoading } = useCrmActivities(params);
   const activities = data?.data ?? [];
+  const sortedActivities = useMemo(() => {
+    const cloned = [...activities];
+    cloned.sort((a, b) => {
+      const aValue =
+        sortColumn === 'created'
+          ? new Date(a.writtenOn).getTime()
+          : sortColumn === 'business'
+          ? a.companyName ?? ''
+          : sortColumn === 'activity'
+          ? a.activity ?? ''
+          : sortColumn === 'responsible'
+          ? a.responsibleName ?? ''
+          : sortColumn === 'next'
+          ? a.fupDate ? new Date(a.fupDate).getTime() : 0
+          : sortColumn === 'of'
+          ? a.companyName ?? ''
+          : sortColumn === 'status'
+          ? a.status ?? ''
+          : a.authorName ?? '';
+      const bValue =
+        sortColumn === 'created'
+          ? new Date(b.writtenOn).getTime()
+          : sortColumn === 'business'
+          ? b.companyName ?? ''
+          : sortColumn === 'activity'
+          ? b.activity ?? ''
+          : sortColumn === 'responsible'
+          ? b.responsibleName ?? ''
+          : sortColumn === 'next'
+          ? b.fupDate ? new Date(b.fupDate).getTime() : 0
+          : sortColumn === 'of'
+          ? b.companyName ?? ''
+          : sortColumn === 'status'
+          ? b.status ?? ''
+          : b.authorName ?? '';
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [activities, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'created' | 'business' | 'activity' | 'responsible' | 'next' | 'of' | 'status' | 'writtenBy') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
+
   const meta = data?.meta;
   const total = meta?.total ?? 0;
   const totalPages = total ? Math.ceil(total / pageSize) : 1;
@@ -210,16 +262,14 @@ export const AdminCrmActivitiesPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  {t('crmActivities.columns.created', 'Created')} ▼
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.business', 'Business')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.activity', 'Activity')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.responsible', 'Responsible')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.next', 'Next')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.of', 'Of')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.status', 'Status')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.writtenBy', 'Written By')}</TableHead>
+                <SortableTableHead column="created" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.created', 'Created')}</SortableTableHead>
+                <SortableTableHead column="business" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.business', 'Business')}</SortableTableHead>
+                <SortableTableHead column="activity" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.activity', 'Activity')}</SortableTableHead>
+                <SortableTableHead column="responsible" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.responsible', 'Responsible')}</SortableTableHead>
+                <SortableTableHead column="next" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.next', 'Next')}</SortableTableHead>
+                <SortableTableHead column="of" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.of', 'Of')}</SortableTableHead>
+                <SortableTableHead column="status" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.status', 'Status')}</SortableTableHead>
+                <SortableTableHead column="writtenBy" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crmActivities.columns.writtenBy', 'Written By')}</SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -232,7 +282,7 @@ export const AdminCrmActivitiesPage: React.FC = () => {
                   <TableCell colSpan={8} className="text-center text-gray-400 py-8">{t('crmActivities.empty', 'No activities found.')}</TableCell>
                 </TableRow>
               ) : (
-                activities.map((a) => (
+                sortedActivities.map((a) => (
                   <TableRow key={a.id} className="hover:bg-gray-50 align-top">
                     <TableCell className="text-gray-600 text-xs whitespace-nowrap">{formatDate(a.writtenOn)}</TableCell>
                     <TableCell className="font-medium text-[#0d0e0e]">

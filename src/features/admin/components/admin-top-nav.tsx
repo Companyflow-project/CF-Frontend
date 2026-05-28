@@ -56,7 +56,6 @@ export const AdminTopNav: React.FC = () => {
     { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true, module: 'invoices' },
     { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true, module: 'newsletters' },
     { path: adminRoutes.tickets, label: t('nav.support'), enabled: true, module: 'tickets' },
-    { path: '/admin/help', label: t('nav.help'), enabled: false },
   ];
   const navItems = allNavItems.filter((item) => !item.module || can(viewerRole, item.module, 'read'));
 
@@ -221,13 +220,6 @@ export const AdminTopNav: React.FC = () => {
                     >
                       {t('nav.people', 'People')}
                     </Link>
-                    <span
-                      aria-disabled="true"
-                      title={t('nav.comingSoon', 'Coming soon')}
-                      className="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed select-none"
-                    >
-                      {t('nav.help', 'Help')}
-                    </span>
                     {canAccessAccountDashboard(viewerRole) && (
                       <Link
                         to={adminRoutes.accountDashboard}

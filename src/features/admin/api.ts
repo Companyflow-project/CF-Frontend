@@ -140,7 +140,7 @@ export const adminApi = {
     return res.data as PaginatedResponse<AdminActivityLogEntry[]>;
   },
 
-  getUserConsoleActivity: async (params: { page?: number; limit?: number }): Promise<PaginatedResponse<UserConsoleActivityEntry[]>> => {
+  getUserConsoleActivity: async (params: { page?: number; limit?: number; kind?: 'handbook' }): Promise<PaginatedResponse<UserConsoleActivityEntry[]>> => {
     const res = await axiosClient.get('/admin/activity/user-console', { params });
     return res.data as PaginatedResponse<UserConsoleActivityEntry[]>;
   },
@@ -178,8 +178,8 @@ export const adminApi = {
   },
 
   // --- Tickets ---
-  getTicketFilters: async (): Promise<{ priorities: Array<{ key: string; label: string; count: number }>; statuses: Array<{ tid: number; key: string; label: string; count: number }>; lists: Array<{ tid: number; name: string }>; responsibles: Array<{ uid: number; name: string; colorSeed: string }>; authors: Array<{ uid: number; name: string; colorSeed: string }> }> => {
-    const res = await axiosClient.get('/admin/tickets/filters');
+  getTicketFilters: async (params?: { authorUid?: string }): Promise<{ priorities: Array<{ key: string; label: string; count: number }>; statuses: Array<{ tid: number; key: string; label: string; count: number }>; lists: Array<{ tid: number; name: string }>; responsibles: Array<{ uid: number; name: string; colorSeed: string }>; authors: Array<{ uid: number; name: string; colorSeed: string }> }> => {
+    const res = await axiosClient.get('/admin/tickets/filters', { params });
     return unwrap(res);
   },
 

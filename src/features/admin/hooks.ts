@@ -175,7 +175,7 @@ export const useAdminActivity = (params: { page?: number; limit?: number }) => {
   });
 };
 
-export const useUserConsoleActivity = (params: { page?: number; limit?: number }) => {
+export const useUserConsoleActivity = (params: { page?: number; limit?: number; kind?: 'handbook' }) => {
   return useQuery({
     queryKey: ['admin-user-console-activity', params],
     queryFn: () => adminApi.getUserConsoleActivity(params),
@@ -218,10 +218,10 @@ export const useKeyFiguresKeywords = (params: Record<string, unknown>) => {
 };
 
 // --- Tickets ---
-export const useTicketFilters = () => {
+export const useTicketFilters = (params?: { authorUid?: string }) => {
   return useQuery({
-    queryKey: ['admin-ticket-filters'],
-    queryFn: () => adminApi.getTicketFilters(),
+    queryKey: ['admin-ticket-filters', params],
+    queryFn: () => adminApi.getTicketFilters(params),
     staleTime: 60_000,
   });
 };

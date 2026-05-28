@@ -1797,6 +1797,7 @@
     "addUserComingSoon": "Brugerinvitationer kommer snart.",
     "editComingSoon": "Redigering af brugere kommer snart.",
     "usersRoles": "Brugere og roller",
+    "searchPlaceholder": "Søg efter navn eller e-mail…",
     "activityLog": "Aktivitetslog",
     "loading": "Indlæser…",
     "noUsers": "Ingen brugere fundet.",
@@ -1856,6 +1857,10 @@
     "tabs": {
       "adminPanel": "Adminpanel",
       "userConsole": "Brugerkonsol"
+    },
+    "badges": {
+      "publishedHandbook": "Udgivet håndbog",
+      "unpublishedHandbook": "Afpubliceret håndbog"
     },
     "activityCols": {
       "activity": "Aktivitet",

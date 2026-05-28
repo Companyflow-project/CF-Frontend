@@ -1797,6 +1797,7 @@
     "addUserComingSoon": "User invitations are coming soon.",
     "editComingSoon": "User editing is coming soon.",
     "usersRoles": "Users & roles",
+    "searchPlaceholder": "Search by name or email…",
     "activityLog": "Activity log",
     "loading": "Loading…",
     "noUsers": "No users found.",
@@ -1856,6 +1857,10 @@
     "tabs": {
       "adminPanel": "Admin panel",
       "userConsole": "User console"
+    },
+    "badges": {
+      "publishedHandbook": "Published handbook",
+      "unpublishedHandbook": "Unpublished handbook"
     },
     "activityCols": {
       "activity": "Activity",

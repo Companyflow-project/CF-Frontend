@@ -2,11 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Table, TableHeader, TableBody, TableRow, TableCell } from '@/components/ui/table';
 import { ChevronLeft, ChevronRight, Video, Mail, Phone, FileText, Monitor, Users as UsersIcon, Linkedin, Cog } from 'lucide-react';
 import { useCrmUsers, useCrmSummary, useCrmActivities } from '../hooks';
 import { adminRoutes } from '../routes';
 import type { CrmListParams } from '../types';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const PERIODS = [
@@ -122,6 +123,8 @@ export const AdminCrmPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [showHidden, setShowHidden] = useState(false);
+  const [sortColumn, setSortColumn] = useState<'business' | 'activity' | 'type' | 'writtenOn' | 'responsible'>('writtenOn');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const usersQuery = useCrmUsers();
   const summaryParams = useMemo(() => ({ userId: selectedUser, period, status, followUp }), [selectedUser, period, status, followUp]);
@@ -138,6 +141,44 @@ export const AdminCrmPage: React.FC = () => {
   const activitiesQuery = useCrmActivities(listParams);
 
   const activities = activitiesQuery.data?.data ?? [];
+  const sortedActivities = useMemo(() => {
+    const cloned = [...activities];
+    cloned.sort((a, b) => {
+      const aValue =
+        sortColumn === 'business'
+          ? a.companyName ?? ''
+          : sortColumn === 'activity'
+          ? a.activity ?? ''
+          : sortColumn === 'type'
+          ? a.type ?? ''
+          : sortColumn === 'writtenOn'
+          ? new Date(a.writtenOn).getTime()
+          : a.responsibleName ?? '';
+      const bValue =
+        sortColumn === 'business'
+          ? b.companyName ?? ''
+          : sortColumn === 'activity'
+          ? b.activity ?? ''
+          : sortColumn === 'type'
+          ? b.type ?? ''
+          : sortColumn === 'writtenOn'
+          ? new Date(b.writtenOn).getTime()
+          : b.responsibleName ?? '';
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [activities, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'business' | 'activity' | 'type' | 'writtenOn' | 'responsible') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
+
   const meta = activitiesQuery.data?.meta;
   const total = meta?.total ?? 0;
   const totalPages = total ? Math.ceil(total / perPage) : 1;
@@ -335,11 +376,11 @@ export const AdminCrmPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.business', 'Business')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.activity', 'Activity')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.type', 'Type')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.writtenOn', 'Written On')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.responsible', 'Responsible')}</TableHead>
+                <SortableTableHead column="business" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.business', 'Business')}</SortableTableHead>
+                <SortableTableHead column="activity" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.activity', 'Activity')}</SortableTableHead>
+                <SortableTableHead column="type" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.type', 'Type')}</SortableTableHead>
+                <SortableTableHead column="writtenOn" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.writtenOn', 'Written On')}</SortableTableHead>
+                <SortableTableHead column="responsible" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.responsible', 'Responsible')}</SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -352,7 +393,7 @@ export const AdminCrmPage: React.FC = () => {
                   <TableCell colSpan={5} className="text-center text-gray-400 py-8">{t('crm.empty', 'No activities found.')}</TableCell>
                 </TableRow>
               ) : (
-                activities.map(a => (
+                sortedActivities.map(a => (
                   <TableRow key={a.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium">
                       <Link

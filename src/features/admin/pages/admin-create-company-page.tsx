@@ -13,18 +13,23 @@ import type { ExistingCompanySummary } from '../types';
 
 // ---- Category definitions (matches Drupal "Create a Business" form) ----
 const CATEGORIES = [
-  { value: 'potential_customer', label: 'Potential customer', color: '#a78bfa' },
+  { value: 'lead', label: 'Lead', color: '#a78bfa' },
   { value: 'demo_requested', label: 'Demo requested', color: '#60a5fa' },
   { value: 'not_a_customer', label: 'Not a customer', color: '#f87171' },
+  { value: 'potential', label: 'Potential', color: '#818cf8' },
   { value: 'demo_agreed', label: 'Demo agreed', color: '#38bdf8' },
   { value: 'terminated', label: 'Terminated', color: '#ef4444' },
+  { value: 'inquiry_from_us', label: 'Inquiry from us', color: '#22c55e' },
   { value: 'want_contact', label: 'Want contact', color: '#facc15' },
+  { value: 'former_customer', label: 'Former customer', color: '#fb7185' },
   { value: 'accepted', label: 'Accepted', color: '#4ade80' },
   { value: 'offer_sent', label: 'Offer sent', color: '#2dd4bf' },
   { value: 'partner', label: 'Partner', color: '#c084fc' },
   { value: 'dialogue', label: 'Dialogue', color: '#818cf8' },
   { value: 'offer_rejected', label: 'Offer rejected', color: '#fb7185' },
   { value: 'internal_testing', label: 'Internal testing', color: '#a3a3a3' },
+  { value: 'external_testing', label: 'External testing', color: '#67e8f9' },
+  { value: 'internal_demo', label: 'Internal demo', color: '#9ca3af' },
   { value: 'meeting_scheduled', label: 'Meeting scheduled', color: '#67e8f9' },
   { value: 'free_sample', label: 'Free sample', color: '#86efac' },
   { value: 'customer', label: 'Customer', color: '#22c55e' },
@@ -71,7 +76,7 @@ const initialForm: FormState = {
   name: '',
   email: '',
   phone: '',
-  category: 'potential_customer',
+  category: 'lead',
   contactName: '',
   contactInternalName: '',
   contactEmail: '',
@@ -79,7 +84,7 @@ const initialForm: FormState = {
   sendEmail: false,
   product: 'free_sample',
   licenses: 5,
-  source: 'website',
+  source: '',
 };
 
 export const AdminCreateCompanyPage: React.FC = () => {
@@ -244,13 +249,16 @@ export const AdminCreateCompanyPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:gap-6 max-w-4xl">
+      <div className="grid gap-4 sm:gap-6 w-full">
         {/* CVR Lookup */}
-        <Card>
+        <Card className="rounded-xl border-gray-200 shadow-none">
           <CardHeader>
             <CardTitle className="text-base">
               {t('createCompany.cvrLookup', 'CVR lookup')}
             </CardTitle>
+            <p className="text-sm text-gray-500">
+              {t('createCompany.cvrLookupDescription', 'Autofill business details from the Danish CVR registry.')}
+            </p>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-3">
@@ -258,7 +266,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 <Label htmlFor="cvr">{t('createCompany.cvrNumber', 'CVR number')}</Label>
                 <Input
                   id="cvr"
-                  placeholder="12345678"
+                  placeholder={t('createCompany.cvrPlaceholder', 'e.g. 12345678')}
                   value={form.cvr}
                   onChange={(e) => set('cvr', e.target.value)}
                 />
@@ -297,10 +305,10 @@ export const AdminCreateCompanyPage: React.FC = () => {
         </Card>
 
         {/* Business Details */}
-        <Card>
+        <Card className="rounded-xl border-gray-200 shadow-none">
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.businessDetails', 'Business details')}
+              {t('createCompany.businessDetails', 'Business')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -311,6 +319,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 </Label>
                 <Input
                   id="name"
+                  placeholder={t('createCompany.companyNamePlaceholder', 'Company name')}
                   value={form.name}
                   onChange={(e) => set('name', e.target.value)}
                   required
@@ -323,6 +332,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 <Input
                   id="company-email"
                   type="email"
+                  placeholder={t('createCompany.companyEmailPlaceholder', 'company@example.com')}
                   value={form.email}
                   onChange={(e) => set('email', e.target.value)}
                   required
@@ -335,6 +345,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 <Input
                   id="company-phone"
                   type="tel"
+                  placeholder={t('createCompany.telephonePlaceholder', '+45 00 00 00 00')}
                   value={form.phone}
                   onChange={(e) => set('phone', e.target.value)}
                   className="w-full sm:max-w-xs"
@@ -345,11 +356,14 @@ export const AdminCreateCompanyPage: React.FC = () => {
         </Card>
 
         {/* Category */}
-        <Card>
+        <Card className="rounded-xl border-gray-200 shadow-none">
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.category', 'Category')}
+              {t('createCompany.category', 'Category *')}
             </CardTitle>
+            <p className="text-sm text-gray-500">
+              {t('createCompany.categoryDescription', 'Select the customer category for this business.')}
+            </p>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -382,20 +396,27 @@ export const AdminCreateCompanyPage: React.FC = () => {
         </Card>
 
         {/* Primary Contact Person */}
-        <Card>
+        <Card className="rounded-xl border-gray-200 shadow-none">
           <CardHeader>
             <CardTitle className="text-base">
-              {t('createCompany.primaryContact', 'Primary contact')}
+              {t('createCompany.primaryContact', 'Primary Contact Person')}
             </CardTitle>
+            <p className="text-sm text-gray-500">
+              {t(
+                'createCompany.primaryContactDescription',
+                "Fill in the Name field with the user's real name. The Internal name is filled in automatically and does not normally need to be edited."
+              )}
+            </p>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contact-name">
-                  {t('createCompany.contactName', 'Contact name')} *
+                  {t('createCompany.contactName', 'Name')} *
                 </Label>
                 <Input
                   id="contact-name"
+                  placeholder={t('createCompany.contactNamePlaceholder', 'Full name')}
                   value={form.contactName}
                   onChange={(e) => handleContactNameChange(e.target.value)}
                   required
@@ -403,23 +424,28 @@ export const AdminCreateCompanyPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-internal">
-                  {t('createCompany.internalName', 'Internal name')}
+                  {t('createCompany.internalName', 'Internal name')} *
                 </Label>
                 <Input
                   id="contact-internal"
+                  placeholder={t('createCompany.internalNamePlaceholder', 'Auto-generated')}
                   value={form.contactInternalName}
                   onChange={(e) => set('contactInternalName', e.target.value)}
                   className="text-gray-400"
                   readOnly
                 />
+                <p className="text-xs text-gray-400">
+                  {t('createCompany.internalNameHint', 'The internal username is created automatically')}
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="contact-email">
-                  {t('createCompany.contactEmail', 'Contact email')} *
+                  {t('createCompany.contactEmail', 'Email')} *
                 </Label>
                 <Input
                   id="contact-email"
                   type="email"
+                  placeholder={t('createCompany.contactEmailPlaceholder', 'contact@example.com')}
                   value={form.contactEmail}
                   onChange={(e) => set('contactEmail', e.target.value)}
                   required
@@ -432,6 +458,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 <Input
                   id="contact-mobile"
                   type="tel"
+                  placeholder={t('createCompany.contactMobilePlaceholder', '+45 00 00 00 00')}
                   value={form.contactMobile}
                   onChange={(e) => set('contactMobile', e.target.value)}
                 />
@@ -445,7 +472,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                     className="mt-0.5 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                   />
                   <span className="text-sm text-gray-700">
-                    {t('createCompany.sendEmail', 'Send login credentials to the company email')}
+                    {t('createCompany.sendEmail', 'Send email to primary contact person')}
                     <span className="block text-xs text-gray-400">
                       {t('createCompany.sendEmailHint', 'Creates a console account for the company email and emails a link to set a password.')}
                     </span>
@@ -457,7 +484,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
         </Card>
 
         {/* Subscription */}
-        <Card>
+        <Card className="rounded-xl border-gray-200 shadow-none">
           <CardHeader>
             <CardTitle className="text-base">
               {t('createCompany.subscription', 'Subscription')}
@@ -506,6 +533,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                   value={form.source}
                   onChange={(e) => set('source', e.target.value)}
                 >
+                  <option value="">{t('createCompany.sources.none', '— Nothing selected —')}</option>
                   {SOURCES.map((s) => (
                     <option key={s.value} value={s.value}>
                       {t(`createCompany.sources.${s.value}`, s.label)}
@@ -519,6 +547,9 @@ export const AdminCreateCompanyPage: React.FC = () => {
 
         {/* Submit Buttons */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pb-8">
+          <p className="w-full text-sm text-gray-500">
+            {t('createCompany.submitHint', 'Please note that it may take a few minutes to create a business.')}
+          </p>
           <Button
             onClick={() => handleSubmit('create')}
             disabled={submitting}
@@ -532,7 +563,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
             disabled={submitting}
             className="w-full sm:w-auto"
           >
-            {t('createCompany.submit.createCrm', 'Create + add CRM')}
+            {t('createCompany.submit.createCrm', 'Create and add CRM activity')}
           </Button>
           <Button
             variant="outline"
@@ -540,7 +571,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
             disabled={submitting}
             className="w-full sm:w-auto"
           >
-            {t('createCompany.submit.createAdmin', 'Create + set admin')}
+            {t('createCompany.submit.createAdmin', 'Create and add company administrator')}
           </Button>
         </div>
       </div>

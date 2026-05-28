@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Table, TableHeader, TableBody, TableRow, TableCell } from '@/components/ui/table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSourceFilters, useSourceCompanies } from '../hooks';
 import { adminRoutes } from '../routes';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 const PAGE_SIZE = 15;
 
@@ -73,11 +74,51 @@ export const AdminSourcesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [source, setSource] = useState<string | undefined>();
   const [category, setCategory] = useState<string | undefined>();
+  const [sortColumn, setSortColumn] = useState<'business' | 'source' | 'category' | 'created' | 'followUpDate'>('created');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const filtersQuery = useSourceFilters();
   const listQuery = useSourceCompanies({ page, limit: PAGE_SIZE, source, category });
 
   const companies = listQuery.data?.data ?? [];
+  const sortedCompanies = useMemo(() => {
+    const cloned = [...companies];
+    cloned.sort((a, b) => {
+      const aValue =
+        sortColumn === 'business'
+          ? a.title ?? ''
+          : sortColumn === 'source'
+          ? a.source ?? ''
+          : sortColumn === 'category'
+          ? a.category ?? ''
+          : sortColumn === 'created'
+          ? a.created ?? 0
+          : a.mupDate ? new Date(a.mupDate).getTime() : 0;
+      const bValue =
+        sortColumn === 'business'
+          ? b.title ?? ''
+          : sortColumn === 'source'
+          ? b.source ?? ''
+          : sortColumn === 'category'
+          ? b.category ?? ''
+          : sortColumn === 'created'
+          ? b.created ?? 0
+          : b.mupDate ? new Date(b.mupDate).getTime() : 0;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [companies, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'business' | 'source' | 'category' | 'created' | 'followUpDate') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
+
   const meta = listQuery.data?.meta;
   const total = meta?.total ?? 0;
   const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
@@ -160,11 +201,11 @@ export const AdminSourcesPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Business</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Source</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Created</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Follow-up Date</TableHead>
+                <SortableTableHead column="business" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Business</SortableTableHead>
+                <SortableTableHead column="source" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Source</SortableTableHead>
+                <SortableTableHead column="category" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</SortableTableHead>
+                <SortableTableHead column="created" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Created</SortableTableHead>
+                <SortableTableHead column="followUpDate" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Follow-up Date</SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -183,7 +224,7 @@ export const AdminSourcesPage: React.FC = () => {
                   <TableCell colSpan={5} className="text-center text-gray-400 py-8">No companies found.</TableCell>
                 </TableRow>
               ) : (
-                companies.map((c) => (
+                sortedCompanies.map((c) => (
                   <TableRow key={c.nid} className="hover:bg-gray-50">
                     <TableCell className="font-medium">
                       <Link

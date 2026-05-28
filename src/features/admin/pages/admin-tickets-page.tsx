@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { generatePath } from 'react-router-dom';
 import { useTicketFilters, useTickets, useTicketCreateOptions, useUpdateAnyTicket } from '../hooks';
 import { adminRoutes } from '../routes';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 const PRIORITY_DOT: Record<string, string> = {
   critical: '#ef4444',
@@ -60,6 +61,8 @@ export const AdminTicketsPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [hiddenStatusKeys, setHiddenStatusKeys] = useState<Set<string>>(new Set());
+  const [sortColumn, setSortColumn] = useState<'date' | 'title' | 'body' | 'responsible' | 'author' | 'priority' | 'status'>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -68,7 +71,7 @@ export const AdminTicketsPage: React.FC = () => {
     return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
   }, [search]);
 
-  const filtersQuery = useTicketFilters();
+  const filtersQuery = useTicketFilters({ authorUid });
   const params = useMemo(() => ({
     page,
     limit: perPage,
@@ -141,10 +144,50 @@ export const AdminTicketsPage: React.FC = () => {
     [tickets, hiddenStatusKeys]
   );
 
+  const sortedVisibleTickets = useMemo(() => {
+    const cloned = [...visibleTickets];
+    cloned.sort((a, b) => {
+      const aValue =
+        sortColumn === 'date'
+          ? a.created
+          : sortColumn === 'title'
+          ? a.title ?? ''
+          : sortColumn === 'body'
+          ? a.body ?? ''
+          : sortColumn === 'responsible'
+          ? a.responsibleName ?? ''
+          : sortColumn === 'author'
+          ? a.authorName ?? ''
+          : sortColumn === 'priority'
+          ? a.priority ?? ''
+          : a.status ?? '';
+      const bValue =
+        sortColumn === 'date'
+          ? b.created
+          : sortColumn === 'title'
+          ? b.title ?? ''
+          : sortColumn === 'body'
+          ? b.body ?? ''
+          : sortColumn === 'responsible'
+          ? b.responsibleName ?? ''
+          : sortColumn === 'author'
+          ? b.authorName ?? ''
+          : sortColumn === 'priority'
+          ? b.priority ?? ''
+          : b.status ?? '';
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [visibleTickets, sortColumn, sortDirection]);
+
   const priorityGroups = useMemo(() => {
     const order: string[] = [];
     const groups = new Map<string, { key: string; label: string; rows: typeof visibleTickets }>();
-    for (const tk of visibleTickets) {
+    for (const tk of sortedVisibleTickets) {
       const key = tk.priorityKey || 'other';
       if (!groups.has(key)) {
         order.push(key);
@@ -153,9 +196,26 @@ export const AdminTicketsPage: React.FC = () => {
       groups.get(key)!.rows.push(tk);
     }
     return order.map(k => groups.get(k)!);
-  }, [visibleTickets]);
+  }, [sortedVisibleTickets]);
+
+  const handleSort = (column: 'date' | 'title' | 'body' | 'responsible' | 'author' | 'priority' | 'status') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
 
   const allStatuses = filtersQuery.data?.statuses ?? [];
+  const availableResponsibles = filtersQuery.data?.responsibles ?? [];
+
+  useEffect(() => {
+    if (!responsibleUid) return;
+    const responsibleStillAvailable = availableResponsibles.some((u) => String(u.uid) === responsibleUid);
+    if (!responsibleStillAvailable) {
+      setResponsibleUid(undefined);
+      setPage(1);
+    }
+  }, [responsibleUid, availableResponsibles]);
+
   const toggleHideStatus = (key: string) => {
     setHiddenStatusKeys(prev => {
       const next = new Set(prev);
@@ -305,7 +365,7 @@ export const AdminTicketsPage: React.FC = () => {
               {t('tickets.filters.responsible', 'Responsible')}
             </div>
             <div className="flex flex-wrap gap-2">
-              {(filtersQuery.data?.responsibles ?? []).map(u => {
+              {availableResponsibles.map(u => {
                 const active = responsibleUid === String(u.uid);
                 return (
                   <button
@@ -414,13 +474,13 @@ export const AdminTicketsPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50">
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.date', 'Date')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.title', 'Title')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.bodyText', 'Body text')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.responsible', 'Responsible')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.author', 'Author')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.priority', 'Priority')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.status', 'Status')}</TableHead>
+                  <SortableTableHead column="date" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.date', 'Date')}</SortableTableHead>
+                  <SortableTableHead column="title" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.title', 'Title')}</SortableTableHead>
+                  <SortableTableHead column="body" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.bodyText', 'Body text')}</SortableTableHead>
+                  <SortableTableHead column="responsible" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.responsible', 'Responsible')}</SortableTableHead>
+                  <SortableTableHead column="author" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.author', 'Author')}</SortableTableHead>
+                  <SortableTableHead column="priority" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.priority', 'Priority')}</SortableTableHead>
+                  <SortableTableHead column="status" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.status', 'Status')}</SortableTableHead>
                   <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('tickets.columns.actions', 'Actions')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -456,7 +516,7 @@ export const AdminTicketsPage: React.FC = () => {
                     ];
                   })
                 ) : (
-                  visibleTickets.map(tk => renderTicketRow(tk, t, {
+                  sortedVisibleTickets.map(tk => renderTicketRow(tk, t, {
                     onEdit: handleEdit,
                     onDone: handleMarkDone,
                     busy: isUpdating && updatingNid === tk.nid,

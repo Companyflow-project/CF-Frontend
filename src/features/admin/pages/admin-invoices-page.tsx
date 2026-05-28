@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Search, Download } from 'lucide-react';
 import { useInvoices } from '../hooks';
 import { adminApi } from '../api';
 import { adminRoutes } from '../routes';
+import { SortableTableHead } from '../components/sortable-table-head';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
@@ -25,6 +26,11 @@ function monthsLabel(n: number | null): { label: string; highlighted: boolean } 
 export const AdminInvoicesPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const [sortBy, setSortBy] = useState<'business' | 'begin' | 'end'>('business');
+  const handleHeaderSort = (column: 'business' | 'begin' | 'end') => {
+    setSortBy(column);
+    setPage(1);
+  };
+
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -103,31 +109,8 @@ export const AdminInvoicesPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-500">
-            {t('invoices.sortBy', 'Sort by')}:
-          </span>
-          {([
-            { key: 'business', label: t('invoices.sort.business', 'Business') },
-            { key: 'begin', label: t('invoices.sort.begin', 'Begin date') },
-            { key: 'end', label: t('invoices.sort.end', 'End date') },
-          ] as const).map((opt) => (
-            <button
-              key={opt.key}
-              type="button"
-              onClick={() => { setSortBy(opt.key); setPage(1); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                sortBy === opt.key
-                  ? 'bg-[#0d0e0e] text-white border-[#0d0e0e]'
-                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+      {/* Search */}
+      <div className="flex justify-end">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -145,13 +128,13 @@ export const AdminInvoicesPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.business', 'Business')}</TableHead>
+                <SortableTableHead column="business" activeColumn={sortBy} direction="asc" onSort={handleHeaderSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.business', 'Business')}</SortableTableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.category', 'Category')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.licenses', 'Licenses')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.addPurchases', 'Add. Purchases')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.payment', 'Payment')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.beginner', 'Beginner')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.ends', 'Ends')}</TableHead>
+                <SortableTableHead column="begin" activeColumn={sortBy} direction="asc" onSort={handleHeaderSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.beginner', 'Beginner')}</SortableTableHead>
+                <SortableTableHead column="end" activeColumn={sortBy} direction="asc" onSort={handleHeaderSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.ends', 'Ends')}</SortableTableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.endsAbout', 'Ends About')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.invoicing', 'Invoicing')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('invoices.columns.when', 'When')}</TableHead>

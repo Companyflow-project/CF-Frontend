@@ -8,12 +8,12 @@ import {
   TableHeader,
   TableBody,
   TableRow,
-  TableHead,
   TableCell,
 } from '@/components/ui/table';
 import { Plus, Search } from 'lucide-react';
 import { adminRoutes } from '../routes';
 import { useAdminNewsletters } from '../newsletter-hooks';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 function formatDateTime(unix: number | null): string {
   if (!unix) return '–';
@@ -34,6 +34,8 @@ export const AdminNewslettersPage: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const [sortColumn, setSortColumn] = useState<'title' | 'subject' | 'recipients' | 'sentAt' | 'published'>('sentAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const { data, isLoading, isError } = useAdminNewsletters({
     page,
@@ -42,6 +44,44 @@ export const AdminNewslettersPage: React.FC = () => {
   });
 
   const items = data?.items ?? [];
+  const sortedItems = useMemo(() => {
+    const cloned = [...items];
+    cloned.sort((a, b) => {
+      const aValue =
+        sortColumn === 'title'
+          ? a.title ?? ''
+          : sortColumn === 'subject'
+          ? a.subject ?? ''
+          : sortColumn === 'recipients'
+          ? a.recipientCount ?? 0
+          : sortColumn === 'sentAt'
+          ? a.sentAt ?? 0
+          : a.published ? 1 : 0;
+      const bValue =
+        sortColumn === 'title'
+          ? b.title ?? ''
+          : sortColumn === 'subject'
+          ? b.subject ?? ''
+          : sortColumn === 'recipients'
+          ? b.recipientCount ?? 0
+          : sortColumn === 'sentAt'
+          ? b.sentAt ?? 0
+          : b.published ? 1 : 0;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [items, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'title' | 'subject' | 'recipients' | 'sentAt' | 'published') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
+
   const total = data?.total ?? 0;
 
   const totalPages = useMemo(
@@ -115,21 +155,11 @@ export const AdminNewslettersPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  {t('newsletters.columns.title', 'Title')}
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  {t('newsletters.columns.subject', 'Subject')}
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">
-                  {t('newsletters.columns.recipients', 'Recipients')}
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  {t('newsletters.columns.sentAt', 'Was Sent')}
-                </TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  {t('newsletters.columns.published', 'Published')}
-                </TableHead>
+                <SortableTableHead column="title" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('newsletters.columns.title', 'Title')}</SortableTableHead>
+                <SortableTableHead column="subject" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('newsletters.columns.subject', 'Subject')}</SortableTableHead>
+                <SortableTableHead column="recipients" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('newsletters.columns.recipients', 'Recipients')}</SortableTableHead>
+                <SortableTableHead column="sentAt" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('newsletters.columns.sentAt', 'Was Sent')}</SortableTableHead>
+                <SortableTableHead column="published" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('newsletters.columns.published', 'Published')}</SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -152,7 +182,7 @@ export const AdminNewslettersPage: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                items.map((n) => (
+                sortedItems.map((n) => (
                   <TableRow key={n.nid} className="hover:bg-gray-50">
                     <TableCell className="font-semibold">
                       <Link

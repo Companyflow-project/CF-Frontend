@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Check, ArrowRight, Plus } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 function formatDate(unix: number) {
   return new Date(unix * 1000).toLocaleDateString('da-DK', {
@@ -73,6 +74,68 @@ export const AdminDashboardPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { user } = useAuth();
   const { data: dashboard, isLoading, isError } = useAdminDashboard();
+  const [companiesSortColumn, setCompaniesSortColumn] = useState<'business' | 'name' | 'category' | 'tel' | 'created'>('created');
+  const [companiesSortDirection, setCompaniesSortDirection] = useState<SortDirection>('desc');
+  const [employeeTrafficDirection, setEmployeeTrafficDirection] = useState<SortDirection>('desc');
+  const [adminTrafficDirection, setAdminTrafficDirection] = useState<SortDirection>('desc');
+
+  const latestCompanies = dashboard?.latestCompanies ?? [];
+  const employeeTraffic = dashboard?.employeeTraffic ?? [];
+  const adminTraffic = dashboard?.adminTraffic ?? [];
+  const recentActivities = dashboard?.recentActivities ?? [];
+  const sortedLatestCompanies = useMemo(() => {
+    const cloned = [...latestCompanies];
+    cloned.sort((a, b) => {
+      const aValue =
+        companiesSortColumn === 'business'
+          ? a.title ?? ''
+          : companiesSortColumn === 'name'
+          ? a.contactName ?? ''
+          : companiesSortColumn === 'category'
+          ? a.category ?? ''
+          : companiesSortColumn === 'tel'
+          ? a.telephone ?? ''
+          : a.created ?? 0;
+      const bValue =
+        companiesSortColumn === 'business'
+          ? b.title ?? ''
+          : companiesSortColumn === 'name'
+          ? b.contactName ?? ''
+          : companiesSortColumn === 'category'
+          ? b.category ?? ''
+          : companiesSortColumn === 'tel'
+          ? b.telephone ?? ''
+          : b.created ?? 0;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return companiesSortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return companiesSortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [latestCompanies, companiesSortColumn, companiesSortDirection]);
+
+  const sortedEmployeeTraffic = useMemo(() => {
+    const cloned = [...employeeTraffic];
+    cloned.sort((a, b) =>
+      employeeTrafficDirection === 'asc' ? a.count - b.count : b.count - a.count
+    );
+    return cloned;
+  }, [employeeTraffic, employeeTrafficDirection]);
+
+  const sortedAdminTraffic = useMemo(() => {
+    const cloned = [...adminTraffic];
+    cloned.sort((a, b) =>
+      adminTrafficDirection === 'asc' ? a.count - b.count : b.count - a.count
+    );
+    return cloned;
+  }, [adminTraffic, adminTrafficDirection]);
+
+  const handleCompaniesSort = (column: 'business' | 'name' | 'category' | 'tel' | 'created') => {
+    const next = toggleSort(companiesSortColumn, companiesSortDirection, column);
+    setCompaniesSortColumn(next.column);
+    setCompaniesSortDirection(next.direction);
+  };
 
   if (isLoading) {
     return (
@@ -89,8 +152,6 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
     );
   }
-
-  const { stats: _stats, latestCompanies, employeeTraffic, adminTraffic, recentActivities } = dashboard;
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6 sm:space-y-8">
@@ -224,11 +285,11 @@ export const AdminDashboardPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.business', 'Business')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.name', 'Name')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.category', 'Category')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.tel', 'Tel.')}</TableHead>
-                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.created', 'Created')}</TableHead>
+                <SortableTableHead column="business" activeColumn={companiesSortColumn} direction={companiesSortDirection} onSort={handleCompaniesSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.business', 'Business')}</SortableTableHead>
+                <SortableTableHead column="name" activeColumn={companiesSortColumn} direction={companiesSortDirection} onSort={handleCompaniesSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.name', 'Name')}</SortableTableHead>
+                <SortableTableHead column="category" activeColumn={companiesSortColumn} direction={companiesSortDirection} onSort={handleCompaniesSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.category', 'Category')}</SortableTableHead>
+                <SortableTableHead column="tel" activeColumn={companiesSortColumn} direction={companiesSortDirection} onSort={handleCompaniesSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.tel', 'Tel.')}</SortableTableHead>
+                <SortableTableHead column="created" activeColumn={companiesSortColumn} direction={companiesSortDirection} onSort={handleCompaniesSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.created', 'Created')}</SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -239,7 +300,7 @@ export const AdminDashboardPage: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                latestCompanies.map((c) => (
+                sortedLatestCompanies.map((c) => (
                   <TableRow key={c.nid} className="hover:bg-gray-50">
                     <TableCell className="font-medium">
                       <Link
@@ -275,7 +336,7 @@ export const AdminDashboardPage: React.FC = () => {
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.daysAgo', 'Days Ago')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.number', 'Number')}</TableHead>
+                  <SortableTableHead column="count" activeColumn="count" direction={employeeTrafficDirection} onSort={() => setEmployeeTrafficDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.number', 'Number')}</SortableTableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -284,7 +345,7 @@ export const AdminDashboardPage: React.FC = () => {
                     <TableCell colSpan={2} className="text-center text-gray-400 py-6">{t('dashboard.noData', 'No data')}</TableCell>
                   </TableRow>
                 ) : (
-                  employeeTraffic.map((b) => (
+                  sortedEmployeeTraffic.map((b) => (
                     <TableRow key={b.label}>
                       <TableCell className="text-gray-700">{b.label}</TableCell>
                       <TableCell className="text-gray-700">{b.count}</TableCell>
@@ -306,7 +367,7 @@ export const AdminDashboardPage: React.FC = () => {
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.daysAgo', 'Days Ago')}</TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.number', 'Number')}</TableHead>
+                  <SortableTableHead column="count" activeColumn="count" direction={adminTrafficDirection} onSort={() => setAdminTrafficDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('dashboard.table.number', 'Number')}</SortableTableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -315,7 +376,7 @@ export const AdminDashboardPage: React.FC = () => {
                     <TableCell colSpan={2} className="text-center text-gray-400 py-6">{t('dashboard.noData', 'No data')}</TableCell>
                   </TableRow>
                 ) : (
-                  adminTraffic.map((b) => (
+                  sortedAdminTraffic.map((b) => (
                     <TableRow key={b.label}>
                       <TableCell className="text-gray-700">{b.label}</TableCell>
                       <TableCell className="text-gray-700">{b.count}</TableCell>

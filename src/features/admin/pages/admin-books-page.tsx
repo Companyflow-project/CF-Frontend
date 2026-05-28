@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { adminRoutes } from '../routes';
 import { useAdminHandbookBooks } from '../handbook-hooks';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -15,15 +16,32 @@ export const AdminBooksPage: React.FC = () => {
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
+  const [sortColumn, setSortColumn] = useState<'book'>('book');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-  const total = books.length;
+  const sortedBooks = useMemo(() => {
+    const cloned = [...books];
+    cloned.sort((a, b) => {
+      const compare = (a.title ?? '').localeCompare(b.title ?? '', undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [books, sortDirection]);
+
+  const total = sortedBooks.length;
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const currentPage = Math.min(page, totalPages);
   const startIdx = (currentPage - 1) * limit;
   const pageBooks = useMemo(
-    () => books.slice(startIdx, startIdx + limit),
-    [books, startIdx, limit],
+    () => sortedBooks.slice(startIdx, startIdx + limit),
+    [sortedBooks, startIdx, limit],
   );
+  const handleSort = (column: 'book') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
+
   const showingFrom = total === 0 ? 0 : startIdx + 1;
   const showingTo = Math.min(startIdx + limit, total);
 
@@ -69,7 +87,7 @@ export const AdminBooksPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t('books.colBook', 'Book')}</TableHead>
+                <SortableTableHead column="book" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('books.colBook', 'Book')}</SortableTableHead>
                 <TableHead className="w-[220px] text-right">{t('books.colActions', 'Actions')}</TableHead>
               </TableRow>
             </TableHeader>

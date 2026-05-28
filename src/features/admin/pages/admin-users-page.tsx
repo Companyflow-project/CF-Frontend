@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { useAdminUsers, useUpdateAdminUser } from '../hooks';
 import type { AdminUserListParams } from '../types';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
 const ROLES = ['all', 'admin', 'company_admin', 'employee'] as const;
 const STATUSES = ['all', 'active', 'blocked'] as const;
@@ -30,6 +31,8 @@ export const AdminUsersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [companyFilter, setCompanyFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [sortColumn, setSortColumn] = useState<'name' | 'email' | 'role' | 'company' | 'status' | 'lastActive'>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   const params: AdminUserListParams = {
     page,
@@ -44,6 +47,50 @@ export const AdminUsersPage: React.FC = () => {
   const updateUser = useUpdateAdminUser();
 
   const users = data?.data ?? [];
+  const sortedUsers = useMemo(() => {
+    const cloned = [...users];
+    cloned.sort((a, b) => {
+      const aValue =
+        sortColumn === 'name'
+          ? a.name ?? ''
+          : sortColumn === 'email'
+          ? a.mail ?? ''
+          : sortColumn === 'role'
+          ? a.role ?? ''
+          : sortColumn === 'company'
+          ? a.companyName ?? ''
+          : sortColumn === 'status'
+          ? a.status
+          : a.access;
+      const bValue =
+        sortColumn === 'name'
+          ? b.name ?? ''
+          : sortColumn === 'email'
+          ? b.mail ?? ''
+          : sortColumn === 'role'
+          ? b.role ?? ''
+          : sortColumn === 'company'
+          ? b.companyName ?? ''
+          : sortColumn === 'status'
+          ? b.status
+          : b.access;
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      const compare = String(aValue).localeCompare(String(bValue), undefined, { sensitivity: 'base' });
+      return sortDirection === 'asc' ? compare : -compare;
+    });
+    return cloned;
+  }, [users, sortColumn, sortDirection]);
+
+  const handleSort = (column: 'name' | 'email' | 'role' | 'company' | 'status' | 'lastActive') => {
+    const next = toggleSort(sortColumn, sortDirection, column);
+    setSortColumn(next.column);
+    setSortDirection(next.direction);
+  };
+
   const meta = data?.meta;
   const totalPages = meta?.total ? Math.ceil(meta.total / PAGE_SIZE) : 1;
 
@@ -162,19 +209,19 @@ export const AdminUsersPage: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>{t('users.columns.name', 'Name')}</TableHead>
-                    <TableHead>{t('users.columns.email', 'Email')}</TableHead>
-                    <TableHead>{t('users.columns.role', 'Role')}</TableHead>
-                    <TableHead>{t('users.columns.company', 'Company')}</TableHead>
-                    <TableHead>{t('users.columns.status', 'Status')}</TableHead>
-                    <TableHead>{t('users.columns.lastActive', 'Last active')}</TableHead>
+                    <SortableTableHead column="name" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('users.columns.name', 'Name')}</SortableTableHead>
+                    <SortableTableHead column="email" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('users.columns.email', 'Email')}</SortableTableHead>
+                    <SortableTableHead column="role" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('users.columns.role', 'Role')}</SortableTableHead>
+                    <SortableTableHead column="company" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('users.columns.company', 'Company')}</SortableTableHead>
+                    <SortableTableHead column="status" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('users.columns.status', 'Status')}</SortableTableHead>
+                    <SortableTableHead column="lastActive" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('users.columns.lastActive', 'Last active')}</SortableTableHead>
                     <TableHead className="text-right">
                       {t('users.columns.actions', 'Actions')}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
+                  {sortedUsers.map((user) => (
                     <TableRow key={user.uid}>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell className="text-gray-500">{user.mail}</TableCell>

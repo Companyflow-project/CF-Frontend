@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Search } from 'lucide-react';
 import type { AdminCompanyListItem } from '../types';
+import { SortableTableHead } from '../components/sortable-table-head';
 
 const SORT_OPTIONS = [
   { value: 'title', labelKey: 'latestCompanies.sort.name', fallback: 'Name' },
@@ -141,6 +142,16 @@ export const AdminLatestCompaniesPage: React.FC = () => {
       pages.push(totalPages);
     }
     return pages;
+  };
+
+  const handleHeaderSort = (column: 'title' | 'created' | 'customerNumber') => {
+    if (sort === column) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSort(column);
+      setSortDirection('asc');
+    }
+    setPage(1);
   };
 
   return (
@@ -295,9 +306,9 @@ export const AdminLatestCompaniesPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50 hover:bg-gray-50">
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <SortableTableHead column="title" activeColumn={sort as 'title' | 'created' | 'customerNumber'} direction={sortDirection} onSort={handleHeaderSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {t('latestCompanies.col.business', 'Business')}
-                  </TableHead>
+                  </SortableTableHead>
                   <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {t('latestCompanies.col.name', 'Name')}
                   </TableHead>
@@ -307,9 +318,9 @@ export const AdminLatestCompaniesPage: React.FC = () => {
                   <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {t('latestCompanies.col.telephone', 'Telephone')}
                   </TableHead>
-                  <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <SortableTableHead column="created" activeColumn={sort as 'title' | 'created' | 'customerNumber'} direction={sortDirection} onSort={handleHeaderSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {t('latestCompanies.col.created', 'Created')}
-                  </TableHead>
+                  </SortableTableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

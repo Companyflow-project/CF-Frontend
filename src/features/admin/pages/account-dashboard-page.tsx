@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks';
@@ -7,10 +7,9 @@ import {
   useAdminUsers,
   useCreateAdminUser,
   useUpdateAdminUser,
-  useAdminActivity,
   useUserConsoleActivity,
 } from '../hooks';
-import type { AdminUser, AdminActivityLogEntry, UserConsoleActivityEntry } from '../types';
+import type { AdminUser, UserConsoleActivityEntry } from '../types';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -26,16 +25,7 @@ import {
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { resolveRbacRole, permissionLevel, can, type RbacRole } from '@/lib/rbac';
-import {
-  Plus,
-  Pencil,
-  UserPlus,
-  Trash2,
-  Settings,
-  LogIn,
-  ArrowRight,
-  Activity as ActivityIcon,
-} from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 
 /* -------------------------------------------------------------------------- */
 /*  Role helpers. The assignable values are the Drupal role machine names that
@@ -123,31 +113,6 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-const ACTION_ICON: { match: string; icon: React.ElementType; color: string }[] = [
-  { match: 'edit', icon: Pencil, color: 'bg-blue-50 text-blue-600' },
-  { match: 'updat', icon: Pencil, color: 'bg-blue-50 text-blue-600' },
-  { match: 'creat', icon: Plus, color: 'bg-green-50 text-green-600' },
-  { match: 'add', icon: UserPlus, color: 'bg-green-50 text-green-600' },
-  { match: 'invit', icon: UserPlus, color: 'bg-green-50 text-green-600' },
-  { match: 'delet', icon: Trash2, color: 'bg-red-50 text-red-600' },
-  { match: 'remov', icon: Trash2, color: 'bg-red-50 text-red-600' },
-  { match: 'publish', icon: ArrowRight, color: 'bg-emerald-50 text-emerald-600' },
-  { match: 'login', icon: LogIn, color: 'bg-purple-50 text-purple-600' },
-  { match: 'role', icon: Settings, color: 'bg-amber-50 text-amber-600' },
-];
-
-function ActionIcon({ action }: { action: string }) {
-  const lower = action.toLowerCase();
-  const found = ACTION_ICON.find((a) => lower.includes(a.match));
-  const Icon = found?.icon ?? ActivityIcon;
-  const color = found?.color ?? 'bg-gray-50 text-gray-500';
-  return (
-    <span className={cn('w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', color)}>
-      <Icon className="h-4 w-4" />
-    </span>
-  );
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Page                                                                      */
 /* -------------------------------------------------------------------------- */
@@ -172,16 +137,26 @@ export const AccountDashboardPage: React.FC = () => {
   /* Users table state */
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce the search box and reset to page 1 when the term changes.
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 300);
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
+  }, [search]);
 
   const { data: stats } = useAdminUserStats();
-  const { data: usersData, isLoading: usersLoading } = useAdminUsers({ page, limit: pageSize });
+  const { data: usersData, isLoading: usersLoading } = useAdminUsers({ page, limit: pageSize, search: debouncedSearch || undefined });
   const updateUser = useUpdateAdminUser();
 
   const users = usersData?.data ?? [];
   const usersTotal = usersData?.meta?.total ?? 0;
   const usersPages = Math.max(1, Math.ceil(usersTotal / pageSize));
 
-  /* Activity tabs */
+  /* Activity log tab: 'admin' = all customer_activity; 'userConsole' = handbook events. */
   const [tab, setTab] = useState<'admin' | 'userConsole'>('admin');
 
   /* Add / Edit user dialogs */
@@ -308,10 +283,19 @@ export const AccountDashboardPage: React.FC = () => {
 
       {/* Users & roles */}
       <div className="border border-gray-200 rounded-xl">
-        <div className="px-4 sm:px-6 py-4 sm:py-5">
+        <div className="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-base sm:text-lg font-bold text-[#0d0e0e]">
             {t('accountDashboard.usersRoles', 'Users & roles')}
           </h2>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder={t('accountDashboard.searchPlaceholder', 'Search by name or email…')}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <Table>
@@ -488,7 +472,7 @@ export const AccountDashboardPage: React.FC = () => {
           </h2>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs: Admin panel = all activity; User console = handbook publish events */}
         <div className="px-4 sm:px-6">
           <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50">
             {(['admin', 'userConsole'] as const).map((key) => (
@@ -510,7 +494,7 @@ export const AccountDashboardPage: React.FC = () => {
         </div>
 
         <div className="mt-4">
-          {tab === 'admin' ? <AdminPanelFeed /> : <UserConsoleFeed />}
+          {tab === 'admin' ? <ActivityFeed /> : <UserConsoleFeed />}
         </div>
       </div>
 
@@ -716,62 +700,7 @@ function ActivityPagination({
 
 const ACTIVITY_PAGE_SIZE = 10;
 
-const AdminPanelFeed: React.FC = () => {
-  const { t } = useTranslation('admin');
-  const [page, setPage] = useState(1);
-  const { data, isLoading } = useAdminActivity({ page, limit: ACTIVITY_PAGE_SIZE });
-  const entries: AdminActivityLogEntry[] = data?.data ?? [];
-  const total = data?.meta?.total ?? 0;
-
-  return (
-    <>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.activity', 'Activity')}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.user', 'User')}</TableHead>
-              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('accountDashboard.activityCols.timestamp', 'Timestamp')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-10">{t('accountDashboard.loading', 'Loading…')}</TableCell></TableRow>
-            ) : entries.length === 0 ? (
-              <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-10">{t('accountDashboard.noActivities', 'No activity yet.')}</TableCell></TableRow>
-            ) : (
-              entries.map((e) => (
-                <TableRow key={e.id} className="hover:bg-gray-50">
-                  <TableCell>
-                    <div className="flex items-start gap-3">
-                      <ActionIcon action={e.action} />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#0d0e0e]">{e.action}</p>
-                        {(e.targetType || e.targetId) && (
-                          <p className="text-xs text-gray-400">
-                            {e.targetType}{e.targetId ? ` #${e.targetId}` : ''}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-700 whitespace-nowrap">{e.adminName}</TableCell>
-                  <TableCell className="text-sm text-gray-500 text-right whitespace-nowrap">{formatDateTime(e.createdAt)}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <ActivityPagination
-        page={page} total={total} pageSize={ACTIVITY_PAGE_SIZE}
-        onPrev={() => setPage((p) => p - 1)} onNext={() => setPage((p) => p + 1)}
-      />
-    </>
-  );
-};
-
-const UserConsoleFeed: React.FC = () => {
+const ActivityFeed: React.FC = () => {
   const { t } = useTranslation('admin');
   const [page, setPage] = useState(1);
   const { data, isLoading } = useUserConsoleActivity({ page, limit: ACTIVITY_PAGE_SIZE });
@@ -815,6 +744,81 @@ const UserConsoleFeed: React.FC = () => {
                   <TableCell className="text-sm text-gray-500 text-right whitespace-nowrap">{formatDateTime(e.createdAt)}</TableCell>
                 </TableRow>
               ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <ActivityPagination
+        page={page} total={total} pageSize={ACTIVITY_PAGE_SIZE}
+        onPrev={() => setPage((p) => p - 1)} onNext={() => setPage((p) => p + 1)}
+      />
+    </>
+  );
+};
+
+/** A handbook publish-status-change is an "unpublish" when the body says the
+ *  handbook is no longer published; otherwise it's a publish. */
+function isUnpublish(description: string): boolean {
+  return /ikke længere udgivet|no longer published/i.test(description);
+}
+
+/* User console feed: handbook publish/unpublish events only (the user-console
+   product actions actually recorded), rendered with a status badge. */
+const UserConsoleFeed: React.FC = () => {
+  const { t } = useTranslation('admin');
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useUserConsoleActivity({ page, limit: ACTIVITY_PAGE_SIZE, kind: 'handbook' });
+  const entries: UserConsoleActivityEntry[] = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+
+  return (
+    <>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-gray-50">
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.activity', 'Activity')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.companyName', 'Company name')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.activityCols.user', 'User')}</TableHead>
+              <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('accountDashboard.activityCols.timestamp', 'Timestamp')}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-10">{t('accountDashboard.loading', 'Loading…')}</TableCell></TableRow>
+            ) : entries.length === 0 ? (
+              <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-10">{t('accountDashboard.noActivities', 'No activity yet.')}</TableCell></TableRow>
+            ) : (
+              entries.map((e) => {
+                const unpublished = isUnpublish(e.description);
+                return (
+                  <TableRow key={e.id} className="hover:bg-gray-50">
+                    <TableCell>
+                      <span className={cn(
+                        'inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full border',
+                        unpublished ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-green-50 text-green-700 border-green-200',
+                      )}>
+                        <span className={cn('w-1.5 h-1.5 rounded-full', unpublished ? 'bg-amber-500' : 'bg-green-500')} />
+                        {unpublished
+                          ? t('accountDashboard.badges.unpublishedHandbook', 'Unpublished handbook')
+                          : t('accountDashboard.badges.publishedHandbook', 'Published handbook')}
+                      </span>
+                      {e.description && <p className="text-xs text-gray-500 mt-1 line-clamp-1">{e.description}</p>}
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm font-medium text-[#0d0e0e]">{e.companyName || '—'}</p>
+                      {e.cvr && <p className="text-xs text-gray-400">CVR: {e.cvr}</p>}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {e.userName && <Avatar name={e.userName} />}
+                        <span className="text-sm text-gray-700 whitespace-nowrap">{e.userName || '—'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500 text-right whitespace-nowrap">{formatDateTime(e.createdAt)}</TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
