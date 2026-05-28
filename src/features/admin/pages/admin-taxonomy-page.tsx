@@ -373,7 +373,7 @@ const AddVocabularyDialog: React.FC<AddVocabularyDialogProps> = ({
               id="vocab-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Departments"
+              placeholder={t('taxonomy.namePlaceholder', 'e.g. Departments')}
               autoFocus
             />
           </div>

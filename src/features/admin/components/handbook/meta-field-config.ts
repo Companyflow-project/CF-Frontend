@@ -9,6 +9,8 @@ export interface MetaField {
 }
 
 export interface MetaSection {
+  /** Stable id used for i18n keys (handbook.meta.sections.<id>) and open/close state. */
+  id: string;
   title: string;
   description?: string;
   fields: MetaField[];
@@ -21,6 +23,7 @@ export interface MetaSection {
  */
 export const META_SECTIONS: MetaSection[] = [
   {
+    id: 'basic',
     title: 'Basic tags',
     description: 'Simple meta tags.',
     fields: [
@@ -35,6 +38,7 @@ export const META_SECTIONS: MetaSection[] = [
     ],
   },
   {
+    id: 'og',
     title: 'Open Graph',
     description:
       "Controls how Facebook, Pinterest, LinkedIn and other social networks interpret this page's content.",

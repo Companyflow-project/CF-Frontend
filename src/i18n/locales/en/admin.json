@@ -472,7 +472,8 @@
         "Partner": "Partner",
         "Intern test": "Internal testing"
       }
-    }
+    },
+    "namePlaceholder": "e.g. Departments"
   },
   "books": {
     "indexTitle": "Books",
@@ -493,7 +494,8 @@
     "saving": "Saving…",
     "saveFailed": "Failed to save pages.",
     "saveSuccess": "Pages saved.",
-    "unknownBook": "Unknown book"
+    "unknownBook": "Unknown book",
+    "dragHandle": "Drag handle"
   },
   "handbook": {
     "title": "Management Handbook",
@@ -735,7 +737,254 @@
       "intro": "Configure the meta tags below. Use tokens to avoid redundant meta data and search engine penalization.",
       "otherKeys": "Other stored keys",
       "saved": "Meta tags saved",
-      "saveFailed": "Failed to save meta tags"
+      "saveFailed": "Failed to save meta tags",
+      "sections": {
+        "basic": {
+          "title": "Basic tags",
+          "description": "Simple meta tags."
+        },
+        "og": {
+          "title": "Open Graph",
+          "description": "Controls how Facebook, Pinterest, LinkedIn and other social networks interpret this page's content."
+        }
+      },
+      "fields": {
+        "title": {
+          "label": "Page title",
+          "hint": "Recommended ≤ 65 characters, including spaces."
+        },
+        "description": {
+          "label": "Description",
+          "hint": "Up to 160 characters. Used by search engines in result snippets."
+        },
+        "abstract": {
+          "label": "Summary",
+          "hint": "Preferably 150 characters or less. Abstract/summary of the page."
+        },
+        "keywords": {
+          "label": "Keywords",
+          "hint": "A comma-separated list of keywords about the page."
+        },
+        "og_determiner": {
+          "label": "Determine",
+          "hint": "The word that appears before the content's title in a sentence."
+        },
+        "og_site_name": {
+          "label": "Site name",
+          "hint": "A human-readable name for the site, eg. IMDB."
+        },
+        "og_type": {
+          "label": "Content type",
+          "hint": "The type of the content, e.g. movie."
+        },
+        "og_url": {
+          "label": "Page URL",
+          "hint": "Preferred page location or URL to help eliminate duplicate content for search engines."
+        },
+        "og_title": {
+          "label": "Title",
+          "hint": "The title of the content, e.g. The Rock."
+        },
+        "og_description": {
+          "label": "Description",
+          "hint": "A one to two sentence description of the content."
+        },
+        "og_image": {
+          "label": "Picture",
+          "hint": "URL of an image ≥ 200×200 px (recommended 600×316). PNG, JPEG or GIF."
+        },
+        "og_video": {
+          "label": "Video URL",
+          "hint": "URL of a video that represents the content (recommended ≥ 600×316)."
+        },
+        "og_image_url": {
+          "label": "Image URL",
+          "hint": "Alternative version of og:image. Only one needs to be used."
+        },
+        "og_image_secure_url": {
+          "label": "Image Secure URL",
+          "hint": "Secure (HTTPS) URL of the og:image."
+        },
+        "og_video_secure_url": {
+          "label": "Video Secure URL",
+          "hint": "Secure (HTTPS) URL of the og:video. Non-HTTPS values will be coerced to HTTPS."
+        },
+        "og_video_type": {
+          "label": "Video type",
+          "hint": "Should be video/episode, video/movie, video/other or video/tv_show."
+        },
+        "og_image_type": {
+          "label": "Image type",
+          "hint": "image/gif, image/jpeg or image/png."
+        },
+        "og_video_width": {
+          "label": "Video width"
+        },
+        "og_image_width": {
+          "label": "Image width"
+        },
+        "og_image_height": {
+          "label": "Image height"
+        },
+        "og_video_height": {
+          "label": "Video height"
+        },
+        "og_video_duration": {
+          "label": "Video duration (seconds)"
+        },
+        "og_updated_time": {
+          "label": "Content modification date & time",
+          "hint": "ISO 8601 format."
+        },
+        "og_image_alt": {
+          "label": "Image 'everything'",
+          "hint": "A description of what is in the image (like alt text)."
+        },
+        "og_latitude": {
+          "label": "Latitude"
+        },
+        "og_longitude": {
+          "label": "Longitude"
+        },
+        "og_see_also": {
+          "label": "See also",
+          "hint": "URLs to related content."
+        },
+        "og_street_address": {
+          "label": "Address"
+        },
+        "og_locality": {
+          "label": "Location"
+        },
+        "og_region": {
+          "label": "Region"
+        },
+        "og_postal_code": {
+          "label": "Postal/ZIP code"
+        },
+        "og_country_name": {
+          "label": "Country name"
+        },
+        "og_email": {
+          "label": "Email address"
+        },
+        "og_phone_number": {
+          "label": "Telephone number"
+        },
+        "og_fax_number": {
+          "label": "Fax number"
+        },
+        "og_locale": {
+          "label": "Location",
+          "hint": "The locale tag, in the format language_TERRITORY. Default is en_US."
+        },
+        "og_locale_alternate": {
+          "label": "Alternative locations",
+          "hint": "Other locales this content is available in, e.g. fr_FR. Multiple values separated by comma."
+        },
+        "article_author": {
+          "label": "Article author",
+          "hint": "Link to an article author's Facebook profile."
+        },
+        "article_publisher": {
+          "label": "Article publisher",
+          "hint": "Link to a publisher's Facebook page."
+        },
+        "article_section": {
+          "label": "Article section",
+          "hint": "The primary section of this website the content belongs to."
+        },
+        "article_tag": {
+          "label": "Article tag(s)",
+          "hint": "Appropriate keywords for this content. Multiple values separated by comma."
+        },
+        "article_published_time": {
+          "label": "Article publication date & time",
+          "hint": "ISO 8601 format."
+        },
+        "article_modified_time": {
+          "label": "Article modification date & time",
+          "hint": "ISO 8601 format."
+        },
+        "article_expiration_time": {
+          "label": "Article expiration date & time",
+          "hint": "ISO 8601 format."
+        },
+        "book_author": {
+          "label": "Book author",
+          "hint": "Link to a book author's Facebook profile."
+        },
+        "book_isbn": {
+          "label": "ISBN",
+          "hint": "The book's ISBN."
+        },
+        "book_release_date": {
+          "label": "Release Date",
+          "hint": "The date the book was released."
+        },
+        "book_tag": {
+          "label": "Book tag(s)",
+          "hint": "Appropriate keywords for this content. Multiple values separated by comma."
+        },
+        "og_audio": {
+          "label": "Audio URL",
+          "hint": "URL to an audio file that complements this object."
+        },
+        "og_audio_secure_url": {
+          "label": "Audio secure URL",
+          "hint": "Secure (HTTPS) URL to an audio file. Non-HTTPS values will be coerced to HTTPS."
+        },
+        "og_audio_type": {
+          "label": "Audio type",
+          "hint": "The MIME type of the audio file, e.g. application/mp3."
+        },
+        "profile_first_name": {
+          "label": "First name",
+          "hint": "The first name of the person whose profile page this is."
+        },
+        "profile_last_name": {
+          "label": "Surname",
+          "hint": "The person's last name."
+        },
+        "profile_gender": {
+          "label": "Sex",
+          "hint": "Any of Facebook's gender values. Initial two: 'male' and 'female'."
+        },
+        "profile_username": {
+          "label": "Internal name",
+          "hint": "A pseudonym / alias of this person."
+        },
+        "video_actor": {
+          "label": "Actor(s)",
+          "hint": "Links to the Facebook profiles for actor(s) that appear in the video. Multiple separated by comma."
+        },
+        "video_actor_role": {
+          "label": "Actor's role",
+          "hint": "The roles of the actor(s). Multiple separated by comma."
+        },
+        "video_director": {
+          "label": "Director(s)",
+          "hint": "Links to the Facebook profiles for director(s) that worked on the video."
+        },
+        "video_release_date": {
+          "label": "Release date",
+          "hint": "The date the video was released."
+        },
+        "video_series": {
+          "label": "Series",
+          "hint": "The TV show this series belongs to."
+        },
+        "video_tag": {
+          "label": "Take words",
+          "hint": "Tag words associated with this video. Multiple separated by comma."
+        },
+        "video_writer": {
+          "label": "Scriptwriter(s)",
+          "hint": "Links to the Facebook profiles for scriptwriter(s) for the video."
+        }
+      },
+      "invalidId": "Invalid page id",
+      "editing": "Editing: {{title}}"
     }
   },
   "common": {
@@ -898,6 +1147,10 @@
       "titleRequired": "Internal name is required.",
       "subjectRequired": "Subject is required.",
       "bodyRequired": "Body text is required."
+    },
+    "language": {
+      "da": "Danish",
+      "en": "English"
     }
   },
   "companyView": {
@@ -1593,6 +1846,12 @@
       "user": "User",
       "crmUser": "CRM User Only",
       "none": "No access"
+    },
+    "confirmRole": {
+      "title": "Change this customer’s role?",
+      "body": "{{name}} currently has customer access. Assigning an admin-console role removes their customer / user-console access and converts them to staff. Continue?",
+      "confirm": "Yes, change role",
+      "editWarning": "This user currently has customer access. Changing their role removes their customer / user-console access."
     },
     "tabs": {
       "adminPanel": "Admin panel",

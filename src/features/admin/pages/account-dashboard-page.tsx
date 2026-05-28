@@ -61,6 +61,12 @@ const ROLE_OPTIONS: { value: string; key: RoleKey }[] = [
   { value: 'none', key: 'none' },
 ];
 
+/** Raw Drupal roles that grant customer / user-console access. Assigning a console
+ *  role to such a user REPLACES all their roles, stripping this customer access — so
+ *  we confirm first. 'EMPLOYEE' is intentionally excluded: the API returns it both for
+ *  real employees and for role-less accounts, so warning on it would false-positive. */
+const CUSTOMER_ROLES = new Set(['company_admin', 'account_owner', 'senior_employee', 'seller']);
+
 const roleBadgeClass: Record<RoleKey, string> = {
   superadmin: 'bg-amber-100 text-amber-800 border-amber-200',
   admin: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -181,6 +187,8 @@ export const AccountDashboardPage: React.FC = () => {
   /* Add / Edit user dialogs */
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<AdminUser | null>(null);
+  /* Pending role change awaiting confirmation (set when the target is a real customer). */
+  const [confirmRole, setConfirmRole] = useState<{ uid: number; role: string; name: string } | null>(null);
   const canCreateUsers = umUpdateLevel === 'all' || umUpdateLevel === 'allExceptSuperadmin';
 
   /* Permission: can the current viewer manage this row? */
@@ -201,6 +209,16 @@ export const AccountDashboardPage: React.FC = () => {
         onError: () => toast.error(t('accountDashboard.roleUpdateFailed', 'Could not update role')),
       },
     );
+  };
+
+  /* Gate role changes: if the target currently holds a customer role, assigning a
+     console role would strip that access, so confirm first. Others change instantly. */
+  const requestRoleChange = (u: AdminUser, role: string) => {
+    if (CUSTOMER_ROLES.has(u.role)) {
+      setConfirmRole({ uid: u.uid, role, name: u.name || u.mail });
+    } else {
+      handleRoleChange(u.uid, role);
+    }
   };
 
   const handleStatusChange = (uid: number, status: number, kind: 'suspend' | 'revoke' | 'reactivate') => {
@@ -335,16 +353,15 @@ export const AccountDashboardPage: React.FC = () => {
                           </div>
                         </div>
                       </TableCell>
-                      {/* Role. Only show the editable picker for actual admin-console
-                          roles; users with no console role (rk === 'none' — i.e. customers
-                          like account_owner) render the read-only "Customer" badge. Without
-                          this guard their value matches no <option> and the <select> falls
-                          back to showing its first option ("Superadmin"). */}
+                      {/* Role. Managers (Superadmin/Admin) get the editable picker on every
+                          row — including "No access" users — so they can grant a console role.
+                          The picker includes the "No access" option, so an unmanageable row (or
+                          self) still falls through to the read-only badge. */}
                       <TableCell>
-                        {manageable && rk !== 'none' ? (
+                        {manageable ? (
                           <Select
-                            value={ROLE_OPTIONS.find((o) => o.key === rk)?.value ?? 'EMPLOYEE'}
-                            onChange={(e) => handleRoleChange(u.uid, e.target.value)}
+                            value={ROLE_OPTIONS.find((o) => o.key === rk)?.value ?? 'none'}
+                            onChange={(e) => requestRoleChange(u, e.target.value)}
                             disabled={updateUser.isPending}
                             className="w-40 h-8 text-xs"
                           >
@@ -378,10 +395,7 @@ export const AccountDashboardPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            // Customers (no console role) are read-only here; the Edit modal
-                            // shares the role-picker bug and its save destructively replaces
-                            // all of a user's roles (would strip account_owner).
-                            disabled={!manageable || rk === 'none'}
+                            disabled={!manageable}
                             onClick={() => setEditTarget(u)}
                           >
                             {t('accountDashboard.actions.edit', 'Edit')}
@@ -502,6 +516,34 @@ export const AccountDashboardPage: React.FC = () => {
 
       <AddUserDialog open={addOpen} onClose={() => setAddOpen(false)} roleOptions={roleOptions} />
       <EditUserDialog user={editTarget} onClose={() => setEditTarget(null)} roleOptions={roleOptions} />
+
+      {/* Confirm role change for users who currently have customer access */}
+      <Dialog open={!!confirmRole} onOpenChange={(o) => { if (!o) setConfirmRole(null); }}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4">
+          <h2 className="text-lg font-bold text-[#0d0e0e]">
+            {t('accountDashboard.confirmRole.title', 'Change this customer’s role?')}
+          </h2>
+          <p className="text-sm text-gray-600">
+            {t('accountDashboard.confirmRole.body', {
+              defaultValue:
+                '{{name}} currently has customer access. Assigning an admin-console role removes their customer / user-console access and converts them to staff. Continue?',
+              name: confirmRole?.name ?? '',
+            })}
+          </p>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="outline" onClick={() => setConfirmRole(null)}>
+              {t('accountDashboard.form.cancel', 'Cancel')}
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={updateUser.isPending}
+              onClick={() => { if (confirmRole) handleRoleChange(confirmRole.uid, confirmRole.role); setConfirmRole(null); }}
+            >
+              {t('accountDashboard.confirmRole.confirm', 'Yes, change role')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -615,6 +657,11 @@ const EditUserDialog: React.FC<{ user: AdminUser | null; onClose: () => void; ro
             <Select id="eu-role" value={role} onChange={(e) => setRole(e.target.value)}>
               {roleOptions.map((o) => <option key={o.value} value={o.value}>{t(`accountDashboard.roles.${o.key}`)}</option>)}
             </Select>
+            {user && CUSTOMER_ROLES.has(user.role) && (
+              <p className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+                {t('accountDashboard.confirmRole.editWarning', 'This user currently has customer access. Changing their role removes their customer / user-console access.')}
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="eu-status">{t('accountDashboard.form.status', 'Status')}</Label>

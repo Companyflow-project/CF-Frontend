@@ -25,7 +25,11 @@ export const AdminHandbookMetaPage: React.FC = () => {
   const updateMeta = useUpdateAdminHandbookMetaTags();
 
   const [form, setForm] = useState<AdminHandbookMetaTags>({});
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ 'Basic tags': true, 'Open Graph': true });
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ basic: true, og: true });
+
+  // Field keys contain ':' (e.g. og:image:secure_url) which collides with i18next's
+  // namespace separator, so sanitize to '_' for the translation key.
+  const metaKey = (k: string) => k.replace(/:/g, '_');
 
   useEffect(() => {
     if (remote) setForm(remote);
@@ -38,7 +42,7 @@ export const AdminHandbookMetaPage: React.FC = () => {
   );
 
   if (!Number.isFinite(nid) || nid <= 0) {
-    return <div className="p-6 text-sm text-gray-500">Invalid page id</div>;
+    return <div className="p-6 text-sm text-gray-500">{t('handbook.meta.invalidId', 'Invalid page id')}</div>;
   }
 
   const set = (key: string, v: string) =>
@@ -58,7 +62,7 @@ export const AdminHandbookMetaPage: React.FC = () => {
     return (
       <div key={field.key} className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-2 md:gap-4 py-3 border-b border-gray-100 last:border-0">
         <label className="text-sm font-medium text-[#0d0e0e] pt-2" htmlFor={`meta-${field.key}`}>
-          {field.label}
+          {t(`handbook.meta.fields.${metaKey(field.key)}.label`, field.label)}
         </label>
         <div>
           {field.widget === 'textarea' ? (
@@ -77,7 +81,7 @@ export const AdminHandbookMetaPage: React.FC = () => {
               onChange={(e) => set(field.key, e.target.value)}
             />
           )}
-          {field.hint && <div className="text-xs text-gray-500 mt-1">{field.hint}</div>}
+          {field.hint && <div className="text-xs text-gray-500 mt-1">{t(`handbook.meta.fields.${metaKey(field.key)}.hint`, field.hint)}</div>}
         </div>
       </div>
     );
@@ -107,20 +111,20 @@ export const AdminHandbookMetaPage: React.FC = () => {
           </p>
 
           {META_SECTIONS.map(section => {
-            const open = openSections[section.title] ?? true;
+            const open = openSections[section.id] ?? true;
             return (
-              <section key={section.title} className="border border-gray-200 rounded-lg">
+              <section key={section.id} className="border border-gray-200 rounded-lg">
                 <button
                   type="button"
-                  onClick={() => setOpenSections(prev => ({ ...prev, [section.title]: !open }))}
+                  onClick={() => setOpenSections(prev => ({ ...prev, [section.id]: !open }))}
                   className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-[#0d0e0e]"
                 >
                   <span className={`inline-block transition-transform ${open ? 'rotate-90' : ''}`}>▸</span>
-                  {section.title}
+                  {t(`handbook.meta.sections.${section.id}.title`, section.title)}
                 </button>
                 {open && (
                   <div className="px-4 pb-4 space-y-1">
-                    {section.description && <p className="text-xs text-gray-500 mb-2">{section.description}</p>}
+                    {section.description && <p className="text-xs text-gray-500 mb-2">{t(`handbook.meta.sections.${section.id}.description`, section.description)}</p>}
                     {section.fields.map(renderField)}
                   </div>
                 )}
@@ -155,7 +159,7 @@ export const AdminHandbookMetaPage: React.FC = () => {
       )}
 
       {page && (
-        <div className="text-xs text-gray-500 text-right">Editing: {page.title}</div>
+        <div className="text-xs text-gray-500 text-right">{t('handbook.meta.editing', { defaultValue: 'Editing: {{title}}', title: page.title })}</div>
       )}
     </div>
   );

@@ -174,7 +174,7 @@ export const AdminBookEditOrderPage: React.FC = () => {
                 <button
                   type="button"
                   className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 shrink-0"
-                  aria-label="Drag handle"
+                  aria-label={t('books.dragHandle', 'Drag handle')}
                 >
                   <GripVertical className="h-4 w-4" />
                 </button>

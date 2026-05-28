@@ -472,7 +472,8 @@
         "Partner": "Partner",
         "Intern test": "Intern test"
       }
-    }
+    },
+    "namePlaceholder": "fx Afdelinger"
   },
   "books": {
     "indexTitle": "Bøger",
@@ -493,7 +494,8 @@
     "saving": "Gemmer…",
     "saveFailed": "Kunne ikke gemme sider.",
     "saveSuccess": "Sider gemt.",
-    "unknownBook": "Ukendt bog"
+    "unknownBook": "Ukendt bog",
+    "dragHandle": "Træk-håndtag"
   },
   "handbook": {
     "title": "Lederhåndbogen",
@@ -735,7 +737,254 @@
       "intro": "Konfigurer meta-tags nedenfor. Brug tokens for at undgå gentagen meta-data og søgemaskinestraf.",
       "otherKeys": "Andre gemte nøgler",
       "saved": "Meta-tags gemt",
-      "saveFailed": "Kunne ikke gemme meta-tags"
+      "saveFailed": "Kunne ikke gemme meta-tags",
+      "sections": {
+        "basic": {
+          "title": "Grundlæggende tags",
+          "description": "Simple metatags."
+        },
+        "og": {
+          "title": "Open Graph",
+          "description": "Styrer hvordan Facebook, Pinterest, LinkedIn og andre sociale netværk fortolker denne sides indhold."
+        }
+      },
+      "fields": {
+        "title": {
+          "label": "Sidetitel",
+          "hint": "Anbefales ≤ 65 tegn, inklusive mellemrum."
+        },
+        "description": {
+          "label": "Beskrivelse",
+          "hint": "Op til 160 tegn. Bruges af søgemaskiner i resultatuddrag."
+        },
+        "abstract": {
+          "label": "Resumé",
+          "hint": "Helst 150 tegn eller mindre. Resumé/sammendrag af siden."
+        },
+        "keywords": {
+          "label": "Nøgleord",
+          "hint": "En kommasepareret liste af nøgleord om siden."
+        },
+        "og_determiner": {
+          "label": "Bestemmer",
+          "hint": "Ordet der vises før indholdets titel i en sætning."
+        },
+        "og_site_name": {
+          "label": "Sidenavn",
+          "hint": "Et læsbart navn for sitet, fx IMDB."
+        },
+        "og_type": {
+          "label": "Indholdstype",
+          "hint": "Indholdets type, fx movie."
+        },
+        "og_url": {
+          "label": "Side-URL",
+          "hint": "Foretrukken sideplacering eller URL for at undgå duplikeret indhold for søgemaskiner."
+        },
+        "og_title": {
+          "label": "Titel",
+          "hint": "Indholdets titel, fx The Rock."
+        },
+        "og_description": {
+          "label": "Beskrivelse",
+          "hint": "En beskrivelse på en til to sætninger af indholdet."
+        },
+        "og_image": {
+          "label": "Billede",
+          "hint": "URL til et billede ≥ 200×200 px (anbefalet 600×316). PNG, JPEG eller GIF."
+        },
+        "og_video": {
+          "label": "Video-URL",
+          "hint": "URL til en video der repræsenterer indholdet (anbefalet ≥ 600×316)."
+        },
+        "og_image_url": {
+          "label": "Billed-URL",
+          "hint": "Alternativ version af og:image. Kun én skal bruges."
+        },
+        "og_image_secure_url": {
+          "label": "Sikker billed-URL",
+          "hint": "Sikker (HTTPS) URL til og:image."
+        },
+        "og_video_secure_url": {
+          "label": "Sikker video-URL",
+          "hint": "Sikker (HTTPS) URL til og:video. Ikke-HTTPS-værdier konverteres til HTTPS."
+        },
+        "og_video_type": {
+          "label": "Videotype",
+          "hint": "Skal være video/episode, video/movie, video/other eller video/tv_show."
+        },
+        "og_image_type": {
+          "label": "Billedtype",
+          "hint": "image/gif, image/jpeg eller image/png."
+        },
+        "og_video_width": {
+          "label": "Videobredde"
+        },
+        "og_image_width": {
+          "label": "Billedbredde"
+        },
+        "og_image_height": {
+          "label": "Billedhøjde"
+        },
+        "og_video_height": {
+          "label": "Videohøjde"
+        },
+        "og_video_duration": {
+          "label": "Videovarighed (sekunder)"
+        },
+        "og_updated_time": {
+          "label": "Dato og tid for indholdsændring",
+          "hint": "ISO 8601-format."
+        },
+        "og_image_alt": {
+          "label": "Billede 'alt'",
+          "hint": "En beskrivelse af hvad billedet indeholder (som alt-tekst)."
+        },
+        "og_latitude": {
+          "label": "Breddegrad"
+        },
+        "og_longitude": {
+          "label": "Længdegrad"
+        },
+        "og_see_also": {
+          "label": "Se også",
+          "hint": "URL’er til relateret indhold."
+        },
+        "og_street_address": {
+          "label": "Adresse"
+        },
+        "og_locality": {
+          "label": "By"
+        },
+        "og_region": {
+          "label": "Region"
+        },
+        "og_postal_code": {
+          "label": "Postnummer"
+        },
+        "og_country_name": {
+          "label": "Landenavn"
+        },
+        "og_email": {
+          "label": "E-mailadresse"
+        },
+        "og_phone_number": {
+          "label": "Telefonnummer"
+        },
+        "og_fax_number": {
+          "label": "Faxnummer"
+        },
+        "og_locale": {
+          "label": "Lokalitet",
+          "hint": "Locale-tag i formatet sprog_TERRITORIUM. Standard er en_US."
+        },
+        "og_locale_alternate": {
+          "label": "Alternative lokaliteter",
+          "hint": "Andre locales indholdet er tilgængeligt i, fx fr_FR. Flere værdier adskilles med komma."
+        },
+        "article_author": {
+          "label": "Artikelforfatter",
+          "hint": "Link til artikelforfatterens Facebook-profil."
+        },
+        "article_publisher": {
+          "label": "Artikeludgiver",
+          "hint": "Link til udgiverens Facebook-side."
+        },
+        "article_section": {
+          "label": "Artikelsektion",
+          "hint": "Den primære sektion på dette website indholdet tilhører."
+        },
+        "article_tag": {
+          "label": "Artikeltag(s)",
+          "hint": "Relevante nøgleord for dette indhold. Flere værdier adskilles med komma."
+        },
+        "article_published_time": {
+          "label": "Artiklens udgivelsesdato og -tid",
+          "hint": "ISO 8601-format."
+        },
+        "article_modified_time": {
+          "label": "Artiklens ændringsdato og -tid",
+          "hint": "ISO 8601-format."
+        },
+        "article_expiration_time": {
+          "label": "Artiklens udløbsdato og -tid",
+          "hint": "ISO 8601-format."
+        },
+        "book_author": {
+          "label": "Bogforfatter",
+          "hint": "Link til bogforfatterens Facebook-profil."
+        },
+        "book_isbn": {
+          "label": "ISBN",
+          "hint": "Bogens ISBN."
+        },
+        "book_release_date": {
+          "label": "Udgivelsesdato",
+          "hint": "Datoen bogen blev udgivet."
+        },
+        "book_tag": {
+          "label": "Bogtag(s)",
+          "hint": "Relevante nøgleord for dette indhold. Flere værdier adskilles med komma."
+        },
+        "og_audio": {
+          "label": "Lyd-URL",
+          "hint": "URL til en lydfil der supplerer dette objekt."
+        },
+        "og_audio_secure_url": {
+          "label": "Sikker lyd-URL",
+          "hint": "Sikker (HTTPS) URL til en lydfil. Ikke-HTTPS-værdier konverteres til HTTPS."
+        },
+        "og_audio_type": {
+          "label": "Lydtype",
+          "hint": "Lydfilens MIME-type, fx application/mp3."
+        },
+        "profile_first_name": {
+          "label": "Fornavn",
+          "hint": "Fornavnet på personen hvis profilside dette er."
+        },
+        "profile_last_name": {
+          "label": "Efternavn",
+          "hint": "Personens efternavn."
+        },
+        "profile_gender": {
+          "label": "Køn",
+          "hint": "Enhver af Facebooks kønsværdier. De første to: 'male' og 'female'."
+        },
+        "profile_username": {
+          "label": "Internt navn",
+          "hint": "Et pseudonym / alias for denne person."
+        },
+        "video_actor": {
+          "label": "Skuespiller(e)",
+          "hint": "Links til Facebook-profiler for skuespiller(e) i videoen. Flere adskilles med komma."
+        },
+        "video_actor_role": {
+          "label": "Skuespillerens rolle",
+          "hint": "Skuespiller(e)s roller. Flere adskilles med komma."
+        },
+        "video_director": {
+          "label": "Instruktør(er)",
+          "hint": "Links til Facebook-profiler for instruktør(er) der arbejdede på videoen."
+        },
+        "video_release_date": {
+          "label": "Udgivelsesdato",
+          "hint": "Datoen videoen blev udgivet."
+        },
+        "video_series": {
+          "label": "Serie",
+          "hint": "Det tv-program denne serie tilhører."
+        },
+        "video_tag": {
+          "label": "Tagord",
+          "hint": "Tagord knyttet til denne video. Flere adskilles med komma."
+        },
+        "video_writer": {
+          "label": "Manuskriptforfatter(e)",
+          "hint": "Links til Facebook-profiler for manuskriptforfatter(e) til videoen."
+        }
+      },
+      "invalidId": "Ugyldigt side-id",
+      "editing": "Redigerer: {{title}}"
     }
   },
   "common": {
@@ -898,6 +1147,10 @@
       "titleRequired": "Internt navn er påkrævet.",
       "subjectRequired": "Emne er påkrævet.",
       "bodyRequired": "Brødtekst er påkrævet."
+    },
+    "language": {
+      "da": "Dansk",
+      "en": "Engelsk"
     }
   },
   "companyView": {
@@ -1593,6 +1846,12 @@
       "user": "Bruger",
       "crmUser": "Kun CRM-bruger",
       "none": "Ingen adgang"
+    },
+    "confirmRole": {
+      "title": "Skift denne kundes rolle?",
+      "body": "{{name}} har i øjeblikket kundeadgang. Tildeling af en admin-konsolrolle fjerner deres kunde-/brugerkonsoladgang og konverterer dem til medarbejder. Fortsæt?",
+      "confirm": "Ja, skift rolle",
+      "editWarning": "Denne bruger har i øjeblikket kundeadgang. Ændring af deres rolle fjerner deres kunde-/brugerkonsoladgang."
     },
     "tabs": {
       "adminPanel": "Adminpanel",

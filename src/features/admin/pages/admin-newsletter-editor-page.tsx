@@ -28,8 +28,8 @@ const TEXT_FORMATS: Array<{ value: NewsletterBodyFormat; labelKey: string; fallb
 ];
 
 const LANGUAGES = [
-  { value: 'da', label: 'Danish' },
-  { value: 'en', label: 'English' },
+  { value: 'da', labelKey: 'newsletters.language.da', fallback: 'Danish' },
+  { value: 'en', labelKey: 'newsletters.language.en', fallback: 'English' },
 ] as const;
 
 type SendMode = 'scheduled' | 'immediately';
@@ -566,7 +566,7 @@ export const AdminNewsletterEditorPage: React.FC = () => {
           >
             {LANGUAGES.map((l) => (
               <option key={l.value} value={l.value}>
-                {l.label}
+                {t(l.labelKey, l.fallback)}
               </option>
             ))}
           </select>
