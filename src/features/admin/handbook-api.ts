@@ -10,6 +10,9 @@ import type {
   AdminHandbookCategoryOption,
   AdminHandbookTaxonomyTerm,
   BulkReorderBookItem,
+  CreateBookInput,
+  CreateBookResult,
+  DeleteBookResult,
 } from './handbook-types';
 
 function unwrap<T>(res: { data: { data?: T } | T }): T {
@@ -86,5 +89,15 @@ export const adminHandbookApi = {
 
   updateMetaTags: async (nid: number, payload: AdminHandbookMetaTags): Promise<void> => {
     await axiosClient.patch(`/admin/handbooks/pages/${nid}/meta`, payload);
+  },
+
+  createBook: async (payload: CreateBookInput): Promise<CreateBookResult> => {
+    const res = await axiosClient.post('/admin/handbooks/books', payload);
+    return unwrap<CreateBookResult>(res);
+  },
+
+  deleteBook: async (bid: number): Promise<DeleteBookResult> => {
+    const res = await axiosClient.delete(`/admin/handbooks/books/${bid}`);
+    return unwrap<DeleteBookResult>(res);
   },
 };

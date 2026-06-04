@@ -16,6 +16,7 @@ export const adminRoutes = {
   crmCreate: '/admin/crm/create',
   crmActivityEdit: '/admin/crm/activities/:id/edit',
   books: '/admin/books',
+  booksCreate: '/admin/books/create',
   bookEditOrder: '/admin/books/:bid/edit-order',
   handbook: '/admin/handbook',
   handbookTableOfContents: '/admin/handbook/table-of-contents',

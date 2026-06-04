@@ -40,6 +40,7 @@ const AdminCrmActivitiesPage = lazy(() => import('@/features/admin/pages/admin-c
 const AdminLatestCompaniesPage = lazy(() => import('@/features/admin/pages/admin-latest-companies-page').then((m) => ({ default: m.AdminLatestCompaniesPage })));
 const AdminEditCompanyPage = lazy(() => import('@/features/admin/pages/admin-edit-company-page').then((m) => ({ default: m.AdminEditCompanyPage })));
 const AdminBooksPage = lazy(() => import('@/features/admin/pages/admin-books-page').then((m) => ({ default: m.AdminBooksPage })));
+const AdminBookCreatePage = lazy(() => import('@/features/admin/pages/admin-book-create-page').then((m) => ({ default: m.AdminBookCreatePage })));
 const AdminTaxonomyPage = lazy(() => import('@/features/admin/pages/admin-taxonomy-page').then((m) => ({ default: m.AdminTaxonomyPage })));
 const AdminTaxonomyTermsPage = lazy(() => import('@/features/admin/pages/admin-taxonomy-terms-page').then((m) => ({ default: m.AdminTaxonomyTermsPage })));
 const AdminTaxonomyTermEditPage = lazy(() => import('@/features/admin/pages/admin-taxonomy-term-edit-page').then((m) => ({ default: m.AdminTaxonomyTermEditPage })));
@@ -852,6 +853,18 @@ export const AppRouter: React.FC = () => {
                 <RequirePlatformAdmin>
                   <AdminLayout>
                     <AdminAnalyticsPage />
+                  </AdminLayout>
+                </RequirePlatformAdmin>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={adminRoutes.booksCreate}
+            element={
+              <RequireAuth>
+                <RequirePlatformAdmin>
+                  <AdminLayout>
+                    <AdminBookCreatePage />
                   </AdminLayout>
                 </RequirePlatformAdmin>
               </RequireAuth>

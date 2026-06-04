@@ -480,11 +480,73 @@
   },
   "books": {
     "indexTitle": "Bøger",
+    "manageTitle": "Administrer bøger",
+    "createBook": "Opret bog",
     "indexDescription": "Bogmodulet giver dig mulighed for at samle relaterede sider i en bog. Links til omkringliggende sider vises automatisk, hvilket gør det nemt at oprette og navigere i struktureret indhold.",
     "sectionHeading": "Bøger",
     "colBook": "Bog",
     "colActions": "Handlinger",
     "colTitle": "Titel",
+    "breadcrumb": {
+      "account": "Konto",
+      "superadminDashboard": "Superadmin-dashboard",
+      "manageBooks": "Administrer bøger"
+    },
+    "create": {
+      "title": "Opret bog",
+      "heading": "Bogtitel",
+      "save": "Gem",
+      "saving": "Gemmer…",
+      "saveActivity": "Gem aktivitet",
+      "cancel": "Annullér",
+      "success": "Bog oprettet",
+      "failed": "Kunne ikke oprette bog",
+      "fields": {
+        "title": "Titel",
+        "titlePlaceholder": "Tilføj bogtitel her",
+        "bodyText": "Brødtekst (Geniet tekst)",
+        "textFormat": "Tekstformat",
+        "notesHint": "Indtast noter, som virksomheden kan vælge fra på denne side."
+      },
+      "formats": {
+        "basic_html": "Simpel HTML",
+        "full_html": "Fuld HTML",
+        "plain_text": "Almindelig tekst"
+      },
+      "pages": {
+        "heading": "Tilføj sider",
+        "hint": "Tilføj mindst én side for at oprette bogen",
+        "pageLabel": "Side {{n}}",
+        "title": "Sidetitel",
+        "titlePlaceholder": "Tilføj sidetitel her",
+        "addAnother": "Tilføj endnu en side",
+        "remove": "Fjern"
+      },
+      "translatedLangs": {
+        "heading": "Maskinoversatte sprog på denne side"
+      },
+      "langs": {
+        "da": "Dansk",
+        "en": "Engelsk",
+        "bg": "Bulgarsk"
+      },
+      "status": {
+        "heading": "Status og versionsinfo",
+        "published": "Udgivet"
+      }
+    },
+    "delete": {
+      "action": "Slet",
+      "title": "Slet bog",
+      "body": "Du sletter en skabelonbog og alle dens sider. Denne handling kan ikke fortrydes og medfører tab af data. Fortsæt med forsigtighed.",
+      "typeToConfirm": "Indtast bogens navn for at bekræfte.",
+      "bookTitleLabel": "Bogtitel",
+      "confirm": "Slet",
+      "deleting": "Sletter…",
+      "close": "Luk",
+      "success": "Slettede \"{{title}}\"",
+      "failed": "Kunne ikke slette bog"
+    },
     "editOrderAndTitles": "Rediger rækkefølge og titler",
     "editOrderBreadcrumb": "Rediger rækkefølge og titler",
     "loading": "Indlæser bøger…",
@@ -645,7 +707,9 @@
       "translatedLangs": "Maskinoversatte sprog på denne side",
       "translatedLangsHint": "Maskinoversatte sprog på denne side. Én sprogkode pr. linje (da, en, bg).",
       "singleValueOnly": "Kun én værdi understøttet",
-      "addAnother": "Tilføj et til element"
+      "addAnother": "Tilføj et til element",
+      "addAnotherText": "Tilføj endnu en tekst",
+      "removeText": "Fjern tekst"
     },
     "lix": {
       "title": "Lix-tæller",
@@ -1797,6 +1861,7 @@
     "titleSuperadmin": "Superadmin-dashboard",
     "titleAdmin": "Admin-dashboard",
     "addUser": "Tilføj bruger",
+    "manageBooks": "Administrer bøger",
     "addUserComingSoon": "Brugerinvitationer kommer snart.",
     "editComingSoon": "Redigering af brugere kommer snart.",
     "usersRoles": "Brugere og roller",

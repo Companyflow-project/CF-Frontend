@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks';
+import { adminRoutes } from '../routes';
 import {
   useAdminUserStats,
   useAdminUsers,
@@ -246,15 +248,24 @@ export const AccountDashboardPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">{title}</h1>
-        {canCreateUsers && (
-          <Button
-            className="bg-[#1a8a5a] hover:bg-[#16774e] text-white rounded-lg self-start sm:self-auto"
-            onClick={() => setAddOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-1.5" />
-            {t('accountDashboard.addUser', 'Add user')}
-          </Button>
-        )}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {isSuperadmin && (
+            <Link to={adminRoutes.books}>
+              <Button className="bg-[#0d0e0e] hover:bg-black text-white rounded-lg">
+                {t('accountDashboard.manageBooks', 'Manage Books')}
+              </Button>
+            </Link>
+          )}
+          {canCreateUsers && (
+            <Button
+              className="bg-[#1a8a5a] hover:bg-[#16774e] text-white rounded-lg"
+              onClick={() => setAddOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              {t('accountDashboard.addUser', 'Add user')}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stat cards */}

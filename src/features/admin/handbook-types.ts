@@ -33,7 +33,7 @@ export interface AdminHandbookPageDetail {
   body: string;
   bodyFormat: string;
   selectedText: string | null;
-  handbookNote: string | null;
+  handbookNote: string[];
 
   helpPage: boolean;
   excludeFromHelpOverview: boolean;
@@ -104,7 +104,7 @@ export interface UpdateAdminHandbookPagePayload {
   bodyFormat?: string;
   status?: boolean;
   selectedText?: string;
-  handbookNote?: string | null;
+  handbookNote?: string[];
   helpPage?: boolean;
   excludeFromHelpOverview?: boolean;
   helpCategoryTid?: number | null;
@@ -179,4 +179,31 @@ export interface AdminHandbookVersion {
 export interface AdminHandbookCategoryOption {
   tid: number;
   name: string;
+}
+
+export interface CreateBookPageInput {
+  title: string;
+  body?: string;
+  bodyFormat?: string;
+  isPublished?: boolean;
+}
+
+export interface CreateBookInput {
+  title: string;
+  body?: string;
+  bodyFormat?: string;
+  isPublished?: boolean;
+  machineTranslatedLangs?: string[];
+  pages?: CreateBookPageInput[];
+}
+
+export interface CreateBookResult {
+  bid: number;
+  nid: number;
+  createdPageNids: number[];
+}
+
+export interface DeleteBookResult {
+  success: boolean;
+  deletedNodeCount: number;
 }

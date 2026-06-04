@@ -1,18 +1,39 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { adminRoutes } from '../routes';
-import { useAdminHandbookBooks } from '../handbook-hooks';
+import { useAdminHandbookBooks, useDeleteAdminHandbookBook } from '../handbook-hooks';
 import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
+import { DeleteBookDialog } from '../components/delete-book-dialog';
 
 const DEFAULT_PAGE_SIZE = 25;
 
 export const AdminBooksPage: React.FC = () => {
   const { t } = useTranslation('admin');
   const { data: books = [], isLoading, isError } = useAdminHandbookBooks();
+  const deleteMutation = useDeleteAdminHandbookBook();
+  const [deleteTarget, setDeleteTarget] = useState<{ bid: number; title: string } | null>(null);
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    const { bid, title } = deleteTarget;
+    deleteMutation.mutate(bid, {
+      onSuccess: () => {
+        toast.success(t('books.delete.success', { defaultValue: 'Deleted "{{title}}"', title }));
+        setDeleteTarget(null);
+      },
+      onError: (e: unknown) => {
+        const msg = (e as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message;
+        toast.error(msg ?? t('books.delete.failed', 'Could not delete book'));
+      },
+    });
+  };
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
@@ -65,11 +86,30 @@ export const AdminBooksPage: React.FC = () => {
     <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-6 space-y-6">
       <div>
         <div className="text-sm text-gray-500">
-          <span className="text-gray-700">{t('books.indexTitle', 'Books')}</span>
+          <Link to={adminRoutes.accountDashboard} className="hover:underline">
+            {t('books.breadcrumb.account', 'Account')}
+          </Link>
+          <span className="mx-1">›</span>
+          <Link to={adminRoutes.accountDashboard} className="hover:underline">
+            {t('books.breadcrumb.superadminDashboard', 'Superadmin Dashboard')}
+          </Link>
+          <span className="mx-1">›</span>
+          <span className="text-gray-700">{t('books.manageTitle', 'Manage Books')}</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">
-          {t('books.indexTitle', 'Books')}
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">
+            {t('books.manageTitle', 'Manage Books')}
+          </h1>
+          <Button
+            asChild
+            className="bg-[#1a8a5a] hover:bg-[#16774e] text-white rounded-lg self-start sm:self-auto"
+          >
+            <Link to={adminRoutes.booksCreate}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              {t('books.createBook', 'Create Book')}
+            </Link>
+          </Button>
+        </div>
         <p className="text-sm text-gray-600 mt-2 max-w-3xl">
           {t(
             'books.indexDescription',
@@ -125,10 +165,13 @@ export const AdminBooksPage: React.FC = () => {
                     </Link>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={adminRoutes.bookEditOrder.replace(':bid', String(book.nid))}>
-                        {t('books.editOrderAndTitles', 'Edit order and titles')}
-                      </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={() => setDeleteTarget({ bid: book.nid, title: book.title ?? '' })}
+                    >
+                      {t('books.delete.action', 'Delete')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -208,6 +251,14 @@ export const AdminBooksPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <DeleteBookDialog
+        open={deleteTarget !== null}
+        bookTitle={deleteTarget?.title ?? ''}
+        pending={deleteMutation.isPending}
+        onConfirm={handleDelete}
+        onClose={() => { if (!deleteMutation.isPending) setDeleteTarget(null); }}
+      />
     </div>
   );
 };

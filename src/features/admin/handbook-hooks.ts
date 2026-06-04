@@ -5,6 +5,7 @@ import type {
   UpdateAdminHandbookTocPayload,
   AdminHandbookMetaTags,
   BulkReorderBookItem,
+  CreateBookInput,
 } from './handbook-types';
 
 export const useAdminHandbookBooks = () => {
@@ -143,6 +144,28 @@ export const useUpdateAdminHandbookMetaTags = () => {
       adminHandbookApi.updateMetaTags(nid, payload),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ['admin-handbook-meta', vars.nid] });
+    },
+  });
+};
+
+export const useCreateAdminHandbookBook = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateBookInput) => adminHandbookApi.createBook(payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-handbook-books'] });
+      qc.invalidateQueries({ queryKey: ['admin-handbook-book-tree'] });
+    },
+  });
+};
+
+export const useDeleteAdminHandbookBook = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (bid: number) => adminHandbookApi.deleteBook(bid),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-handbook-books'] });
+      qc.invalidateQueries({ queryKey: ['admin-handbook-book-tree'] });
     },
   });
 };

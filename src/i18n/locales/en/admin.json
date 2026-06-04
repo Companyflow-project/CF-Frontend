@@ -480,11 +480,73 @@
   },
   "books": {
     "indexTitle": "Books",
+    "manageTitle": "Manage Books",
+    "createBook": "Create Book",
     "indexDescription": "The Book module allows you to collect related pages into a book. Links to surrounding pages are automatically displayed, making it easy to create and navigate structured content.",
     "sectionHeading": "Books",
     "colBook": "Book",
     "colActions": "Actions",
     "colTitle": "Title",
+    "breadcrumb": {
+      "account": "Account",
+      "superadminDashboard": "Superadmin Dashboard",
+      "manageBooks": "Manage Books"
+    },
+    "create": {
+      "title": "Create Book",
+      "heading": "Book Title",
+      "save": "Save",
+      "saving": "Saving…",
+      "saveActivity": "Save Activity",
+      "cancel": "Cancel",
+      "success": "Book created",
+      "failed": "Could not create book",
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "Add book title here",
+        "bodyText": "Body text (Geniet tekst)",
+        "textFormat": "Text format",
+        "notesHint": "Enter any notes that the company can choose from for this page."
+      },
+      "formats": {
+        "basic_html": "Simple HTML",
+        "full_html": "Full HTML",
+        "plain_text": "Plain text"
+      },
+      "pages": {
+        "heading": "Add Pages",
+        "hint": "Add at least one page to create the book",
+        "pageLabel": "Page {{n}}",
+        "title": "Page title",
+        "titlePlaceholder": "Add page title here",
+        "addAnother": "Add another page",
+        "remove": "Remove"
+      },
+      "translatedLangs": {
+        "heading": "Machine translated languages on this page"
+      },
+      "langs": {
+        "da": "Danish",
+        "en": "English",
+        "bg": "Bulgarian"
+      },
+      "status": {
+        "heading": "Status & Version Info",
+        "published": "Published"
+      }
+    },
+    "delete": {
+      "action": "Delete",
+      "title": "Delete book",
+      "body": "You are deleting a template book and all of its pages. This action is irreversible and will result in data loss. Proceed with caution.",
+      "typeToConfirm": "Type the name of the book to confirm.",
+      "bookTitleLabel": "Book title",
+      "confirm": "Delete",
+      "deleting": "Deleting…",
+      "close": "Close",
+      "success": "Deleted \"{{title}}\"",
+      "failed": "Could not delete book"
+    },
     "editOrderAndTitles": "Edit order and titles",
     "editOrderBreadcrumb": "Edit Order and Titles",
     "loading": "Loading books…",
@@ -645,7 +707,9 @@
       "translatedLangs": "Machine translated languages on this page",
       "translatedLangsHint": "Machine translated languages on this page. One langcode per line (da, en, bg).",
       "singleValueOnly": "Only one value supported",
-      "addAnother": "Add Another Item"
+      "addAnother": "Add Another Item",
+      "addAnotherText": "Add another text",
+      "removeText": "Remove text"
     },
     "lix": {
       "title": "Lix counter",
@@ -1797,6 +1861,7 @@
     "titleSuperadmin": "Team Management",
     "titleAdmin": "Admin Dashboard",
     "addUser": "Add user",
+    "manageBooks": "Manage Books",
     "addUserComingSoon": "User invitations are coming soon.",
     "editComingSoon": "User editing is coming soon.",
     "usersRoles": "Users & roles",

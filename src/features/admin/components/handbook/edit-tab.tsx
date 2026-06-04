@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -97,7 +98,10 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [bodyFormat, setBodyFormat] = useState('basic_html');
-  const [handbookNote, setHandbookNote] = useState<string>('');
+  // Multi-value: admins can add several default-text options the company picks
+  // between (rendered as a "+ Add another text" repeater). Stored as one row
+  // per delta in node__field_handbook_note on the backend.
+  const [handbookNote, setHandbookNote] = useState<string[]>(['']);
 
   // Choice
   const [updatedDate, setUpdatedDate] = useState<string>('');
@@ -151,7 +155,8 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
     setTitle(page.title);
     setBody(page.body);
     setBodyFormat(page.bodyFormat || 'basic_html');
-    setHandbookNote(page.handbookNote ?? '');
+    // Empty list → keep one blank textarea so admins see a place to type.
+    setHandbookNote(page.handbookNote && page.handbookNote.length > 0 ? page.handbookNote : ['']);
     setStatus(page.status === 1);
 
     setUpdatedDate(page.updatedDate ?? '');
@@ -233,7 +238,7 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
           title,
           body,
           bodyFormat,
-          handbookNote: handbookNote === '' ? null : handbookNote,
+          handbookNote: handbookNote.map((s) => s.trim()).filter((s) => s.length > 0),
           status,
 
           updatedDate: updatedDate === '' ? null : updatedDate,
@@ -316,17 +321,50 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
           </div>
         </div>
 
-        {/* Handbook note */}
+        {/* Handbook note — multi-value: admins author N default-text options
+            the company will pick between. */}
         <div>
           <FieldLabel hint={t('handbook.edit.notesHint', 'Enter any notes that the company can choose from for this page.')}>
             {t('handbook.edit.companyNotes', 'Notes for company')}
           </FieldLabel>
-          <Textarea
-            value={handbookNote}
-            onChange={(e) => setHandbookNote(e.target.value)}
-            rows={3}
-            className="mt-1"
-          />
+          <div className="mt-1 space-y-2">
+            {handbookNote.map((value, idx) => (
+              <div key={idx} className="flex items-start gap-2">
+                <Textarea
+                  value={value}
+                  onChange={(e) =>
+                    setHandbookNote((prev) => prev.map((v, i) => (i === idx ? e.target.value : v)))
+                  }
+                  rows={3}
+                  className="flex-1"
+                />
+                {handbookNote.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-200 hover:bg-red-50 mt-1"
+                    onClick={() =>
+                      setHandbookNote((prev) => prev.filter((_, i) => i !== idx))
+                    }
+                    aria-label={t('handbook.edit.removeText', 'Remove text')}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-2 text-[#1a8a5a] border-[#1a8a5a]/40 hover:bg-[#1a8a5a]/10"
+            onClick={() => setHandbookNote((prev) => [...prev, ''])}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            {t('handbook.edit.addAnotherText', 'Add another text')}
+          </Button>
         </div>
 
         <Accordion type="multiple" defaultValue={['choice']}>
