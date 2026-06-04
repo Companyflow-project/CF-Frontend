@@ -3,7 +3,8 @@
     "console": "Console",
     "companies": "Companies",
     "crm": "CRM",
-    "todo": "TO DO",
+    "activities": "Activities",
+    "crmTodo": "CRM To-Do",
     "invoices": "Invoices",
     "newsletters": "Newsletters",
     "support": "Support",
@@ -55,7 +56,7 @@
       "crm": {
         "title": "CRM To-Do",
         "desc": "List of CRM activities and follow-ups.",
-        "cta": "Open CRM →",
+        "cta": "Open CRM To-Do List →",
         "add": "Add activity"
       },
       "newsletters": {
@@ -1848,7 +1849,7 @@
   "crmActivities": {
     "addActivity": "Add Activity",
     "apply": "Apply",
-    "breadcrumb": "CRM To-Do List",
+    "breadcrumb": "Activities",
     "columns": {
       "activity": "Activity",
       "business": "Business",
@@ -1873,7 +1874,7 @@
       "scheduled": "Scheduled",
       "inconsistentTitle": "Marked Done but follow-up is in the future"
     },
-    "title": "CRM To-Do List",
+    "title": "Activities",
     "viewAll": "← View all activities",
     "show": "Show",
     "perPage": "per page"

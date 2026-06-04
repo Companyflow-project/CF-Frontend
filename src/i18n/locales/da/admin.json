@@ -3,7 +3,8 @@
     "console": "Konsol",
     "companies": "Virksomheder",
     "crm": "CRM",
-    "todo": "TO DO",
+    "activities": "Aktiviteter",
+    "crmTodo": "CRM To-Do",
     "invoices": "Fakturaer",
     "newsletters": "Nyhedsbreve",
     "support": "Support",
@@ -55,7 +56,7 @@
       "crm": {
         "title": "CRM To-Do",
         "desc": "Liste over CRM-aktiviteter og opfølgninger.",
-        "cta": "Åbn CRM →",
+        "cta": "Åbn CRM To-Do-liste →",
         "add": "Tilføj aktivitet"
       },
       "newsletters": {
@@ -1848,7 +1849,7 @@
   "crmActivities": {
     "addActivity": "Tilføj aktivitet",
     "apply": "Anvend",
-    "breadcrumb": "CRM To-Do-liste",
+    "breadcrumb": "Aktiviteter",
     "columns": {
       "activity": "Aktivitet",
       "business": "Virksomhed",
@@ -1873,7 +1874,7 @@
       "scheduled": "Planlagt",
       "inconsistentTitle": "Markeret Færdig, men opfølgningsdato er i fremtiden"
     },
-    "title": "CRM To-Do-liste",
+    "title": "Aktiviteter",
     "viewAll": "← Se alle aktiviteter",
     "show": "Vis",
     "perPage": "pr. side"

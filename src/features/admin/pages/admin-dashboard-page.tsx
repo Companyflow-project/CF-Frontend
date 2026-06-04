@@ -237,11 +237,11 @@ export const AdminDashboardPage: React.FC = () => {
             <p className="text-xs sm:text-sm text-gray-500 mt-1">{t('dashboard.cards.crm.desc', 'List of CRM activities and follow-ups.')}</p>
           </div>
           <Button asChild className="bg-[#e6f4ec] text-[#1a5948] hover:bg-[#d5ebde] rounded-lg w-full sm:w-auto">
-            <Link to={adminRoutes.crmActivities}>
-              {t('dashboard.cards.crm.cta', 'Open CRM →')}
+            <Link to={adminRoutes.crm}>
+              {t('dashboard.cards.crm.cta', 'Open CRM To-Do List →')}
             </Link>
           </Button>
-          <CardLink to={adminRoutes.crmCreate} label={t('dashboard.cards.crm.add', 'Add activity')} icon="plus" />
+          <CardLink to={adminRoutes.crmActivities} label={t('dashboard.cards.crm.add', 'Add activity')} icon="plus" />
         </div>
 
         {/* Newsletters */}

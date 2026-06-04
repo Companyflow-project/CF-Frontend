@@ -52,8 +52,8 @@ export const AdminTopNav: React.FC = () => {
   const allNavItems: { path: string; label: string; enabled: boolean; module?: RbacModule }[] = [
     { path: adminRoutes.dashboard, label: t('nav.console'), enabled: true, module: 'dashboard' },
     { path: adminRoutes.companies, label: t('nav.companies'), enabled: true, module: 'companies' },
-    { path: adminRoutes.crm, label: t('nav.crm'), enabled: true, module: 'crm' },
-    { path: adminRoutes.crmActivities, label: t('nav.todo', 'TO DO'), enabled: true, module: 'crm' },
+    { path: adminRoutes.crmActivities, label: t('nav.activities', 'Activities'), enabled: true, module: 'crm' },
+    { path: adminRoutes.crm, label: t('nav.crmTodo', 'CRM To-Do'), enabled: true, module: 'crm' },
     { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true, module: 'invoices' },
     { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true, module: 'newsletters' },
     { path: adminRoutes.tickets, label: t('nav.support'), enabled: true, module: 'tickets' },
@@ -64,8 +64,8 @@ export const AdminTopNav: React.FC = () => {
     name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   const isActive = (path: string) => {
-    // Dashboard and CRM hub need exact-match (or `startsWith` would swallow nested routes
-    // — e.g. `/admin/crm/activities` would activate BOTH CRM and TO DO).
+    // Dashboard needs exact-match. CRM To-Do (/admin/crm) needs to not also activate when the
+    // pathname is /admin/crm/activities (which belongs to Activities).
     if (path === adminRoutes.dashboard) return location.pathname === adminRoutes.dashboard;
     if (path === adminRoutes.crm) {
       return location.pathname === adminRoutes.crm
@@ -88,11 +88,13 @@ export const AdminTopNav: React.FC = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                aria-current={isActive(item.path) ? 'page' : undefined}
                 className={cn(
                   'px-3 py-2 rounded-[10px] text-sm font-medium transition-colors',
-                  isActive(item.path) ? '' : 'hover:opacity-80'
+                  isActive(item.path)
+                    ? 'bg-white/15 text-white shadow-sm ring-1 ring-white/10'
+                    : 'text-white/80 hover:text-white hover:bg-white/5'
                 )}
-                style={{ background: isActive(item.path) ? 'rgba(255,255,255,0.06)' : undefined }}
               >
                 {item.label}
               </Link>
@@ -262,9 +264,12 @@ export const AdminTopNav: React.FC = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMenuOpen(false)}
+                aria-current={isActive(item.path) ? 'page' : undefined}
                 className={cn(
                   'px-3 py-2 rounded-[10px] text-sm font-medium transition-colors w-full text-left',
-                  isActive(item.path) ? 'bg-white/10' : 'hover:opacity-80'
+                  isActive(item.path)
+                    ? 'bg-white/15 text-white ring-1 ring-white/10'
+                    : 'text-white/80 hover:text-white hover:bg-white/5'
                 )}
               >
                 {item.label}
