@@ -545,6 +545,8 @@ export interface CrmActivity {
   authorUid: number | null;
   authorName: string;
   authorColorSeed: string;
+  /** True when status is Done but FUP date is in the future — likely a data-entry mistake. */
+  isStatusInconsistent?: boolean;
 }
 
 export interface CrmListParams {

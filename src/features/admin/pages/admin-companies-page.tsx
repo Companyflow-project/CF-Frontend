@@ -46,17 +46,33 @@ function getCategoryBadgeClasses(category: string): string {
   return 'bg-gray-100 text-gray-700';
 }
 
-function getCategoryLabel(category: string, t: (k: string, f: string) => string): string {
-  const map: Record<string, { key: string; fallback: string }> = {
-    'Anmodet om demo': { key: 'companies.category.demoRequested', fallback: 'Demo requested' },
-    'Gratis prøve': { key: 'companies.category.freeSample', fallback: 'Free sample' },
-    'Kunde': { key: 'companies.category.customer', fallback: 'Customer' },
-    'Ikke kunde': { key: 'companies.category.notACustomer', fallback: 'Not a customer' },
-    'Partner': { key: 'companies.category.partner', fallback: 'Partner' },
-  };
-  const m = map[category];
-  return m ? t(m.key, m.fallback) : (category || t('companies.uncategorized', 'Uncategorized'));
+// Categories are stored in Drupal as Danish taxonomy term names (vid=customer_category).
+// Labels are localised via the canonical `taxonomy.term.customer_category.<DanishName>` keys
+// shared with other admin screens — keep this here so any newly-added term shows up without
+// touching code, only the locale JSON.
+function getCategoryLabel(category: string, t: (k: string, opts: { defaultValue: string }) => string): string {
+  if (!category) return t('companies.uncategorized', { defaultValue: 'Uncategorized' });
+  return t(`taxonomy.term.customer_category.${category}`, { defaultValue: category });
 }
+
+// All Danish term names in the customer_category vocabulary, in the order Helle wants them.
+const CATEGORY_FILTER_OPTIONS = [
+  'Potentiel kunde',
+  'Anmodet om demo',
+  'Demo aftalt',
+  'Ønsker kontakt',
+  'Accepteret',
+  'Tilbud afsendt',
+  'Tilbud afvist',
+  'Dialog',
+  'Aftalt møde',
+  'Gratis prøve',
+  'Kunde',
+  'Partner',
+  'Ikke kunde',
+  'Opsagt',
+  'Intern test',
+] as const;
 
 function getCountryFlag(countryCode: string): string {
   if (!countryCode) return '';
@@ -120,8 +136,8 @@ export const AdminCompaniesPage: React.FC = () => {
   const [limit, setLimit] = useState(5);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [sort, setSort] = useState('title');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sort, setSort] = useState('created');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [category, setCategory] = useState('All');
   const [resetTarget, setResetTarget] = useState<AdminCompanyListItem | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminCompanyListItem | null>(null);
@@ -310,21 +326,11 @@ export const AdminCompaniesPage: React.FC = () => {
               className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="All">{t('companies.filter.none', 'None')}</option>
-              <option value="Potentiel kunde">{t('companies.category.potentialCustomer', 'Potential customer')}</option>
-              <option value="Anmodet om demo">{t('companies.category.demoRequested', 'Demo Requested')}</option>
-              <option value="Demo aftalt">{t('companies.category.demoAgreed', 'Demo agreed')}</option>
-              <option value="Ønsker kontakt">{t('companies.category.wantContact', 'Want contact')}</option>
-              <option value="Accepteret">{t('companies.category.accepted', 'Accepted')}</option>
-              <option value="Tilbud afsendt">{t('companies.category.offerSent', 'Offer sent')}</option>
-              <option value="Tilbud afvist">{t('companies.category.offerRejected', 'Offer rejected')}</option>
-              <option value="Dialog">{t('companies.category.dialogue', 'Dialogue')}</option>
-              <option value="Aftalt møde">{t('companies.category.meetingScheduled', 'Meeting scheduled')}</option>
-              <option value="Gratis prøve">{t('companies.category.freeSample', 'Free Sample')}</option>
-              <option value="Kunde">{t('companies.category.customer', 'Customer')}</option>
-              <option value="Partner">{t('companies.category.partner', 'Partner')}</option>
-              <option value="Ikke kunde">{t('companies.category.notACustomer', 'Not a customer')}</option>
-              <option value="Opsagt">{t('companies.category.terminated', 'Terminated')}</option>
-              <option value="Intern test">{t('companies.category.internalTesting', 'Internal testing')}</option>
+              {CATEGORY_FILTER_OPTIONS.map((name) => (
+                <option key={name} value={name}>
+                  {t(`taxonomy.term.customer_category.${name}`, { defaultValue: name })}
+                </option>
+              ))}
             </select>
           </div>
         </div>

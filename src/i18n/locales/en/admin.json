@@ -3,6 +3,7 @@
     "console": "Console",
     "companies": "Companies",
     "crm": "CRM",
+    "todo": "TO DO",
     "invoices": "Invoices",
     "newsletters": "Newsletters",
     "support": "Support",
@@ -1226,6 +1227,9 @@
     "actionView": "View",
     "actionReset": "Reset",
     "actionDeleteAll": "Delete All",
+    "categoryPickerTitle": "Customer category",
+    "categoryCurrent": "Currently: {{name}}",
+    "clearCategory": "— Clear category —",
     "quickLinks": "Quick Links",
     "quick": {
       "allPages": "All Pages",
@@ -1372,7 +1376,24 @@
       "note": "Note"
     },
     "success": "Activity created successfully",
-    "title": "Create CRM Activity"
+    "title": "Create CRM Activity",
+    "statuses": {
+      "planlagt": "Planned",
+      "i_gang": "In progress",
+      "afventer": "Awaiting",
+      "p_pause": "On break",
+      "f_rdig": "Done"
+    },
+    "types": {
+      "ikke_fastlagt": "Not determined",
+      "linkedin": "LinkedIn",
+      "redaktionel": "Editorial",
+      "telefon": "Telephone",
+      "e_mail": "Email",
+      "fysisk_m_de": "Physical meeting",
+      "online_m_de": "Online meeting",
+      "automatisk": "Automatic"
+    }
   },
   "editCompany": {
     "emailConfirm": {
@@ -1827,7 +1848,7 @@
   "crmActivities": {
     "addActivity": "Add Activity",
     "apply": "Apply",
-    "breadcrumb": "Activities",
+    "breadcrumb": "CRM To-Do List",
     "columns": {
       "activity": "Activity",
       "business": "Business",
@@ -1849,9 +1870,10 @@
       "inProgress": "In progress",
       "paused": "Paused",
       "pending": "Pending",
-      "scheduled": "Scheduled"
+      "scheduled": "Scheduled",
+      "inconsistentTitle": "Marked Done but follow-up is in the future"
     },
-    "title": "CRM — Activities",
+    "title": "CRM To-Do List",
     "viewAll": "← View all activities",
     "show": "Show",
     "perPage": "per page"

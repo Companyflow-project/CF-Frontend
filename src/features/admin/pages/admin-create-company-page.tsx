@@ -12,27 +12,29 @@ import { adminRoutes } from '../routes';
 import type { ExistingCompanySummary } from '../types';
 
 // ---- Category definitions (matches Drupal "Create a Business" form) ----
+// `value` is the slug accepted by the backend (CATEGORY_KEY_TO_DA_NAME in companies.service.ts).
+// `taxonomyName` is the Danish term name from the customer_category vocabulary — used to
+// resolve the localised label via the shared `taxonomy.term.customer_category.<name>` keys
+// in admin.json. `label` is the English fallback when the locale lacks an entry.
 const CATEGORIES = [
-  { value: 'lead', label: 'Lead', color: '#a78bfa' },
-  { value: 'demo_requested', label: 'Demo requested', color: '#60a5fa' },
-  { value: 'not_a_customer', label: 'Not a customer', color: '#f87171' },
-  { value: 'potential', label: 'Potential', color: '#818cf8' },
-  { value: 'demo_agreed', label: 'Demo agreed', color: '#38bdf8' },
-  { value: 'terminated', label: 'Terminated', color: '#ef4444' },
-  { value: 'inquiry_from_us', label: 'Inquiry from us', color: '#22c55e' },
-  { value: 'want_contact', label: 'Want contact', color: '#facc15' },
-  { value: 'former_customer', label: 'Former customer', color: '#fb7185' },
-  { value: 'accepted', label: 'Accepted', color: '#4ade80' },
-  { value: 'offer_sent', label: 'Offer sent', color: '#2dd4bf' },
-  { value: 'partner', label: 'Partner', color: '#c084fc' },
-  { value: 'dialogue', label: 'Dialogue', color: '#818cf8' },
-  { value: 'offer_rejected', label: 'Offer rejected', color: '#fb7185' },
-  { value: 'internal_testing', label: 'Internal testing', color: '#a3a3a3' },
-  { value: 'external_testing', label: 'External testing', color: '#67e8f9' },
-  { value: 'internal_demo', label: 'Internal demo', color: '#9ca3af' },
-  { value: 'meeting_scheduled', label: 'Meeting scheduled', color: '#67e8f9' },
-  { value: 'free_sample', label: 'Free sample', color: '#86efac' },
-  { value: 'customer', label: 'Customer', color: '#22c55e' },
+  { value: 'lead', taxonomyName: 'Potentiel kunde', label: 'Lead', color: '#a78bfa' },
+  { value: 'demo_requested', taxonomyName: 'Anmodet om demo', label: 'Demo requested', color: '#60a5fa' },
+  { value: 'not_a_customer', taxonomyName: 'Ikke kunde', label: 'Not a customer', color: '#f87171' },
+  { value: 'potential', taxonomyName: 'Potentiel', label: 'Potential', color: '#818cf8' },
+  { value: 'demo_agreed', taxonomyName: 'Demo aftalt', label: 'Demo agreed', color: '#38bdf8' },
+  { value: 'terminated', taxonomyName: 'Opsagt', label: 'Terminated', color: '#ef4444' },
+  { value: 'want_contact', taxonomyName: 'Ønsker kontakt', label: 'Want contact', color: '#facc15' },
+  { value: 'former_customer', taxonomyName: 'Tidl. kunde', label: 'Former customer', color: '#fb7185' },
+  { value: 'accepted', taxonomyName: 'Accepteret', label: 'Accepted', color: '#4ade80' },
+  { value: 'offer_sent', taxonomyName: 'Tilbud afsendt', label: 'Offer sent', color: '#2dd4bf' },
+  { value: 'partner', taxonomyName: 'Partner', label: 'Partner', color: '#c084fc' },
+  { value: 'dialogue', taxonomyName: 'Dialog', label: 'Dialogue', color: '#818cf8' },
+  { value: 'offer_rejected', taxonomyName: 'Tilbud afvist', label: 'Offer rejected', color: '#fb7185' },
+  { value: 'internal_testing', taxonomyName: 'Intern test', label: 'Internal testing', color: '#a3a3a3' },
+  { value: 'external_testing', taxonomyName: 'Ekstern test', label: 'External testing', color: '#67e8f9' },
+  { value: 'meeting_scheduled', taxonomyName: 'Aftalt møde', label: 'Meeting scheduled', color: '#67e8f9' },
+  { value: 'free_sample', taxonomyName: 'Gratis prøve', label: 'Free sample', color: '#86efac' },
+  { value: 'customer', taxonomyName: 'Kunde', label: 'Customer', color: '#22c55e' },
 ] as const;
 
 const PRODUCTS = [
@@ -403,7 +405,9 @@ export const AdminCreateCompanyPage: React.FC = () => {
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm text-gray-700">{t(`createCompany.categories.${cat.value}`, cat.label)}</span>
+                  <span className="text-sm text-gray-700">
+                    {t(`taxonomy.term.customer_category.${cat.taxonomyName}`, { defaultValue: cat.label })}
+                  </span>
                 </label>
               ))}
             </div>

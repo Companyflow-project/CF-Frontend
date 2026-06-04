@@ -3,6 +3,7 @@
     "console": "Konsol",
     "companies": "Virksomheder",
     "crm": "CRM",
+    "todo": "TO DO",
     "invoices": "Fakturaer",
     "newsletters": "Nyhedsbreve",
     "support": "Support",
@@ -1226,6 +1227,9 @@
     "actionView": "Vis",
     "actionReset": "Nulstil",
     "actionDeleteAll": "Slet alt",
+    "categoryPickerTitle": "Kundekategori",
+    "categoryCurrent": "Nuværende: {{name}}",
+    "clearCategory": "— Ryd kategori —",
     "quickLinks": "Genveje",
     "quick": {
       "allPages": "Alle sider",
@@ -1372,7 +1376,24 @@
       "note": "Note"
     },
     "success": "Aktivitet gemt",
-    "title": "Opret CRM-aktivitet"
+    "title": "Opret CRM-aktivitet",
+    "statuses": {
+      "planlagt": "Planlagt",
+      "i_gang": "I gang",
+      "afventer": "Afventer",
+      "p_pause": "På pause",
+      "f_rdig": "Færdig"
+    },
+    "types": {
+      "ikke_fastlagt": "Ikke fastlagt",
+      "linkedin": "LinkedIn",
+      "redaktionel": "Redaktionel",
+      "telefon": "Telefon",
+      "e_mail": "E-mail",
+      "fysisk_m_de": "Fysisk møde",
+      "online_m_de": "Online-møde",
+      "automatisk": "Automatisk"
+    }
   },
   "editCompany": {
     "emailConfirm": {
@@ -1827,7 +1848,7 @@
   "crmActivities": {
     "addActivity": "Tilføj aktivitet",
     "apply": "Anvend",
-    "breadcrumb": "Aktiviteter",
+    "breadcrumb": "CRM To-Do-liste",
     "columns": {
       "activity": "Aktivitet",
       "business": "Virksomhed",
@@ -1849,9 +1870,10 @@
       "inProgress": "I gang",
       "paused": "På pause",
       "pending": "Afventer",
-      "scheduled": "Planlagt"
+      "scheduled": "Planlagt",
+      "inconsistentTitle": "Markeret Færdig, men opfølgningsdato er i fremtiden"
     },
-    "title": "CRM — Aktiviteter",
+    "title": "CRM To-Do-liste",
     "viewAll": "← Se alle aktiviteter",
     "show": "Vis",
     "perPage": "pr. side"

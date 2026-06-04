@@ -52,7 +52,8 @@ export const AdminTopNav: React.FC = () => {
   const allNavItems: { path: string; label: string; enabled: boolean; module?: RbacModule }[] = [
     { path: adminRoutes.dashboard, label: t('nav.console'), enabled: true, module: 'dashboard' },
     { path: adminRoutes.companies, label: t('nav.companies'), enabled: true, module: 'companies' },
-    { path: adminRoutes.crmActivities, label: t('nav.crm'), enabled: true, module: 'crm' },
+    { path: adminRoutes.crm, label: t('nav.crm'), enabled: true, module: 'crm' },
+    { path: adminRoutes.crmActivities, label: t('nav.todo', 'TO DO'), enabled: true, module: 'crm' },
     { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true, module: 'invoices' },
     { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true, module: 'newsletters' },
     { path: adminRoutes.tickets, label: t('nav.support'), enabled: true, module: 'tickets' },
@@ -62,10 +63,17 @@ export const AdminTopNav: React.FC = () => {
   const getInitials = (name: string) =>
     name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-  const isActive = (path: string) =>
-    path === adminRoutes.dashboard
-      ? location.pathname === adminRoutes.dashboard
-      : location.pathname.startsWith(path);
+  const isActive = (path: string) => {
+    // Dashboard and CRM hub need exact-match (or `startsWith` would swallow nested routes
+    // — e.g. `/admin/crm/activities` would activate BOTH CRM and TO DO).
+    if (path === adminRoutes.dashboard) return location.pathname === adminRoutes.dashboard;
+    if (path === adminRoutes.crm) {
+      return location.pathname === adminRoutes.crm
+        || (location.pathname.startsWith(adminRoutes.crm + '/')
+            && !location.pathname.startsWith(adminRoutes.crmActivities));
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <nav className="px-4 sm:px-6 lg:px-8 py-4 bg-black text-white">

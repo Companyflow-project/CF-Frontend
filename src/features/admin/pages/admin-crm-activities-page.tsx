@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
+import { Plus, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -181,13 +181,11 @@ export const AdminCrmActivitiesPage: React.FC = () => {
       {/* Header */}
       <div className="space-y-1">
         <div className="text-sm text-gray-500">
-          <Link to={adminRoutes.dashboard} className="hover:underline">{t('nav.console', 'Console')}</Link>
-          {' › '}
-          <span className="text-gray-700">{t('crmActivities.breadcrumb', 'Activities')}</span>
+          <span className="text-gray-700">{t('crmActivities.breadcrumb', 'CRM To-Do List')}</span>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">
-            {t('crmActivities.title', 'CRM — Activities')}
+            {t('crmActivities.title', 'CRM To-Do List')}
           </h1>
           <Button asChild size="sm" className="bg-[#0d0e0e] text-white hover:bg-[#0d0e0e]/90 rounded-lg shrink-0">
             <Link to={adminRoutes.crmCreate}>
@@ -328,8 +326,19 @@ export const AdminCrmActivitiesPage: React.FC = () => {
                       {a.companyName ? a.companyName : '—'}
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded border ${statusClasses(a.status)}`}>
-                        {statusLabel(a.status, t)}
+                      <span className="inline-flex items-center gap-1">
+                        <span className={`inline-block text-xs font-medium px-2.5 py-0.5 rounded border ${statusClasses(a.status)}`}>
+                          {statusLabel(a.status, t)}
+                        </span>
+                        {a.isStatusInconsistent && (
+                          <AlertTriangle
+                            className="h-3.5 w-3.5 text-amber-500 shrink-0"
+                            aria-label={t(
+                              'crmActivities.status.inconsistentTitle',
+                              'Marked Done but follow-up is in the future',
+                            )}
+                          />
+                        )}
                       </span>
                     </TableCell>
                     <TableCell>

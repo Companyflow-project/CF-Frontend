@@ -36,27 +36,46 @@ import {
 } from '../components/status-version-info-card';
 
 // -------- Static taxonomy (fallback labels + icon mapping) --------
+// `key` MUST be `normalizeKey(<Drupal term name>)` — otherwise the lookup at the bottom
+// of this file (statusTid/typeTid useMemo) returns undefined, and submit silently sends
+// statusTid: null / typeTid: null which BLANKS the field in Drupal on save. Each Drupal
+// term name is the Danish term as stored in taxonomy_term_field_data.
+//   Planlagt → 'planlagt'
+//   I gang   → 'i_gang'
+//   Afventer → 'afventer'
+//   På pause → 'p_pause'
+//   Færdig   → 'f_rdig'
 const STATUS_OPTIONS = [
-  { key: 'planned', label: 'Planned' },
-  { key: 'in_progress', label: 'In progress' },
-  { key: 'awaiting', label: 'Awaiting' },
-  { key: 'on_break', label: 'On break' },
-  { key: 'done', label: 'Done' },
+  { key: 'planlagt', label: 'Planned' },
+  { key: 'i_gang', label: 'In progress' },
+  { key: 'afventer', label: 'Awaiting' },
+  { key: 'p_pause', label: 'On break' },
+  { key: 'f_rdig', label: 'Done' },
 ] as const;
 
+// Same constraint as STATUS_OPTIONS — `key` must equal normalizeKey(<Drupal term name>).
+// Term names verified against vid='activity_contact_type' in the live DB.
+//   Ikke fastlagt  → 'ikke_fastlagt'
+//   LinkedIn       → 'linkedin'
+//   Redaktionel    → 'redaktionel'
+//   Telefon        → 'telefon'
+//   E-mail         → 'e_mail'
+//   Fysisk møde    → 'fysisk_m_de'
+//   Online-møde    → 'online_m_de'
+//   Automatisk     → 'automatisk'
 const TYPE_OPTIONS: Array<{
   key: string;
   label: string;
   icon: React.ComponentType<{ className?: string }> | null;
 }> = [
-  { key: 'not_determined', label: 'Not determined', icon: FileText },
+  { key: 'ikke_fastlagt', label: 'Not determined', icon: FileText },
   { key: 'linkedin', label: 'LinkedIn', icon: Linkedin },
-  { key: 'editorial', label: 'Editorial', icon: FileText },
-  { key: 'telephone', label: 'Telephone', icon: Phone },
-  { key: 'email', label: 'Email', icon: Mail },
-  { key: 'physical_meeting', label: 'Physical meeting', icon: UsersIcon },
-  { key: 'online_meeting', label: 'Online meeting', icon: Video },
-  { key: 'automatic', label: 'Automatic', icon: Cog },
+  { key: 'redaktionel', label: 'Editorial', icon: FileText },
+  { key: 'telefon', label: 'Telephone', icon: Phone },
+  { key: 'e_mail', label: 'Email', icon: Mail },
+  { key: 'fysisk_m_de', label: 'Physical meeting', icon: UsersIcon },
+  { key: 'online_m_de', label: 'Online meeting', icon: Video },
+  { key: 'automatisk', label: 'Automatic', icon: Cog },
 ];
 
 const FOLLOWUP_OPTIONS = [
