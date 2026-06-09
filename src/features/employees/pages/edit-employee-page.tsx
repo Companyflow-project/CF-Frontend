@@ -8,6 +8,7 @@ import { Save, ArrowLeft, Loader2, Link2, Copy, Check } from 'lucide-react';
 import { employeesApi } from '../api';
 import { employeesRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
+import { isAdminRole } from '@/lib/utils';
 import type { Employee } from '@/types/models';
 import { useTranslation } from 'react-i18next';
 
@@ -69,6 +70,14 @@ export const EditEmployeePage: React.FC = () => {
     employee.email.toLowerCase() === (authUser.email ?? '').toLowerCase()
   ));
 
+  // Email edit policy: admins can change the email of non-owner employees.
+  // - Self: always locked (changing your own login this way is unsafe — needs a dedicated flow)
+  // - Account owner: always locked (their email is their login identity / magic-link target)
+  // - Non-admin viewer: locked
+  const viewerIsAdmin = isAdminRole(authUser?.role);
+  const isAccountOwner = employee?.role === 'account_owner';
+  const emailLocked = isSelf || isAccountOwner || !viewerIsAdmin;
+
   useEffect(() => {
     if (!id) {
       setLoading(false);
@@ -105,8 +114,10 @@ export const EditEmployeePage: React.FC = () => {
     if (!formData) return false;
     const newErrors: Partial<Record<keyof EmployeeFormData, string>> = {};
     if (!formData.name.trim()) newErrors.name = t('form.validation.nameRequired');
-    if (!formData.email.trim()) newErrors.email = t('form.validation.emailRequired');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('form.validation.emailInvalid');
+    if (!emailLocked) {
+      if (!formData.email.trim()) newErrors.email = t('form.validation.emailRequired');
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('form.validation.emailInvalid');
+    }
     if (!formData.mobileNumber.trim()) {
       newErrors.mobileNumber = t('form.validation.mobileRequired');
     }
@@ -127,7 +138,10 @@ export const EditEmployeePage: React.FC = () => {
     try {
       await employeesApi.updateEmployee(id, {
         name: formData.name,
-        // email is locked during edit — do not send it
+        // Email is sent only when unlocked AND actually changed; otherwise omitted so the backend keeps the existing value.
+        ...(!emailLocked && employee && formData.email.trim().toLowerCase() !== (employee.email ?? '').toLowerCase()
+          ? { email: formData.email.trim() }
+          : {}),
         mobileNumber: formData.mobileNumber,
         alternateNumber: formData.alternateNumber || undefined,
         isPublic: formData.makeContactPublic,
@@ -269,7 +283,8 @@ export const EditEmployeePage: React.FC = () => {
           errors={errors}
           isEditMode
           isSelf={isSelf}
-          isAccountOwner={employee.role === 'account_owner'}
+          isAccountOwner={isAccountOwner}
+          emailLocked={emailLocked}
           existingPhotoUri={employee.userPictureUri ?? null}
           onFidRefReady={handleFidRefReady}
         />

@@ -1228,6 +1228,8 @@
     "actionView": "View",
     "actionReset": "Reset",
     "actionDeleteAll": "Delete All",
+    "businessDetails": "Business details",
+    "activitySubscription": "Activity & Subscription",
     "categoryPickerTitle": "Customer category",
     "categoryCurrent": "Currently: {{name}}",
     "clearCategory": "— Clear category —",
@@ -1307,6 +1309,7 @@
     "columns": {
       "activity": "Activity",
       "business": "Business",
+      "next": "Next",
       "responsible": "Responsible",
       "type": "Type",
       "writtenOn": "Written On"
@@ -1321,6 +1324,25 @@
       "status": "Status",
       "type": "Type",
       "users": "Users"
+    },
+    "periods": {
+      "previous": "Previous",
+      "latest_week": "Latest week",
+      "next_week": "Next week",
+      "next_month": "Next month",
+      "all_upcoming": "All upcoming"
+    },
+    "statuses": {
+      "scheduled": "Scheduled",
+      "in_progress": "In Progress",
+      "pending": "Pending",
+      "paused": "Paused",
+      "completed": "Completed"
+    },
+    "followUps": {
+      "all": "All",
+      "fup_date": "FUP date",
+      "no_fup_date": "No FUP date"
     },
     "showing": "Showing {{from}}–{{to}} of {{total}} activities",
     "summary": {
@@ -1583,6 +1605,10 @@
     "empty": "No invoices found.",
     "exportCsv": "Export CSV",
     "exporting": "Exporting…",
+    "filter": {
+      "customersOnly": "Customers Only",
+      "all": "All"
+    },
     "searchPlaceholder": "Search businesses...",
     "showing": "Showing {{from}}–{{to}} of {{total}} invoices",
     "sortBy": "Sort by",

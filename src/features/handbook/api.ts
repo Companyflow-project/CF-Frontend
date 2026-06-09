@@ -300,6 +300,13 @@ export const handbookApi = {
       if (error.response?.status === 403) {
         throw new Error("You don't have permission to update this page.");
       }
+      // Surface backend error messages instead of an opaque HTTP status so the toast is actionable.
+      const apiMessage = error?.response?.data?.error?.message
+        ?? error?.response?.data?.message;
+      if (typeof apiMessage === 'string' && apiMessage.trim()) {
+        console.error('Error updating page:', error);
+        throw new Error(apiMessage.trim());
+      }
       console.error('Error updating page:', error);
       throw error;
     }

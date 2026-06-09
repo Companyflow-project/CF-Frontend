@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ChevronLeft, ChevronRight, Search, Download } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useInvoices } from '../hooks';
 import { adminApi } from '../api';
 import { adminRoutes } from '../routes';
@@ -36,6 +37,9 @@ export const AdminInvoicesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [exporting, setExporting] = useState(false);
+  // Default: only show paying customers. Backend marks them with category='Customer' when a
+  // payment interval exists; non-customers (demo / lead / churned) have category=''.
+  const [customersOnly, setCustomersOnly] = useState(true);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -54,10 +58,19 @@ export const AdminInvoicesPage: React.FC = () => {
     search: debouncedSearch || undefined,
   });
 
-  const invoices = data?.data ?? [];
+  const rawInvoices = data?.data ?? [];
+  // Client-side filter for the customers-only toggle. The server already returns category='Customer'
+  // for paying companies (active payment interval) and '' for everyone else.
+  const invoices = useMemo(
+    () => (customersOnly ? rawInvoices.filter((inv) => inv.category === 'Customer') : rawInvoices),
+    [rawInvoices, customersOnly],
+  );
   const meta = data?.meta;
-  const total = meta?.total ?? 0;
-  const totalPages = total ? Math.ceil(total / perPage) : 1;
+  // Note: server-side total reflects all rows; when the customers-only filter is on we report
+  // the filtered count for the current page so pagination text stays honest.
+  const serverTotal = meta?.total ?? 0;
+  const total = customersOnly ? invoices.length : serverTotal;
+  const totalPages = serverTotal ? Math.ceil(serverTotal / perPage) : 1;
   const from = total === 0 ? 0 : (page - 1) * perPage + 1;
   const to = Math.min(page * perPage, total);
 
@@ -109,8 +122,34 @@ export const AdminInvoicesPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search */}
-      <div className="flex justify-end">
+      {/* Customers-only toggle + Search */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="inline-flex items-center gap-1 p-1 rounded-lg bg-gray-100 self-start">
+          <button
+            type="button"
+            onClick={() => { setCustomersOnly(true); setPage(1); }}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+              customersOnly
+                ? 'bg-white text-[#0d0e0e] shadow-sm'
+                : 'text-gray-600 hover:text-[#0d0e0e]'
+            )}
+          >
+            {t('invoices.filter.customersOnly', 'Customers Only')}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setCustomersOnly(false); setPage(1); }}
+            className={cn(
+              'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+              !customersOnly
+                ? 'bg-[#0d0e0e] text-white shadow-sm'
+                : 'text-gray-600 hover:text-[#0d0e0e]'
+            )}
+          >
+            {t('invoices.filter.all', 'All')}
+          </button>
+        </div>
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input

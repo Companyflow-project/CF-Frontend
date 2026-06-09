@@ -128,7 +128,7 @@ export const AdminBooksPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <SortableTableHead column="book" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort}>{t('books.colBook', 'Book')}</SortableTableHead>
-                <TableHead className="w-[220px] text-right">{t('books.colActions', 'Actions')}</TableHead>
+                <TableHead className="w-[280px] text-right">{t('books.colActions', 'Actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -157,22 +157,28 @@ export const AdminBooksPage: React.FC = () => {
                 <TableRow key={book.nid}>
                   <TableCell>
                     <Link
-                      to={adminRoutes.handbookTableOfContents}
-                      state={{ bid: book.nid }}
+                      to={adminRoutes.bookEditOrder.replace(':bid', String(book.nid))}
                       className="text-blue-600 hover:underline"
                     >
                       {book.title}
                     </Link>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                      onClick={() => setDeleteTarget({ bid: book.nid, title: book.title ?? '' })}
-                    >
-                      {t('books.delete.action', 'Delete')}
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={adminRoutes.bookEditOrder.replace(':bid', String(book.nid))}>
+                          {t('books.editOrderAndTitles', 'Edit order and titles')}
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        onClick={() => setDeleteTarget({ bid: book.nid, title: book.title ?? '' })}
+                      >
+                        {t('books.delete.action', 'Delete')}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

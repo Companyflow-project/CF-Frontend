@@ -1228,6 +1228,8 @@
     "actionView": "Vis",
     "actionReset": "Nulstil",
     "actionDeleteAll": "Slet alt",
+    "businessDetails": "Virksomhedsoplysninger",
+    "activitySubscription": "Aktivitet & abonnement",
     "categoryPickerTitle": "Kundekategori",
     "categoryCurrent": "Nuværende: {{name}}",
     "clearCategory": "— Ryd kategori —",
@@ -1307,6 +1309,7 @@
     "columns": {
       "activity": "Aktivitet",
       "business": "Virksomhed",
+      "next": "Næste",
       "responsible": "Ansvarlig",
       "type": "Type",
       "writtenOn": "Skrevet"
@@ -1321,6 +1324,25 @@
       "status": "Status",
       "type": "Type",
       "users": "Brugere"
+    },
+    "periods": {
+      "previous": "Forrige",
+      "latest_week": "Sidste uge",
+      "next_week": "Næste uge",
+      "next_month": "Næste måned",
+      "all_upcoming": "Alle kommende"
+    },
+    "statuses": {
+      "scheduled": "Planlagt",
+      "in_progress": "I gang",
+      "pending": "Afventer",
+      "paused": "På pause",
+      "completed": "Færdig"
+    },
+    "followUps": {
+      "all": "Alle",
+      "fup_date": "FUP-dato",
+      "no_fup_date": "Ingen FUP-dato"
     },
     "showing": "Viser {{from}}–{{to}} af {{total}}",
     "summary": {
@@ -1583,6 +1605,10 @@
     "empty": "Ingen fakturaer fundet.",
     "exportCsv": "Eksporter CSV",
     "exporting": "Eksporterer...",
+    "filter": {
+      "customersOnly": "Kun kunder",
+      "all": "Alle"
+    },
     "searchPlaceholder": "Søg fakturaer...",
     "showing": "Viser {{from}}–{{to}} af {{total}} fakturaer",
     "sortBy": "Sortér efter",

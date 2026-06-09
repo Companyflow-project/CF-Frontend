@@ -123,7 +123,7 @@ export const AdminCrmPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [showHidden, setShowHidden] = useState(false);
-  const [sortColumn, setSortColumn] = useState<'business' | 'activity' | 'type' | 'writtenOn' | 'responsible'>('writtenOn');
+  const [sortColumn, setSortColumn] = useState<'business' | 'activity' | 'type' | 'writtenOn' | 'next' | 'responsible'>('writtenOn');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const usersQuery = useCrmUsers();
@@ -153,6 +153,8 @@ export const AdminCrmPage: React.FC = () => {
           ? a.type ?? ''
           : sortColumn === 'writtenOn'
           ? new Date(a.writtenOn).getTime()
+          : sortColumn === 'next'
+          ? (a.fupDate ? new Date(a.fupDate).getTime() : 0)
           : a.responsibleName ?? '';
       const bValue =
         sortColumn === 'business'
@@ -163,6 +165,8 @@ export const AdminCrmPage: React.FC = () => {
           ? b.type ?? ''
           : sortColumn === 'writtenOn'
           ? new Date(b.writtenOn).getTime()
+          : sortColumn === 'next'
+          ? (b.fupDate ? new Date(b.fupDate).getTime() : 0)
           : b.responsibleName ?? '';
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
@@ -173,7 +177,7 @@ export const AdminCrmPage: React.FC = () => {
     return cloned;
   }, [activities, sortColumn, sortDirection]);
 
-  const handleSort = (column: 'business' | 'activity' | 'type' | 'writtenOn' | 'responsible') => {
+  const handleSort = (column: 'business' | 'activity' | 'type' | 'writtenOn' | 'next' | 'responsible') => {
     const next = toggleSort(sortColumn, sortDirection, column);
     setSortColumn(next.column);
     setSortDirection(next.direction);
@@ -380,17 +384,18 @@ export const AdminCrmPage: React.FC = () => {
                 <SortableTableHead column="activity" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.activity', 'Activity')}</SortableTableHead>
                 <SortableTableHead column="type" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.type', 'Type')}</SortableTableHead>
                 <SortableTableHead column="writtenOn" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.writtenOn', 'Written On')}</SortableTableHead>
+                <SortableTableHead column="next" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.next', 'Next')}</SortableTableHead>
                 <SortableTableHead column="responsible" activeColumn={sortColumn} direction={sortDirection} onSort={handleSort} className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('crm.columns.responsible', 'Responsible')}</SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {activitiesQuery.isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-400 py-8">{t('common.loading', 'Loading…')}</TableCell>
+                  <TableCell colSpan={6} className="text-center text-gray-400 py-8">{t('common.loading', 'Loading…')}</TableCell>
                 </TableRow>
               ) : activities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-400 py-8">{t('crm.empty', 'No activities found.')}</TableCell>
+                  <TableCell colSpan={6} className="text-center text-gray-400 py-8">{t('crm.empty', 'No activities found.')}</TableCell>
                 </TableRow>
               ) : (
                 sortedActivities.map(a => (
@@ -407,6 +412,9 @@ export const AdminCrmPage: React.FC = () => {
                     <TableCell><TypeBadge type={a.type} /></TableCell>
                     <TableCell className="text-gray-500">
                       {new Date(a.writtenOn).toLocaleDateString('da-DK')}
+                    </TableCell>
+                    <TableCell className="text-gray-500">
+                      {a.fupDate ? new Date(a.fupDate).toLocaleDateString('da-DK') : <span className="text-gray-400">—</span>}
                     </TableCell>
                     <TableCell>
                       {a.responsibleName ? (

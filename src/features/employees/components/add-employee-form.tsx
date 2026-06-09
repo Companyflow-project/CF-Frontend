@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Loader2, Upload, X } from 'lucide-react';
+import { Loader2, Upload, X, Plus } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useEmploymentTypes } from '@/features/employment-types/hooks';
+import { accountRoutes } from '@/features/account/routes';
 import { employeesApi } from '../api';
 
 /** All languages that can be assigned to employees. */
@@ -50,6 +52,8 @@ interface AddEmployeeFormProps {
   isSelf?: boolean;
   /** True when the employee being edited is the account owner (company registrant) — locks permissions */
   isAccountOwner?: boolean;
+  /** True when the email field should be readonly (e.g. self / account_owner / non-admin viewer). Defaults to true in edit mode for backward compatibility. */
+  emailLocked?: boolean;
   /** Existing profile photo URI from the backend — shown as initial preview in edit mode */
   existingPhotoUri?: string | null;
   /**
@@ -88,7 +92,10 @@ function resolvePhotoUrl(uri: string | null | undefined): string | null {
   return `${base}${uri}`;
 }
 
-export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors, isEditMode = false, isSelf = false, isAccountOwner = false, existingPhotoUri, onFidRefReady }) => {
+export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onChange, errors, isEditMode = false, isSelf = false, isAccountOwner = false, emailLocked, existingPhotoUri, onFidRefReady }) => {
+  // Default: in edit mode, lock the email unless the parent explicitly says otherwise.
+  // Create mode (isEditMode=false) keeps the email editable as before.
+  const isEmailLocked = emailLocked ?? isEditMode;
   const { t } = useTranslation('employees');
   const { user } = useAuth();
   const companyId = user?.companyId ? String(user.companyId) : undefined;
@@ -272,15 +279,15 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                       type="email"
                       placeholder={t('form.emailPlaceholder')}
                       value={formData.email}
-                      onChange={(e) => !isEditMode && onChange({ ...formData, email: e.target.value })}
-                      readOnly={isEditMode}
-                      className={isEditMode ? 'bg-gray-50 text-gray-500 cursor-not-allowed select-none' : ''}
+                      onChange={(e) => !isEmailLocked && onChange({ ...formData, email: e.target.value })}
+                      readOnly={isEmailLocked}
+                      className={isEmailLocked ? 'bg-gray-50 text-gray-500 cursor-not-allowed select-none' : ''}
                     />
-                    {isEditMode && (
+                    {isEmailLocked && (
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">{t('form.locked')}</span>
                     )}
                   </div>
-                  {!isEditMode && errors?.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
+                  {!isEmailLocked && errors?.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
                 </div>
 
                 <div className="col-span-2">
@@ -433,7 +440,18 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                 {companyId &&
                   !employmentTypesLoading &&
                   uniqueEmploymentTypes.length === 0 && (
-                    <p className="text-xs text-gray-500">{t('form.employment.noTypes')}</p>
+                    <div className="mt-2 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-gray-600">{t('form.employment.noTypes')}</p>
+                      <Link
+                        to={accountRoutes.addEmploymentType}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 self-start sm:self-auto px-3 py-1.5 rounded-md bg-[#0d0e0e] text-white text-sm font-medium hover:bg-[#0d0e0e]/90"
+                      >
+                        <Plus className="h-4 w-4" />
+                        {t('form.employment.noTypesCta', 'Create employment type')}
+                      </Link>
+                    </div>
                   )}
               </div>
             </div>
