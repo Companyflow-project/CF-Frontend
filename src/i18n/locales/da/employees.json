@@ -182,6 +182,8 @@
   "infoList.employeesAt": "Medarbejdere hos {{company}}",
   "infoList.employees": "Medarbejdere",
   "infoList.adminListNote": "Du kan se denne liste — eller se flere navne i listen, end medarbejderne kan — fordi du har tilladelse til at administrere den.",
+  "infoList.home": "Hjem",
+  "infoList.entireHandbook": "Hele håndbogen",
 
   "stats.title": "Medarbejderstatistik - {{name}}",
   "stats.titleAll": "Medarbejderstatistik - Alle",

@@ -182,6 +182,8 @@
   "infoList.employeesAt": "Employees at {{company}}",
   "infoList.employees": "Employees",
   "infoList.adminListNote": "You may see this list — or see more names in the list than employees do — because you have permission to manage it.",
+  "infoList.home": "Home",
+  "infoList.entireHandbook": "The entire handbook",
 
   "stats.title": "Employee Statistics - {{name}}",
   "stats.titleAll": "Employee Statistics - All",

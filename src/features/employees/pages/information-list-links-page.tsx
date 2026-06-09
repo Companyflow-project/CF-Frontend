@@ -270,7 +270,7 @@ export const InformationListLinksPage: React.FC = () => {
                             disabled={saving}
                             className="border-[rgba(15,23,42,0.15)] text-[#0d0e0e] rounded-[999px] px-6 h-10 text-[13.3px] bg-white hover:bg-gray-50"
                         >
-                            {saving ? 'Saving…' : 'Save'}
+                            {saving ? tCommon('saving') : tCommon('save')}
                         </Button>
                         <Button
                             onClick={handleSaveAndAdd}
