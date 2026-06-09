@@ -127,7 +127,9 @@ export const AdminCrmPage: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const usersQuery = useCrmUsers();
-  const summaryParams = useMemo(() => ({ userId: selectedUser, period, status, followUp }), [selectedUser, period, status, followUp]);
+  // The To-Do list hides Done/Færdig activities unless the user explicitly picks the
+  // "Completed" status pill. excludeStatus is ignored by the backend when status is set.
+  const summaryParams = useMemo(() => ({ userId: selectedUser, period, status, followUp, excludeStatus: 'completed' }), [selectedUser, period, status, followUp]);
   const summaryQuery = useCrmSummary(summaryParams);
   const listParams = useMemo(() => ({
     page,
@@ -135,6 +137,7 @@ export const AdminCrmPage: React.FC = () => {
     userId: selectedUser,
     period,
     status,
+    excludeStatus: 'completed',
     followUp,
     type: appliedType === 'all' ? undefined : appliedType,
   }), [page, perPage, selectedUser, period, status, followUp, appliedType]);
