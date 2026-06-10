@@ -1485,6 +1485,8 @@
       "town": "By"
     },
     "admin": {
+      "allowReset": "Tillad nulstilling",
+      "allowResetHint": "Markér her for at aktivere nulstilling af virksomhedens data.",
       "allowWise": "Tillad Wise",
       "title": "Administrator"
     },

@@ -1485,6 +1485,8 @@
       "town": "Town"
     },
     "admin": {
+      "allowReset": "Allow reset",
+      "allowResetHint": "Check here to enable resetting of company data.",
       "allowWise": "Allow wise",
       "title": "Administrative Settings"
     },

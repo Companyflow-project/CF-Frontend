@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 import { useEmploymentType, useUpdateEmploymentType } from '@/features/employment-types/hooks';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface EditEmploymentTypeDialogProps {
     open: boolean;
@@ -23,6 +24,7 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
     employmentTypeId,
 }) => {
     const { data: employmentType, isLoading } = useEmploymentType(employmentTypeId ?? undefined);
+    const { t } = useTranslation('account');
     const updateMutation = useUpdateEmploymentType();
 
     const [formData, setFormData] = useState({
@@ -44,7 +46,7 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
         e.preventDefault();
 
         if (!employmentTypeId) {
-            toast.error('Employment type ID is missing');
+            toast.error(t('employmentTypes.toast.missingId'));
             return;
         }
 
@@ -57,11 +59,11 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
                 },
             });
 
-            toast.success('Employment type updated successfully');
+            toast.success(t('employmentTypes.toast.updated'));
             onOpenChange(false);
         } catch (error) {
             console.error('Failed to update employment type:', error);
-            toast.error('Failed to update employment type. Please try again.');
+            toast.error(t('employmentTypes.toast.updateFailed'));
         }
     };
 
@@ -70,7 +72,7 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
             <DialogContent className="!max-w-[600px] w-[700px] p-0 gap-0">
                 {/* Custom Header with Close Button */}
                 <div className="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 className="text-xl font-semibold text-[#0d0e0e]">Edit Employment Type</h2>
+                    <h2 className="text-xl font-semibold text-[#0d0e0e]">{t('employmentTypes.dialog.editTitle')}</h2>
                     <Button
                         variant="ghost"
                         size="sm"
@@ -83,7 +85,7 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
 
                 {isLoading ? (
                     <div className="px-6 py-8 text-center text-gray-500">
-                        Loading...
+                        {t('employmentTypes.dialog.loading')}
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit}>
@@ -91,13 +93,13 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
                             {/* Name Field */}
                             <div className="space-y-2">
                                 <Label htmlFor="edit-name" className="text-sm font-medium text-[#0d0e0e]">
-                                    Name
+                                    {t('employmentTypes.dialog.name')}
                                 </Label>
                                 <Input
                                     id="edit-name"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Operations"
+                                    placeholder={t('employmentTypes.dialog.namePlaceholder')}
                                     required
                                     className="h-11"
                                 />
@@ -106,13 +108,13 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
                             {/* Description Field */}
                             <div className="space-y-2">
                                 <Label htmlFor="edit-description" className="text-sm font-medium text-[#0d0e0e]">
-                                    Description
+                                    {t('employmentTypes.dialog.description')}
                                 </Label>
                                 <Textarea
                                     id="edit-description"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="In charge of managing daily operations"
+                                    placeholder={t('employmentTypes.dialog.descriptionPlaceholder')}
                                     className="min-h-[120px] resize-none"
                                 />
                             </div>
@@ -126,7 +128,7 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
                                 onClick={() => onOpenChange(false)}
                                 className="px-6"
                             >
-                                Cancel
+                                {t('employmentTypes.dialog.cancel')}
                             </Button>
                             <Button
                                 type="submit"
@@ -134,7 +136,7 @@ export const EditEmploymentTypeDialog: React.FC<EditEmploymentTypeDialogProps> =
                                 className="px-6"
                                 style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                             >
-                                {updateMutation.isPending ? 'Updating...' : 'Update employment type'}
+                                {updateMutation.isPending ? t('employmentTypes.dialog.updating') : t('employmentTypes.dialog.update')}
                             </Button>
                         </div>
                     </form>

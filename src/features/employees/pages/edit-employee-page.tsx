@@ -260,9 +260,9 @@ export const EditEmployeePage: React.FC = () => {
         </div>
 
         <HelpBanner
-          title="Help."
+          title={t('edit.helpTitle')}
           description={t('edit.helpDesc')}
-          linkText="User manual"
+          linkText={t('edit.userManual')}
           linkHref="#"
         />
 

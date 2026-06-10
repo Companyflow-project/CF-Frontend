@@ -11,6 +11,7 @@ import { X } from 'lucide-react';
 import { useCreateEmploymentType } from '@/features/employment-types/hooks';
 import { useAuth } from '@/context/auth-context';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface AddEmploymentTypeDialogProps {
     open: boolean;
@@ -22,6 +23,7 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
     onOpenChange,
 }) => {
     const { user } = useAuth();
+    const { t } = useTranslation('account');
     const createMutation = useCreateEmploymentType();
 
     const [formData, setFormData] = useState({
@@ -33,7 +35,7 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
         e.preventDefault();
 
         if (!user?.companyId) {
-            toast.error('No company linked. Please log in again.');
+            toast.error(t('employmentTypes.toast.noCompany'));
             return;
         }
 
@@ -44,14 +46,14 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
                 companyId: String(user.companyId),
             });
 
-            toast.success('Employment type added successfully');
+            toast.success(t('employmentTypes.toast.created'));
 
             // Clear form and close dialog
             setFormData({ name: '', description: '' });
             onOpenChange(false);
         } catch (error) {
             console.error('Failed to create employment type:', error);
-            toast.error('Failed to create employment type. Please try again.');
+            toast.error(t('employmentTypes.toast.createFailed'));
         }
     };
 
@@ -60,7 +62,7 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
             <DialogContent className="!max-w-[600px] w-[700px] p-0 gap-0">
                 {/* Custom Header with Close Button */}
                 <div className="flex items-center justify-between px-6 py-4 border-b">
-                    <h2 className="text-xl font-semibold text-[#0d0e0e]">Add Employment Type</h2>
+                    <h2 className="text-xl font-semibold text-[#0d0e0e]">{t('employmentTypes.dialog.addTitle')}</h2>
                     <Button
                         variant="ghost"
                         size="sm"
@@ -76,13 +78,13 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
                         {/* Name Field */}
                         <div className="space-y-2">
                             <Label htmlFor="name" className="text-sm font-medium text-[#0d0e0e]">
-                                Name
+                                {t('employmentTypes.dialog.name')}
                             </Label>
                             <Input
                                 id="name"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Operations"
+                                placeholder={t('employmentTypes.dialog.namePlaceholder')}
                                 required
                                 className="h-11"
                             />
@@ -91,13 +93,13 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
                         {/* Description Field */}
                         <div className="space-y-2">
                             <Label htmlFor="description" className="text-sm font-medium text-[#0d0e0e]">
-                                Description
+                                {t('employmentTypes.dialog.description')}
                             </Label>
                             <Textarea
                                 id="description"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="In charge of managing daily operations"
+                                placeholder={t('employmentTypes.dialog.descriptionPlaceholder')}
                                 className="min-h-[120px] resize-none"
                             />
                         </div>
@@ -111,7 +113,7 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
                             onClick={() => onOpenChange(false)}
                             className="px-6"
                         >
-                            Cancel
+                            {t('employmentTypes.dialog.cancel')}
                         </Button>
                         <Button
                             type="submit"
@@ -119,7 +121,7 @@ export const AddEmploymentTypeDialog: React.FC<AddEmploymentTypeDialogProps> = (
                             className="px-6"
                             style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                         >
-                            {createMutation.isPending ? 'Adding...' : 'Add employment type'}
+                            {createMutation.isPending ? t('employmentTypes.dialog.adding') : t('employmentTypes.dialog.add')}
                         </Button>
                     </div>
                 </form>

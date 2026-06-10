@@ -17,9 +17,11 @@ import { AddEmploymentTypeDialog } from './add-employment-type-page';
 import { EditEmploymentTypeDialog } from './edit-employment-type-page';
 import { HelpBanner } from '@/components/ui/help-banner';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export const ViewEmploymentTypesPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation('account');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
@@ -39,13 +41,13 @@ export const ViewEmploymentTypesPage: React.FC = () => {
     };
 
     const handleDelete = async (typeId: number, typeName: string) => {
-        if (window.confirm(`Are you sure you want to delete the employment type "${typeName}"? This action cannot be undone.`)) {
+        if (window.confirm(t('employmentTypes.list.deleteConfirm', { name: typeName }))) {
             try {
                 await deleteMutation.mutateAsync(typeId);
-                toast.success('Employment type deleted successfully');
+                toast.success(t('employmentTypes.toast.deleted'));
             } catch (error) {
                 console.error('Failed to delete employment type:', error);
-                toast.error('Failed to delete employment type. Please try again.');
+                toast.error(t('employmentTypes.toast.deleteFailed'));
             }
         }
     };
@@ -62,21 +64,21 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                             className="h-9 px-3"
                         >
                             <ArrowLeft className="h-4 w-4 mr-1" />
-                            Back
+                            {t('employmentTypes.list.back')}
                         </Button>
-                        <h1 className="text-2xl font-bold text-[#0d0e0e]">Employment Types</h1>
+                        <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('employmentTypes.list.title')}</h1>
                     </div>
                     <Button
                         onClick={() => setIsAddDialogOpen(true)}
                         className="bg-[#2f946f] hover:bg-[#2f946f]/90 text-white"
                     >
-                        Add employment type
+                        {t('employmentTypes.list.add')}
                     </Button>
                 </div>
 
                 {/* Help Banner */}
                 <HelpBanner className="mb-6">
-                    Here you can view and manage all available employment types. Employment types help you categorize your employees and assign them to different groups.
+                    {t('employmentTypes.list.helpBanner')}
                 </HelpBanner>
             </div>
 
@@ -85,22 +87,22 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50">
-                            <TableHead className="font-semibold text-[#0d0e0e]">Name</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Description</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e] w-[120px]">Actions</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('employmentTypes.list.colName')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('employmentTypes.list.colDescription')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e] w-[120px]">{t('employmentTypes.list.colActions')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={3} className="text-center py-8 text-gray-500">
-                                    Loading employment types...
+                                    {t('employmentTypes.list.loading')}
                                 </TableCell>
                             </TableRow>
                         ) : !employmentTypes || employmentTypes.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={3} className="text-center py-8 text-gray-500">
-                                    No employment types found. Create your first one!
+                                    {t('employmentTypes.list.empty')}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -115,7 +117,7 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                                 size="sm"
                                                 onClick={() => handleAssignToEmployees(type.id, type.name)}
                                                 className="h-8 w-8 p-0 text-[#2f946f] hover:text-[#2f946f]/80 hover:bg-[#2f946f]/10"
-                                                title="Click to assign employment type to employees"
+                                                title={t('employmentTypes.list.assignTitle')}
                                             >
                                                 <Users className="h-4 w-4" />
                                             </Button>
@@ -124,7 +126,7 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                                 size="sm"
                                                 onClick={() => handleEdit(type.id)}
                                                 className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                title="Edit"
+                                                title={t('employmentTypes.list.editTitle')}
                                             >
                                                 <Pencil className="h-4 w-4" />
                                             </Button>
@@ -133,7 +135,7 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                                 size="sm"
                                                 onClick={() => handleDelete(type.id, type.name)}
                                                 className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                title="Delete"
+                                                title={t('employmentTypes.list.deleteTitle')}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
