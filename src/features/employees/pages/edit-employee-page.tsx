@@ -9,6 +9,7 @@ import { employeesApi } from '../api';
 import { employeesRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole } from '@/lib/utils';
+import { resolveRbacRole } from '@/lib/rbac';
 import type { Employee } from '@/types/models';
 import { useTranslation } from 'react-i18next';
 
@@ -70,13 +71,19 @@ export const EditEmployeePage: React.FC = () => {
     employee.email.toLowerCase() === (authUser.email ?? '').toLowerCase()
   ));
 
-  // Email edit policy: admins can change the email of non-owner employees.
-  // - Self: always locked (changing your own login this way is unsafe — needs a dedicated flow)
-  // - Account owner: always locked (their email is their login identity / magic-link target)
-  // - Non-admin viewer: locked
+  // Email edit policy:
+  // - CompanyFlow platform admins (superadmin / admin — staff "sitting in CompanyFlow")
+  //   may change ANY login email, including account owners. Confirmed with the client.
+  // - Otherwise: company admins can change non-owner employees, but self and account
+  //   owners stay locked (the email is the login identity / magic-link target), and
+  //   non-admin viewers can never change it.
+  const viewerRbac = resolveRbacRole(authUser?.role);
+  const viewerIsPlatformAdmin = viewerRbac === 'superadmin' || viewerRbac === 'admin';
   const viewerIsAdmin = isAdminRole(authUser?.role);
   const isAccountOwner = employee?.role === 'account_owner';
-  const emailLocked = isSelf || isAccountOwner || !viewerIsAdmin;
+  const emailLocked = viewerIsPlatformAdmin
+    ? false
+    : isSelf || isAccountOwner || !viewerIsAdmin;
 
   useEffect(() => {
     if (!id) {
