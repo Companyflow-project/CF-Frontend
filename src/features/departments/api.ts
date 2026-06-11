@@ -9,6 +9,8 @@ export interface Department {
     managerName: string;
     managerId: number | null;
     logoUrl: string | null;
+    parentId: number | null;
+    parentName: string | null;
 }
 
 // Note: backend list response may include extra metadata; we normalize rows individually.
@@ -22,6 +24,7 @@ export interface CreateDepartmentPayload {
     managerId?: number | null;
     companyId: string | number;
     logoFid?: number;
+    parentId?: number | null;
 }
 
 export interface UpdateDepartmentPayload {
@@ -32,6 +35,7 @@ export interface UpdateDepartmentPayload {
     managerName?: string;
     managerId?: number | null;
     logoFid?: number;
+    parentId?: number | null;
 }
 
 function normalizeDepartment(raw: Record<string, unknown>): Department {
@@ -45,6 +49,8 @@ function normalizeDepartment(raw: Record<string, unknown>): Department {
         managerName: String(raw.managerName ?? raw.manager_name ?? ''),
         managerId: raw.managerId != null ? Number(raw.managerId) : raw.manager_id != null ? Number(raw.manager_id) : null,
         logoUrl: raw.logoUrl != null ? String(raw.logoUrl) : raw.logo_url != null ? String(raw.logo_url) : null,
+        parentId: raw.parentId != null ? Number(raw.parentId) : raw.parent_id != null ? Number(raw.parent_id) : null,
+        parentName: raw.parentName != null ? String(raw.parentName) : raw.parent_name != null ? String(raw.parent_name) : null,
     };
 }
 

@@ -45,6 +45,8 @@ interface Props {
   onChange: (next: StatusVersionInfoValue) => void;
   published: boolean;
   onPublishedChange?: (next: boolean) => void;
+  /** Override the footer checkbox label (e.g. for contexts where "Published" is confusing). */
+  publishedLabel?: string;
   authorDisplay: string;
   lastSavedLabel?: string;
   bookOptions?: BookOption[];
@@ -58,6 +60,7 @@ export const StatusVersionInfoCard: React.FC<Props> = ({
   onChange,
   published,
   onPublishedChange,
+  publishedLabel,
   authorDisplay,
   lastSavedLabel,
   bookOptions = [],
@@ -358,7 +361,7 @@ export const StatusVersionInfoCard: React.FC<Props> = ({
               disabled={!onPublishedChange}
               className="h-4 w-4 rounded border-gray-300"
             />
-            {t('svi.published', 'Published')}
+            {publishedLabel ?? t('svi.published', 'Published')}
           </label>
 
           <div className="flex items-center gap-2">

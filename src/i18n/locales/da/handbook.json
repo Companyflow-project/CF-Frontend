@@ -59,6 +59,8 @@
   "tag.documents": "Dokument",
   "tag.links": "Links",
   "tag.image": "Billede",
+  "tag.employmentType": "Ansættelsestype",
+  "tag.department": "Afdeling",
 
   "viewer.loading": "Indlæser håndbog...",
   "viewer.noPages": "Ingen sider",

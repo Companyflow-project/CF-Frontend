@@ -137,6 +137,8 @@ export interface HandbookNode {
   hasSelectableTexts?: boolean;
   hasText?: boolean;
   hasReceipt?: boolean;
+  hasEmploymentTypeRestriction?: boolean;
+  hasDepartmentRestriction?: boolean;
   isDeletable: boolean;
   pages?: HandbookNode[];
 }

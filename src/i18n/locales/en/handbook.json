@@ -59,6 +59,8 @@
   "tag.documents": "Documents",
   "tag.links": "Links",
   "tag.image": "Image",
+  "tag.employmentType": "Employment type",
+  "tag.department": "Department",
 
   "viewer.loading": "Loading handbook...",
   "viewer.noPages": "No pages",

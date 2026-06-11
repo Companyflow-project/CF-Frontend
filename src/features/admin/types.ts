@@ -649,4 +649,6 @@ export interface CreateCompanyPayload {
     source?: string;
   };
   sendEmail?: boolean;
+  logoFid?: number;
+  referenceLogoFid?: number;
 }

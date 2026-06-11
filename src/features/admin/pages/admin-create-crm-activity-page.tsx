@@ -808,6 +808,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
         onChange={setSviValue}
         published={published}
         onPublishedChange={setPublished}
+        publishedLabel={t('svi.activeVisible', 'Active (visible)')}
         authorDisplay={authorDisplay}
       />
     </div>

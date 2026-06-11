@@ -1078,6 +1078,7 @@
   "svi": {
     "sectionTitle": "Status og versionsinfo",
     "published": "Udgivet",
+    "activeVisible": "Aktiv (synlig)",
     "saveActivity": "Gem aktivitet",
     "status": {
       "title": "Status",
@@ -1542,11 +1543,15 @@
       "choose": "Vælg fil",
       "file": "Fil",
       "homepage": "Hjemmeside-logo",
+      "invalidFormat": "Kun .jpg-, .jpeg-, .gif- eller .png-filer er tilladt",
       "logo": "Logo",
       "noFile": "Ingen fil valgt",
       "referenceLogo": "Referencelogo",
       "smsSender": "SMS-afsenderlogo",
-      "title": "Logo"
+      "title": "Logo",
+      "uploaded": "Logo uploadet",
+      "uploadFailed": "Upload mislykkedes",
+      "uploading": "Uploader…"
     },
     "lyrics": {
       "customTerms": "Tilpassede vilkår",

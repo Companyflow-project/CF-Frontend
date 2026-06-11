@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
-import { useCreateDepartment } from '@/features/departments/hooks';
+import { useCreateDepartment, useDepartments } from '@/features/departments/hooks';
 import { useAuth } from '@/context/auth-context';
 import { useEmployees } from '@/lib/api-hooks';
 import { HelpBanner } from '@/components/ui/help-banner';
@@ -57,6 +57,7 @@ export const AddDepartmentPage: React.FC = () => {
     // Fetch employees for manager dropdown
     const companyId = user?.companyId ? String(user.companyId) : undefined;
     const { data: employees } = useEmployees({ companyId });
+    const { data: departments } = useDepartments(companyId);
 
     const [formData, setFormData] = useState({
         departmentName: '',
@@ -65,6 +66,7 @@ export const AddDepartmentPage: React.FC = () => {
         telephone: '',
         manager: '',
         managerId: null as number | null,
+        parentId: null as number | null,
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -84,6 +86,7 @@ export const AddDepartmentPage: React.FC = () => {
                 managerName: formData.manager,
                 managerId: formData.managerId,
                 companyId: user.companyId,
+                parentId: formData.parentId,
                 ...(logoFid ? { logoFid } : {}),
             });
 
@@ -257,6 +260,29 @@ export const AddDepartmentPage: React.FC = () => {
                                         </option>
                                     ))}
                                 </Select>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="parent" className="text-sm font-medium text-[#0d0e0e]">
+                                    {t('addDepartment.field.parent')}
+                                </Label>
+                                <Select
+                                    id="parent"
+                                    value={formData.parentId?.toString() || ''}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setFormData({ ...formData, parentId: v ? parseInt(v, 10) : null });
+                                    }}
+                                    className="mt-1"
+                                >
+                                    <option value="">{t('addDepartment.field.parentNone')}</option>
+                                    {departments?.map((dept) => (
+                                        <option key={dept.id} value={dept.id}>
+                                            {dept.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                                <p className="text-xs text-gray-500 mt-1">{t('addDepartment.field.parentHint')}</p>
                             </div>
                         </div>
                     </div>

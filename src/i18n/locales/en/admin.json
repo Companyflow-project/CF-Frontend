@@ -1078,6 +1078,7 @@
   "svi": {
     "sectionTitle": "Status & Version Info",
     "published": "Published",
+    "activeVisible": "Active (visible)",
     "saveActivity": "Save Activity",
     "status": {
       "title": "Status",
@@ -1542,11 +1543,15 @@
       "choose": "Choose File",
       "file": "File",
       "homepage": "Homepage",
+      "invalidFormat": "Only .jpg, .jpeg, .gif or .png files are allowed",
       "logo": "Logo",
       "noFile": "No file",
       "referenceLogo": "Reference logo",
       "smsSender": "Sender name on SMS messages",
-      "title": "Logo & Images"
+      "title": "Logo & Images",
+      "uploaded": "Logo uploaded",
+      "uploadFailed": "Upload failed",
+      "uploading": "Uploading…"
     },
     "lyrics": {
       "customTerms": "Custom terms",

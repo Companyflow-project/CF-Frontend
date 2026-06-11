@@ -853,6 +853,8 @@ export const HandbookPagesPage: React.FC = () => {
                                                     if (page.hasDocuments) activities.push(t('tag.documents'));
                                                     if (page.hasLinks) activities.push(t('tag.links'));
                                                     if (page.hasImage) activities.push(t('tag.image'));
+                                                    if (page.hasEmploymentTypeRestriction) activities.push(t('tag.employmentType'));
+                                                    if (page.hasDepartmentRestriction) activities.push(t('tag.department'));
                                                     return activities.length > 0 ? (
                                                         <span className="text-xs italic text-gray-400 flex-shrink-0 whitespace-nowrap">
                                                             ({activities.join(', ')})

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Select } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { adminApi } from '../api';
 import { adminRoutes } from '../routes';
+import { axiosClient } from '@/lib/axios-client';
+import { resolveBackendUrl } from '@/lib/utils';
 import type { ExistingCompanySummary } from '../types';
 
 // ---- Category definitions (matches Drupal "Create a Business" form) ----
@@ -97,8 +99,50 @@ export const AdminCreateCompanyPage: React.FC = () => {
   const [cvrLoading, setCvrLoading] = useState(false);
   const [cvrExisting, setCvrExisting] = useState<ExistingCompanySummary | null>(null);
 
+  const [logoFid, setLogoFid] = useState<number | null>(null);
+  const [referenceLogoFid, setReferenceLogoFid] = useState<number | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [referenceLogoPreview, setReferenceLogoPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState<'logo' | 'reference' | null>(null);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const referenceLogoInputRef = useRef<HTMLInputElement | null>(null);
+
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png'];
+
+  const uploadLogo = async (file: File, which: 'logo' | 'reference') => {
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      toast.error(t('editCompany.logo.invalidFormat', 'Only .jpg, .jpeg, .gif or .png files are allowed'));
+      return;
+    }
+    setLogoUploading(which);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const resp = await axiosClient.post<{ fid: number; uri?: string }>('/files', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const fid = resp.data?.fid;
+      if (!fid) throw new Error('No fid returned');
+      const preview = resp.data?.uri ? resolveBackendUrl(resp.data.uri) : null;
+      if (which === 'logo') {
+        setLogoFid(fid);
+        setLogoPreview(preview);
+      } else {
+        setReferenceLogoFid(fid);
+        setReferenceLogoPreview(preview);
+      }
+      toast.success(t('editCompany.logo.uploaded', 'Logo uploaded'));
+    } catch {
+      toast.error(t('editCompany.logo.uploadFailed', 'Upload failed'));
+    } finally {
+      setLogoUploading(null);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+      if (referenceLogoInputRef.current) referenceLogoInputRef.current.value = '';
+    }
+  };
 
   // Auto-generate internal name from contact name
   const handleContactNameChange = (value: string) => {
@@ -194,6 +238,8 @@ export const AdminCreateCompanyPage: React.FC = () => {
           source: form.source,
         },
         sendEmail: form.sendEmail,
+        ...(logoFid != null ? { logoFid } : {}),
+        ...(referenceLogoFid != null ? { referenceLogoFid } : {}),
       };
 
       const result = await adminApi.createCompany(payload);
@@ -367,6 +413,87 @@ export const AdminCreateCompanyPage: React.FC = () => {
                   onChange={(e) => set('phone', e.target.value)}
                   className="w-full sm:max-w-xs"
                 />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Logo */}
+        <Card className="rounded-xl border-gray-200 shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base">
+              {t('editCompany.logo.title', 'Logo & Images')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>{t('editCompany.logo.logo', 'Logo')}</Label>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.gif,.png"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadLogo(f, 'logo');
+                  }}
+                />
+                <div className="flex items-center gap-3">
+                  {logoPreview && (
+                    <img src={logoPreview} alt="" className="h-10 w-10 rounded object-cover border" />
+                  )}
+                  <span className="text-sm text-gray-700">
+                    {logoFid != null
+                      ? `${t('editCompany.logo.file', 'File')} #${logoFid}`
+                      : t('editCompany.logo.noFile', 'No file')}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={logoUploading === 'logo'}
+                    onClick={() => logoInputRef.current?.click()}
+                  >
+                    {logoUploading === 'logo'
+                      ? t('editCompany.logo.uploading', 'Uploading…')
+                      : t('editCompany.logo.choose', 'Choose File')}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('editCompany.logo.referenceLogo', 'Reference logo')}</Label>
+                <input
+                  ref={referenceLogoInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.gif,.png"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void uploadLogo(f, 'reference');
+                  }}
+                />
+                <div className="flex items-center gap-3">
+                  {referenceLogoPreview && (
+                    <img src={referenceLogoPreview} alt="" className="h-10 w-10 rounded object-cover border" />
+                  )}
+                  <span className="text-sm text-gray-700">
+                    {referenceLogoFid != null
+                      ? `${t('editCompany.logo.file', 'File')} #${referenceLogoFid}`
+                      : t('editCompany.logo.noFile', 'No file')}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={logoUploading === 'reference'}
+                    onClick={() => referenceLogoInputRef.current?.click()}
+                  >
+                    {logoUploading === 'reference'
+                      ? t('editCompany.logo.uploading', 'Uploading…')
+                      : t('editCompany.logo.choose', 'Choose File')}
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -9,7 +9,7 @@ import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { useDepartment, useUpdateDepartment, useDeleteDepartment } from '@/features/departments/hooks';
+import { useDepartment, useUpdateDepartment, useDeleteDepartment, useDepartments } from '@/features/departments/hooks';
 import type { Department } from '@/features/departments/api';
 import { useAuth } from '@/context/auth-context';
 import { useEmployees } from '@/lib/api-hooks';
@@ -65,6 +65,7 @@ export const EditDepartmentPage: React.FC = () => {
     const { user } = useAuth();
     const companyId = user?.companyId ? String(user.companyId) : undefined;
     const { data: employees } = useEmployees({ companyId });
+    const { data: departments } = useDepartments(companyId);
 
     const emptyForm = {
         departmentName: '',
@@ -73,6 +74,7 @@ export const EditDepartmentPage: React.FC = () => {
         telephone: '',
         manager: '',
         managerId: null as number | null,
+        parentId: null as number | null,
     };
 
     const [formData, setFormData] = useState(emptyForm);
@@ -86,6 +88,7 @@ export const EditDepartmentPage: React.FC = () => {
                 telephone: department.telephone ?? '',
                 manager: department.managerName ?? '',
                 managerId: department.managerId ?? null,
+                parentId: department.parentId ?? null,
             });
             if (department.logoUrl && !logoPreview) {
                 const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
@@ -113,6 +116,7 @@ export const EditDepartmentPage: React.FC = () => {
                     telephone: formData.telephone,
                     managerName: formData.manager,
                     managerId: formData.managerId,
+                    parentId: formData.parentId,
                     ...(logoFid ? { logoFid } : {}),
                 },
             });
@@ -328,6 +332,33 @@ export const EditDepartmentPage: React.FC = () => {
                                         </option>
                                     ))}
                                 </Select>
+                            </div>
+
+                            <div>
+                                <Label htmlFor="parent" className="text-sm font-medium text-[#0d0e0e]">
+                                    Parent department
+                                </Label>
+                                <Select
+                                    id="parent"
+                                    value={formData.parentId?.toString() || ''}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setFormData({ ...formData, parentId: v ? parseInt(v, 10) : null });
+                                    }}
+                                    className="mt-1"
+                                >
+                                    <option value="">None (top-level department)</option>
+                                    {departments
+                                        ?.filter((dept) => String(dept.id) !== String(id))
+                                        .map((dept) => (
+                                            <option key={dept.id} value={dept.id}>
+                                                {dept.name}
+                                            </option>
+                                        ))}
+                                </Select>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Place this department under another to create a subdepartment.
+                                </p>
                             </div>
                         </div>
                     </div>

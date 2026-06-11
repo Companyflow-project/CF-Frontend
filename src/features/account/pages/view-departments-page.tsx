@@ -120,7 +120,14 @@ export const ViewDepartmentsPage: React.FC = () => {
                                             />
                                         )}
                                     </TableCell>
-                                    <TableCell className="font-medium text-[#0d0e0e] whitespace-nowrap">{dept.name}</TableCell>
+                                    <TableCell className="font-medium text-[#0d0e0e] whitespace-nowrap">
+                                        {dept.name}
+                                        {dept.parentName && (
+                                            <span className="block text-xs font-normal text-gray-400">
+                                                {t('departments.subOf', { parent: dept.parentName })}
+                                            </span>
+                                        )}
+                                    </TableCell>
                                     <TableCell className="text-gray-700 whitespace-nowrap">{dept.managerName || '-'}</TableCell>
                                     <TableCell className="text-gray-700 whitespace-nowrap">{dept.email || '-'}</TableCell>
                                     <TableCell className="text-gray-700 whitespace-normal min-w-[250px]">{dept.description || '-'}</TableCell>

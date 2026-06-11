@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { axiosClient } from '@/lib/axios-client';
+import { resolveBackendUrl } from '@/lib/utils';
 import { X, Upload as UploadIcon, AlertTriangle } from 'lucide-react';
 import type { AdminHandbookTreeNode } from '../handbook-types';
 import type { UpdateCompanyPayload } from '../types';
@@ -107,6 +108,8 @@ interface BusinessGroupForm {
 interface LogoForm {
   logoFid: number | null;
   referenceLogoFid: number | null;
+  logoPreview: string | null;
+  referenceLogoPreview: string | null;
   alwaysShowImageTab: boolean;
   homepage: string;
   smsSender: string;
@@ -286,10 +289,15 @@ export const AdminEditCompanyPage: React.FC = () => {
   const [logoForm, setLogoForm] = useState<LogoForm>({
     logoFid: null,
     referenceLogoFid: null,
+    logoPreview: null,
+    referenceLogoPreview: null,
     alwaysShowImageTab: false,
     homepage: '',
     smsSender: '',
   });
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const referenceLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const [logoUploading, setLogoUploading] = useState<'logo' | 'reference' | null>(null);
   const [whistleblowerForm, setWhistleblowerForm] = useState<WhistleblowerForm>({
     whistleblowerAccess: false,
     whistleblowerDisableAnon: false,
@@ -359,6 +367,42 @@ export const AdminEditCompanyPage: React.FC = () => {
     }
   };
 
+  const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png'];
+
+  const uploadLogo = async (
+    file: File,
+    which: 'logo' | 'reference',
+  ) => {
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      toast.error(t('editCompany.logo.invalidFormat', 'Only .jpg, .jpeg, .gif or .png files are allowed'));
+      return;
+    }
+    setLogoUploading(which);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const resp = await axiosClient.post<{ fid: number; uri?: string }>('/files', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const fid = resp.data?.fid;
+      if (!fid) throw new Error('No fid returned');
+      const preview = resp.data?.uri ? resolveBackendUrl(resp.data.uri) : null;
+      setLogoForm((p) =>
+        which === 'logo'
+          ? { ...p, logoFid: fid, logoPreview: preview }
+          : { ...p, referenceLogoFid: fid, referenceLogoPreview: preview },
+      );
+      toast.success(t('editCompany.logo.uploaded', 'Logo uploaded'));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(t('editCompany.offers.uploadFailed', 'Upload failed: {{message}}', { message: msg }));
+    } finally {
+      setLogoUploading(null);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+      if (referenceLogoInputRef.current) referenceLogoInputRef.current.value = '';
+    }
+  };
+
   const handleDocsDrop = (e: React.DragEvent<HTMLLabelElement>) => {
     e.preventDefault();
     setDocsDragOver(false);
@@ -418,6 +462,8 @@ export const AdminEditCompanyPage: React.FC = () => {
       setLogoForm({
         logoFid: ext.logoFid,
         referenceLogoFid: ext.referenceLogoFid,
+        logoPreview: null,
+        referenceLogoPreview: null,
         alwaysShowImageTab: !!ext.alwaysShowImageTab,
         homepage: ext.homepage ?? '',
         smsSender: ext.smsSender ?? '',
@@ -1183,27 +1229,69 @@ export const AdminEditCompanyPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t('editCompany.logo.logo', 'Logo')}</Label>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept=".jpg,.jpeg,.gif,.png"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadLogo(f, 'logo');
+                }}
+              />
               <div className="flex items-center gap-3">
+                {logoForm.logoPreview && (
+                  <img src={logoForm.logoPreview} alt="" className="h-10 w-10 rounded object-cover border" />
+                )}
                 <span className="text-sm text-gray-700">
                   {logoForm.logoFid != null
                     ? `${t('editCompany.logo.file', 'File')} #${logoForm.logoFid}`
                     : t('editCompany.logo.noFile', 'No file')}
                 </span>
-                <Button type="button" variant="outline" size="sm" disabled>
-                  {t('editCompany.logo.choose', 'Choose File')}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={logoUploading === 'logo'}
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  {logoUploading === 'logo'
+                    ? t('editCompany.logo.uploading', 'Uploading…')
+                    : t('editCompany.logo.choose', 'Choose File')}
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
               <Label>{t('editCompany.logo.referenceLogo', 'Reference logo')}</Label>
+              <input
+                ref={referenceLogoInputRef}
+                type="file"
+                accept=".jpg,.jpeg,.gif,.png"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadLogo(f, 'reference');
+                }}
+              />
               <div className="flex items-center gap-3">
+                {logoForm.referenceLogoPreview && (
+                  <img src={logoForm.referenceLogoPreview} alt="" className="h-10 w-10 rounded object-cover border" />
+                )}
                 <span className="text-sm text-gray-700">
                   {logoForm.referenceLogoFid != null
                     ? `${t('editCompany.logo.file', 'File')} #${logoForm.referenceLogoFid}`
                     : t('editCompany.logo.noFile', 'No file')}
                 </span>
-                <Button type="button" variant="outline" size="sm" disabled>
-                  {t('editCompany.logo.choose', 'Choose File')}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={logoUploading === 'reference'}
+                  onClick={() => referenceLogoInputRef.current?.click()}
+                >
+                  {logoUploading === 'reference'
+                    ? t('editCompany.logo.uploading', 'Uploading…')
+                    : t('editCompany.logo.choose', 'Choose File')}
                 </Button>
               </div>
             </div>
