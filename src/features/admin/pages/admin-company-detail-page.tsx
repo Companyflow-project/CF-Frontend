@@ -449,7 +449,7 @@ export const AdminCompanyDetailPage: React.FC = () => {
             </span>
           </KvRow>
           <KvRow label={t('companyView.field.next', 'Next')}>
-            <PlainValue value={formatDate(company.subscriptionEnd)} />
+            <PlainValue value={formatDate(company.nextInvoice ?? company.subscriptionEnd)} />
           </KvRow>
           <KvRow label={t('companyView.field.employeeHandbook', 'Employee Handbook')}>
             <span className={`inline-block text-[11px] font-medium px-2 py-0.5 rounded border ${
@@ -568,7 +568,12 @@ export const AdminCompanyDetailPage: React.FC = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-gray-600 text-xs">
-                      <div className="whitespace-pre-wrap break-words">{a.body}</div>
+                      {/* body is stored as HTML (wrapped in <p> on save); render it
+                          instead of printing the literal tags. */}
+                      <div
+                        className="break-words [&_p]:m-0"
+                        dangerouslySetInnerHTML={{ __html: a.body || '' }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))

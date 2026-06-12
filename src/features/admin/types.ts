@@ -93,6 +93,8 @@ export interface AdminCompanyDetail extends AdminCompanyListItem {
   street: string;
   zipCode: string;
   email: string;
+  /** Next billing date (node__field_next_invoice). May differ from subscriptionEnd. */
+  nextInvoice: string | null;
   subscriptionRemainingMonths: number | null;
   employees: AdminCompanyEmployee[];
   handbooks: AdminCompanyHandbook[];

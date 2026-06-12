@@ -447,6 +447,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       smsCreditsTotal: String(company.smsCreditsTotal ?? ''),
       subscriptionStart: formatDateForInput(company.subscriptionStart),
       subscriptionEnd: formatDateForInput(company.subscriptionEnd),
+      nextInvoice: formatDateForInput(company.nextInvoice),
     }));
     setAdminForm({ allowReset: !!company.extended?.allowReset });
     setStatusForm({
