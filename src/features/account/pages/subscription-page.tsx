@@ -435,9 +435,7 @@ export const SubscriptionPage: React.FC = () => {
             {
                 category: t('subscription.row.product'),
                 about: <span className="text-sm text-[#374151]">{data.productName}</span>,
-                actions: [
-                    { label: t('subscription.action.upgrade'), onClick: () => { } },
-                ],
+                actions: [],
             },
             {
                 category: t('subscription.row.subscription'),
