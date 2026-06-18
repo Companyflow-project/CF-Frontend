@@ -33,6 +33,8 @@ export const HandbookPagesPage: React.FC = () => {
     const [search, setSearch] = useState('');
     const [activeChapterId, setActiveChapterId] = useState<number | null>(null);
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    // "Show Your Pages" toggle: when on, only the company's own/custom pages are shown.
+    const [showCustomOnly, setShowCustomOnly] = useState(false);
     const [expandedPageId, setExpandedPageId] = useState<number | null>(null);
     const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
     const [handbookTree, setHandbookTree] = useState<HandbookNode[]>([]);
@@ -207,11 +209,12 @@ export const HandbookPagesPage: React.FC = () => {
                 }
             }
 
+            if (showCustomOnly && page.badge !== 'custom') return false;
             if (statusFilter && status !== statusFilter) return false;
             if (search && !page.title.toLowerCase().includes(search.toLowerCase())) return false;
             return true;
         });
-    }, [pages, search, statusFilter, user?.id, canViewAllPages]);
+    }, [pages, search, statusFilter, showCustomOnly, user?.id, canViewAllPages]);
 
     // Pages in the current chapter view that are checked — used for delete/preview actions.
     // Non-deletable pages are excluded even if visually checked.
@@ -571,8 +574,11 @@ export const HandbookPagesPage: React.FC = () => {
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setStatusFilter(null)}
-                            className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 h-10"
+                            aria-pressed={showCustomOnly}
+                            onClick={() => setShowCustomOnly((prev) => !prev)}
+                            className={`rounded-[8px] px-4 h-10 ${showCustomOnly
+                                ? 'bg-[#0d0e0e] text-white border-[#0d0e0e] hover:bg-[#0d0e0e]/90'
+                                : 'border-[#e5e7eb] text-[#0d0e0e]'}`}
                         >
                             {t('pages.showYourPages')}
                         </Button>
