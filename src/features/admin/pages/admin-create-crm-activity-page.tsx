@@ -110,6 +110,22 @@ function formatDate(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+// CRM note bodies are stored as HTML (wrapped in <p> on save), but the Note
+// field is a plain textarea. Convert the stored HTML back to plain text so the
+// editor shows clean text instead of literal <p>…</p> tags.
+function noteHtmlToText(html: string): string {
+  return html
+    .replace(/<\/(p|div)>/gi, '\n') // block close -> newline
+    .replace(/<br\s*\/?>/gi, '\n') // line break -> newline
+    .replace(/<[^>]+>/g, '') // strip any remaining tags
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function useDebounced<T>(value: T, delayMs = 300): T {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -293,7 +309,7 @@ export const AdminCreateCrmActivityPage: React.FC = () => {
     const a = activityQuery.data;
     if (!a) return;
     setTitle(a.title);
-    setBody(a.body || '');
+    setBody(noteHtmlToText(a.body || ''));
     setCompanyId(a.companyId);
     setCompanyName(a.companyName || '');
     setResponsibleUid(a.responsibleUid);
