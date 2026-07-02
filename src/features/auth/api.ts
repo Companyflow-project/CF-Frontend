@@ -131,11 +131,18 @@ export interface RegisterPayload {
   cvr: string;
   email: string;
   password: string;
+  termsAccepted: boolean; // CF-15: recorded server-side
 }
 
 export interface LoginResponse {
   user: User;
   token: string;
+}
+
+export interface RegisterResult {
+  user: User;
+  /** CF-4: true when the account needs email verification before it can be used. */
+  verificationRequired: boolean;
 }
 
 export const authApi = {
@@ -156,26 +163,58 @@ export const authApi = {
     }
   },
 
-  async register(payload: RegisterPayload): Promise<User> {
+  async register(payload: RegisterPayload): Promise<RegisterResult> {
     try {
-      // Send all required fields including name
+      // Send all required fields including name and the recorded terms consent
       const requestBody = {
         email: payload.email,
         password: payload.password,
         name: payload.name || payload.email, // Fallback to email if name not provided
         companyName: payload.companyName,
         cvr: payload.cvr,
+        termsAccepted: payload.termsAccepted, // CF-15
       };
-      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>('/auth/register', requestBody);
+      const response = await axiosClient.post<{ data?: (LoginResponse & { verificationRequired?: boolean }) } & LoginResponse & { verificationRequired?: boolean }>('/auth/register', requestBody);
       const body = response.data;
       const payloadData = body.data ?? body;
 
+      // CF-4: when verification is required the backend returns NO token — the
+      // user must confirm their email before the account is usable.
+      const verificationRequired = !!payloadData.verificationRequired;
       if (payloadData.token) localStorage.setItem('token', payloadData.token);
       if (!payloadData.user) throw new Error('Invalid register response');
 
       const user = toUser(payloadData.user as Parameters<typeof toUser>[0]);
+      if (!verificationRequired) persistCompanyId(user);
+      return { user, verificationRequired };
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  /** CF-4: confirm a self-signup email with the token from the verification link. */
+  async verifyEmail(token: string): Promise<User> {
+    try {
+      const response = await axiosClient.post<{ data?: LoginResponse } & LoginResponse>('/auth/verify-email', { token });
+      const body = response.data;
+      const payloadData = body.data ?? body;
+      const jwt = payloadData.token;
+      const raw = payloadData.user;
+      if (jwt) localStorage.setItem('token', jwt);
+      if (!raw) throw new Error('Invalid verification response');
+      const user = toUser(raw as Parameters<typeof toUser>[0]);
       persistCompanyId(user);
       return user;
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  /** CF-4: resend the verification email for an unverified account. */
+  async resendVerification(email: string): Promise<string> {
+    try {
+      const response = await axiosClient.post<{ data: { message: string } }>('/auth/resend-verification', { email });
+      return response.data?.data?.message ?? 'If an unverified account exists for that email, a new verification link has been sent.';
     } catch (err) {
       throw new Error(getErrorMessage(err));
     }
@@ -246,6 +285,26 @@ export const authApi = {
   async updateLanguage(langcode: string): Promise<void> {
     try {
       await axiosClient.patch('/auth/language', { langcode });
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  /** CF-24: request a login-email change; a confirmation link is sent to the new address. */
+  async requestEmailChange(newEmail: string): Promise<string> {
+    try {
+      const response = await axiosClient.post<{ data: { message: string } }>('/auth/request-email-change', { newEmail });
+      return response.data?.data?.message ?? 'Check your new email address for a confirmation link.';
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
+    }
+  },
+
+  /** CF-24: confirm a login-email change using the token from the confirmation link. */
+  async confirmEmailChange(token: string): Promise<string> {
+    try {
+      const response = await axiosClient.post<{ data: { message: string; email: string } }>('/auth/confirm-email-change', { token });
+      return response.data?.data?.email ?? '';
     } catch (err) {
       throw new Error(getErrorMessage(err));
     }

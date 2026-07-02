@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
@@ -60,6 +60,8 @@ export const EmployeesPage: React.FC = () => {
     employeeName: '',
   });
   const [isDeleting, setIsDeleting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
 
   // Debounce search input to avoid excessive API calls
   React.useEffect(() => {
@@ -81,6 +83,37 @@ export const EmployeesPage: React.FC = () => {
     if (!apiEmployees) return [];
     return (apiEmployees as unknown as BackendEmployeeLike[]).map(transformEmployee);
   }, [apiEmployees]);
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImporting(true);
+      try {
+        const result = await employeesApi.importEmployees(file);
+        toast.success(t('import.done', { imported: result.imported, failed: result.failed }));
+        if (result.errors.length > 0) {
+          toast.error(`${t('import.error')} (row ${result.errors[0].row}: ${result.errors[0].message})`);
+        }
+        refetch();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t('import.error'));
+      } finally {
+        setImporting(false);
+      }
+    }
+    e.target.value = '';
+  };
+
+  const downloadImportTemplate = () => {
+    const csv = 'name,email,phone\nJohn Doe,john@example.com,12345678\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'employees-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const filteredEmployees = useMemo(() => {
     const isCurrentUser = (emp: ReturnType<typeof transformEmployee>) =>
@@ -302,6 +335,32 @@ export const EmployeesPage: React.FC = () => {
               >
                 {t('manage.moreLicenses')}
               </Button>
+            )}
+            {effectiveAdmin && (
+              <>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleImportFile}
+                />
+                <Button
+                  variant="outline"
+                  onClick={downloadImportTemplate}
+                  className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
+                >
+                  {t('import.downloadTemplate')}
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={importing}
+                  onClick={() => importInputRef.current?.click()}
+                  className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white disabled:opacity-50"
+                >
+                  {importing ? t('import.importing') : t('import.button')}
+                </Button>
+              </>
             )}
             {effectiveAdmin && (
               <Button

@@ -61,6 +61,8 @@ export const SignupPage: React.FC = () => {
   const [termsOpen, setTermsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const { setUserFromRegister } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation('auth');
@@ -83,7 +85,13 @@ export const SignupPage: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      const user = await authApi.register({ name, companyName, cvr, email, password });
+      const { user, verificationRequired } = await authApi.register({ name, companyName, cvr, email, password, termsAccepted });
+      // CF-4: when the account needs email verification the backend does not log
+      // the user in — show a "check your email" screen instead of redirecting.
+      if (verificationRequired) {
+        setSubmittedEmail(email);
+        return;
+      }
       toast.success(t('signup.accountCreated'));
       toast.info(t('signup.settingUpHandbook'), { duration: 10000 });
       setUserFromRegister(user);
@@ -97,6 +105,49 @@ export const SignupPage: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  const handleResend = async () => {
+    if (!submittedEmail) return;
+    setResending(true);
+    try {
+      await authApi.resendVerification(submittedEmail);
+      toast.success(t('signup.resendSent'));
+    } catch {
+      toast.success(t('signup.resendSent')); // never reveal whether the email exists
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // CF-4: after signup, prompt the user to verify their email before they can log in.
+  if (submittedEmail) {
+    return (
+      <div className="w-full flex flex-col">
+        <div className="w-full max-w-[340px] flex flex-col gap-8 mt-20">
+          <div className="flex items-center justify-center">
+            <img src={loginLogoUrl} alt="CompanyFlow" className="h-auto w-[188px]" />
+          </div>
+          <div className="flex flex-col gap-4 text-center">
+            <h1 className="text-[22px] font-semibold text-[#0d0e0e]">{t('signup.checkEmailTitle')}</h1>
+            <p className="text-[15px] text-[#373b3b] leading-[22px]">
+              {t('signup.checkEmailBody', { email: submittedEmail })}
+            </p>
+            <Button
+              type="button"
+              onClick={handleResend}
+              disabled={resending}
+              className="w-full bg-[#1a5948] hover:bg-[#143e33] text-white font-medium text-[16px] py-3 px-8 rounded-[15px] h-auto disabled:opacity-40 transition-colors"
+            >
+              {t('signup.resend')}
+            </Button>
+            <Link to={authRoutes.login} className="text-[16px] font-medium text-[#0d0e0e] underline">
+              {t('signup.backToLogin')}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col">

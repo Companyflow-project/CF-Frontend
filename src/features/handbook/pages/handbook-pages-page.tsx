@@ -37,6 +37,9 @@ export const HandbookPagesPage: React.FC = () => {
     const [showCustomOnly, setShowCustomOnly] = useState(false);
     const [expandedPageId, setExpandedPageId] = useState<number | null>(null);
     const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
+    // Page whose "we recommend including this page" popover is currently shown
+    // (opened when a page that has CompanyFlow text is left out / unchecked).
+    const [recommendPageId, setRecommendPageId] = useState<number | null>(null);
     const [handbookTree, setHandbookTree] = useState<HandbookNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -714,7 +717,7 @@ export const HandbookPagesPage: React.FC = () => {
                                 return (
                                     <div
                                         key={page.id}
-                                        className={`page-row-container rounded-[8px] border overflow-hidden relative transition-all duration-200 ${isReady ? 'bg-[#f6fbf9] border-[#d4f4e6]' : 'bg-white border-[#e5e7eb]'} ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
+                                        className={`page-row-container rounded-[8px] border relative transition-all duration-200 ${recommendPageId === page.id ? 'overflow-visible z-20' : 'overflow-hidden'} ${isReady ? 'bg-[#f6fbf9] border-[#d4f4e6]' : 'bg-white border-[#e5e7eb]'} ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
                                         onDragOver={(e) => {
                                             if (!canEditHandbook || !draggingPageId || search || statusFilter || draggingPageId === page.id) {
                                                 e.preventDefault();
@@ -769,13 +772,18 @@ export const HandbookPagesPage: React.FC = () => {
                                                     const newSelected = new Set(selectedPages);
                                                     if (newSelected.has(page.id)) {
                                                         newSelected.delete(page.id);
+                                                        // Leaving out a page that has CompanyFlow text: recommend keeping it.
+                                                        if (page.hasCustomBody || page.hasSelectableTexts) {
+                                                            setRecommendPageId(page.id);
+                                                        }
                                                     } else {
                                                         newSelected.add(page.id);
+                                                        if (recommendPageId === page.id) setRecommendPageId(null);
                                                     }
                                                     setSelectedPages(newSelected);
                                                 }}
                                                 title={page.isDeletable === false ? t('pages.cannotDelete') : undefined}
-                                                className="flex-shrink-0 cursor-pointer"
+                                                className="flex-shrink-0 cursor-pointer relative"
                                             >
                                                 <div
                                                     className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedPages.has(page.id)
@@ -797,6 +805,40 @@ export const HandbookPagesPage: React.FC = () => {
                                                         </svg>
                                                     )}
                                                 </div>
+
+                                                {/* Recommendation popover — shown when an unchecked page has CompanyFlow text */}
+                                                {recommendPageId === page.id && (
+                                                    <div
+                                                        className="absolute z-30 left-0 top-full mt-2 w-72 rounded-lg border-2 border-[#ef4444] bg-white shadow-lg p-4 cursor-default"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <p className="text-sm text-[#0d0e0e] leading-relaxed">
+                                                            {t('pages.recommend.body', 'We recommend that you include this page in your handbook. It contains important information. You can add it by ticking the box.')}
+                                                            {' '}
+                                                            <button
+                                                                type="button"
+                                                                className="underline text-[#1a5948] hover:text-[#0d0e0e]"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setRecommendPageId(null);
+                                                                    setExpandedPageId(page.id);
+                                                                }}
+                                                            >
+                                                                {t('pages.recommend.why', 'Edit the page to see why.')}
+                                                            </button>
+                                                        </p>
+                                                        <button
+                                                            type="button"
+                                                            className="mt-3 bg-[#3d997d] hover:bg-[#2f7d66] text-white text-sm font-medium rounded-md px-3 py-1.5"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setRecommendPageId(null);
+                                                            }}
+                                                        >
+                                                            {t('pages.recommend.ack', 'OK, understood')}
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Drag handle */}

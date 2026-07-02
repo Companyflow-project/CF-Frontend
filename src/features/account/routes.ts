@@ -9,5 +9,7 @@ export const accountRoutes = {
   addEmploymentType: '/account/employment-types/add',
   editEmploymentType: '/account/employment-types/edit/:id',
   subscription: '/account/subscription',
+  myProfile: '/my-profile',
+  myActivity: '/my-activity',
 } as const;
 

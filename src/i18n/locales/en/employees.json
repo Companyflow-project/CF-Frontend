@@ -1,4 +1,12 @@
 {
+  "import.button": "Import CSV",
+  "import.title": "Import employees from CSV",
+  "import.description": "Upload a CSV with columns: name, email, phone (optional: alternatephone, emergencyname, emergencyphone).",
+  "import.downloadTemplate": "Download template",
+  "import.choose": "Choose CSV file",
+  "import.importing": "Importing…",
+  "import.done": "Imported {{imported}} employees, {{failed}} failed.",
+  "import.error": "Import failed. Please check your file and try again.",
   "manage.title": "Manage Employees",
   "manage.loading": "Loading employees...",
   "manage.viewAsEmployee": "View as Employee",

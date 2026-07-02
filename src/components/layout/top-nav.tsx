@@ -7,6 +7,7 @@ import { resolveRbacRole, canAccessAdminConsole } from '@/lib/rbac';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Lock } from 'lucide-react';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
+import { accountRoutes } from '@/features/account/routes';
 import logoUrl from '/assets/Logo.svg';
 
 /** All languages that can be purchased as add-ons. */
@@ -208,6 +209,21 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                   </button>
                   {isSwitchOpen && (
                     <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      <Link
+                        to={accountRoutes.myProfile}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.myProfile')}
+                      </Link>
+                      <Link
+                        to={accountRoutes.myActivity}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.myActivity')}
+                      </Link>
+                      <div className="my-1 border-t border-gray-100" />
                       <div className="px-4 py-2 text-sm font-semibold text-gray-900">
                         {t('nav.switchTo', 'Switch to')}
                       </div>
@@ -229,21 +245,44 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                   )}
                 </div>
               ) : (
-                <>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
-                    {getInitials(user.name)}
-                  </div>
-                  <Button
+                <div className="relative" ref={switchRef}>
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    className="bg-transparent hover:opacity-80 text-sm"
-                    style={{ color: 'inherit', border: '1px solid rgba(255,255,255,0.2)' }}
-                    onClick={() => logout()}
+                    onClick={() => setIsSwitchOpen((prev) => !prev)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
+                    aria-haspopup="menu"
+                    aria-expanded={isSwitchOpen}
                   >
-                    {t('logOut')}
-                  </Button>
-                </>
+                    {getInitials(user.name)}
+                  </button>
+                  {isSwitchOpen && (
+                    <div className="absolute right-0 top-12 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      <Link
+                        to={accountRoutes.myProfile}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.myProfile')}
+                      </Link>
+                      <Link
+                        to={accountRoutes.myActivity}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.myActivity')}
+                      </Link>
+                      <div className="my-1 border-t border-gray-100" />
+                      <button
+                        type="button"
+                        onClick={() => { setIsSwitchOpen(false); logout(); }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('logOut')}
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}

@@ -24,7 +24,23 @@ interface EmployeeMessagesMeta {
   totalPages: number;
 }
 
+export interface ImportEmployeesResult {
+  imported: number;
+  failed: number;
+  errors: { row: number; message: string }[];
+}
+
 export const employeesApi = {
+  /** CF-20: bulk-import employees from a CSV file (multipart field "file"). */
+  async importEmployees(file: File): Promise<ImportEmployeesResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosClient.post<{ data: ImportEmployeesResult }>('/employees/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data?.data ?? { imported: 0, failed: 0, errors: [] };
+  },
+
   async listEmployees(params?: {
     companyId?: string;
     search?: string;

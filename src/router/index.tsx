@@ -56,6 +56,10 @@ const AdminInformationListPage = lazy(() => import('@/features/admin/pages/admin
 const AdminCompanyInformationListPage = lazy(() => import('@/features/admin/pages/admin-company-information-list-page').then((m) => ({ default: m.AdminCompanyInformationListPage })));
 
 const MagicLinkPage = lazy(() => import('@/features/auth/pages/magic-link-page').then((m) => ({ default: m.MagicLinkPage })));
+const VerifyEmailPage = lazy(() => import('@/features/auth/pages/verify-email-page').then((m) => ({ default: m.VerifyEmailPage })));
+const ConfirmEmailChangePage = lazy(() => import('@/features/auth/pages/confirm-email-change-page').then((m) => ({ default: m.ConfirmEmailChangePage })));
+const MyProfilePage = lazy(() => import('@/features/profile/pages/my-profile-page').then((m) => ({ default: m.MyProfilePage })));
+const MyActivityPage = lazy(() => import('@/features/profile/pages/my-activity-page').then((m) => ({ default: m.MyActivityPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/reset-password-page').then((m) => ({ default: m.ResetPasswordPage })));
 const ConsolePage = lazy(() => import('@/pages/console/console-page').then((m) => ({ default: m.ConsolePage })));
@@ -249,6 +253,42 @@ export const AppRouter: React.FC = () => {
               <AuthLayout>
                 <MagicLinkPage />
               </AuthLayout>
+            }
+          />
+          <Route
+            path="/verify-email/:token"
+            element={
+              <AuthLayout>
+                <VerifyEmailPage />
+              </AuthLayout>
+            }
+          />
+          <Route
+            path={authRoutes.confirmEmailChange}
+            element={
+              <AuthLayout>
+                <ConfirmEmailChangePage />
+              </AuthLayout>
+            }
+          />
+          <Route
+            path={accountRoutes.myProfile}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <MyProfilePage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={accountRoutes.myActivity}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <MyActivityPage />
+                </AppLayout>
+              </RequireAuth>
             }
           />
           <Route

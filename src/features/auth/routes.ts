@@ -3,5 +3,6 @@ export const authRoutes = {
   signup: '/signup',
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password/:token',
+  confirmEmailChange: '/confirm-email-change/:token',
 } as const;
 

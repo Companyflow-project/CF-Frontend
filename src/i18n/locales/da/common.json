@@ -36,6 +36,8 @@
   "nav.switchTo": "Skift til",
   "nav.adminAccount": "Admin-konto",
   "nav.language": "Sprog",
+  "nav.myProfile": "Min profil",
+  "nav.myActivity": "Min aktivitet",
   "sort": "Sorter",
   "sort.name": "Navn",
   "sort.email": "E-mail",

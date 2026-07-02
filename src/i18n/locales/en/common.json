@@ -36,6 +36,8 @@
   "nav.switchTo": "Switch to",
   "nav.adminAccount": "Admin Console",
   "nav.language": "Language",
+  "nav.myProfile": "My Profile",
+  "nav.myActivity": "My Activity",
   "sort": "Sort",
   "sort.name": "Name",
   "sort.email": "Email",

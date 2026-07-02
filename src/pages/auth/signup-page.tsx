@@ -28,7 +28,13 @@ export const SignupPage: React.FC = () => {
       return;
     }
     try {
-      await authApi.register({ name, companyName, cvr, email, password });
+      const { verificationRequired } = await authApi.register({ name, companyName, cvr, email, password, termsAccepted });
+      // CF-4: account starts inactive; the user must verify their email first.
+      if (verificationRequired) {
+        toast.success(t('signup.accountCreated'));
+        navigate('/login');
+        return;
+      }
       await login(email, password);
       navigate('/');
     } catch (error) {

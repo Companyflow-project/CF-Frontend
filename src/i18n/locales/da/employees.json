@@ -1,4 +1,12 @@
 {
+  "import.button": "Importer CSV",
+  "import.title": "Importer medarbejdere fra CSV",
+  "import.description": "Upload en CSV med kolonnerne: name, email, phone (valgfrit: alternatephone, emergencyname, emergencyphone).",
+  "import.downloadTemplate": "Download skabelon",
+  "import.choose": "Vælg CSV-fil",
+  "import.importing": "Importerer…",
+  "import.done": "Importerede {{imported}} medarbejdere, {{failed}} fejlede.",
+  "import.error": "Import mislykkedes. Tjek din fil, og prøv igen.",
   "manage.title": "Administrer medarbejdere",
   "manage.loading": "Indlæser medarbejdere...",
   "manage.viewAsEmployee": "Vis som medarbejder",
