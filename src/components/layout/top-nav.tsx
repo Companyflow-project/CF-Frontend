@@ -223,6 +223,13 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                       >
                         {t('nav.myActivity')}
                       </Link>
+                      <Link
+                        to={accountRoutes.myDocuments}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.myDocuments')}
+                      </Link>
                       <div className="my-1 border-t border-gray-100" />
                       <div className="px-4 py-2 text-sm font-semibold text-gray-900">
                         {t('nav.switchTo', 'Switch to')}
@@ -271,6 +278,13 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
                         {t('nav.myActivity')}
+                      </Link>
+                      <Link
+                        to={accountRoutes.myDocuments}
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {t('nav.myDocuments')}
                       </Link>
                       <div className="my-1 border-t border-gray-100" />
                       <button

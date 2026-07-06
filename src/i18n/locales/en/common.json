@@ -38,6 +38,8 @@
   "nav.language": "Language",
   "nav.myProfile": "My Profile",
   "nav.myActivity": "My Activity",
+  "nav.myDocuments": "My Documents",
+  "clear": "Clear",
   "sort": "Sort",
   "sort.name": "Name",
   "sort.email": "Email",

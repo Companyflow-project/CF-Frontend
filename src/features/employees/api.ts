@@ -41,6 +41,23 @@ export const employeesApi = {
     return response.data?.data ?? { imported: 0, failed: 0, errors: [] };
   },
 
+  /** CF-12: permanently erase (anonymize) one employee's personal data. Irreversible. */
+  async eraseEmployeeData(id: string): Promise<void> {
+    await axiosClient.post(`/employees/${id}/erase`);
+  },
+
+  /** CF-13: download a GDPR data export for one employee (authed blob → file). */
+  async exportEmployeeData(id: string): Promise<void> {
+    const response = await axiosClient.get(`/employees/${id}/export`, { responseType: 'blob' });
+    const blob = new Blob([response.data as BlobPart], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `employee-${id}-data-export.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
   async listEmployees(params?: {
     companyId?: string;
     search?: string;

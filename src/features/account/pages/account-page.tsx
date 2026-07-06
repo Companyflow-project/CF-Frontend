@@ -12,6 +12,7 @@ import {
   Briefcase,
   Palette,
   MoreHorizontal,
+  ShieldCheck,
 } from 'lucide-react';
 import { accountRoutes } from '../routes';
 import { AddEmploymentTypeDialog } from '@/features/employment-types/pages';
@@ -183,6 +184,20 @@ export const AccountPage: React.FC = () => {
         {
           label: t('card.appearance.edit'),
           onClick: () => navigate(accountRoutes.appearance),
+          variant: 'primary',
+          adminOnly: true,
+        },
+      ],
+    },
+    {
+      title: t('retention.menuTitle'),
+      description: t('retention.menuDesc'),
+      icon: <ShieldCheck className="h-5 w-5 text-[#1a5948]" />,
+      iconBg: 'bg-[#dcfce7]',
+      actions: [
+        {
+          label: t('retention.title'),
+          onClick: () => navigate(accountRoutes.dataRetention),
           variant: 'primary',
           adminOnly: true,
         },

@@ -206,6 +206,21 @@ export const handbookApi = {
     return response.data;
   },
 
+  /** CF-19: SOP for a page + whether the current user must (re)sign it. */
+  async getSopStatus(nid: number): Promise<{ hasSop: boolean; sop: string; needsSignature: boolean; signedAt: string | null }> {
+    requireValidNid(nid);
+    const response = await axiosClient.get<{ data: { hasSop: boolean; sop: string; needsSignature: boolean; signedAt: string | null } }>(
+      `/handbook/pages/${nid}/sop-status`
+    );
+    return response.data.data;
+  },
+
+  /** CF-19: sign the current SOP revision on a page with a drawn signature. */
+  async signSop(nid: number, signatureImage: string): Promise<void> {
+    requireValidNid(nid);
+    await axiosClient.post(`/handbook/pages/${nid}/sign-sop`, { signatureImage });
+  },
+
   /**
    * Get handbook tree/overview
    * GET /api/handbook?lang=en

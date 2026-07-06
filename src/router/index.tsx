@@ -60,6 +60,10 @@ const VerifyEmailPage = lazy(() => import('@/features/auth/pages/verify-email-pa
 const ConfirmEmailChangePage = lazy(() => import('@/features/auth/pages/confirm-email-change-page').then((m) => ({ default: m.ConfirmEmailChangePage })));
 const MyProfilePage = lazy(() => import('@/features/profile/pages/my-profile-page').then((m) => ({ default: m.MyProfilePage })));
 const MyActivityPage = lazy(() => import('@/features/profile/pages/my-activity-page').then((m) => ({ default: m.MyActivityPage })));
+const DataRetentionPage = lazy(() => import('@/features/account/pages/data-retention-page').then((m) => ({ default: m.DataRetentionPage })));
+const MyDocumentsPage = lazy(() => import('@/features/documents/pages/my-documents-page').then((m) => ({ default: m.MyDocumentsPage })));
+const QuizBuilderPage = lazy(() => import('@/features/quizzes/pages/quiz-builder-page').then((m) => ({ default: m.QuizBuilderPage })));
+const QuizResultsPage = lazy(() => import('@/features/quizzes/pages/quiz-results-page').then((m) => ({ default: m.QuizResultsPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/reset-password-page').then((m) => ({ default: m.ResetPasswordPage })));
 const ConsolePage = lazy(() => import('@/pages/console/console-page').then((m) => ({ default: m.ConsolePage })));
@@ -288,6 +292,52 @@ export const AppRouter: React.FC = () => {
                 <AppLayout>
                   <MyActivityPage />
                 </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={accountRoutes.myDocuments}
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <MyDocumentsPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/handbook/pages/:nid/quiz"
+            element={
+              <RequireAuth>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <QuizBuilderPage />
+                  </AppLayout>
+                </RequireAdminRole>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/handbook/pages/:nid/quiz/results"
+            element={
+              <RequireAuth>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <QuizResultsPage />
+                  </AppLayout>
+                </RequireAdminRole>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={accountRoutes.dataRetention}
+            element={
+              <RequireAuth>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <DataRetentionPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />

@@ -24,6 +24,12 @@ export interface UpdateCompanyProfileResponse {
     message: string;
 }
 
+export interface RetentionPolicy {
+    generalPersonalDataDays: number;
+    trackingDays: number;
+    bookkeepingYears: number;
+}
+
 export const companiesApi = {
     /**
      * Get company profile by company ID
@@ -65,5 +71,17 @@ export const companiesApi = {
         }
 
         return response.data as LicenseUsage;
+    },
+
+    /** CF-23: get the company's data-retention policy. */
+    getRetentionPolicy: async (): Promise<RetentionPolicy> => {
+        const response = await axiosClient.get<ApiResponse<RetentionPolicy>>('/company/retention-policy');
+        return response.data.data;
+    },
+
+    /** CF-23: update the company's data-retention policy. */
+    updateRetentionPolicy: async (policy: RetentionPolicy): Promise<RetentionPolicy> => {
+        const response = await axiosClient.put<ApiResponse<RetentionPolicy>>('/company/retention-policy', policy);
+        return response.data.data;
     },
 };

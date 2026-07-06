@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState } from '@/components/common/empty-state';
 import { Button } from '@/components/ui/button';
+import { SignaturePad } from '@/components/common/signature-pad';
+import { PageQuiz } from '@/features/quizzes/components/page-quiz';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
 import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAppearance } from '@/context/appearance-context';
@@ -22,6 +24,7 @@ interface FlatPage {
 export const HandbookViewerPage: React.FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('handbook');
+  const { t: tCommon } = useTranslation('common');
   const { getColor } = useAppearance();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +34,9 @@ export const HandbookViewerPage: React.FC = () => {
   const [metaLoading, setMetaLoading] = useState(false);
   const [signingReceipt, setSigningReceipt] = useState(false);
   const [signedAt, setSignedAt] = useState<string | null>(null);
+  const [sop, setSop] = useState<{ hasSop: boolean; sop: string; needsSignature: boolean; signedAt: string | null } | null>(null);
+  const [sopSignature, setSopSignature] = useState<string | null>(null);
+  const [signingSop, setSigningSop] = useState(false);
   const trackedViewNids = useRef<Set<number>>(new Set());
 
   // Fetch handbook tree, then pre-fetch content for all ready pages, keep only those with content
@@ -103,6 +109,19 @@ export const HandbookViewerPage: React.FC = () => {
       .finally(() => setMetaLoading(false));
   }, [currentPageData?.id]);
 
+  // CF-19: load SOP + sign status for the current page
+  useEffect(() => {
+    if (!currentPageData) {
+      setSop(null);
+      setSopSignature(null);
+      return;
+    }
+    setSopSignature(null);
+    handbookApi.getSopStatus(currentPageData.id)
+      .then((s) => setSop(s))
+      .catch(() => setSop(null));
+  }, [currentPageData?.id]);
+
   // Track view once per page per session
   useEffect(() => {
     if (!currentPageData) return;
@@ -118,6 +137,20 @@ export const HandbookViewerPage: React.FC = () => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSignSop = async () => {
+    if (!currentPageData || !sopSignature) return;
+    setSigningSop(true);
+    try {
+      await handbookApi.signSop(currentPageData.id, sopSignature);
+      setSop((prev) => (prev ? { ...prev, needsSignature: false, signedAt: new Date().toISOString() } : prev));
+      setSopSignature(null);
+    } catch {
+      // keep the pad open so the user can retry
+    } finally {
+      setSigningSop(false);
+    }
   };
 
   // Build pagination numbers with ellipsis
@@ -343,6 +376,43 @@ export const HandbookViewerPage: React.FC = () => {
 
               return <div className="mt-4">{htmlEl}</div>;
             })()}
+
+            {sop?.hasSop && (
+              <div className="mt-8 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>
+                <h3 className="text-lg font-semibold mb-2">{t('sop.title')}</h3>
+                <div className="text-sm whitespace-pre-wrap mb-4 text-[#373b3b]">{sop.sop}</div>
+                {sop.needsSignature ? (
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">{t('sop.signPrompt')}</p>
+                    <SignaturePad onChange={setSopSignature} clearLabel={tCommon('clear', 'Clear')} />
+                    <div>
+                      <Button
+                        onClick={handleSignSop}
+                        disabled={signingSop || !sopSignature}
+                        className="rounded-[8px] px-4 py-2 disabled:opacity-50"
+                        style={{ backgroundColor: getColor('confirmationButton'), color: getColor('buttonText') }}
+                      >
+                        {signingSop ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin shrink-0" />
+                            {t('sop.signing')}
+                          </>
+                        ) : (
+                          t('sop.sign')
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#1a5948] flex items-center gap-1">
+                    <Check className="h-4 w-4" />
+                    {t('sop.signed', { date: sop.signedAt ? new Date(sop.signedAt).toLocaleDateString() : '' })}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {currentPageData && <PageQuiz nid={currentPageData.id} />}
 
             {showReceiptButton && (
               <div className="mt-8 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>
