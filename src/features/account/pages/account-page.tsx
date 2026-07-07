@@ -209,7 +209,7 @@ export const AccountPage: React.FC = () => {
       icon: <MoreHorizontal className="h-5 w-5 text-[#6b7280]" />,
       iconBg: 'bg-[#f3f4f6]',
       actions: [
-        { label: t('card.others.whistleblower'), onClick: () => window.open('https://companyflow.digibida.com/whistleblowerordning/', '_blank', 'noopener,noreferrer') },
+        { label: t('card.others.whistleblower'), onClick: () => navigate('/account/whistleblower'), adminOnly: true },
       ],
     },
   ];

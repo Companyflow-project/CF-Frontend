@@ -11,6 +11,7 @@ import daHandbook from './locales/da/handbook.json';
 import daAccount from './locales/da/account.json';
 import daContacts from './locales/da/contacts.json';
 import daAdmin from './locales/da/admin.json';
+import daWhistleblower from './locales/da/whistleblower.json';
 
 // English translations
 import enCommon from './locales/en/common.json';
@@ -21,6 +22,7 @@ import enHandbook from './locales/en/handbook.json';
 import enAccount from './locales/en/account.json';
 import enContacts from './locales/en/contacts.json';
 import enAdmin from './locales/en/admin.json';
+import enWhistleblower from './locales/en/whistleblower.json';
 
 // Migrate legacy handbook-lang localStorage key to i18nextLng
 try {
@@ -46,6 +48,7 @@ i18n
         account: daAccount,
         contacts: daContacts,
         admin: daAdmin,
+        whistleblower: daWhistleblower,
       },
       en: {
         common: enCommon,
@@ -56,12 +59,13 @@ i18n
         account: enAccount,
         contacts: enContacts,
         admin: enAdmin,
+        whistleblower: enWhistleblower,
       },
     },
     lng: undefined, // let detector decide; falls back to 'da'
     fallbackLng: 'da',
     defaultNS: 'common',
-    ns: ['common', 'auth', 'console', 'employees', 'handbook', 'account', 'contacts', 'admin'],
+    ns: ['common', 'auth', 'console', 'employees', 'handbook', 'account', 'contacts', 'admin', 'whistleblower'],
     interpolation: {
       escapeValue: false, // React already escapes
     },

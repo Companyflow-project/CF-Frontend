@@ -1,0 +1,1 @@
+WHISTLEBLOWER_ENC_KEY=$(openssl rand -hex 32)

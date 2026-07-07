@@ -64,6 +64,11 @@ const DataRetentionPage = lazy(() => import('@/features/account/pages/data-reten
 const MyDocumentsPage = lazy(() => import('@/features/documents/pages/my-documents-page').then((m) => ({ default: m.MyDocumentsPage })));
 const QuizBuilderPage = lazy(() => import('@/features/quizzes/pages/quiz-builder-page').then((m) => ({ default: m.QuizBuilderPage })));
 const QuizResultsPage = lazy(() => import('@/features/quizzes/pages/quiz-results-page').then((m) => ({ default: m.QuizResultsPage })));
+const PublicReportPage = lazy(() => import('@/features/whistleblower/pages/public-report-page').then((m) => ({ default: m.PublicReportPage })));
+const ReportConcernPage = lazy(() => import('@/features/whistleblower/pages/report-concern-page').then((m) => ({ default: m.ReportConcernPage })));
+const WhistleblowerInboxPage = lazy(() => import('@/features/whistleblower/pages/whistleblower-inbox-page').then((m) => ({ default: m.WhistleblowerInboxPage })));
+const WhistleblowerReportPage = lazy(() => import('@/features/whistleblower/pages/whistleblower-report-page').then((m) => ({ default: m.WhistleblowerReportPage })));
+const WhistleblowerSettingsPage = lazy(() => import('@/features/whistleblower/pages/whistleblower-settings-page').then((m) => ({ default: m.WhistleblowerSettingsPage })));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/forgot-password-page').then((m) => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/reset-password-page').then((m) => ({ default: m.ResetPasswordPage })));
 const ConsolePage = lazy(() => import('@/pages/console/console-page').then((m) => ({ default: m.ConsolePage })));
@@ -275,6 +280,8 @@ export const AppRouter: React.FC = () => {
               </AuthLayout>
             }
           />
+          {/* CF-17: public (unauthenticated) whistleblower reporting page */}
+          <Route path="/whistleblower/:token" element={<PublicReportPage />} />
           <Route
             path={accountRoutes.myProfile}
             element={
@@ -302,6 +309,48 @@ export const AppRouter: React.FC = () => {
                 <AppLayout>
                   <MyDocumentsPage />
                 </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/report-concern"
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <ReportConcernPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/whistleblower-reports"
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <WhistleblowerInboxPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/whistleblower-reports/:id"
+            element={
+              <RequireAuth>
+                <AppLayout>
+                  <WhistleblowerReportPage />
+                </AppLayout>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/account/whistleblower"
+            element={
+              <RequireAuth>
+                <RequireAdminRole>
+                  <AppLayout>
+                    <WhistleblowerSettingsPage />
+                  </AppLayout>
+                </RequireAdminRole>
               </RequireAuth>
             }
           />

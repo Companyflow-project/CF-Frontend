@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, Lock } from 'lucide-react';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
 import { accountRoutes } from '@/features/account/routes';
+import { whistleblowerApi } from '@/features/whistleblower/api';
 import logoUrl from '/assets/Logo.svg';
 
 /** All languages that can be purchased as add-ons. */
@@ -35,6 +36,15 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
   const switchRef = useRef<HTMLDivElement>(null);
   const { viewAsEmployee } = useViewAsEmployee();
   const { t, i18n } = useTranslation('common');
+  const { t: tWb } = useTranslation('whistleblower');
+  const [isWbHandler, setIsWbHandler] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsWbHandler(false); return; }
+    let cancelled = false;
+    whistleblowerApi.accessCheck().then((v) => { if (!cancelled) setIsWbHandler(v); }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [user]);
   const isAdmin = isAdminRole(user?.role);
   const isSenior = user?.role === 'senior_employee';
   const rawLangs = user?.employeeLanguages ?? ['da'];
@@ -230,6 +240,22 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                       >
                         {t('nav.myDocuments')}
                       </Link>
+                      <Link
+                        to="/report-concern"
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {tWb('nav.reportConcern')}
+                      </Link>
+                      {isWbHandler && (
+                        <Link
+                          to="/whistleblower-reports"
+                          onClick={() => setIsSwitchOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          {tWb('nav.inbox')}
+                        </Link>
+                      )}
                       <div className="my-1 border-t border-gray-100" />
                       <div className="px-4 py-2 text-sm font-semibold text-gray-900">
                         {t('nav.switchTo', 'Switch to')}
@@ -286,6 +312,22 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
                       >
                         {t('nav.myDocuments')}
                       </Link>
+                      <Link
+                        to="/report-concern"
+                        onClick={() => setIsSwitchOpen(false)}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        {tWb('nav.reportConcern')}
+                      </Link>
+                      {isWbHandler && (
+                        <Link
+                          to="/whistleblower-reports"
+                          onClick={() => setIsSwitchOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          {tWb('nav.inbox')}
+                        </Link>
+                      )}
                       <div className="my-1 border-t border-gray-100" />
                       <button
                         type="button"
