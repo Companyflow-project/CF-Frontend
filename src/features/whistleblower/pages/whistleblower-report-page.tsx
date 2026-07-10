@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { whistleblowerApi, WbReportDetail } from '../api';
 import { ThreadPanel } from '../components/thread-panel';
+import { DeadlineBadges } from '../components/deadline-badges';
 
 export const WhistleblowerReportPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +51,8 @@ export const WhistleblowerReportPage: React.FC = () => {
                   {report.isAnonymous ? t('inbox.anonymous') : (report.reporterName || report.reporterEmail || t('inbox.identified'))}
                 </span>
               </div>
+
+              <DeadlineBadges d={report} status={report.status} />
 
               <div className="flex flex-wrap items-center gap-2">
                 {report.status === 'open' && <Button size="sm" variant="outline" onClick={() => setStatus('acknowledged')}>{t('detail.acknowledge')}</Button>}

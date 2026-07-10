@@ -1,5 +1,6 @@
 import { axiosClient } from '@/lib/axios-client';
 import { Contact } from '@/types/models';
+import { localizeAreaName } from '@/lib/area-i18n';
 
 /**
  * Area of responsibility for use in contact/employee UIs.
@@ -195,7 +196,7 @@ export const contactsApi = {
   async getContactAreas(): Promise<ContactAreaItem[]> {
     const response = await axiosClient.get<ContactAreasResponse>('/contacts/areas');
     const raw = response.data?.data ?? [];
-    return Array.isArray(raw) ? raw : [];
+    return Array.isArray(raw) ? raw.map((a) => ({ ...a, name: localizeAreaName(a.name) })) : [];
   },
 
   /**
@@ -205,7 +206,7 @@ export const contactsApi = {
   async getContactAreasForContact(id: string): Promise<ContactAreaItem[]> {
     const response = await axiosClient.get<ContactAreasResponse>(`/contacts/${id}/areas`);
     const raw = response.data?.data ?? [];
-    return Array.isArray(raw) ? raw : [];
+    return Array.isArray(raw) ? raw.map((a) => ({ ...a, name: localizeAreaName(a.name) })) : [];
   },
 
   /**

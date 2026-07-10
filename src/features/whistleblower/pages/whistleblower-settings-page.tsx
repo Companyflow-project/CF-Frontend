@@ -20,6 +20,8 @@ export const WhistleblowerSettingsPage: React.FC = () => {
   const [handlers, setHandlers] = useState<Set<number>>(new Set());
   const [publicEnabled, setPublicEnabled] = useState(false);
   const [retentionDays, setRetentionDays] = useState(1825);
+  const [ackDays, setAckDays] = useState(7);
+  const [feedbackDays, setFeedbackDays] = useState(90);
   const [categories, setCategories] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -33,6 +35,8 @@ export const WhistleblowerSettingsPage: React.FC = () => {
         setHandlers(new Set(cfg.handlerUids));
         setPublicEnabled(cfg.publicEnabled);
         setRetentionDays(cfg.retentionDaysAfterClosure);
+        setAckDays(cfg.ackDeadlineDays);
+        setFeedbackDays(cfg.feedbackDeadlineDays);
         setCategories(cfg.categories.join(', '));
         setEmployees(emps);
       } finally {
@@ -55,6 +59,8 @@ export const WhistleblowerSettingsPage: React.FC = () => {
         handlerUids: Array.from(handlers),
         publicEnabled,
         retentionDaysAfterClosure: retentionDays,
+        ackDeadlineDays: ackDays,
+        feedbackDeadlineDays: feedbackDays,
         categories: cats.length ? cats : undefined,
       });
       setConfig(updated);
@@ -134,6 +140,22 @@ export const WhistleblowerSettingsPage: React.FC = () => {
                 <Label>{t('config.retention')}</Label>
                 <Input type="number" min={30} value={retentionDays} onChange={(e) => setRetentionDays(Math.max(30, parseInt(e.target.value, 10) || 30))} className={`${inputCls} max-w-[160px]`} />
                 <p className="text-xs text-[#6b7280]">{t('config.retentionHelp')}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle className="text-base">{t('config.deadlines')}</CardTitle></CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <Label>{t('config.ackDeadline')}</Label>
+                <Input type="number" min={1} max={90} value={ackDays} onChange={(e) => setAckDays(Math.max(1, Math.min(90, parseInt(e.target.value, 10) || 1)))} className={`${inputCls} max-w-[160px]`} />
+                <p className="text-xs text-[#6b7280]">{t('config.ackDeadlineHelp')}</p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label>{t('config.feedbackDeadline')}</Label>
+                <Input type="number" min={1} value={feedbackDays} onChange={(e) => setFeedbackDays(Math.max(1, parseInt(e.target.value, 10) || 1))} className={`${inputCls} max-w-[160px]`} />
+                <p className="text-xs text-[#6b7280]">{t('config.feedbackDeadlineHelp')}</p>
               </div>
             </CardContent>
           </Card>

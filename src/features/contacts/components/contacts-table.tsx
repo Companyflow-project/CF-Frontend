@@ -10,6 +10,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/empty-state';
+import { localizeAreaName } from '@/lib/area-i18n';
 import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Contact } from '@/types/models';
@@ -170,7 +171,7 @@ function ContactsTableInner({
                           key={area}
                           className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#e8f5ef] text-[#1a5948] whitespace-nowrap"
                         >
-                          {area}
+                          {localizeAreaName(area)}
                         </span>
                       ))}
                     </div>

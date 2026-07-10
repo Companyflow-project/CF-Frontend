@@ -4,8 +4,9 @@ import type { ApiResponse } from '@/lib/api-types';
 export interface WbFile { id: number; filename: string | null; mimetype: string | null }
 export interface WbMessage { sender: 'reporter' | 'handler'; body: string; createdAt: string | null; files: WbFile[] }
 export interface WbThread { report: { category: string | null; status: string; createdAt: string | null }; messages: WbMessage[] }
-export interface WbReportListItem { id: number; category: string | null; status: string; isAnonymous: boolean; createdAt: string | null; updatedAt: string | null }
-export interface WbReportDetail {
+export interface WbDeadlines { acknowledgmentDueAt: string | null; feedbackDueAt: string | null; ackMet: boolean; feedbackMet: boolean }
+export interface WbReportListItem extends WbDeadlines { id: number; category: string | null; status: string; isAnonymous: boolean; createdAt: string | null; updatedAt: string | null }
+export interface WbReportDetail extends WbDeadlines {
   id: number; category: string | null; status: string; isAnonymous: boolean;
   reporterName: string | null; reporterEmail: string | null;
   createdAt: string | null; acknowledgedAt: string | null; closedAt: string | null; messages: WbMessage[];
@@ -13,6 +14,7 @@ export interface WbReportDetail {
 export interface WbConfig {
   handlerUids: number[]; publicEnabled: boolean; publicToken: string | null; publicUrl: string | null;
   retentionDaysAfterClosure: number; categories: string[]; encryptionConfigured: boolean;
+  ackDeadlineDays: number; feedbackDeadlineDays: number;
 }
 export interface SubmitPayload { category: string; message: string; isAnonymous: boolean; reporterName?: string; reporterEmail?: string }
 
