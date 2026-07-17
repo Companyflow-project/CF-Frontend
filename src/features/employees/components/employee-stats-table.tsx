@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/common/empty-state';
 import { Eye, MessageCircle } from 'lucide-react';
 import { EmployeeSummaryStat } from '@/types/models';
+import { useTranslation } from 'react-i18next';
 
 interface EmployeeStatsTableProps {
   stats: EmployeeSummaryStat[];
@@ -33,6 +34,7 @@ export const EmployeeStatsTable: React.FC<EmployeeStatsTableProps> = ({
   onSendMessage,
   currentUserId,
 }) => {
+  const { t } = useTranslation('employees');
   const allSelected = stats.length > 0 && selectedIds.length === stats.length;
   const someSelected = selectedIds.length > 0 && selectedIds.length < stats.length;
 
@@ -53,11 +55,11 @@ export const EmployeeStatsTable: React.FC<EmployeeStatsTableProps> = ({
                 className="rounded-[4px] border-[#3d997d] h-4 w-4"
               />
             </TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">Name</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">Page Views</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">Last Visit</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">Messages</TableHead>
-            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 text-center">Actions</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">{t('statsTable.colName')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">{t('statsTable.colPageViews')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">{t('statsTable.colLastVisit')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12">{t('statsTable.colMessages')}</TableHead>
+            <TableHead className="text-[#1a5948] font-semibold tracking-wide h-12 text-center">{t('statsTable.colActions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr]:last:border-b">
@@ -94,7 +96,7 @@ export const EmployeeStatsTable: React.FC<EmployeeStatsTableProps> = ({
                           size="icon"
                           onClick={() => onViewStats(stat.employeeId)}
                           className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
-                          aria-label="View Details"
+                          aria-label={t('statsTable.viewDetails')}
                         >
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
@@ -105,7 +107,7 @@ export const EmployeeStatsTable: React.FC<EmployeeStatsTableProps> = ({
                           size="icon"
                           onClick={() => onSendMessage(stat.employeeId)}
                           className="h-7 w-7 rounded-md bg-[#e8f0fe] text-[#2060d7] hover:bg-[#d4e4fc]"
-                          aria-label="Message"
+                          aria-label={t('statsTable.message')}
                         >
                           <MessageCircle className="h-3.5 w-3.5 fill-current" />
                         </Button>

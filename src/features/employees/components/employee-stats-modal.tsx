@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/common/empty-state';
 import { EmployeePageViewStat } from '@/types/models';
+import { useTranslation } from 'react-i18next';
 
 interface EmployeeStatsModalProps {
   open: boolean;
@@ -33,20 +34,21 @@ export const EmployeeStatsModal: React.FC<EmployeeStatsModalProps> = ({
   employeeName,
   onSendFollowUp,
 }) => {
+  const { t } = useTranslation('employees');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-[90vw]">
         <DialogHeader className="pb-4 border-b border-[#ebf3ef]">
           <DialogTitle className="text-xl font-bold text-[#0f172a]">
-            {employeeName ? `Statistics - ${employeeName}` : 'Page View Statistics'}
+            {employeeName ? t('statsModal.titleWithName', { name: employeeName }) : t('statsModal.fallbackTitle')}
           </DialogTitle>
         </DialogHeader>
         <div className="max-h-[400px] overflow-y-auto my-4 rounded-[12px] border border-[#d6e8e1]">
           <Table>
             <TableHeader className="bg-[#f5fbf8]">
               <TableRow className="border-b border-[#d6e8e1]">
-                <TableHead className="text-[#1a5948] font-semibold py-3 pl-4">Pages</TableHead>
-                <TableHead className="text-[#1a5948] font-semibold py-3 pr-4 text-right">Visits</TableHead>
+                <TableHead className="text-[#1a5948] font-semibold py-3 pl-4">{t('statsModal.colPages')}</TableHead>
+                <TableHead className="text-[#1a5948] font-semibold py-3 pr-4 text-right">{t('statsModal.colVisits')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -79,7 +81,7 @@ export const EmployeeStatsModal: React.FC<EmployeeStatsModalProps> = ({
           </Button>
           {onSendFollowUp && (
             <Button className="bg-[#3d997d] hover:bg-[#3d997d]/90 text-white rounded-[999px] px-6 shadow-[0_10px_20px_rgba(23,102,79,0.35)]" onClick={onSendFollowUp}>
-              Send Follow Up
+              {t('statsModal.sendFollowUp')}
             </Button>
           )}
         </DialogFooter>

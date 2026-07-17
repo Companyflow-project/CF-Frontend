@@ -17,8 +17,10 @@ import { useEmployees } from '@/lib/api-hooks';
 import { useAuth } from '@/context/auth-context';
 import { useAssignEmploymentType } from '@/features/employment-types/hooks';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export const AssignEmploymentTypePage: React.FC = () => {
+  const { t } = useTranslation('employees');
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
     const location = useLocation();
@@ -145,10 +147,10 @@ export const AssignEmploymentTypePage: React.FC = () => {
                                     onChange={handleSelectAll}
                                 />
                             </TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Name</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Email</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Telephone</TableHead>
-                            <TableHead className="font-semibold text-[#0d0e0e]">Employment</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('table.colName')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('table.colEmail')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('table.colTelephone')}</TableHead>
+                            <TableHead className="font-semibold text-[#0d0e0e]">{t('table.colEmployment')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

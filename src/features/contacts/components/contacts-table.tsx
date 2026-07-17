@@ -15,6 +15,7 @@ import { Edit, Trash2, UserPlus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Contact } from '@/types/models';
 import { formatDanishPhone, isAdminEmployeeRole } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface ContactsTableProps {
   contacts: Contact[];
@@ -49,6 +50,7 @@ function ContactsTableInner({
   currentUserName,
   showActions = true,
 }: ContactsTableProps) {
+  const { t } = useTranslation('contacts');
   // Pin admin/owner rows to the very top, then the authenticated user's row
   const sortedContacts = React.useMemo(() => {
     const email = currentUserEmail?.toLowerCase();
@@ -107,14 +109,14 @@ function ContactsTableInner({
               className="rounded-[4px] border-[#3d997d] h-4 w-4"
             />
           </TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Name</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Email</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">{t('manage.table.colName')}</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">{t('manage.table.colEmail')}</TableHead>
           <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[130px]">
-            Telephone
+            {t('manage.table.colTelephone')}
           </TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide">Function</TableHead>
-          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[160px]">Status</TableHead>
-          {showActions && <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">Actions</TableHead>}
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide">{t('manage.table.colFunction')}</TableHead>
+          <TableHead className="text-[#1a5948] font-semibold tracking-wide w-[160px]">{t('manage.table.colStatus')}</TableHead>
+          {showActions && <TableHead className="text-[#1a5948] font-semibold tracking-wide text-right">{t('manage.table.colActions')}</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody className="[&_tr:last:border-b]">
@@ -149,7 +151,7 @@ function ContactsTableInner({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[#111827]">{contact.name}</span>
                     {isSelf && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#d4f4e6] text-[#1a5948]">You</span>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#d4f4e6] text-[#1a5948]">{t('manage.table.you')}</span>
                     )}
                   </div>
                 </TableCell>
@@ -161,7 +163,7 @@ function ContactsTableInner({
                     contact.telephone ? 'text-[#111b18] w-[130px] tabular-nums whitespace-nowrap' : 'text-[#9fa4a4] text-xs w-[130px]'
                   }
                 >
-                  {contact.telephone ? formatDanishPhone(contact.telephone) : 'Not available'}
+                  {contact.telephone ? formatDanishPhone(contact.telephone) : t('manage.table.notAvailable')}
                 </TableCell>
                 <TableCell className="text-[#111b18]">
                   {contact.areas && contact.areas.length > 0 ? (
@@ -187,7 +189,7 @@ function ContactsTableInner({
                       <span
                         className={`h-2.5 w-2.5 rounded-full ${contact.isPublic !== false ? 'bg-[#2f946f]' : 'bg-[#a15c00]'}`}
                       />
-                      <span>{contact.isPublic !== false ? 'Public' : 'Private'}</span>
+                      <span>{contact.isPublic !== false ? t('manage.table.public') : t('manage.table.private')}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`h-2.5 w-2.5 rounded-full ${contact.id.startsWith('emp-')
@@ -198,17 +200,17 @@ function ContactsTableInner({
                         }`} />
                       <span className={contact.id.startsWith('emp-') ? 'text-[#9ca3af]' : ''}>
                         {contact.id.startsWith('emp-')
-                          ? 'Not in contacts'
+                          ? t('manage.table.notInContacts')
                           : contact.isExternalContact
-                            ? 'External contact'
-                            : 'Existing contact'}
+                            ? t('manage.table.externalContact')
+                            : t('manage.table.existingContact')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span
                         className={`h-2.5 w-2.5 rounded-full ${contact.status === 'ACTIVE' ? 'bg-[#2f946f]' : 'bg-[#d64545]'}`}
                       />
-                      <span>{contact.status === 'ACTIVE' ? 'Active' : 'Inactive'}</span>
+                      <span>{contact.status === 'ACTIVE' ? t('manage.table.active') : t('manage.table.inactive')}</span>
                     </div>
                   </div>
                 </TableCell>
@@ -225,12 +227,12 @@ function ContactsTableInner({
                             size="icon"
                             className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
                             onClick={() => onAddAsContact?.(contact)}
-                            aria-label="Add as contact"
+                            aria-label={t('manage.table.addAsContact')}
                           >
                             <UserPlus className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Add as contact</TooltipContent>
+                        <TooltipContent>{t('manage.table.addAsContact')}</TooltipContent>
                       </Tooltip>
                     ) : contact.id.startsWith('emp-') ? (
                       /* Employee-only row — not yet a real contact */
@@ -241,12 +243,12 @@ function ContactsTableInner({
                             size="icon"
                             className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
                             onClick={() => onAddEmployeeAsContact?.(contact)}
-                            aria-label="Add as contact"
+                            aria-label={t('manage.table.addAsContact')}
                           >
                             <UserPlus className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Add as contact</TooltipContent>
+                        <TooltipContent>{t('manage.table.addAsContact')}</TooltipContent>
                       </Tooltip>
                     ) : (
                       /* Real contact — edit only if handler provided; delete only if handler provided and not self */
@@ -259,12 +261,12 @@ function ContactsTableInner({
                                 size="icon"
                                 className="h-9 w-9 rounded-full bg-[#e7f5ef] text-[#2c7860]"
                                 onClick={() => onEditEmployeeContact(contact)}
-                                aria-label="Edit contact"
+                                aria-label={t('manage.table.editContact')}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Edit contact</TooltipContent>
+                            <TooltipContent>{t('manage.table.editContact')}</TooltipContent>
                           </Tooltip>
                         )}
                         {!isProtected && onDelete && (
@@ -275,12 +277,12 @@ function ContactsTableInner({
                                 size="icon"
                                 className="h-9 w-9 rounded-full bg-[#ffecef] text-[#d5384b]"
                                 onClick={() => onDelete(contact)}
-                                aria-label="Delete contact"
+                                aria-label={t('manage.table.deleteContact')}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Delete contact</TooltipContent>
+                            <TooltipContent>{t('manage.table.deleteContact')}</TooltipContent>
                           </Tooltip>
                         )}
                       </>
