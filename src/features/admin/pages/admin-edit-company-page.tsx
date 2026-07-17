@@ -435,6 +435,9 @@ export const AdminEditCompanyPage: React.FC = () => {
       cvr: company.cvr ?? '',
       source: company.category ?? '',
     });
+    // Re-lock the email field whenever fresh company data loads (initial load and
+    // after a save), so an edited address returns to the read-only display.
+    setEmailUnlocked(false);
     setAddressForm({
       street: company.street ?? '',
       zipCode: company.zipCode ?? '',
@@ -505,6 +508,13 @@ export const AdminEditCompanyPage: React.FC = () => {
   // Confirm dialog shown when the admin changes the company email (login
   // credentials for the handbook console are sent to the new address).
   const [emailConfirmOpen, setEmailConfirmOpen] = useState(false);
+
+  // The company email field is locked by default: it shows the primary contact's
+  // current login email, and the admin clicks "Change" to edit it (which moves the
+  // login and sends a new invite on save). Companies without an email stay editable.
+  const [emailUnlocked, setEmailUnlocked] = useState(false);
+  const initialEmail = (company?.email ?? '').trim();
+  const emailLocked = !emailUnlocked && initialEmail.length > 0;
 
   const saveSection = async (section: SectionKey, payload: UpdateCompanyPayload) => {
     if (!id) return;
@@ -780,7 +790,6 @@ export const AdminEditCompanyPage: React.FC = () => {
               {primaryContact ? (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
                   <span className="font-medium text-gray-900">{primaryContact.name}</span>
-                  <span className="text-gray-500">{primaryContact.email}</span>
                   {primaryContact.phone ? (
                     <span className="text-gray-500">{primaryContact.phone}</span>
                   ) : null}
@@ -803,13 +812,45 @@ export const AdminEditCompanyPage: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="about-email">{t('editCompany.about.email', 'Company email')}</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="about-email">{t('editCompany.about.email', 'Company email')}</Label>
+                {emailLocked ? (
+                  <button
+                    type="button"
+                    onClick={() => setEmailUnlocked(true)}
+                    className="text-xs font-medium text-[#1a5948] hover:underline"
+                  >
+                    {t('editCompany.about.emailChange', 'Change')}
+                  </button>
+                ) : initialEmail ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmailUnlocked(false);
+                      setAboutForm((p) => ({ ...p, email: company?.email ?? '' }));
+                    }}
+                    className="text-xs font-medium text-gray-500 hover:underline"
+                  >
+                    {t('editCompany.about.emailCancel', 'Cancel')}
+                  </button>
+                ) : null}
+              </div>
               <Input
                 id="about-email"
                 type="email"
                 value={aboutForm.email}
                 onChange={(e) => setAboutForm((p) => ({ ...p, email: e.target.value }))}
+                disabled={emailLocked}
+                className={emailLocked ? 'bg-gray-50 text-gray-500' : undefined}
               />
+              {!emailLocked && initialEmail ? (
+                <p className="text-xs text-gray-500 italic">
+                  {t(
+                    'editCompany.about.emailNote',
+                    'Saving a new address moves the login and emails a new password link to the contact person.',
+                  )}
+                </p>
+              ) : null}
             </div>
           </div>
 

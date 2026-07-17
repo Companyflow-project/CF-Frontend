@@ -262,6 +262,8 @@
   "table.messageLogs": "Beskedlog",
   "table.statistics": "Statistik",
   "table.colLanguages": "Sprog",
+  "table.never": "Aldrig",
+  "table.addLanguage": "Tilføj sprog",
   "table.deleteEmployee": "Slet medarbejder",
 
   "messageLogs.titleDetail": "Medarbejderbeskedlog - {{name}}",

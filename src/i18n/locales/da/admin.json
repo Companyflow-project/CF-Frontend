@@ -1471,6 +1471,9 @@
       "customerCompany": "Kundevirksomhed",
       "cvr": "CVR",
       "email": "Email",
+      "emailCancel": "Fortryd",
+      "emailChange": "Ændr",
+      "emailNote": "Når du gemmer en ny adresse, flyttes login'et, og der sendes et nyt adgangskode-link til kontaktpersonen.",
       "name": "Navn",
       "noContact": "Ingen kontakt",
       "phone": "Telefon",
@@ -1990,6 +1993,7 @@
     "cols": {
       "user": "Bruger",
       "role": "Rolle",
+      "company": "Virksomhed",
       "status": "Status",
       "lastActive": "Sidst aktiv",
       "actions": "Handlinger"

@@ -1471,6 +1471,9 @@
       "customerCompany": "Customer company",
       "cvr": "CVR number",
       "email": "Company email",
+      "emailCancel": "Cancel",
+      "emailChange": "Change",
+      "emailNote": "Saving a new address moves the login and emails a new password link to the contact person.",
       "name": "Company name",
       "noContact": "No primary contact assigned",
       "phone": "Company phone",
@@ -1990,6 +1993,7 @@
     "cols": {
       "user": "User",
       "role": "Role",
+      "company": "Company",
       "status": "Status",
       "lastActive": "Last active",
       "actions": "Actions"

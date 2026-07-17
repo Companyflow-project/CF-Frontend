@@ -74,6 +74,7 @@ const LanguageQuickAdd: React.FC<{
   companyLangs: string[];
   onSave: (id: string, languages: string[]) => void;
 }> = ({ employeeId, currentLangs, companyLangs, onSave }) => {
+  const { t } = useTranslation('employees');
   const [open, setOpen] = useState(false);
   const [langs, setLangs] = useState(currentLangs);
   const ref = useRef<HTMLDivElement>(null);
@@ -107,7 +108,7 @@ const LanguageQuickAdd: React.FC<{
         type="button"
         onClick={() => setOpen(v => !v)}
         className="h-6 w-6 rounded-full border border-dashed border-[#3d997d] flex items-center justify-center text-[#3d997d] hover:bg-[#e7f5ef] transition-colors"
-        title="Add language"
+        title={t('table.addLanguage')}
       >
         <Plus className="h-3 w-3" />
       </button>
@@ -139,7 +140,7 @@ const LanguageQuickAdd: React.FC<{
               onClick={handleSave}
               className="w-full text-center text-xs font-medium text-white bg-[#3d997d] rounded-md py-1.5 hover:bg-[#348a6f] transition-colors"
             >
-              Save
+              {t('common:save')}
             </button>
           </div>
         </div>
@@ -211,30 +212,30 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[160px]">
               <div className="flex items-center gap-1 truncate">
-                Name
+                {t('table.colName')}
                 <span className="text-[#f77c19] text-xs shrink-0">↑</span>
               </div>
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[180px]">
-              Email
+              {t('table.colEmail')}
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[110px]">
-              Telephone
+              {t('table.colTelephone')}
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[120px]">
-              Employment
+              {t('table.colEmployment')}
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[100px]">
-              {t('table.colLanguages', 'Languages')}
+              {t('table.colLanguages')}
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide min-w-[110px]">
-              Recent visits
+              {t('table.colRecentVisits')}
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide text-center min-w-[80px] align-middle">
-              Messages
+              {t('table.colMessages')}
             </TableHead>
             <TableHead className="text-[#1a5948] font-semibold tracking-wide text-center min-w-[130px] align-middle">
-              Actions
+              {t('table.colActions')}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -274,7 +275,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       <div className="min-w-0">
                         <p className="font-semibold text-[#111827] truncate">{employee.name}</p>
                         <p className="text-[11px] uppercase tracking-[0.04em] text-[#7b8a85] truncate">
-                          {employee.isPublic ? 'Public profile' : 'Private profile'}
+                          {employee.isPublic ? t('table.publicProfile') : t('table.privateProfile')}
                         </p>
                       </div>
                     </div>
@@ -284,9 +285,9 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                   </TableCell>
                   <TableCell
                     className={phone ? 'text-[#111b18]' : 'text-[#9fa4a4] text-xs'}
-                    title={phone || 'Not available'}
+                    title={phone || t('table.notAvailable')}
                   >
-                    <div className="truncate">{phone || 'Not available'}</div>
+                    <div className="truncate">{phone || t('table.notAvailable')}</div>
                   </TableCell>
                   <TableCell className="text-[#111b18]" title={employee.employmentTitle || employee.employmentType || '-'}>
                     <div className="truncate">{employee.employmentTitle || employee.employmentType || '-'}</div>
@@ -308,7 +309,7 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-[#111b18] truncate" title={employee.recentVisitAt || 'Never'}>
+                  <TableCell className="text-[#111b18] truncate" title={employee.recentVisitAt || t('table.never')}>
                     {formatRelativeTime(employee.recentVisitAt)}
                   </TableCell>
                   <TableCell className="align-middle p-0">
@@ -328,13 +329,13 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 rounded-md bg-[#e7f5ef] text-[#2c7860] hover:bg-[#d0ebe0]"
-                              aria-label="Edit"
+                              aria-label={t('table.editEmployee')}
                               onClick={() => onEdit(employee.id)}
                             >
                               <Edit className="h-3.5 w-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Edit employee</TooltipContent>
+                          <TooltipContent>{t('table.editEmployee')}</TooltipContent>
                         </Tooltip>
                       )}
                       {/* Message — always visible */}
@@ -344,13 +345,13 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 rounded-md bg-[#e8f0fe] text-[#2060d7] hover:bg-[#d4e4fc]"
-                            aria-label="Message"
+                            aria-label={t('table.messageLogs')}
                             onClick={() => onMessageLogs?.(employee.id)}
                           >
                             <MessageSquare className="h-3.5 w-3.5" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Message logs</TooltipContent>
+                        <TooltipContent>{t('table.messageLogs')}</TooltipContent>
                       </Tooltip>
                       {/* Statistics — hidden for self and admins */}
                       {!isProtected && (
@@ -360,13 +361,13 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 rounded-md bg-[#fff1e8] text-[#ee7623] hover:bg-[#ffe4d1]"
-                              aria-label="Statistics"
+                              aria-label={t('table.statistics')}
                               onClick={() => onStatistics?.(employee.id)}
                             >
                               <BarChart3 className="h-3.5 w-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Statistics</TooltipContent>
+                          <TooltipContent>{t('table.statistics')}</TooltipContent>
                         </Tooltip>
                       )}
                       {/* Delete — hidden for self, admins, and non-admin viewers */}
@@ -377,13 +378,13 @@ export const EmployeesTable: React.FC<EmployeesTableProps> = ({
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 rounded-md bg-[#ffecef] text-[#d5384b] hover:bg-[#ffd9df]"
-                              aria-label="Delete"
+                              aria-label={t('table.deleteEmployee')}
                               onClick={() => onDelete(employee.id, employee.name)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Delete employee</TooltipContent>
+                          <TooltipContent>{t('table.deleteEmployee')}</TooltipContent>
                         </Tooltip>
                       )}
                     </div>

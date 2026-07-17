@@ -262,6 +262,8 @@
   "table.messageLogs": "Message logs",
   "table.statistics": "Statistics",
   "table.colLanguages": "Languages",
+  "table.never": "Never",
+  "table.addLanguage": "Add language",
   "table.deleteEmployee": "Delete employee",
 
   "messageLogs.titleDetail": "Employee Message Logs - {{name}}",

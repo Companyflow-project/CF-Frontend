@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +22,10 @@ import { useTranslation } from 'react-i18next';
 export const ViewEmploymentTypesPage: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation('account');
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [searchParams] = useSearchParams();
+    // Auto-open the "Add" dialog when arriving with ?add=1 (e.g. from the
+    // "Create employment type" CTA in the invite-employee form).
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(searchParams.get('add') === '1');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
     const { user } = useAuth();

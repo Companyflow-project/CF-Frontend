@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import i18n from "@/i18n"
 
 /** Roles that have full admin/edit access (account owner, company admin, platform admin). */
 const ADMIN_ROLES = new Set(['administrator', 'account_owner', 'company_admin']);
@@ -23,66 +24,44 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+const SECONDS_PER_MINUTE = 60;
+const SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
+const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
+const SECONDS_PER_WEEK = 7 * SECONDS_PER_DAY;
+const SECONDS_PER_MONTH = 30 * SECONDS_PER_DAY;
+const SECONDS_PER_YEAR = 365 * SECONDS_PER_DAY;
+
 /**
- * Formats a date string to relative time (e.g., "2 mins ago", "last month", "2 years ago")
+ * Formats a date string as relative time in the active UI language
+ * (e.g. "2 hours ago" / "for 2 timer siden", "yesterday" / "i går").
  * @param dateString - Date string in format "YYYY-MM-DD HH:mm" or ISO format
  * @returns Formatted relative time string
  */
 export function formatRelativeTime(dateString: string | null | undefined): string {
   if (!dateString || dateString === 'Never') {
-    return 'Never';
+    return i18n.t('employees:table.never');
   }
 
   try {
     // Parse the date string (handles both "YYYY-MM-DD HH:mm" and ISO formats)
     const date = new Date(dateString.replace(' ', 'T'));
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSeconds = Math.floor(diffMs / 1000);
-    const diffMinutes = Math.floor(diffSeconds / 60);
-    const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    const diffWeeks = Math.floor(diffDays / 7);
-    const diffMonths = Math.floor(diffDays / 30);
-    const diffYears = Math.floor(diffDays / 365);
-
-    // Future dates
-    if (diffMs < 0) {
-      return 'Just now';
+    if (Number.isNaN(date.getTime())) {
+      return dateString;
     }
 
-    // Less than a minute
-    if (diffSeconds < 60) {
-      return 'Just now';
-    }
+    // numeric: 'auto' yields "yesterday"/"i går" and "last week"/"sidste uge"
+    // instead of "1 day ago"/"1 week ago".
+    const rtf = new Intl.RelativeTimeFormat(i18n.language, { numeric: 'auto' });
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
-    // Less than an hour
-    if (diffMinutes < 60) {
-      return diffMinutes === 1 ? '1 min ago' : `${diffMinutes} mins ago`;
-    }
-
-    // Less than a day
-    if (diffHours < 24) {
-      return diffHours === 1 ? '1 hour ago' : `${diffHours} hours ago`;
-    }
-
-    // Less than a week
-    if (diffDays < 7) {
-      return diffDays === 1 ? 'Yesterday' : `${diffDays} days ago`;
-    }
-
-    // Less than a month
-    if (diffWeeks < 4) {
-      return diffWeeks === 1 ? 'Last week' : `${diffWeeks} weeks ago`;
-    }
-
-    // Less than a year
-    if (diffMonths < 12) {
-      return diffMonths === 1 ? 'Last month' : `${diffMonths} months ago`;
-    }
-
-    // Years
-    return diffYears === 1 ? 'Last year' : `${diffYears} years ago`;
+    // Future timestamps fall through here too and read as "now", matching prior behaviour.
+    if (seconds < SECONDS_PER_MINUTE) return rtf.format(0, 'second');
+    if (seconds < SECONDS_PER_HOUR) return rtf.format(-Math.floor(seconds / SECONDS_PER_MINUTE), 'minute');
+    if (seconds < SECONDS_PER_DAY) return rtf.format(-Math.floor(seconds / SECONDS_PER_HOUR), 'hour');
+    if (seconds < SECONDS_PER_WEEK) return rtf.format(-Math.floor(seconds / SECONDS_PER_DAY), 'day');
+    if (seconds < SECONDS_PER_MONTH) return rtf.format(-Math.floor(seconds / SECONDS_PER_WEEK), 'week');
+    if (seconds < SECONDS_PER_YEAR) return rtf.format(-Math.floor(seconds / SECONDS_PER_MONTH), 'month');
+    return rtf.format(-Math.floor(seconds / SECONDS_PER_YEAR), 'year');
   } catch (error) {
     return dateString; // Return original if parsing fails
   }

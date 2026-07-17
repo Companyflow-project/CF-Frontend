@@ -314,6 +314,7 @@ export const AccountDashboardPage: React.FC = () => {
               <TableRow className="bg-gray-50">
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.user', 'User')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.role', 'Role')}</TableHead>
+                <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.company', 'Company')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.status', 'Status')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('accountDashboard.cols.lastActive', 'Last active')}</TableHead>
                 <TableHead className="text-xs font-semibold text-gray-500 uppercase tracking-wide text-right">{t('accountDashboard.cols.actions', 'Actions')}</TableHead>
@@ -322,13 +323,13 @@ export const AccountDashboardPage: React.FC = () => {
             <TableBody>
               {usersLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-400 py-10">
+                  <TableCell colSpan={6} className="text-center text-gray-400 py-10">
                     {t('accountDashboard.loading', 'Loading…')}
                   </TableCell>
                 </TableRow>
               ) : users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-400 py-10">
+                  <TableCell colSpan={6} className="text-center text-gray-400 py-10">
                     {t('accountDashboard.noUsers', 'No users found.')}
                   </TableCell>
                 </TableRow>
@@ -372,6 +373,8 @@ export const AccountDashboardPage: React.FC = () => {
                           </span>
                         )}
                       </TableCell>
+                      {/* Company the user belongs to (blank for platform-level staff who aren't tied to one). */}
+                      <TableCell className="text-gray-600 text-sm">{u.companyName ?? '—'}</TableCell>
                       {/* Status. No-access users (customers) can't use the admin console,
                           so they default to a read-only "Inactive" badge here — their real
                           account status is unchanged. */}
