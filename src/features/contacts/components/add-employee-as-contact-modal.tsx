@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -50,6 +51,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
   contactId,
   onConfirm,
 }) => {
+  const { t } = useTranslation('contacts');
   const isEditMode = !!contactId;
   const { data: areasData } = useContactAreas();
   const deleteAreaMutation = useDeleteContactArea();
@@ -207,7 +209,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Name — read-only */}
             <div className="flex-1 min-w-0">
-              <label className="text-xs font-medium text-[#6b7280] mb-1 block">Name</label>
+              <label className="text-xs font-medium text-[#6b7280] mb-1 block">{t('field.name')}</label>
               <Input
                 readOnly
                 tabIndex={-1}
@@ -218,7 +220,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
 
             {/* Email — read-only */}
             <div className="flex-1 min-w-0">
-              <label className="text-xs font-medium text-[#6b7280] mb-1 block">Email</label>
+              <label className="text-xs font-medium text-[#6b7280] mb-1 block">{t('field.email')}</label>
               <Input
                 readOnly
                 tabIndex={-1}
@@ -234,7 +236,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                 {phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
               <Input
-                placeholder="Phone number"
+                placeholder={t('field.phonePlaceholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => setPhoneTouched(true)}
@@ -244,7 +246,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                   }`}
               />
               {showPhoneError && (
-                <p className="text-xs text-[#d5384b] mt-1">Phone number is required</p>
+                <p className="text-xs text-[#d5384b] mt-1">{t('field.phoneNumberRequired')}</p>
               )}
             </div>
           </div>
@@ -253,9 +255,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
           <div className="space-y-3">
             {/* Section header */}
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-[#0d0e0e]">
-                Areas of responsibility
-                <span className="ml-1 text-[#d5384b]">*</span>
+              <label className="text-sm font-semibold text-[#0d0e0e]">{t('field.areas')}<span className="ml-1 text-[#d5384b]">*</span>
               </label>
               {!isAddingCustomArea && (
                 <Button
@@ -265,9 +265,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                   onClick={handleStartCustomArea}
                   className="h-8 gap-1.5 text-xs text-[#1a5948] hover:bg-[#f0f7f5] rounded-[8px] px-3"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  Create new
-                </Button>
+                  <Plus className="h-3.5 w-3.5" />{t('field.createNew')}</Button>
               )}
             </div>
 
@@ -386,7 +384,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
               <div className="flex items-center gap-2 pt-1">
                 <Input
                   autoFocus
-                  placeholder="New area of responsibility…"
+                  placeholder={t('field.newAreaPlaceholder')}
                   value={newCustomArea}
                   onChange={(e) => setNewCustomArea(e.target.value)}
                   onKeyDown={(e) => {
@@ -411,7 +409,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                     setNewCustomArea('');
                   }}
                   className="h-10 w-10 flex items-center justify-center rounded-[10px] hover:bg-[#ffecef] text-[#9ca3af] hover:text-[#d5384b] transition-colors flex-shrink-0"
-                  aria-label="Cancel"
+                  aria-label={t('field.cancel')}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -426,9 +424,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="h-10 px-5 rounded-[10px] border-[#e5e7eb] text-[#374151] text-sm hover:bg-[#f9fafb]"
-          >
-            Cancel
-          </Button>
+          >{t('field.cancel')}</Button>
           <Button
             onClick={handleSubmit}
             className="h-10 px-5 rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white text-sm shadow-[0_4px_12px_rgba(23,102,79,0.3)]"
@@ -469,9 +465,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
               size="sm"
               onClick={() => setPendingDeleteAreaId(null)}
               className="rounded-[8px] border-[#e5e7eb] text-[#374151] text-sm"
-            >
-              Cancel
-            </Button>
+            >{t('field.cancel')}</Button>
             <Button
               size="sm"
               disabled={deleteAreaMutation.isPending}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,10 @@ const DEFAULT_SMS_BODY = `[recipient name], you now have access to the [title] h
 export const FollowUpPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Arriving from the "Send message" bulk action on the employees list, which
+  // routes through the first selected employee but means to address all of them.
+  const preselectedIds = (location.state as { preselectedIds?: string[] } | null)?.preselectedIds;
   const { user } = useAuth();
   const { t } = useTranslation('employees');
   const { t: tCommon } = useTranslation('common');
@@ -49,7 +53,9 @@ export const FollowUpPage: React.FC = () => {
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [smsEnabled, setSmsEnabled] = useState(false);
 
-  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(new Set());
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<Set<string>>(
+    new Set(preselectedIds ?? []),
+  );
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
@@ -63,7 +69,10 @@ export const FollowUpPage: React.FC = () => {
         const emp = await employeesApi.getEmployee(id);
         if (!isMounted) return;
         setEmployee(emp);
-        if (emp) setSelectedEmployeeIds(new Set([emp.id]));
+        // A bulk selection wins over the single employee named in the URL.
+        if (emp && !(preselectedIds && preselectedIds.length > 0)) {
+          setSelectedEmployeeIds(new Set([emp.id]));
+        }
       } catch {
         // ignore
       } finally {

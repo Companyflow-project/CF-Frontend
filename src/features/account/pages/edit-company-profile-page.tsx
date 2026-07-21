@@ -275,7 +275,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                                                 <img
                                                     src={getLogoUrl()!}
                                                     alt="Company logo"
-                                                    className="w-full h-full object-cover rounded-full"
+                                                    className="w-full h-full object-contain rounded-full p-6"
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
                                                     <Upload className="h-6 w-6 text-white" />

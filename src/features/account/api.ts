@@ -109,5 +109,13 @@ export const accountApi = {
     );
     return response.data.data;
   },
+
+  /** Flag to CompanyFlow that this company wants the whistleblower scheme. */
+  async requestWhistleblowerAccess(): Promise<{ success: boolean }> {
+    const response = await axiosClient.post<{ data: { success: boolean }; error: null }>(
+      '/company/whistleblower-request',
+    );
+    return response.data.data;
+  },
 };
 

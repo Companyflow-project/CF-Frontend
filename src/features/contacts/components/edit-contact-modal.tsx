@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -28,6 +29,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
   contactId,
   onSaved,
 }) => {
+  const { t } = useTranslation('contacts');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -145,8 +147,8 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
               <Pencil className="h-5 w-5 text-[#2c7860]" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">Edit contact</DialogTitle>
-              <p className="text-xs text-[#6b7280] mt-0.5">Update name, phone, email and role</p>
+              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">{t('editContact.title')}</DialogTitle>
+              <p className="text-xs text-[#6b7280] mt-0.5">{t('editContact.subtitle')}</p>
             </div>
           </div>
         </DialogHeader>
@@ -165,7 +167,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
                 <p className="text-sm text-red-600">{displayError}</p>
               )}
               <div className="space-y-1.5">
-                <Label htmlFor="edit-name" className="text-sm font-semibold text-[#0d0e0e]">Name</Label>
+                <Label htmlFor="edit-name" className="text-sm font-semibold text-[#0d0e0e]">{t('field.name')}</Label>
                 <Input
                   id="edit-name"
                   value={name}
@@ -175,7 +177,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-phone" className="text-sm font-semibold text-[#0d0e0e]">
-                  Phone <span className="text-[#d5384b]">*</span>
+                  {t('field.phone')} <span className="text-[#d5384b]">*</span>
                 </Label>
                 <Input
                   id="edit-phone"
@@ -186,12 +188,12 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
                   className={`h-11 rounded-[10px] text-sm ${phoneEmpty && phoneTouched ? 'border-[#d5384b]' : 'border-[#e5e7eb]'}`}
                 />
                 {phoneEmpty && phoneTouched && (
-                  <p className="text-xs text-[#d5384b]">Phone is required</p>
+                  <p className="text-xs text-[#d5384b]">{t('field.phoneRequired')}</p>
                 )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="edit-email" className="text-sm font-semibold text-[#0d0e0e]">
-                  Email <span className="text-[#d5384b]">*</span>
+                  {t('field.email')} <span className="text-[#d5384b]">*</span>
                 </Label>
                 <Input
                   id="edit-email"
@@ -203,24 +205,22 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
                   className={`h-11 rounded-[10px] text-sm ${emailEmpty && emailTouched ? 'border-[#d5384b]' : 'border-[#e5e7eb]'}`}
                 />
                 {emailEmpty && emailTouched && (
-                  <p className="text-xs text-[#d5384b]">Email is required</p>
+                  <p className="text-xs text-[#d5384b]">{t('field.emailRequired')}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-role" className="text-sm font-semibold text-[#0d0e0e]">Role</Label>
+                <Label htmlFor="edit-role" className="text-sm font-semibold text-[#0d0e0e]">{t('field.role')}</Label>
                 <Input
                   id="edit-role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  placeholder="e.g. Manager"
+                  placeholder={t('field.rolePlaceholder')}
                   className="h-11 rounded-[10px] border-[#e5e7eb] text-sm"
                 />
               </div>
               {areas.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-[#0d0e0e]">
-                    Areas of responsibility
-                    <span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
+                  <Label className="text-sm font-semibold text-[#0d0e0e]">{t('field.areas')}<span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
                   </Label>
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     {areas.map((area) => {
@@ -260,9 +260,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
 
         {contact && (
           <DialogFooter className="px-6 py-4 border-t border-[#e5efea] bg-[#f9fafb]">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-[10px]">
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-[10px]">{t('field.cancel')}</Button>
             <Button
               onClick={handleSubmit}
               disabled={saving || !canSave}

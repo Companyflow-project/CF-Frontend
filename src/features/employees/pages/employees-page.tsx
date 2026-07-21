@@ -236,6 +236,15 @@ export const EmployeesPage: React.FC = () => {
     }
   };
 
+  // Compose a message to the selected employees. The follow-up page owns the
+  // whole compose/preview/send flow, so route through it with the selection.
+  const handleSendMessageToSelected = () => {
+    if (selectedIds.length === 0) return;
+    navigate(`/employees/${selectedIds[0]}/follow-up`, {
+      state: { preselectedIds: selectedIds },
+    });
+  };
+
   // Deactivate selected employees
   const handleDeactivateSelected = async () => {
     if (selectedIds.length === 0) return;
@@ -328,14 +337,8 @@ export const EmployeesPage: React.FC = () => {
             >
               {t('manage.viewInfoList')}
             </Button>
-            {effectiveAdmin && (
-              <Button
-                variant="outline"
-                className="border-[rgba(15,23,42,0.1)] text-[#0d0e0e] rounded-[999px] px-5 py-[11px] h-auto text-[13.3px] bg-white"
-              >
-                {t('manage.moreLicenses')}
-              </Button>
-            )}
+            {/* "More licenses" intentionally lives only on the license card below,
+                where it sits next to the seat counts and actually navigates. */}
             {effectiveAdmin && (
               <>
                 <input
@@ -611,6 +614,7 @@ export const EmployeesPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   disabled={!hasSelection || isBulkBusy}
+                  onClick={handleSendMessageToSelected}
                   className="border-[rgba(88,172,146,0.5)] rounded-[999px] text-[13px] px-4 h-9 bg-white disabled:opacity-50"
                 >
                   {t('manage.sendMessage')}

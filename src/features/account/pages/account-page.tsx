@@ -107,11 +107,8 @@ export const AccountPage: React.FC = () => {
           variant: 'primary',
           adminOnly: true,
         },
-        {
-          label: t('card.companyProfile.sms'),
-          onClick: () => navigate(accountRoutes.editCompanyProfile),
-          adminOnly: true,
-        },
+        // "Update SMS sender name" opened this same page — the sender name is a
+        // field inside Edit Company Profile, so it was a second door to one room.
       ],
     },
     {

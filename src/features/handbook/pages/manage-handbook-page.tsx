@@ -25,7 +25,7 @@ export const ManageHandbookPage: React.FC = () => {
     const { user } = useAuth();
     const { t, i18n } = useTranslation('handbook');
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
-    const { bid, isPublished, provisioning } = useHandbookTree();
+    const { bid, provisioning } = useHandbookTree();
     const lang = i18n.language as 'da' | 'en';
 
     const canEditHandbook = isAdminRole(user?.role);
@@ -166,14 +166,18 @@ export const ManageHandbookPage: React.FC = () => {
                             adminOnly: true,
                         },
                         {
+                            // The message-to-employees composer lives on the publish
+                            // screen; once published this used to divert to the message
+                            // log, which only shows already-sent mail.
                             label: t('manage.addMessage'),
-                            onClick: () => navigate(isPublished ? employeesRoutes.messageLogs : handbookRoutes.publish(String(bid ?? ''))),
+                            onClick: () => navigate(handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'outline',
                             adminOnly: true,
                         },
                         {
+                            // Access is granted by managing who is an active employee.
                             label: t('manage.grantAccess'),
-                            onClick: () => navigate(isPublished ? employeesRoutes.messageLogs : handbookRoutes.publish(String(bid ?? ''))),
+                            onClick: () => navigate(employeesRoutes.list),
                             variant: 'outline',
                             adminOnly: true,
                         },
@@ -188,14 +192,11 @@ export const ManageHandbookPage: React.FC = () => {
                     iconBg="bg-[#ede9fe]"
                     actions={[
                         {
+                            // "View printer-friendly version" pointed at this same
+                            // route — one button, not two.
                             label: t('manage.printHandbook'),
                             onClick: () => navigate(handbookRoutes.printView({ lang })),
                             variant: 'default',
-                        },
-                        {
-                            label: t('manage.viewPrinterFriendly'),
-                            onClick: () => navigate(handbookRoutes.printView({ lang })),
-                            variant: 'outline',
                         },
                         {
                             label: t('manage.viewToc'),

@@ -239,7 +239,7 @@ export const EditDepartmentPage: React.FC = () => {
                                     <span className="text-sm text-gray-500">Uploading...</span>
                                 ) : logoPreview ? (
                                     <>
-                                        <img src={logoPreview} alt="Department logo" className="w-full h-full object-cover rounded-full" />
+                                        <img src={logoPreview} alt="Department logo" className="w-full h-full object-contain rounded-full p-2" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
                                             <Upload className="h-6 w-6 text-white" />
                                         </div>

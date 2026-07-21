@@ -43,5 +43,8 @@
   "sort": "Sorter",
   "sort.name": "Navn",
   "sort.email": "E-mail",
-  "sort.employment": "Ansættelse"
+  "sort.employment": "Ansættelse",
+  "password.show": "Vis adgangskode",
+  "password.hide": "Skjul adgangskode",
+  "errors.forbidden": "Du har ikke rettigheder til denne handling. Kontakt din administrator, hvis du mener, det er en fejl."
 }

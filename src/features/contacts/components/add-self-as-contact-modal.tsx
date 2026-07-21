@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -32,6 +33,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
   user,
   onConfirm,
 }) => {
+  const { t } = useTranslation('contacts');
   const { data: areasData } = useContactAreas();
   const [phone, setPhone] = useState('');
   const [selectedAreaIds, setSelectedAreaIds] = useState<number[]>([]);
@@ -94,8 +96,8 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
               <UserPlus className="h-5 w-5 text-[#1a5948]" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">Add as contact</DialogTitle>
-              <p className="text-xs text-[#6b7280] mt-0.5">Choose areas of responsibility</p>
+              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">{t('addSelf.title')}</DialogTitle>
+              <p className="text-xs text-[#6b7280] mt-0.5">{t('addSelf.subtitle')}</p>
             </div>
           </div>
         </DialogHeader>
@@ -103,17 +105,17 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
         <div className="px-6 py-5 bg-white space-y-4 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="min-w-0">
-              <label className="text-xs font-medium text-[#6b7280] mb-1 block">Name</label>
+              <label className="text-xs font-medium text-[#6b7280] mb-1 block">{t('field.name')}</label>
               <Input readOnly value={name} className="h-10 rounded-[10px] bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]" />
             </div>
             <div className="min-w-0">
-              <label className="text-xs font-medium text-[#6b7280] mb-1 block">Email</label>
+              <label className="text-xs font-medium text-[#6b7280] mb-1 block">{t('field.email')}</label>
               <Input readOnly value={email} className="h-10 rounded-[10px] bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]" />
             </div>
             <div className="min-w-0">
               <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">Phone (optional)</label>
               <Input
-                placeholder="Phone number"
+                placeholder={t('field.phonePlaceholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="h-10 rounded-[10px] border-[#e5e7eb] text-sm"
@@ -123,9 +125,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
 
           <div className="border-t border-[#f0f4f2] pt-4">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-semibold text-[#0d0e0e]">
-                Areas of responsibility
-                <span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
+              <label className="text-sm font-semibold text-[#0d0e0e]">{t('field.areas')}<span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
               </label>
               {!isAddingCustomArea && (
                 <Button
@@ -135,9 +135,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
                   onClick={handleStartCustomArea}
                   className="h-8 gap-1.5 text-xs text-[#1a5948] hover:bg-[#f0f7f5] rounded-[8px] px-3"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  Create new
-                </Button>
+                  <Plus className="h-3.5 w-3.5" />{t('field.createNew')}</Button>
               )}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -192,7 +190,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
               <div className="flex items-center gap-2 pt-2">
                 <Input
                   autoFocus
-                  placeholder="New area name…"
+                  placeholder={t('field.newAreaNamePlaceholder')}
                   value={newCustomArea}
                   onChange={(e) => setNewCustomArea(e.target.value)}
                   onKeyDown={(e) => {
@@ -210,7 +208,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
                   type="button"
                   onClick={() => { setIsAddingCustomArea(false); setNewCustomArea(''); }}
                   className="h-10 w-10 flex items-center justify-center rounded-[10px] hover:bg-[#ffecef] text-[#9ca3af] hover:text-[#d5384b]"
-                  aria-label="Cancel"
+                  aria-label={t('field.cancel')}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -220,11 +218,9 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
         </div>
 
         <div className="px-6 py-4 border-t border-[#e5efea] bg-[#f9fafb] flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-[10px]">
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-[10px]">{t('field.cancel')}</Button>
           <Button onClick={handleSubmit} className="rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white">
-            Add as contact
+            {t('addSelf.title')}
           </Button>
         </div>
       </DialogContent>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
   onOpenChange,
   onConfirm,
 }) => {
+  const { t } = useTranslation('contacts');
   const { data: areasData } = useContactAreas();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -104,7 +106,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[680px] p-0 flex flex-col gap-0 rounded-[20px] overflow-hidden border border-[#e5efea] shadow-[0_20px_60px_rgba(14,51,38,0.15)] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[760px] p-0 flex flex-col gap-0 rounded-[20px] overflow-hidden border border-[#e5efea] shadow-[0_20px_60px_rgba(14,51,38,0.15)] max-h-[90vh]">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#e5efea] bg-white">
           <div className="flex items-center gap-3">
@@ -112,8 +114,8 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
               <UserPlus className="h-5 w-5 text-[#1e40af]" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">Add external contact</DialogTitle>
-              <p className="text-xs text-[#6b7280] mt-0.5">Add someone outside your organisation</p>
+              <DialogTitle className="text-lg font-bold text-[#0d0e0e]">{t('external.title')}</DialogTitle>
+              <p className="text-xs text-[#6b7280] mt-0.5">{t('external.subtitle')}</p>
             </div>
           </div>
         </DialogHeader>
@@ -121,15 +123,17 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
         {/* Body */}
         <div className="px-8 py-6 bg-white space-y-6 overflow-y-auto flex-1">
           {/* Inline fields row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Two columns, not three: at modal width three inputs left each field
+              too narrow to read what had been typed into it. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Name — editable, required */}
             <div className="min-w-0">
               <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
-                Name
+                {t('external.name')}
                 {nameEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
               <Input
-                placeholder="Full name"
+                placeholder={t('external.namePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => setNameTouched(true)}
@@ -139,14 +143,14 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                   }`}
               />
               {showNameError && (
-                <p className="text-xs text-[#d5384b] mt-1">Name is required</p>
+                <p className="text-xs text-[#d5384b] mt-1">{t('external.nameRequired')}</p>
               )}
             </div>
 
             {/* Email — required */}
             <div className="min-w-0">
               <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
-                Email
+                {t('external.email')}
                 {emailEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
               <Input
@@ -161,18 +165,18 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                   }`}
               />
               {showEmailError && (
-                <p className="text-xs text-[#d5384b] mt-1">Email is required</p>
+                <p className="text-xs text-[#d5384b] mt-1">{t('external.emailRequired')}</p>
               )}
             </div>
 
             {/* Telephone — required */}
             <div className="min-w-0">
               <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
-                Telephone
+                {t('external.phone')}
                 {phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
               <Input
-                placeholder="Phone number"
+                placeholder={t('external.phonePlaceholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onBlur={() => setPhoneTouched(true)}
@@ -182,7 +186,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                   }`}
               />
               {showPhoneError && (
-                <p className="text-xs text-[#d5384b] mt-1">Phone number is required</p>
+                <p className="text-xs text-[#d5384b] mt-1">{t('external.phoneRequired')}</p>
               )}
             </div>
 
@@ -193,8 +197,8 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
         <div className="px-8 pb-6 pt-2 border-t border-[#f0f4f2] bg-white">
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-semibold text-[#0d0e0e]">
-              Areas of responsibility
-              <span className="ml-1 text-xs font-normal text-[#9ca3af]">(optional)</span>
+              {t('external.areas')}
+              <span className="ml-1 text-xs font-normal text-[#9ca3af]">{t('external.optional')}</span>
             </label>
             {!isAddingCustomArea && (
               <Button
@@ -205,7 +209,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                 className="h-8 gap-1.5 text-xs text-[#1a5948] hover:bg-[#f0f7f5] rounded-[8px] px-3"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Create new
+                {t('external.createNew')}
               </Button>
             )}
           </div>
@@ -275,7 +279,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
             <div className="flex items-center gap-2 pt-2">
               <Input
                 autoFocus
-                placeholder="New area of responsibility…"
+                placeholder={t('external.newAreaPlaceholder')}
                 value={newCustomArea}
                 onChange={(e) => setNewCustomArea(e.target.value)}
                 onKeyDown={(e) => {
@@ -291,7 +295,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                 onClick={handleConfirmCustomArea}
                 className="h-10 px-4 rounded-[10px] bg-[#3d997d] text-white hover:bg-[#3d997d]/90"
               >
-                Add
+                {t('external.add')}
               </Button>
               <button
                 type="button"
@@ -300,7 +304,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
                   setNewCustomArea('');
                 }}
                 className="h-10 w-10 flex items-center justify-center rounded-[10px] hover:bg-[#ffecef] text-[#9ca3af] hover:text-[#d5384b] transition-colors flex-shrink-0"
-                aria-label="Cancel"
+                aria-label={t('external.cancel')}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -315,13 +319,13 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
             onClick={() => handleOpenChange(false)}
             className="h-10 px-5 rounded-[10px] border-[#e5e7eb] text-[#374151] text-sm hover:bg-[#f9fafb]"
           >
-            Cancel
+            {t('external.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
             className="h-10 px-5 rounded-[10px] bg-[#2f946f] hover:bg-[#2f946f]/90 text-white text-sm shadow-[0_4px_12px_rgba(13,94,67,0.3)]"
           >
-            Save Contact
+            {t('external.save')}
           </Button>
         </div>
       </DialogContent>

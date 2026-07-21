@@ -102,6 +102,15 @@ export const ViewEmploymentTypesPage: React.FC = () => {
                                     {t('employmentTypes.list.loading')}
                                 </TableCell>
                             </TableRow>
+                        ) : !companyId ? (
+                            // Platform staff have no company of their own, so this list
+                            // is scoped to nothing. Say that, rather than showing the
+                            // ordinary "none yet" text and looking like data was lost.
+                            <TableRow>
+                                <TableCell colSpan={3} className="text-center py-8 text-gray-500">
+                                    {t('employmentTypes.list.noCompanyContext')}
+                                </TableCell>
+                            </TableRow>
                         ) : !employmentTypes || employmentTypes.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={3} className="text-center py-8 text-gray-500">

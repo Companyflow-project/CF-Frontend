@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { authApi } from '../api';
 import { authRoutes } from '../routes';
@@ -147,9 +147,8 @@ export const ResetPasswordPage: React.FC = () => {
             <Label htmlFor="newPassword" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
               {t('resetPassword.newPasswordLabel')} <span className="text-red-500">*</span>
             </Label>
-            <Input
+            <PasswordInput
               id="newPassword"
-              type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
@@ -162,9 +161,8 @@ export const ResetPasswordPage: React.FC = () => {
             <Label htmlFor="confirmPassword" className="text-[16px] font-normal text-[#0d0e0e] leading-[21px]">
               {t('resetPassword.confirmPasswordLabel')} <span className="text-red-500">*</span>
             </Label>
-            <Input
+            <PasswordInput
               id="confirmPassword"
-              type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required

@@ -43,5 +43,8 @@
   "sort": "Sort",
   "sort.name": "Name",
   "sort.email": "Email",
-  "sort.employment": "Employment"
+  "sort.employment": "Employment",
+  "password.show": "Show password",
+  "password.hide": "Hide password",
+  "errors.forbidden": "You do not have permission to do this. Contact your administrator if you think this is a mistake."
 }

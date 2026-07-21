@@ -1283,7 +1283,7 @@ export const AdminEditCompanyPage: React.FC = () => {
               />
               <div className="flex items-center gap-3">
                 {logoForm.logoPreview && (
-                  <img src={logoForm.logoPreview} alt="" className="h-10 w-10 rounded object-cover border" />
+                  <img src={logoForm.logoPreview} alt="" className="h-10 w-10 rounded object-contain border bg-white" />
                 )}
                 <span className="text-sm text-gray-700">
                   {logoForm.logoFid != null

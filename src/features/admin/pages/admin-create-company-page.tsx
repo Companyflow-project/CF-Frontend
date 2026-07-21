@@ -441,7 +441,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                 />
                 <div className="flex items-center gap-3">
                   {logoPreview && (
-                    <img src={logoPreview} alt="" className="h-10 w-10 rounded object-cover border" />
+                    <img src={logoPreview} alt="" className="h-10 w-10 rounded object-contain border bg-white" />
                   )}
                   <span className="text-sm text-gray-700">
                     {logoFid != null

@@ -417,6 +417,19 @@ export const SubscriptionPage: React.FC = () => {
     const [licModalOpen, setLicModalOpen] = useState(false);
     const [smsCreditsModalOpen, setSmsCreditsModalOpen] = useState(false);
     const [companyLanguages, setCompanyLanguages] = useState<string[]>(user?.companyLanguages ?? ['da']);
+    const [wbRequesting, setWbRequesting] = useState(false);
+
+    const handleRequestWhistleblower = async () => {
+        setWbRequesting(true);
+        try {
+            await accountApi.requestWhistleblowerAccess();
+            toast.success(t('subscription.whistleblower.requested'));
+        } catch {
+            toast.error(t('subscription.whistleblower.requestError'));
+        } finally {
+            setWbRequesting(false);
+        }
+    };
 
     // Sync when user data changes
     React.useEffect(() => {
@@ -506,6 +519,14 @@ export const SubscriptionPage: React.FC = () => {
                     </span>
                 ),
                 actions: [
+                    ...(data.whistleblowerAccess
+                        ? []
+                        : [{
+                            label: wbRequesting
+                                ? t('subscription.whistleblower.requesting')
+                                : t('subscription.whistleblower.request'),
+                            onClick: handleRequestWhistleblower,
+                        }]),
                     { label: t('subscription.action.readMore'), onClick: () => window.open('https://companyflow.digibida.com/whistleblowerordning/', '_blank', 'noopener,noreferrer') },
                 ],
             },

@@ -116,7 +116,7 @@ export const ViewDepartmentsPage: React.FC = () => {
                                             <img
                                                 src={getFullLogoUrl(dept.logoUrl)!}
                                                 alt={dept.name}
-                                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                                                className="w-8 h-8 rounded-full object-contain bg-white border border-gray-200"
                                             />
                                         )}
                                     </TableCell>

@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import type { ApiErrorResponse } from './api-types';
+import i18n from '@/i18n';
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -32,6 +33,23 @@ axiosClient.interceptors.response.use(
     if (error.response?.data?.error) {
       const apiError = error.response.data as ApiErrorResponse;
       (error as Error & { apiError?: ApiErrorResponse['error'] }).apiError = apiError.error;
+    }
+
+    // Permission failures surfaced the server's raw wording (or a bare status)
+    // wherever a page echoed error.message. Give every caller one friendly,
+    // translated sentence instead.
+    if (error.response?.status === 403) {
+      const msg = i18n.t('common:errors.forbidden');
+      error.message = msg;
+      const data = error.response.data;
+      if (data && typeof data === 'object') {
+        (data as any).message = msg;
+        if ((data as any).error && typeof (data as any).error === 'object') {
+          (data as any).error.message = msg;
+        }
+      }
+      const withApiError = error as Error & { apiError?: ApiErrorResponse['error'] };
+      if (withApiError.apiError) withApiError.apiError.message = msg;
     }
 
     // Handle 429 explicitly

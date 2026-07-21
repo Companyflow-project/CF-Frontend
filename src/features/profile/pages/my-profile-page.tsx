@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -20,6 +21,9 @@ export const MyProfilePage: React.FC = () => {
   const [form, setForm] = useState<SelfProfilePayload>({});
   const [newEmail, setNewEmail] = useState('');
   const [emailSubmitting, setEmailSubmitting] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +75,22 @@ export const MyProfilePage: React.FC = () => {
       toast.error(err instanceof Error ? err.message : t('myProfile.emailChangeError'));
     } finally {
       setEmailSubmitting(false);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword.trim() || !newPassword.trim()) return;
+    setPasswordSubmitting(true);
+    try {
+      await profileApi.changePassword(currentPassword, newPassword);
+      toast.success(t('myProfile.passwordChanged'));
+      setCurrentPassword('');
+      setNewPassword('');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('myProfile.passwordChangeError'));
+    } finally {
+      setPasswordSubmitting(false);
     }
   };
 
@@ -134,6 +154,48 @@ export const MyProfilePage: React.FC = () => {
               <div>
                 <Button type="submit" disabled={emailSubmitting || !newEmail.trim()} className="bg-[#1a5948] hover:bg-[#143e33] text-white font-medium rounded-[12px] px-6 py-2.5 h-auto disabled:opacity-40">
                   {t('myProfile.changeEmail')}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Password. People who signed in by magic link have never set one, so
+            this is the only place they can choose a password of their own. */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('myProfile.passwordSection')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="currentPassword">{t('myProfile.currentPassword')}</Label>
+                <PasswordInput
+                  id="currentPassword"
+                  autoComplete="current-password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="newPassword">{t('myProfile.newPassword')}</Label>
+                <PasswordInput
+                  id="newPassword"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className={inputCls}
+                />
+                <span className="text-xs text-[#6b7280]">{t('myProfile.passwordHint')}</span>
+              </div>
+              <div>
+                <Button
+                  type="submit"
+                  disabled={passwordSubmitting || !currentPassword.trim() || !newPassword.trim()}
+                  className="bg-[#1a5948] hover:bg-[#143e33] text-white font-medium rounded-[12px] px-6 py-2.5 h-auto disabled:opacity-40"
+                >
+                  {t('myProfile.changePassword')}
                 </Button>
               </div>
             </form>
