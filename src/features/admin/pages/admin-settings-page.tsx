@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useAdminSettings, useUpdateAdminSettings } from '../hooks';
+import { useAdminHandbookPage } from '../handbook-hooks';
 import type { PlatformSettings } from '../types';
 import { Save } from 'lucide-react';
 
@@ -17,6 +18,12 @@ export const AdminSettingsPage: React.FC = () => {
   const [trialLength, setTrialLength] = useState<number>(30);
   const [smsPricing, setSmsPricing] = useState<number>(0);
   const [helpPageNid, setHelpPageNid] = useState<string>('');
+
+  // Live lookup of the entered page ID, so the admin can see what it points at.
+  const parsedNid = Number(helpPageNid);
+  const { data: helpPage, isFetching: helpPageLoading } = useAdminHandbookPage(
+    helpPageNid.trim() !== '' && Number.isFinite(parsedNid) && parsedNid > 0 ? parsedNid : null,
+  );
 
   useEffect(() => {
     if (settings) {
@@ -37,8 +44,10 @@ export const AdminSettingsPage: React.FC = () => {
 
   const handleSave = () => {
     const parsedHelpNid = helpPageNid.trim() ? Number(helpPageNid) : null;
+    // Send only the keys this screen owns. The settings table is a shared
+    // key/value store that also holds per-company whistleblower and retention
+    // config, and spreading everything back rewrote all of those on every save.
     const payload: PlatformSettings = {
-      ...settings,
       defaultTrialLengthDays: trialLength,
       smsPricePerUnit: smsPricing,
       handbookHelpPageNid: Number.isFinite(parsedHelpNid as number) ? parsedHelpNid : null,
@@ -126,8 +135,14 @@ export const AdminSettingsPage: React.FC = () => {
 
             <div className="space-y-2">
               <Label htmlFor="help-page-nid">
-                {t('settings.helpPageNid', 'Handbook Help page (nid)')}
+                {t('settings.helpPageNid', 'Help text for the Management Handbook')}
               </Label>
+              <p className="text-xs text-gray-500">
+                {t(
+                  'settings.helpPageNidHelp',
+                  'The Help box at the top of the Management Handbook shows the content of a handbook page. Enter that page’s ID number — open the page in the handbook editor and copy the number from the address bar. Leave empty to show the standard text.'
+                )}
+              </p>
               <Input
                 id="help-page-nid"
                 type="number"
@@ -135,14 +150,26 @@ export const AdminSettingsPage: React.FC = () => {
                 value={helpPageNid}
                 onChange={(e) => setHelpPageNid(e.target.value)}
                 className="w-full max-w-[12rem]"
-                placeholder="e.g. 60385"
+                placeholder={t('settings.helpPageNidPlaceholder', 'Page ID, e.g. 60385')}
               />
-              <p className="text-xs text-gray-400">
-                {t(
-                  'settings.helpPageNidHelp',
-                  'Designate which handbook page powers the Help section on the Management Handbook page. Leave empty to use the default text.'
-                )}
-              </p>
+              {/* Resolve the number to a real page so the setting is verifiable —
+                  a bare ID gave no way to tell a correct entry from a typo, which
+                  is why this looked like it "didn't work". */}
+              {helpPageNid.trim() !== '' && (
+                <p className="text-xs">
+                  {helpPageLoading ? (
+                    <span className="text-gray-400">{t('settings.helpPageChecking', 'Checking…')}</span>
+                  ) : helpPage?.title ? (
+                    <span className="text-[#1a8a5a]">
+                      {t('settings.helpPageResolved', 'Using: {{title}}', { title: helpPage.title })}
+                    </span>
+                  ) : (
+                    <span className="text-[#d5384b]">
+                      {t('settings.helpPageNotFound', 'No handbook page found with that ID — the standard text will be shown instead.')}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">

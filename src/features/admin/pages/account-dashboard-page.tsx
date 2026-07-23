@@ -136,6 +136,13 @@ export const AccountDashboardPage: React.FC = () => {
     ? ROLE_OPTIONS
     : ROLE_OPTIONS.filter((o) => o.key !== 'superadmin');
 
+  // Creating a *new* console account is limited to admin/superadmin tiers —
+  // this dashboard provisions platform staff, not plain users. Editing keeps the
+  // full list so existing plain/CRM users can still be managed or demoted.
+  const createRoleOptions = roleOptions.filter(
+    (o) => o.key === 'superadmin' || o.key === 'admin',
+  );
+
   /* Users table state */
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -512,7 +519,7 @@ export const AccountDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <AddUserDialog open={addOpen} onClose={() => setAddOpen(false)} roleOptions={roleOptions} />
+      <AddUserDialog open={addOpen} onClose={() => setAddOpen(false)} roleOptions={createRoleOptions} />
       <EditUserDialog user={editTarget} onClose={() => setEditTarget(null)} roleOptions={roleOptions} />
 
       {/* Confirm role change for users who currently have customer access */}
@@ -558,11 +565,14 @@ const AddUserDialog: React.FC<{ open: boolean; onClose: () => void; roleOptions:
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('staff_user');
+  // Default to the least-privileged role actually on offer, so the dialog never
+  // submits a role the picker doesn't list.
+  const defaultRole = roleOptions[roleOptions.length - 1]?.value ?? 'platform_admin';
+  const [role, setRole] = useState(defaultRole);
 
   React.useEffect(() => {
-    if (open) { setName(''); setEmail(''); setPassword(''); setRole('staff_user'); }
-  }, [open]);
+    if (open) { setName(''); setEmail(''); setPassword(''); setRole(defaultRole); }
+  }, [open, defaultRole]);
 
   const valid = name.trim().length > 0 && email.trim().length > 2 && password.length >= 8;
 

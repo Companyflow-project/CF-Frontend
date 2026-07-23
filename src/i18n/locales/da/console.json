@@ -1,6 +1,5 @@
 {
   "adminOnly": "Kun administratorer kan udføre denne handling",
-
   "trial.active": "Din gratis prøveperiode er aktiv.",
   "trial.ended": "Din gratis prøveperiode er udløbet.",
   "trial.daysRemaining_one": "Du har {{count}} dag tilbage.",
@@ -8,48 +7,39 @@
   "trial.upgradePrompt": "Opgrader din plan for at fortsætte med at bruge alle funktioner.",
   "trial.inviteEmployees": "Inviter medarbejdere",
   "trial.manageBilling": "Administrer fakturering",
-
   "dashboard.title": "Kontrolpanel",
   "dashboard.subtitle": "Administrer din virksomhed fra ét sted.",
-
   "card.employees.title": "Medarbejdere",
   "card.employees.desc": "Tilføj personer, angiv roller og administrer adgang.",
   "card.employees.goTo": "Gå til medarbejdere →",
   "card.employees.invite": "Inviter medarbejdere",
   "card.employees.roles": "Roller & tilladelser",
-
   "card.handbook.title": "Administrer håndbog",
   "card.handbook.desc": "Opret og udgiv din virksomhedshåndbog til medarbejdere.",
   "card.handbook.open": "Åbn håndbog →",
   "card.handbook.newPage": "Ny håndbogside",
-
   "card.contacts.title": "Kontakter",
   "card.contacts.desc": "Gem leverandører, kunder og nødkontakter.",
   "card.contacts.manage": "Administrer kontakter →",
   "card.contacts.add": "Tilføj kontakt",
   "card.contacts.importCsv": "Importer CSV",
-
   "card.account.title": "Konto",
   "card.account.desc": "Profil, sikkerhed og faktureringsindstillinger.",
   "card.account.open": "Gå til konto →",
-  "card.account.companyProfile": "Virksomhedsprofil",
+  "card.account.companyProfile": "Rediger virksomhedsprofil",
   "card.account.appearance": "Udseende",
-
   "card.getStarted.title": "Kom i gang",
   "card.getStarted.desc": "Anbefalede næste skridt for at få mest ud af din prøveperiode.",
   "card.getStarted.inviteTeam": "Inviter dit team",
   "card.getStarted.publishSection": "Udgiv en håndbogsektion",
-
   "employeeDashboard.handbook.title": "Håndbog",
   "employeeDashboard.handbook.desc": "Se din virksomhedshåndbog.",
   "employeeDashboard.handbook.view": "Se håndbog →",
   "employeeDashboard.handbook.toc": "Se indholdsfortegnelse",
-
   "employeeDashboard.infoList.title": "Informationsliste",
   "employeeDashboard.infoList.desc": "Hvem skal du kontakte?",
   "employeeDashboard.infoList.viewContacts": "Se kontaktinformation →",
   "employeeDashboard.infoList.viewEmployees": "Se medarbejderinformationsliste",
-
   "employeeDashboard.handbookInfo.title": "Håndbogsinfo",
   "employeeDashboard.handbookInfo.desc": "Se håndbogens dokumenter og links.",
   "employeeDashboard.handbookInfo.viewLinks": "Se links",

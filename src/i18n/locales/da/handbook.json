@@ -70,7 +70,6 @@
   "manage.viewNotes": "Se noter",
   "manage.viewLinks": "Se links",
   "manage.adminOnly": "Kun administratorer kan udføre denne handling",
-
   "toc.title": "Indholdsfortegnelse",
   "toc.viewAllPages": "Vis alle sider",
   "toc.chapters": "Kapitler",
@@ -88,14 +87,11 @@
   "toc.noPagesInChapter": "Ingen sider i dette kapitel.",
   "toc.reorderFailed": "Kunne ikke omsortere temaer. Ændringerne blev tilbageført.",
   "toc.notLoaded": "Håndbogen er ikke fuldt indlæst endnu. Vent venligst og prøv igen.",
-
   "status.ready": "Klar",
   "status.notReady": "Ikke klar",
   "status.optedOut": "Fravalgt",
-
   "badge.custom": "Brugerdefineret",
   "badge.premade": "CompanyFlow tekst",
-
   "tag.customPage": "Egen side",
   "tag.addedText": "Tilføjet tekst",
   "tag.noText": "Ingen tekst",
@@ -106,7 +102,6 @@
   "tag.image": "Billede",
   "tag.employmentType": "Ansættelsestype",
   "tag.department": "Afdeling",
-
   "viewer.loading": "Indlæser håndbog...",
   "viewer.noPages": "Ingen sider",
   "viewer.noPagesDesc": "Denne håndbog har ingen udgivne sider endnu.",
@@ -122,18 +117,15 @@
   "viewer.notPublished": "Ingen håndbog udgivet endnu",
   "viewer.notPublishedDesc": "Din virksomhedsadministrator har endnu ikke udgivet en håndbog. Kontakt dem venligst for mere information.",
   "viewer.failedToLoad": "Kunne ikke indlæse håndbog",
-
   "print.loading": "Indlæser håndbog…",
   "print.printHandbook": "Udskriv håndbog",
   "print.noPages": "Ingen sider at udskrive.",
   "print.note": "Note",
-
   "editPage.invalidId": "Ugyldigt håndbogside-id.",
   "editPage.backToPages": "Tilbage til sider",
   "editPage.loading": "Indlæser...",
   "editPage.title": "Rediger {{title}}",
   "editPage.titleFallback": "Rediger håndbogside",
-
   "addPage.title": "Tilføj ny side",
   "addPage.pageTitle": "Sidetitel",
   "addPage.pageTitlePlaceholder": "f.eks. Kontorregler",
@@ -150,7 +142,6 @@
   "addPage.errorFailed": "Kunne ikke oprette side. Prøv venligst igen.",
   "addPage.creating": "Opretter...",
   "addPage.createAndEdit": "Opret og rediger",
-
   "addTheme.title": "Tilføj nyt tema",
   "addTheme.nameLabel": "Tema- / kapitelnavn",
   "addTheme.namePlaceholder": "f.eks. Virksomhedspolitikker",
@@ -159,7 +150,6 @@
   "addTheme.errorFailed": "Kunne ikke oprette tema. Prøv venligst igen.",
   "addTheme.creating": "Opretter...",
   "addTheme.create": "Opret tema",
-
   "preview.title": "Forhåndsvis håndbog",
   "preview.filteredDesc_one": "Viser {{count}} valgt side. Dette er en filtreret forhåndsvisning.",
   "preview.filteredDesc_other": "Viser {{count}} valgte sider. Dette er en filtreret forhåndsvisning.",
@@ -174,7 +164,6 @@
   "preview.links": "Links",
   "preview.close": "Luk",
   "preview.print": "Udskriv",
-
   "sneakPeek.desc": "Forhåndsvisning af denne side, som medarbejdere vil se den.",
   "sneakPeek.loading": "Indlæser...",
   "sneakPeek.document": "Dokument",
@@ -185,7 +174,6 @@
   "sneakPeek.notes": "Noter",
   "sneakPeek.print": "Udskriv",
   "sneakPeek.publish": "Udgiv",
-
   "resources.documents": "Dokumenter",
   "resources.links": "Links",
   "resources.notes": "Noter",
@@ -211,7 +199,6 @@
   "resources.done": "Færdig",
   "resources.actions": "Handlinger",
   "resources.no": "Nej",
-
   "pages.title": "Vis alle sider",
   "pages.previewHandbook": "Forhåndsvis håndbog",
   "pages.addTheme": "Tilføj tema",
@@ -273,7 +260,6 @@
   "pages.deleteThemeConfirm": "Du er ved at slette temaet \"{{name}}\" og alle dets sider. Dette kan ikke fortrydes.",
   "pages.themeDeleted": "Tema slettet",
   "pages.failedToDeleteTheme": "Kunne ikke slette tema. Prøv venligst igen.",
-
   "publish.title": "Udgiv håndbog",
   "publish.helpBanner": "Her kan du give medarbejdere adgang til din personalehåndbog. Det kan være en fordel ikke at gøre dette, mens du arbejder på den. Del den kun med dem, når den er helt klar.",
   "publish.readFullGuide": "Læs fuld vejledning",
@@ -313,7 +299,6 @@
   "publish.error.noHandbook": "Håndbog-ID ikke fundet. Prøv venligst igen.",
   "publish.error.failed": "Kunne ikke udgive håndbog. Prøv venligst igen.",
   "publish.success": "Udgivet. {{count}} medarbejdere vil modtage en notifikation.",
-
   "editor.heading": "Overskrift",
   "editor.textMode": "Teksttilstand",
   "editor.modeCompanyFlow": "CompanyFlow tekst",
@@ -327,7 +312,6 @@
   "editor.templateReadOnly": "CompanyFlow skabelon (skrivebeskyttet)",
   "editor.customText": "Brugerdefineret tekst",
   "editor.textPreview": "Tekst (forhåndsvisning)",
-
   "editor.pictures": "Billeder",
   "editor.clickUploadImage": "Klik for at uploade billede",
   "editor.allowedImageTypes": "Tilladt: jpg, jpeg, png",
@@ -339,20 +323,17 @@
   "editor.placementRight": "Højre",
   "editor.placementAfter": "Efter",
   "editor.placementNone": "Ingen",
-
   "editor.documents": "Dokumenter",
   "editor.clickUploadFiles": "Klik for at uploade filer",
   "editor.allowedDocTypes": "Tilladt: pdf, doc, docx, xls, xlsx, ppt, pptx, osv.",
   "editor.uploadingDocuments": "Uploader dokumenter...",
   "editor.description": "Beskrivelse",
   "editor.removeDocument": "Fjern",
-
   "editor.links": "Links",
   "editor.addLink": "Tilføj link",
   "editor.url": "URL",
   "editor.linkTitle": "Titel",
   "editor.removeLink": "Fjern",
-
   "editor.others": "Andet",
   "editor.askForReceipt": "Bed om kvittering",
   "editor.askForReceiptDesc": "Bed medarbejderne om en kvittering for, at de har set denne side.",
@@ -362,23 +343,22 @@
   "editor.includeInHandbookDesc": "Sæt kryds for at inkludere siden i håndbogen, fjern krydset for at udelukke siden.",
   "editor.notifyEmployees": "Underret medarbejdere",
   "editor.notifyEmployeesDesc": "Sæt kryds for at underrette medarbejdere om denne side, når den er gemt og klar.",
-
   "editor.responsible": "Ansvarlig",
   "editor.owner": "Ejer",
   "editor.responsibleNote": "Tildel hvem der er ansvarlig for denne side. Har du flere administratorer, kan I dele ansvaret mellem jer.",
-
   "editor.notes": "Noter",
   "editor.notesHelper": "Her kan du skrive noter til dig selv eller andre, der kan redigere siderne. Virksomhedsadministratorer kan se disse noter.",
-
   "editor.visibility": "Synlighed",
   "editor.visibilityDesc": "Begræns denne side til bestemte ansættelsestyper eller afdelinger. Lad begge stå tomme for at gøre den synlig for alle medarbejdere.",
   "editor.visibilitySelected": "{{count}} valgt",
   "editor.employmentTypes": "Ansættelsestyper",
   "editor.departments": "Afdelinger",
-
   "editor.cancel": "Annuller",
   "editor.savePage": "Gem side",
   "editor.saving": "Gemmer...",
   "editor.pageSaved": "Siden er gemt!",
-  "editor.saveFailed": "Kunne ikke gemme side. Prøv venligst igen."
+  "editor.saveFailed": "Kunne ikke gemme side. Prøv venligst igen.",
+  "manage.publishAndGrantAccess": "Udgiv / giv adgang →",
+  "badge.recommended": "Anbefalet",
+  "badge.recommendedHint": "CompanyFlow anbefaler, at du inkluderer denne side — den indeholder vigtig information."
 }

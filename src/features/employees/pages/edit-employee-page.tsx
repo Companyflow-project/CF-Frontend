@@ -40,6 +40,7 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
     isBusinessAdmin: emp.isBusinessAdmin ?? false,
     languages: emp.languages ?? ['da'],
     sendEmail: 'no',
+    sendSmsInvite: false,
     customMessage: '',
     userPictureFid: null,
   };
@@ -184,6 +185,7 @@ export const EditEmployeePage: React.FC = () => {
           isBusinessAdmin: formData.isBusinessAdmin,
           languages: formData.languages,
           sendEmailType: formData.sendEmail,
+          sendSmsInvite: formData.sendSmsInvite,
           ...(formData.sendEmail === 'customized' && formData.customMessage && { customMessage: formData.customMessage }),
         }),
         // Send userPictureFid: new fid to set, null to clear, or omit to leave unchanged

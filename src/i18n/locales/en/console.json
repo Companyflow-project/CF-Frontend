@@ -1,6 +1,5 @@
 {
   "adminOnly": "Only admins can perform this action",
-
   "trial.active": "Your free trial is active.",
   "trial.ended": "Your free trial has ended.",
   "trial.daysRemaining_one": "You have {{count}} day remaining.",
@@ -8,48 +7,39 @@
   "trial.upgradePrompt": "Upgrade your plan to continue using all features.",
   "trial.inviteEmployees": "Invite Employees",
   "trial.manageBilling": "Manage Billing",
-
   "dashboard.title": "Dashboard",
   "dashboard.subtitle": "Manage your company from one place.",
-
   "card.employees.title": "Employees",
   "card.employees.desc": "Add people, set roles, and manage access.",
   "card.employees.goTo": "Go to Employees →",
   "card.employees.invite": "Invite employees",
   "card.employees.roles": "Roles & permissions",
-
   "card.handbook.title": "Manage Handbook",
   "card.handbook.desc": "Create and publish your company handbook for employees.",
   "card.handbook.open": "Open Handbook →",
   "card.handbook.newPage": "New handbook page",
-
   "card.contacts.title": "Contacts",
   "card.contacts.desc": "Store vendors, clients, and emergency contacts.",
   "card.contacts.manage": "Manage Contacts →",
   "card.contacts.add": "Add contact",
   "card.contacts.importCsv": "Import CSV",
-
   "card.account.title": "Account",
   "card.account.desc": "Profile, security, and billing preferences.",
   "card.account.open": "Go To Account →",
-  "card.account.companyProfile": "Company profile",
+  "card.account.companyProfile": "Edit company profile",
   "card.account.appearance": "Appearance",
-
   "card.getStarted.title": "Get Started",
   "card.getStarted.desc": "Recommended next steps to make the most of your trial.",
   "card.getStarted.inviteTeam": "Invite your team",
   "card.getStarted.publishSection": "Publish a handbook section",
-
   "employeeDashboard.handbook.title": "Handbook",
   "employeeDashboard.handbook.desc": "View your company handbook.",
   "employeeDashboard.handbook.view": "View Handbook →",
   "employeeDashboard.handbook.toc": "View table of contents",
-
   "employeeDashboard.infoList.title": "Information List",
   "employeeDashboard.infoList.desc": "Who should you talk to?",
   "employeeDashboard.infoList.viewContacts": "View contact information →",
   "employeeDashboard.infoList.viewEmployees": "View employee information list",
-
   "employeeDashboard.handbookInfo.title": "Handbook Information",
   "employeeDashboard.handbookInfo.desc": "See handbook documents and links.",
   "employeeDashboard.handbookInfo.viewLinks": "View links",

@@ -69,7 +69,6 @@
   "manage.next": "Næste",
   "manage.delete": "Slet",
   "manage.error": "Fejl: {{message}}",
-
   "license.title": "Licensforbrug",
   "license.inSubscription": "Licenser i abonnement",
   "license.used": "Brugte licenser",
@@ -77,19 +76,16 @@
   "license.smsUsed": "SMS-beskeder brugt",
   "license.moreLicenses": "Flere licenser",
   "license.manageSms": "Administrer SMS",
-
   "shortcuts.title": "Genveje",
   "shortcuts.companySettings": "Virksomhedsindstillinger",
   "shortcuts.employmentTypes": "Ansættelsestyper",
   "shortcuts.departments": "Afdelinger",
   "shortcuts.importCsv": "Importer CSV",
-
   "deleteDialog.title": "Slet medarbejder",
   "deleteDialog.confirm": "Er du sikker på, at du vil slette <bold>{{name}}</bold>? Dette kan ikke fortrydes. Medarbejderen flyttes til papirkurven, og deres adgang vil blive ophævet.",
   "deleteDialog.cancel": "Annuller",
   "deleteDialog.delete": "Slet",
   "deleteDialog.deleting": "Sletter...",
-
   "toast.deleteFailed": "Kunne ikke slette medarbejder",
   "toast.visibilitySuccess_one": "{{count}} medarbejder sat til {{visibility}}",
   "toast.visibilitySuccess_other": "{{count}} medarbejdere sat til {{visibility}}",
@@ -109,10 +105,8 @@
   "toast.updated": "Medarbejder opdateret!",
   "toast.updateFailed": "Noget gik galt under opdatering af medarbejderen.",
   "toast.magicLinkFailed": "Kunne ikke generere magic link.",
-
   "add.title": "Tilføj medarbejder",
   "add.save": "Gem oplysninger",
-
   "edit.title": "Rediger medarbejder",
   "edit.loading": "Indlæser medarbejder…",
   "edit.notFound": "Medarbejder ikke fundet.",
@@ -127,7 +121,6 @@
   "edit.magicLink.generating": "Genererer...",
   "edit.magicLink.copied": "Kopieret!",
   "edit.magicLink.copy": "Kopiér link",
-
   "form.contactInfo": "Medarbejderkontaktinformation",
   "form.profilePreview": "Profilforhåndsvisning",
   "form.removePhoto": "Fjern foto",
@@ -176,14 +169,12 @@
   "form.customMessageHint": "Denne besked vil blive inkluderet i velkomstmailen sendt til medarbejderen.",
   "form.languages": "Sprog",
   "form.languagesDesc": "Vælg hvilke sprog denne medarbejder kan tilgå.",
-
   "form.validation.nameRequired": "Navn er påkrævet",
   "form.validation.emailRequired": "E-mail er påkrævet",
   "form.validation.emailInvalid": "Indtast venligst en gyldig e-mailadresse",
   "form.validation.mobileRequired": "Mobilnummer er påkrævet",
   "form.validation.mobileExceeds": "Mobilnummer overstiger systemgrænsen",
   "form.validation.alternateExceeds": "Alternativt nummer overstiger systemgrænsen",
-
   "infoList.title": "Informationsliste",
   "infoList.helpDesc": "Her kan du se alle medarbejdere og tildele dem ansættelsestype.",
   "infoList.searchPlaceholder": "Søg kontakter (navn, e-mail, telefon)",
@@ -217,7 +208,6 @@
   "infoList.adminListNote": "Du kan se denne liste — eller se flere navne i listen, end medarbejderne kan — fordi du har tilladelse til at administrere den.",
   "infoList.home": "Hjem",
   "infoList.entireHandbook": "Hele håndbogen",
-
   "stats.title": "Medarbejderstatistik - {{name}}",
   "stats.titleAll": "Medarbejderstatistik - Alle",
   "stats.helpDetail": "Se medarbejderaktiviteter som hvornår de sidst besøgte medarbejderhåndbogen og hvilke sider de har set.",
@@ -233,13 +223,11 @@
   "stats.invalidId": "ugyldigt medarbejder-id",
   "stats.failedToLoad": "Fejl: Kunne ikke indlæse medarbejderstatistik",
   "stats.loadingStats": "Indlæser statistik...",
-
   "statsModal.titleWithName": "Statistik - {{name}}",
   "statsModal.fallbackTitle": "Sidevisningsstatistik",
   "statsModal.colPages": "Sider",
   "statsModal.colVisits": "Besøg",
   "statsModal.sendFollowUp": "Send opfølgning",
-
   "statsTable.colName": "Navn",
   "statsTable.colPageViews": "Sidevisninger",
   "statsTable.colLastVisit": "Seneste besøg",
@@ -247,7 +235,6 @@
   "statsTable.colActions": "Handlinger",
   "statsTable.viewDetails": "Vis detaljer",
   "statsTable.message": "Besked",
-
   "table.colName": "Navn",
   "table.colEmail": "E-mail",
   "table.colTelephone": "Telefon",
@@ -265,7 +252,6 @@
   "table.never": "Aldrig",
   "table.addLanguage": "Tilføj sprog",
   "table.deleteEmployee": "Slet medarbejder",
-
   "messageLogs.titleDetail": "Medarbejderbeskedlog - {{name}}",
   "messageLogs.titleAll": "Medarbejderbeskedlog - Alle medarbejdere",
   "messageLogs.helpDetail": "Se hvilke beskeder der er sendt til dine medarbejdere og hvornår. Klik på <bold>Vis alle beskeder</bold> for at se alle beskeder sendt til alle medarbejdere.",
@@ -283,7 +269,6 @@
   "messageLogs.colName": "Navn",
   "messageLogs.colEmail": "E-mail",
   "messageLogs.colMessage": "Besked",
-
   "followUp.title": "Opfølgning",
   "followUp.titleWithName": "Opfølgning - {{name}}",
   "followUp.editMessage": "Rediger besked",
@@ -318,7 +303,6 @@
   "followUp.toast.smsSent_one": "SMS sendt til {{count}} medarbejder",
   "followUp.toast.smsSent_other": "SMS sendt til {{count}} medarbejdere",
   "followUp.toast.failed": "Kunne ikke sende opfølgningsbesked.",
-
   "infoListLinks.title": "Links",
   "infoListLinks.helpDesc": "Vælg siderne der skal inkluderes, skriv eller rediger deres indhold, og markér en side Klar når den matcher præcis hvad du ønsker. Kun sider der er valgt og Klar vil blive udgivet. Du kan også oprette dine egne sider og temaer.",
   "infoListLinks.readFullGuide": "Læs fuld vejledning",
@@ -340,11 +324,13 @@
   "infoListLinks.intranet": "Intranet",
   "infoListLinks.worksheets": "Arbejdsark",
   "infoListLinks.homepage": "Hjemmeside",
-
   "rolesModal.title": "Roller & tilladelser",
   "rolesModal.desc": "Vælg en medarbejder for at administrere deres rolle og tilladelser",
   "rolesModal.searchPlaceholder": "Søg efter navn eller e-mail…",
   "rolesModal.loading": "Indlæser medarbejdere…",
   "rolesModal.noMatch": "Ingen medarbejdere matcher din søgning",
-  "rolesModal.noEmployees": "Ingen medarbejdere fundet"
+  "rolesModal.noEmployees": "Ingen medarbejdere fundet",
+  "form.sendSmsInvite": "Send også invitationen som SMS",
+  "form.sendSmsInviteHint": "Medarbejderen får et log ind-link på sit mobilnummer. Bruger én SMS-kredit.",
+  "form.sendSmsInviteNoNumber": "Indtast et mobilnummer for at kunne sende en SMS-invitation."
 }

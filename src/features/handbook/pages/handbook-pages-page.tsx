@@ -890,6 +890,17 @@ export const HandbookPagesPage: React.FC = () => {
                                                         {t('badge.custom')}
                                                     </Badge>
                                                 )}
+                                                {/* Recommended pages were only advertised in a popover that appeared
+                                                    *after* you unticked one — so the advice arrived once the decision
+                                                    was already made, and was invisible otherwise. Flag them up front. */}
+                                                {(page.hasCustomBody || page.hasSelectableTexts) && !selectedPages.has(page.id) && (
+                                                    <Badge
+                                                        className="bg-[#fef3c7] text-[#92400e] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0"
+                                                        title={t('badge.recommendedHint', 'CompanyFlow recommends including this page — it contains important information.')}
+                                                    >
+                                                        {t('badge.recommended', 'Recommended')}
+                                                    </Badge>
+                                                )}
                                                 {/* Activity tags */}
                                                 {(() => {
                                                     const activities: string[] = [];

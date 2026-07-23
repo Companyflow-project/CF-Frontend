@@ -69,7 +69,6 @@
   "manage.next": "Next",
   "manage.delete": "Delete",
   "manage.error": "Error: {{message}}",
-
   "license.title": "License usage",
   "license.inSubscription": "Licenses in subscription",
   "license.used": "Licenses used",
@@ -77,19 +76,16 @@
   "license.smsUsed": "SMS messages used",
   "license.moreLicenses": "More licenses",
   "license.manageSms": "Manage SMS",
-
   "shortcuts.title": "Shortcuts",
   "shortcuts.companySettings": "Company settings",
   "shortcuts.employmentTypes": "Employment types",
   "shortcuts.departments": "Departments",
   "shortcuts.importCsv": "Import CSV",
-
   "deleteDialog.title": "Delete Employee",
   "deleteDialog.confirm": "Are you sure you want to delete <bold>{{name}}</bold>? This action cannot be undone. The employee will be moved to the trash and their access will be revoked.",
   "deleteDialog.cancel": "Cancel",
   "deleteDialog.delete": "Delete",
   "deleteDialog.deleting": "Deleting...",
-
   "toast.deleteFailed": "Failed to delete employee",
   "toast.visibilitySuccess_one": "{{count}} employee set to {{visibility}}",
   "toast.visibilitySuccess_other": "{{count}} employees set to {{visibility}}",
@@ -109,10 +105,8 @@
   "toast.updated": "Employee updated successfully!",
   "toast.updateFailed": "Something went wrong while updating the employee.",
   "toast.magicLinkFailed": "Failed to generate magic link.",
-
   "add.title": "Add employee",
   "add.save": "Save information",
-
   "edit.title": "Edit employee",
   "edit.loading": "Loading employee…",
   "edit.notFound": "Employee not found.",
@@ -127,7 +121,6 @@
   "edit.magicLink.generating": "Generating...",
   "edit.magicLink.copied": "Copied!",
   "edit.magicLink.copy": "Copy link",
-
   "form.contactInfo": "Employee contact information",
   "form.profilePreview": "Profile preview",
   "form.removePhoto": "Remove photo",
@@ -176,14 +169,12 @@
   "form.customMessageHint": "This message will be included in the welcome email sent to the employee.",
   "form.languages": "Languages",
   "form.languagesDesc": "Select which languages this employee can access.",
-
   "form.validation.nameRequired": "Name is required",
   "form.validation.emailRequired": "Email is required",
   "form.validation.emailInvalid": "Please enter a valid email address",
   "form.validation.mobileRequired": "Mobile number is required",
   "form.validation.mobileExceeds": "Mobile number exceeds system limit",
   "form.validation.alternateExceeds": "Alternate number exceeds system limit",
-
   "infoList.title": "Information List",
   "infoList.helpDesc": "Here you can view all employees and assign them these employment type.",
   "infoList.searchPlaceholder": "Search contacts (name, email, phone)",
@@ -217,7 +208,6 @@
   "infoList.adminListNote": "You may see this list — or see more names in the list than employees do — because you have permission to manage it.",
   "infoList.home": "Home",
   "infoList.entireHandbook": "The entire handbook",
-
   "stats.title": "Employee Statistics - {{name}}",
   "stats.titleAll": "Employee Statistics - All",
   "stats.helpDetail": "See employee activities like when they last visited the employee handbook and what pages they viewed.",
@@ -233,13 +223,11 @@
   "stats.invalidId": "invalid employee id",
   "stats.failedToLoad": "Error: Failed to load employee statistics",
   "stats.loadingStats": "Loading stats...",
-
   "statsModal.titleWithName": "Statistics - {{name}}",
   "statsModal.fallbackTitle": "Page View Statistics",
   "statsModal.colPages": "Pages",
   "statsModal.colVisits": "Visits",
   "statsModal.sendFollowUp": "Send Follow Up",
-
   "statsTable.colName": "Name",
   "statsTable.colPageViews": "Page Views",
   "statsTable.colLastVisit": "Last Visit",
@@ -247,7 +235,6 @@
   "statsTable.colActions": "Actions",
   "statsTable.viewDetails": "View Details",
   "statsTable.message": "Message",
-
   "table.colName": "Name",
   "table.colEmail": "Email",
   "table.colTelephone": "Telephone",
@@ -265,7 +252,6 @@
   "table.never": "Never",
   "table.addLanguage": "Add language",
   "table.deleteEmployee": "Delete employee",
-
   "messageLogs.titleDetail": "Employee Message Logs - {{name}}",
   "messageLogs.titleAll": "Employee Message Logs - All Employees",
   "messageLogs.helpDetail": "See which messages have been sent to your employees and when. Click <bold>View All Messages</bold> to see all messages sent to all employees.",
@@ -283,7 +269,6 @@
   "messageLogs.colName": "Name",
   "messageLogs.colEmail": "Email",
   "messageLogs.colMessage": "Message",
-
   "followUp.title": "Follow Up",
   "followUp.titleWithName": "Follow Up - {{name}}",
   "followUp.editMessage": "Edit Message",
@@ -318,7 +303,6 @@
   "followUp.toast.smsSent_one": "SMS sent to {{count}} employee",
   "followUp.toast.smsSent_other": "SMS sent to {{count}} employees",
   "followUp.toast.failed": "Failed to send follow-up message.",
-
   "infoListLinks.title": "Links",
   "infoListLinks.helpDesc": "Select the pages to include, write or edit their content, and mark a page Ready when it matches exactly what you want. Only pages that are selected and Ready will be published. You can also create your own pages and themes.",
   "infoListLinks.readFullGuide": "Read full guide",
@@ -340,11 +324,13 @@
   "infoListLinks.intranet": "Intranet",
   "infoListLinks.worksheets": "Worksheets",
   "infoListLinks.homepage": "Homepage",
-
   "rolesModal.title": "Roles & permissions",
   "rolesModal.desc": "Select an employee to manage their role and permissions",
   "rolesModal.searchPlaceholder": "Search by name or email…",
   "rolesModal.loading": "Loading employees…",
   "rolesModal.noMatch": "No employees match your search",
-  "rolesModal.noEmployees": "No employees found"
+  "rolesModal.noEmployees": "No employees found",
+  "form.sendSmsInvite": "Also send the invite as an SMS",
+  "form.sendSmsInviteHint": "The employee gets a login link on their mobile number. Uses one SMS credit.",
+  "form.sendSmsInviteNoNumber": "Enter a mobile number to be able to send an SMS invite."
 }

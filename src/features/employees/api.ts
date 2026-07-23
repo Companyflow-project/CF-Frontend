@@ -122,6 +122,8 @@ export const employeesApi = {
     isSeniorEmployee?: boolean;
     isBusinessAdmin?: boolean;
     sendEmailType?: string;
+    /** Also send the invite by SMS to the employee's mobile number */
+    sendSmsInvite?: boolean;
     /** Optional custom message included in the welcome email when sendEmailType is 'customized' */
     customMessage?: string;
     /** fid returned from POST /files — links the uploaded photo to the employee */
@@ -150,6 +152,7 @@ export const employeesApi = {
         responsibilityIds: payload.responsibilityIds,
       }),
       ...(payload.sendEmailType && payload.sendEmailType !== 'no' && { sendEmailType: payload.sendEmailType }),
+      ...(payload.sendSmsInvite && { sendSmsInvite: true }),
       ...(payload.customMessage && { customMessage: payload.customMessage }),
       ...(payload.languages && payload.languages.length > 0 && { languages: payload.languages }),
     };
@@ -188,6 +191,8 @@ export const employeesApi = {
       /** Language codes assigned to this employee */
       languages?: string[];
       sendEmailType?: string;
+      /** Also send the invite by SMS to the employee's mobile number */
+      sendSmsInvite?: boolean;
       /** Optional custom message included in the welcome email when sendEmailType is 'customized' */
       customMessage?: string;
     }
@@ -218,6 +223,9 @@ export const employeesApi = {
     }
     if (payload.sendEmailType && payload.sendEmailType !== 'no') {
       requestBody.sendEmailType = payload.sendEmailType;
+    }
+    if (payload.sendSmsInvite) {
+      requestBody.sendSmsInvite = true;
     }
     if (payload.customMessage) {
       requestBody.customMessage = payload.customMessage;

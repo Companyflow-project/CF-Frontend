@@ -31,6 +31,7 @@ export const AddEmployeePage: React.FC = () => {
     isBusinessAdmin: false,
     languages: ['da'],
     sendEmail: 'no',
+    sendSmsInvite: false,
     customMessage: '',
     userPictureFid: null,
   });
@@ -82,6 +83,7 @@ export const AddEmployeePage: React.FC = () => {
         isBusinessAdmin: formData.isBusinessAdmin,
         languages: formData.languages,
         sendEmailType: formData.sendEmail,
+        sendSmsInvite: formData.sendSmsInvite,
         ...(formData.sendEmail === 'customized' && formData.customMessage && { customMessage: formData.customMessage }),
         ...(formData.userPictureFid != null && { userPictureFid: formData.userPictureFid }),
       };

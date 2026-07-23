@@ -18,11 +18,12 @@
     "userAccount": "User Console",
     "changeUserView": "Change user view",
     "books": "Books",
-    "taxonomy": "Taxonomy",
     "companyFlow": "CompanyFlow",
     "comingSoon": "Coming soon",
     "superadmin": "Superadmin",
-    "admin": "Admin"
+    "admin": "Admin",
+    "searchLog": "Search log",
+    "changeCompanyView": "Go to company"
   },
   "dashboard": {
     "welcome": "Welcome back, {{name}}",
@@ -294,7 +295,13 @@
     "saveFailed": "Failed to save settings",
     "saved": "Settings saved",
     "smsPricingHelp": "Price charged per SMS sent",
-    "trialLengthHelp": "Default trial period for new companies"
+    "trialLengthHelp": "Default trial period for new companies",
+    "helpPageNid": "Help text for the Management Handbook",
+    "helpPageNidHelp": "The Help box at the top of the Management Handbook shows the content of a handbook page. Enter that page’s ID number — open the page in the handbook editor and copy the number from the address bar. Leave empty to show the standard text.",
+    "helpPageNidPlaceholder": "Page ID, e.g. 60385",
+    "helpPageChecking": "Checking…",
+    "helpPageResolved": "Using: {{title}}",
+    "helpPageNotFound": "No handbook page found with that ID — the standard text will be shown instead."
   },
   "createCompany": {
     "title": "Create a Business",
@@ -2064,5 +2071,12 @@
       "saving": "Saving…"
     },
     "noAccess": "You do not have access to user management."
+  },
+  "company": {
+    "searchPlaceholder": "Search by company name or CVR…",
+    "pickerHelp": "Open a company’s console to manage its departments, employment types and settings. A banner stays visible while you’re there; click Exit to return.",
+    "searchError": "Search failed. Try again.",
+    "noResults": "No companies matched.",
+    "openAction": "Open"
   }
 }

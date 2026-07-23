@@ -18,11 +18,12 @@
     "userAccount": "Brugerkonto",
     "changeUserView": "Skift brugervisning",
     "books": "Bøger",
-    "taxonomy": "Taksonomi",
     "companyFlow": "CompanyFlow",
     "comingSoon": "Kommer snart",
     "superadmin": "Superadmin",
-    "admin": "Admin"
+    "admin": "Admin",
+    "searchLog": "Søgelog",
+    "changeCompanyView": "Gå til virksomhed"
   },
   "dashboard": {
     "welcome": "Velkommen tilbage, {{name}}",
@@ -294,7 +295,13 @@
     "saveFailed": "Kunne ikke gemme indstillinger",
     "saved": "Indstillinger gemt",
     "smsPricingHelp": "Pris pr. sendt SMS",
-    "trialLengthHelp": "Standardlængde på prøveperiode for nye konti"
+    "trialLengthHelp": "Standardlængde på prøveperiode for nye konti",
+    "helpPageNid": "Hjælpetekst til ledelseshåndbogen",
+    "helpPageNidHelp": "Hjælpeboksen øverst på ledelseshåndbogen viser indholdet af en håndbogsside. Indtast sidens id-nummer — åbn siden i håndbogseditoren og kopiér nummeret fra adresselinjen. Lad feltet stå tomt for at vise standardteksten.",
+    "helpPageNidPlaceholder": "Side-id, f.eks. 60385",
+    "helpPageChecking": "Kontrollerer…",
+    "helpPageResolved": "Bruger: {{title}}",
+    "helpPageNotFound": "Ingen håndbogsside fundet med det id — standardteksten vises i stedet."
   },
   "createCompany": {
     "title": "Opret en Virksomhed",
@@ -2064,5 +2071,12 @@
       "saving": "Gemmer…"
     },
     "noAccess": "Du har ikke adgang til brugeradministration."
+  },
+  "company": {
+    "searchPlaceholder": "Søg på virksomhedsnavn eller CVR…",
+    "pickerHelp": "Åbn en virksomheds konsol for at administrere dens afdelinger, ansættelsestyper og indstillinger. Et banner vises, mens du er der; klik Afslut for at vende tilbage.",
+    "searchError": "Søgningen mislykkedes. Prøv igen.",
+    "noResults": "Ingen virksomheder matchede.",
+    "openAction": "Åbn"
   }
 }

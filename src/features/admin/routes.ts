@@ -24,9 +24,11 @@ export const adminRoutes = {
   handbookPage: '/admin/handbook/pages/:nid',
   handbookPageTab: '/admin/handbook/pages/:nid/:tab',
   handbookPageMeta: '/admin/handbook/pages/:nid/meta',
-  keyFiguresTab: '/admin/key-figures/overview',
-  keyFiguresTraffic: '/admin/key-figures/traffic',
-  keyFiguresKeywords: '/admin/key-figures/keywords',
+  // Key Figures renders its sections as tabs on one route (?tab=…), so these are
+  // query-string deep links, not separate routes.
+  keyFiguresTab: '/admin/key-figures?tab=overview',
+  keyFiguresTraffic: '/admin/key-figures?tab=traffic',
+  keyFiguresKeywords: '/admin/key-figures?tab=keywords',
   accountDashboard: '/admin/dashboard',
   users: '/admin/users',
   subscriptions: '/admin/subscriptions',
@@ -38,8 +40,4 @@ export const adminRoutes = {
   newsletterEdit: '/admin/newsletters/:nid/edit',
   informationList: '/admin/information-list',
   companyInformationList: '/admin/companies/:id/information-list',
-  taxonomy: '/admin/taxonomy',
-  taxonomyTerms: '/admin/taxonomy/:vid',
-  taxonomyTermCreate: '/admin/taxonomy/:vid/create',
-  taxonomyTermEdit: '/admin/taxonomy/:vid/:tid/edit',
 } as const;

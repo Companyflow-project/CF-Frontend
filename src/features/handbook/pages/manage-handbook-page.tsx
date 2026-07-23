@@ -13,7 +13,6 @@ import {
     Loader2,
 } from 'lucide-react';
 import { handbookRoutes } from '../routes';
-import { employeesRoutes } from '@/features/employees/routes';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole } from '@/lib/utils';
@@ -160,25 +159,13 @@ export const ManageHandbookPage: React.FC = () => {
                     iconBg="bg-[#dbeafe]"
                     actions={[
                         {
-                            label: t('manage.publish'),
+                            // Was three buttons — "Publish", "Add message" and "Grant
+                            // access" — all leading to the publish screen, which is
+                            // where the handbook is released, the message to employees
+                            // is written, and access is granted. One button, one place.
+                            label: t('manage.publishAndGrantAccess'),
                             onClick: () => navigate(handbookRoutes.publish(String(bid ?? ''))),
                             variant: 'default',
-                            adminOnly: true,
-                        },
-                        {
-                            // The message-to-employees composer lives on the publish
-                            // screen; once published this used to divert to the message
-                            // log, which only shows already-sent mail.
-                            label: t('manage.addMessage'),
-                            onClick: () => navigate(handbookRoutes.publish(String(bid ?? ''))),
-                            variant: 'outline',
-                            adminOnly: true,
-                        },
-                        {
-                            // Access is granted by managing who is an active employee.
-                            label: t('manage.grantAccess'),
-                            onClick: () => navigate(employeesRoutes.list),
-                            variant: 'outline',
                             adminOnly: true,
                         },
                     ]}

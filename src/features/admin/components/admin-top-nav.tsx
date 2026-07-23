@@ -8,6 +8,7 @@ import { Menu, X, Lock } from 'lucide-react';
 import { adminRoutes } from '../routes';
 import { resolveRbacRole, can, canAccessAccountDashboard, type RbacModule } from '@/lib/rbac';
 import { ChangeUserViewDialog } from './change-user-view-dialog';
+import { ChangeCompanyViewDialog } from './change-company-view-dialog';
 import logoUrl from '/assets/Logo.svg';
 
 const ALL_LANGUAGES: readonly { code: string; label: string; flag: string; isDefault?: boolean }[] = [
@@ -26,6 +27,7 @@ export const AdminTopNav: React.FC = () => {
   const [isSwitchOpen, setIsSwitchOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isChangeViewOpen, setIsChangeViewOpen] = useState(false);
+  const [isCompanyViewOpen, setIsCompanyViewOpen] = useState(false);
   const switchRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const { t, i18n } = useTranslation('admin');
@@ -57,6 +59,9 @@ export const AdminTopNav: React.FC = () => {
     { path: adminRoutes.invoices, label: t('nav.invoices'), enabled: true, module: 'invoices' },
     { path: adminRoutes.newsletters, label: t('nav.newsletters'), enabled: true, module: 'newsletters' },
     { path: adminRoutes.tickets, label: t('nav.support'), enabled: true, module: 'tickets' },
+    // The handbook search log was only reachable as a "Keywords" card inside Key
+    // Figures, which testers never found. Deep-link straight to that tab.
+    { path: adminRoutes.keyFiguresKeywords, label: t('nav.searchLog', 'Search log'), enabled: true, module: 'keyFigures' },
   ];
   const navItems = allNavItems.filter((item) => !item.module || can(viewerRole, item.module, 'read'));
 
@@ -72,7 +77,15 @@ export const AdminTopNav: React.FC = () => {
         || (location.pathname.startsWith(adminRoutes.crm + '/')
             && !location.pathname.startsWith(adminRoutes.crmActivities));
     }
-    return location.pathname.startsWith(path);
+    // Tabbed destinations are query-string deep links (/admin/key-figures?tab=…),
+    // so compare the tab too — otherwise every tab would light up at once.
+    const [pathOnly, queryOnly] = path.split('?');
+    if (queryOnly) {
+      const wanted = new URLSearchParams(queryOnly).get('tab');
+      return location.pathname === pathOnly
+        && new URLSearchParams(location.search).get('tab') === wanted;
+    }
+    return location.pathname.startsWith(pathOnly);
   };
 
   return (
@@ -196,6 +209,13 @@ export const AdminTopNav: React.FC = () => {
                     <div className="my-1 border-t border-gray-100" />
                     <button
                       type="button"
+                      onClick={() => { setIsSwitchOpen(false); setIsCompanyViewOpen(true); }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      {t('nav.changeCompanyView', 'Go to company')}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => { setIsSwitchOpen(false); setIsChangeViewOpen(true); }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
@@ -208,13 +228,6 @@ export const AdminTopNav: React.FC = () => {
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                       {t('nav.books', 'Books')}
-                    </Link>
-                    <Link
-                      to={adminRoutes.taxonomy}
-                      onClick={() => setIsSwitchOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                      {t('nav.taxonomy', 'Taxonomy')}
                     </Link>
                     <Link
                       to={adminRoutes.settings}
@@ -277,6 +290,13 @@ export const AdminTopNav: React.FC = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {isCompanyViewOpen && (
+        <ChangeCompanyViewDialog
+          open={isCompanyViewOpen}
+          onClose={() => setIsCompanyViewOpen(false)}
+        />
       )}
 
       {isChangeViewOpen && (

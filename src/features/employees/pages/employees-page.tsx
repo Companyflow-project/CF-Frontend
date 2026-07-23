@@ -105,7 +105,11 @@ export const EmployeesPage: React.FC = () => {
   };
 
   const downloadImportTemplate = () => {
-    const csv = 'name,email,phone\nJohn Doe,john@example.com,12345678\n';
+    // Every column the importer understands — the old template listed only
+    // name/email/phone, so nobody knew the rest could be imported too.
+    const csv =
+      'name,email,phone,alternatephone,emergencyname,emergencyphone\n' +
+      'John Doe,john@example.com,12345678,87654321,Jane Doe,11223344\n';
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

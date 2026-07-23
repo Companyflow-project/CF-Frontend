@@ -37,6 +37,8 @@ export interface EmployeeFormData {
   isBusinessAdmin: boolean;
   languages: string[];
   sendEmail: string;
+  /** Also text the invite to the employee's mobile number. */
+  sendSmsInvite: boolean;
   customMessage: string;
   /** fid returned from POST /files after the user picks a profile photo. null = no photo yet. */
   userPictureFid: number | null;
@@ -574,6 +576,25 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                   <p className="text-xs text-gray-500 mt-1">{t('form.customMessageHint')}</p>
                 </div>
               )}
+              {/* Invites were email-only; staff with a phone but no working
+                  address never received one. */}
+              <label className="flex items-start gap-2 mt-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.sendSmsInvite}
+                  onChange={(e) => onChange({ ...formData, sendSmsInvite: e.target.checked })}
+                  disabled={!formData.mobileNumber?.trim()}
+                  className="mt-0.5 accent-[#1a5948] disabled:opacity-40"
+                />
+                <span className="text-sm text-[#0d0e0e]">
+                  {t('form.sendSmsInvite')}
+                  <span className="block text-xs text-gray-500">
+                    {formData.mobileNumber?.trim()
+                      ? t('form.sendSmsInviteHint')
+                      : t('form.sendSmsInviteNoNumber')}
+                  </span>
+                </span>
+              </label>
               <p className="text-xs text-gray-500 mt-2 italic">
                 {t('form.sendEmailDesc')}
               </p>
