@@ -12,7 +12,7 @@
   "banner.viewAs": "Viser som {{name}}",
   "banner.viewAsCompany": "Viser CompanyFlow som {{name}}",
   "banner.exitViewAsCompany": "Afslut",
-  "footer.copyright": "© 2025 {{companyName}}. Alle rettigheder forbeholdes. - Powered by CompanyFlow",
+  "footer.copyright": "© {{year}} {{companyName}}. Alle rettigheder forbeholdes. - Powered by CompanyFlow",
   "emptyState.title": "Ingen data endnu.",
   "back": "Tilbage",
   "cancel": "Annuller",

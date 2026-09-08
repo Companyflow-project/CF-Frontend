@@ -12,7 +12,7 @@
   "banner.viewAs": "Viewing as {{name}}",
   "banner.viewAsCompany": "Viewing CompanyFlow as {{name}}",
   "banner.exitViewAsCompany": "Exit",
-  "footer.copyright": "© 2025 {{companyName}}. All rights reserved. - Powered by CompanyFlow",
+  "footer.copyright": "© {{year}} {{companyName}}. All rights reserved. - Powered by CompanyFlow",
   "emptyState.title": "No data yet.",
   "back": "Back",
   "cancel": "Cancel",

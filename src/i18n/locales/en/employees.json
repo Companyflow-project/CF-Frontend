@@ -256,7 +256,7 @@
   "messageLogs.titleAll": "Employee Message Logs - All Employees",
   "messageLogs.helpDetail": "See which messages have been sent to your employees and when. Click <bold>View All Messages</bold> to see all messages sent to all employees.",
   "messageLogs.helpAll": "See which messages have been sent to your employees and when.",
-  "messageLogs.searchDetail": "Search employee records",
+  "messageLogs.searchDetail": "Search messages",
   "messageLogs.searchAll": "Search messages (name, email, message)",
   "messageLogs.viewAll": "View All Message Logs",
   "messageLogs.sendFollowUp": "Send Follow Up",

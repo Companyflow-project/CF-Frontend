@@ -76,7 +76,7 @@
   "companyProfile.saving": "Gemmer...",
   "companyProfile.section.companyInfo": "Virksomhedsoplysninger",
   "companyProfile.section.smsInfo": "SMS-oplysninger",
-  "companyProfile.primaryContactNote": "Den primære kontakt kan kun ændres af Degoan.",
+  "companyProfile.primaryContactNote": "Den primære kontakt kan kun ændres af CompanyFlow.",
   "companyProfile.field.business": "Virksomhed",
   "companyProfile.field.cvrNumber": "CVR-nummer",
   "companyProfile.field.street": "Gade/vejnummer",
@@ -102,40 +102,32 @@
   "companyProfile.error.cvrRequired": "CVR-nummer er påkrævet",
   "companyProfile.success.updated": "Virksomhedsprofil opdateret",
   "companyProfile.error.updateFailed": "Kunne ikke opdatere virksomhedsprofil",
-
   "page.title": "Konto",
   "page.subtitle": "Administrer din virksomhedsprofil, fakturering og indstillinger.",
   "adminOnly": "Kun administratorer kan udføre denne handling",
-
   "card.companyProfile.title": "Virksomhedsprofil",
   "card.companyProfile.desc": "Opdater din virksomhedsinfo og SMS-afsendernavn.",
   "card.companyProfile.edit": "Rediger virksomhedsprofil →",
   "card.companyProfile.sms": "Opdater SMS-afsendernavn",
-
   "card.subscriptions.title": "Abonnementer",
   "card.subscriptions.desc": "Administrer licenser og fakturering for din plan.",
   "card.subscriptions.upgrade": "Opgrader abonnement →",
   "card.subscriptions.view": "Se abonnement",
   "card.subscriptions.moreLicenses": "Tilføj flere licenser",
-
   "card.department.title": "Afdeling",
   "card.department.desc": "Tilføj og administrer afdelinger i din virksomhed.",
   "card.department.add": "Tilføj afdeling →",
   "card.department.view": "Se afdelinger",
-
   "card.employmentTypes.title": "Ansættelsestyper",
   "card.employmentTypes.desc": "Definer og administrer ansættelseskategorier.",
   "card.employmentTypes.add": "Tilføj ansættelsestype →",
   "card.employmentTypes.view": "Se ansættelsestyper",
-
   "card.appearance.title": "Udseende",
   "card.appearance.desc": "Tilpas udseendet af din konsol.",
   "card.appearance.edit": "Rediger udseende →",
-
   "card.others.title": "Sideindstillinger",
   "card.others.desc": "Yderligere indstillinger og overholdelsesværktøjer.",
   "card.others.whistleblower": "Opsæt whistleblowerordning",
-
   "employmentTypes.list.back": "Tilbage",
   "employmentTypes.list.title": "Ansættelsestyper",
   "employmentTypes.list.add": "Tilføj ansættelsestype",
@@ -170,7 +162,6 @@
   "employmentTypes.toast.deleteFailed": "Kunne ikke slette ansættelsestype. Prøv igen.",
   "employmentTypes.toast.noCompany": "Ingen virksomhed tilknyttet. Log venligst ind igen.",
   "employmentTypes.toast.missingId": "Ansættelsestype-ID mangler",
-
   "appearance.title": "Udseende",
   "appearance.helpBanner": "Tilpas udseendet af din konsol. Vælg illustrationstyper til håndbogstekster og indstil brandfarver for hele konsolgrænsefladen.",
   "appearance.pictures": "Billeder",
@@ -218,7 +209,6 @@
   "appearance.color.cfSecondaryBtnText.desc": "Tekst inde i linjeknapperne",
   "appearance.color.cfLinks": "Links",
   "appearance.color.cfLinks.desc": "Farven på linktekst på manualsider",
-
   "subscription.title": "Abonnement",
   "subscription.helpBanner": "Her kan du se en oversigt over dit abonnement. Du kan også opgradere, tilføje flere licenser, oprette ansættelsestyper osv. fra denne side.",
   "subscription.loading": "Indlæser abonnementsdetaljer…",
@@ -281,7 +271,6 @@
   "subscription.user_other": "brugere",
   "subscription.month_one": "måned",
   "subscription.month_other": "måneder",
-
   "departments.title": "Afdelinger - Alle afdelinger",
   "departments.addNew": "Tilføj ny afdeling",
   "departments.helpBanner": "Her kan du se alle afdelinger i din organisation. Klik på en afdeling for at redigere dens detaljer, eller brug knappen \"Tilføj ny afdeling\" for at oprette en ny.",
@@ -292,7 +281,6 @@
   "departments.col.manager": "Leder",
   "departments.col.email": "E-mail",
   "departments.col.description": "Beskrivelse",
-
   "addDepartment.title": "Afdelinger - Tilføj afdeling",
   "addDepartment.viewAll": "Se alle afdelinger",
   "addDepartment.helpBanner": "Her kan du oprette en ny afdeling. Afdelingen skal have et navn, men ellers er der ingen krav til hvad der skal med.",

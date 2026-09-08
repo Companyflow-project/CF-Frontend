@@ -256,7 +256,7 @@
   "messageLogs.titleAll": "Medarbejderbeskedlog - Alle medarbejdere",
   "messageLogs.helpDetail": "Se hvilke beskeder der er sendt til dine medarbejdere og hvornår. Klik på <bold>Vis alle beskeder</bold> for at se alle beskeder sendt til alle medarbejdere.",
   "messageLogs.helpAll": "Se hvilke beskeder der er sendt til dine medarbejdere og hvornår.",
-  "messageLogs.searchDetail": "Søg medarbejderoptegnelser",
+  "messageLogs.searchDetail": "Søg beskeder",
   "messageLogs.searchAll": "Søg beskeder (navn, e-mail, besked)",
   "messageLogs.viewAll": "Vis alle beskedlogs",
   "messageLogs.sendFollowUp": "Send opfølgning",

@@ -76,7 +76,7 @@
   "companyProfile.saving": "Saving...",
   "companyProfile.section.companyInfo": "Company information",
   "companyProfile.section.smsInfo": "SMS information",
-  "companyProfile.primaryContactNote": "The primary contact can only be changed by Degoan.",
+  "companyProfile.primaryContactNote": "The primary contact can only be changed by CompanyFlow.",
   "companyProfile.field.business": "Business",
   "companyProfile.field.cvrNumber": "CVR Number",
   "companyProfile.field.street": "Street/road number",
@@ -102,40 +102,32 @@
   "companyProfile.error.cvrRequired": "CVR number is required",
   "companyProfile.success.updated": "Company profile updated successfully",
   "companyProfile.error.updateFailed": "Failed to update company profile",
-
   "page.title": "Account",
   "page.subtitle": "Manage your company profile, billing, and settings.",
   "adminOnly": "Only admins can perform this action",
-
   "card.companyProfile.title": "Company Profile",
   "card.companyProfile.desc": "Update your company information and SMS sender name.",
   "card.companyProfile.edit": "Edit Company Profile →",
   "card.companyProfile.sms": "Update SMS sender name",
-
   "card.subscriptions.title": "Subscriptions",
   "card.subscriptions.desc": "Manage licenses and billing for your plan.",
   "card.subscriptions.upgrade": "Update Subscription →",
   "card.subscriptions.view": "View subscription",
   "card.subscriptions.moreLicenses": "Add more licenses",
-
   "card.department.title": "Department",
   "card.department.desc": "Add and manage departments within your company.",
   "card.department.add": "Add Department →",
   "card.department.view": "View departments",
-
   "card.employmentTypes.title": "Employment Types",
   "card.employmentTypes.desc": "Define and manage employment categories.",
   "card.employmentTypes.add": "Add Employment Type →",
   "card.employmentTypes.view": "View employment types",
-
   "card.appearance.title": "Appearance",
   "card.appearance.desc": "Customize the look and feel of your console.",
   "card.appearance.edit": "Edit Appearance →",
-
   "card.others.title": "Page Settings",
   "card.others.desc": "Additional settings and compliance tools.",
   "card.others.whistleblower": "Setup whistleblower system",
-
   "employmentTypes.list.back": "Back",
   "employmentTypes.list.title": "Employment Types",
   "employmentTypes.list.add": "Add employment type",
@@ -170,7 +162,6 @@
   "employmentTypes.toast.deleteFailed": "Failed to delete employment type. Please try again.",
   "employmentTypes.toast.noCompany": "No company linked. Please log in again.",
   "employmentTypes.toast.missingId": "Employment type ID is missing",
-
   "appearance.title": "Appearance",
   "appearance.helpBanner": "Customize the visual appearance of your console. Choose illustration types for handbook texts and set brand colors for the entire console interface.",
   "appearance.pictures": "Pictures",
@@ -218,7 +209,6 @@
   "appearance.color.cfSecondaryBtnText.desc": "Text inside the line buttons",
   "appearance.color.cfLinks": "Links",
   "appearance.color.cfLinks.desc": "The color of link text on manual pages",
-
   "subscription.title": "Subscription",
   "subscription.helpBanner": "Here you can see an overview of your subscription. You can also upgrade, add more licenses, create employment types, etc. from this page.",
   "subscription.loading": "Loading subscription details…",
@@ -281,7 +271,6 @@
   "subscription.user_other": "users",
   "subscription.month_one": "month",
   "subscription.month_other": "months",
-
   "departments.title": "Departments - All Departments",
   "departments.addNew": "Add New Department",
   "departments.helpBanner": "Here you can view all departments in your organization. Click on a department to edit its details, or use the \"Add New Department\" button to create a new one.",
@@ -292,7 +281,6 @@
   "departments.col.manager": "Manager",
   "departments.col.email": "Email",
   "departments.col.description": "Description",
-
   "addDepartment.title": "Departments - Add Department",
   "addDepartment.viewAll": "View all departments",
   "addDepartment.helpBanner": "Here you can create a new department. The department must have a name, but otherwise there are no requirements for what must be included.",
