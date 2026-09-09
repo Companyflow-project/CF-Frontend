@@ -52,7 +52,15 @@ export const MyActivityPage: React.FC = () => {
               <ul className="divide-y divide-gray-100">
                 {items.map((item, i) => (
                   <li key={`${item.type}-${item.nid}-${i}`} className="flex items-center gap-3 px-5 py-3.5">
-                    <span className={item.type === 'signed' ? 'text-[#1a5948]' : 'text-[#6b7280]'}>
+                    {/* Status icon only — not a control. Testers read the eye as a
+                        show/hide toggle (the pattern we use on password fields), so
+                        say what it means on hover and hide it from assistive tech;
+                        the text label beside it already carries the meaning. */}
+                    <span
+                      className={item.type === 'signed' ? 'text-[#1a5948]' : 'text-[#6b7280]'}
+                      title={item.type === 'signed' ? t('myActivity.signed') : t('myActivity.viewed')}
+                      aria-hidden="true"
+                    >
                       {item.type === 'signed' ? <CheckCircle2 className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </span>
                     <div className="flex-1 min-w-0">

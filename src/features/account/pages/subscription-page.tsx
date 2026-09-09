@@ -418,6 +418,22 @@ export const SubscriptionPage: React.FC = () => {
     const [smsCreditsModalOpen, setSmsCreditsModalOpen] = useState(false);
     const [companyLanguages, setCompanyLanguages] = useState<string[]>(user?.companyLanguages ?? ['da']);
     const [wbRequesting, setWbRequesting] = useState(false);
+    // Extra handbooks and SOP are bought through CompanyFlow, not self-served,
+    // so these buttons raise a request rather than opening a purchase page —
+    // the same way licences, SMS credits, languages and whistleblower do.
+    const [productRequesting, setProductRequesting] = useState<'manuals' | 'sop' | null>(null);
+
+    const handleRequestProduct = async (product: 'manuals' | 'sop') => {
+        setProductRequesting(product);
+        try {
+            await accountApi.requestProduct(product);
+            toast.success(t('subscription.request.requested'));
+        } catch {
+            toast.error(t('subscription.request.requestError'));
+        } finally {
+            setProductRequesting(null);
+        }
+    };
 
     const handleRequestWhistleblower = async () => {
         setWbRequesting(true);
@@ -507,7 +523,12 @@ export const SubscriptionPage: React.FC = () => {
                 category: t('subscription.row.additionalManuals'),
                 about: <span className="text-sm text-[#374151]">{data.additionalManualsTotal}</span>,
                 actions: [
-                    { label: t('subscription.action.buyManuals'), onClick: () => { } },
+                    {
+                        label: productRequesting === 'manuals'
+                            ? t('subscription.request.requesting')
+                            : t('subscription.request.manuals'),
+                        onClick: () => handleRequestProduct('manuals'),
+                    },
                     { label: t('subscription.action.readMore'), onClick: () => window.open('https://companyflow.digibida.com/extra-handbook/', '_blank', 'noopener,noreferrer') },
                 ],
             },
@@ -548,7 +569,12 @@ export const SubscriptionPage: React.FC = () => {
                 category: t('subscription.row.sop'),
                 about: <span className="text-sm text-[#374151]">{data.sopTotal}</span>,
                 actions: [
-                    { label: t('subscription.action.readMore'), onClick: () => { } },
+                    {
+                        label: productRequesting === 'sop'
+                            ? t('subscription.request.requesting')
+                            : t('subscription.request.sop'),
+                        onClick: () => handleRequestProduct('sop'),
+                    },
                 ],
             },
         ];

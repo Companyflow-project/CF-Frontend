@@ -302,5 +302,10 @@
   "addDepartment.logo.uploadFailed": "Kunne ikke uploade foto",
   "addDepartment.error.noCompany": "Ingen virksomhed tilknyttet. Log venligst ind igen.",
   "addDepartment.success": "Afdeling oprettet",
-  "addDepartment.error.create": "Kunne ikke oprette afdeling. Prøv venligst igen."
+  "addDepartment.error.create": "Kunne ikke oprette afdeling. Prøv venligst igen.",
+  "subscription.request.manuals": "Anmod om flere håndbøger",
+  "subscription.request.sop": "Anmod om SOP",
+  "subscription.request.requesting": "Sender…",
+  "subscription.request.requested": "Tak! Vi har modtaget din anmodning og kontakter dig snarest.",
+  "subscription.request.requestError": "Anmodningen kunne ikke sendes. Prøv venligst igen."
 }

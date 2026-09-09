@@ -110,6 +110,18 @@ export const accountApi = {
     return response.data.data;
   },
 
+  /**
+   * Ask CompanyFlow for an add-on that is a commercial decision on their side
+   * (extra handbooks, SOP). Sends a request email, like the whistleblower flow.
+   */
+  async requestProduct(product: 'manuals' | 'sop'): Promise<{ success: boolean }> {
+    const response = await axiosClient.post<{ data: { success: boolean }; error: null }>(
+      '/company/product-request',
+      { product },
+    );
+    return response.data.data;
+  },
+
   /** Flag to CompanyFlow that this company wants the whistleblower scheme. */
   async requestWhistleblowerAccess(): Promise<{ success: boolean }> {
     const response = await axiosClient.post<{ data: { success: boolean }; error: null }>(

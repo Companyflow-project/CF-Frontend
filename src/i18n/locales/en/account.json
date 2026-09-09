@@ -302,5 +302,10 @@
   "addDepartment.logo.uploadFailed": "Failed to upload photo",
   "addDepartment.error.noCompany": "No company linked. Please log in again.",
   "addDepartment.success": "Department created successfully",
-  "addDepartment.error.create": "Failed to create department. Please try again."
+  "addDepartment.error.create": "Failed to create department. Please try again.",
+  "subscription.request.manuals": "Request additional manuals",
+  "subscription.request.sop": "Request SOP",
+  "subscription.request.requesting": "Sending…",
+  "subscription.request.requested": "Thank you! We have received your request and will be in touch shortly.",
+  "subscription.request.requestError": "Could not send the request. Please try again."
 }
