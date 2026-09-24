@@ -135,6 +135,8 @@ export interface HandbookNode {
   hasImage?: boolean;
   hasCustomBody?: boolean;
   hasSelectableTexts?: boolean;
+  /** Degoan marks the page "we recommend including this page". */
+  isRecommended?: boolean;
   hasText?: boolean;
   hasReceipt?: boolean;
   hasEmploymentTypeRestriction?: boolean;

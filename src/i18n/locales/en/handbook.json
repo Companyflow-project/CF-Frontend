@@ -385,5 +385,8 @@
   "print.handbookTitle": "Staff Handbook",
   "print.version": "Version {{version}}",
   "print.publishedOn": "Published {{date}}",
-  "print.draft": "Draft — not yet published"
+  "print.draft": "Draft — not yet published",
+  "publish.previewStandardEmail": "Hello [recipient name],\n\nYou now have access to the staff handbook. Click the link below to log in directly to the handbook.\n\n[login]\n\nKind regards,\n[company name]",
+  "publish.previewStandardSms": "Hi [recipient name]! You now have access to the staff handbook at [company name]. Log in here: [login]",
+  "publish.smsFailed": "SMS could not be sent to:\n{{list}}"
 }

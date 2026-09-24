@@ -107,6 +107,9 @@ export const PublishHandbookPage: React.FC = () => {
       });
 
       toast.success(t('publish.success', { count: response.count }));
+      if (response.smsErrors && response.smsErrors.length > 0) {
+        toast.error(t('publish.smsFailed', { list: response.smsErrors.join('\n') }), { duration: 8000 });
+      }
       navigate(handbookRoutes.manage);
     } catch (err: any) {
       console.error('Failed to publish handbook:', err);
@@ -131,14 +134,7 @@ export const PublishHandbookPage: React.FC = () => {
       return customMessage ? previewPlaceholders(customMessage) : t('publish.customEmailPlaceholder');
     }
 
-    return `Hello [recipient name],
-
-You now have access to the Staff Handbook. Click on the link below to log in directly to the handbook.
-
-[login]
-
-Greetings,
-Your Company`;
+    return t('publish.previewStandardEmail');
   };
 
   const renderSmsPreview = () => {
@@ -148,13 +144,7 @@ Your Company`;
       return customMessage ? previewPlaceholders(customMessage) : t('publish.customSmsPlaceholder');
     }
 
-    return `[recipient name],
-
-You now have access to the Staff Handbook.
-
-[login]
-
-Greetings from your company.`;
+    return t('publish.previewStandardSms');
   };
 
   const noMessage =

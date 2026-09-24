@@ -23,10 +23,8 @@ const SHORT_CODES = [
   { code: '[login]', description: 'Magic login link' },
 ] as const;
 
-const DEFAULT_EMAIL_BODY = `<p>Hello [recipient name],</p>
-<p>You now have access to the Staff Handbook. Click on the link below to log in directly to the handbook.</p>
-<p>[login]</p>
-<p>Greetings,<br/>[company name]</p>`;
+/** Compare texts ignoring markup and spacing (the rich-text editor may reformat HTML). */
+const plain = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
 export const FollowUpPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,11 +41,16 @@ export const FollowUpPage: React.FC = () => {
   const [loadingEmployee, setLoadingEmployee] = useState(true);
   const { data: allEmployees, loading: loadingEmployees } = useEmployees();
 
-  const [emailSubject, setEmailSubject] = useState('Your Staff Handbook');
-  const [emailBody, setEmailBody] = useState(DEFAULT_EMAIL_BODY);
+  // Defaults follow the admin's language here; if they're left unchanged the server
+  // sends each employee the default in that employee's own language instead.
+  const defaultSubject = t('followUp.defaultSubject');
+  const defaultEmail = t('followUp.defaultEmail');
+  const defaultSms = t('followUp.defaultSms');
+  const [emailSubject, setEmailSubject] = useState(defaultSubject);
+  const [emailBody, setEmailBody] = useState(defaultEmail);
   // Default text follows the admin's language and includes the login link. The
   // old one had no link, was English-only and read "Staff Handbook handbook".
-  const [smsBody, setSmsBody] = useState(() => t('followUp.defaultSms'));
+  const [smsBody, setSmsBody] = useState(defaultSms);
   const [sending, setSending] = useState(false);
 
   const [emailEnabled, setEmailEnabled] = useState(true);
@@ -135,9 +138,9 @@ export const FollowUpPage: React.FC = () => {
       const result = await employeesApi.sendFollowUp({
         employeeIds: Array.from(selectedEmployeeIds).map(Number),
         channels,
-        customSubject: emailSubject.trim() || undefined,
-        customMessage: emailBody || undefined,
-        smsMessage: smsEnabled ? smsBody.trim() || undefined : undefined,
+        customSubject: emailSubject.trim() && emailSubject.trim() !== defaultSubject ? emailSubject.trim() : undefined,
+        customMessage: emailBody && plain(emailBody) !== plain(defaultEmail) ? emailBody : undefined,
+        smsMessage: smsEnabled && smsBody.trim() && smsBody.trim() !== defaultSms.trim() ? smsBody.trim() : undefined,
       });
 
       // Show SMS errors if any

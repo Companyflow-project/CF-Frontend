@@ -333,5 +333,7 @@
   "form.sendSmsInvite": "Send også invitationen som SMS",
   "form.sendSmsInviteHint": "Medarbejderen får et log ind-link på sit mobilnummer. Bruger én SMS-kredit.",
   "form.sendSmsInviteNoNumber": "Indtast et mobilnummer for at kunne sende en SMS-invitation.",
-  "followUp.defaultSms": "Hej [recipient name]! Du har nu adgang til personalehåndbogen hos [company name]. Log ind her: [login]"
+  "followUp.defaultSms": "Hej [recipient name]! Du har nu adgang til personalehåndbogen hos [company name]. Log ind her: [login]",
+  "followUp.defaultSubject": "Adgang til personalehåndbogen",
+  "followUp.defaultEmail": "<p>Hej [recipient name],</p><p>Du har nu adgang til personalehåndbogen. Klik på linket nedenfor for at logge direkte ind i håndbogen.</p><p>[login]</p><p>Venlig hilsen<br/>[company name]</p>"
 }

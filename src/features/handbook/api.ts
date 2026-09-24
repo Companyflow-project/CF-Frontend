@@ -27,6 +27,9 @@ interface PublishHandbookPayload {
 interface PublishHandbookResponse {
   success: boolean;
   count: number;
+  version?: number;
+  smsSent?: number;
+  smsErrors?: string[];
 }
 
 interface CreatePagePayload {

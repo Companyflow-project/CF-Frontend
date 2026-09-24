@@ -333,5 +333,7 @@
   "form.sendSmsInvite": "Also send the invite as an SMS",
   "form.sendSmsInviteHint": "The employee gets a login link on their mobile number. Uses one SMS credit.",
   "form.sendSmsInviteNoNumber": "Enter a mobile number to be able to send an SMS invite.",
-  "followUp.defaultSms": "Hi [recipient name]! You now have access to the staff handbook at [company name]. Log in here: [login]"
+  "followUp.defaultSms": "Hi [recipient name]! You now have access to the staff handbook at [company name]. Log in here: [login]",
+  "followUp.defaultSubject": "Access to the staff handbook",
+  "followUp.defaultEmail": "<p>Hello [recipient name],</p><p>You now have access to the staff handbook. Click the link below to log in directly to the handbook.</p><p>[login]</p><p>Kind regards,<br/>[company name]</p>"
 }

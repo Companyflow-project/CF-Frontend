@@ -385,5 +385,8 @@
   "print.handbookTitle": "Personalehåndbog",
   "print.version": "Version {{version}}",
   "print.publishedOn": "Udgivet {{date}}",
-  "print.draft": "Kladde — endnu ikke udgivet"
+  "print.draft": "Kladde — endnu ikke udgivet",
+  "publish.previewStandardEmail": "Hej [recipient name],\n\nDu har nu adgang til personalehåndbogen. Klik på linket nedenfor for at logge direkte ind i håndbogen.\n\n[login]\n\nVenlig hilsen\n[company name]",
+  "publish.previewStandardSms": "Hej [recipient name]! Du har nu adgang til personalehåndbogen hos [company name]. Log ind her: [login]",
+  "publish.smsFailed": "SMS kunne ikke sendes til:\n{{list}}"
 }

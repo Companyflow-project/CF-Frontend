@@ -51,6 +51,8 @@ export const HandbookPagesPage: React.FC = () => {
 
     const [searchParams, setSearchParams] = useSearchParams();
     const canEditHandbook = isAdminRole(user?.role);
+    // Page whose "we recommend including this page" popup is showing.
+    const [recommendPageId, setRecommendPageId] = useState<number | null>(null);
     const canViewAllPages = canViewAllPagesRole(user?.role);
 
     // The actual bid comes from the API — it differs per company and must NOT be hardcoded to 21.
@@ -716,7 +718,7 @@ export const HandbookPagesPage: React.FC = () => {
                                 return (
                                     <div
                                         key={page.id}
-                                        className={`page-row-container rounded-[8px] border relative transition-all duration-200 overflow-hidden ${isReady ? 'bg-[#f6fbf9] border-[#d4f4e6]' : 'bg-white border-[#e5e7eb]'} ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
+                                        className={`page-row-container rounded-[8px] border relative transition-all duration-200 ${recommendPageId === page.id ? 'overflow-visible z-20' : 'overflow-hidden'} ${isReady ? 'bg-[#f6fbf9] border-[#d4f4e6]' : 'bg-white border-[#e5e7eb]'} ${draggingPageId === page.id ? 'opacity-40 shadow-sm bg-gray-50 scale-[0.99] grayscale-[0.2]' : ''} ${dragOverPageId === page.id ? 'bg-[#f0faf6]' : ''}`}
                                         onDragOver={(e) => {
                                             if (!canEditHandbook || !draggingPageId || search || statusFilter || draggingPageId === page.id) {
                                                 e.preventDefault();
@@ -769,12 +771,13 @@ export const HandbookPagesPage: React.FC = () => {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     const newSelected = new Set(selectedPages);
-                                                    // The "Anbefalet" badge flags recommended pages up front, so
-                                                    // unticking one no longer interrupts with a popup.
+                                                    // Warn only when a page Degoan marks as recommended is left out.
                                                     if (newSelected.has(page.id)) {
                                                         newSelected.delete(page.id);
+                                                        if (page.isRecommended) setRecommendPageId(page.id);
                                                     } else {
                                                         newSelected.add(page.id);
+                                                        if (recommendPageId === page.id) setRecommendPageId(null);
                                                     }
                                                     setSelectedPages(newSelected);
                                                 }}
@@ -801,6 +804,39 @@ export const HandbookPagesPage: React.FC = () => {
                                                         </svg>
                                                     )}
                                                 </div>
+
+                                                {recommendPageId === page.id && (
+                                                    <div
+                                                        className="absolute z-30 left-0 top-full mt-2 w-72 rounded-lg border-2 border-[#ef4444] bg-white shadow-lg p-4 cursor-default"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <p className="text-sm text-[#0d0e0e] leading-relaxed">
+                                                            {t('pages.recommend.body', 'We recommend that you include this page in your handbook. It contains important information. You can add it by ticking the box.')}
+                                                            {' '}
+                                                            <button
+                                                                type="button"
+                                                                className="underline text-[#1a5948] hover:text-[#0d0e0e]"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setRecommendPageId(null);
+                                                                    setExpandedPageId(page.id);
+                                                                }}
+                                                            >
+                                                                {t('pages.recommend.why', 'Edit the page to see why.')}
+                                                            </button>
+                                                        </p>
+                                                        <button
+                                                            type="button"
+                                                            className="mt-3 bg-[#3d997d] hover:bg-[#2f7d66] text-white text-sm font-medium rounded-md px-3 py-1.5"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setRecommendPageId(null);
+                                                            }}
+                                                        >
+                                                            {t('pages.recommend.ack', 'OK, understood')}
+                                                        </button>
+                                                    </div>
+                                                )}
 
                                             </div>
 
@@ -856,7 +892,8 @@ export const HandbookPagesPage: React.FC = () => {
                                                 {/* Recommended pages were only advertised in a popover that appeared
                                                     *after* you unticked one — so the advice arrived once the decision
                                                     was already made, and was invisible otherwise. Flag them up front. */}
-                                                {(page.hasCustomBody || page.hasSelectableTexts) && !selectedPages.has(page.id) && (
+                                                {/* Degoan's own per-page flag, not "has CompanyFlow text" (which is almost every page). */}
+                                                {page.isRecommended && (
                                                     <Badge
                                                         className="bg-[#fef3c7] text-[#92400e] border-0 rounded-[6px] px-2.5 py-0.5 text-xs flex-shrink-0"
                                                         title={t('badge.recommendedHint', 'CompanyFlow recommends including this page — it contains important information.')}
