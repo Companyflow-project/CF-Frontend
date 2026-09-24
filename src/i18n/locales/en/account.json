@@ -84,7 +84,7 @@
   "companyProfile.field.zipCode": "Zip Code",
   "companyProfile.field.mobile": "Mobile",
   "companyProfile.field.senderName": "Sender name",
-  "companyProfile.senderNameNote": "Default is your business name. Max 30 characters.",
+  "companyProfile.senderNameNote": "Shown as the sender of text messages. Max 11 characters: letters A–Z (no æ, ø, å), numbers and spaces. Leave empty to use “{{sender}}”.",
   "companyProfile.logo.upload": "Click to upload company logo",
   "companyProfile.logo.uploading": "Uploading...",
   "companyProfile.logo.allowedFormats": "Only upload: jpg, jpeg, gif, png",
@@ -307,5 +307,6 @@
   "subscription.request.sop": "Request SOP",
   "subscription.request.requesting": "Sending…",
   "subscription.request.requested": "Thank you! We have received your request and will be in touch shortly.",
-  "subscription.request.requestError": "Could not send the request. Please try again."
+  "subscription.request.requestError": "Could not send the request. Please try again.",
+  "companyProfile.error.senderNameInvalid": "The sender name can be at most 11 characters, using only the letters A–Z, numbers and spaces."
 }

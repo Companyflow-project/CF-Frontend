@@ -217,7 +217,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
             setUploadingImage(true);
             const uploaded = await handbookApi.uploadFile(file);
             setImageId(uploaded.id);
-            setImageUrl(uploaded.url ?? null);
+            setImageUrl(resolveBackendUrl(uploaded.url) || null);
             setImageName(uploaded.name ?? file.name);
         } catch (err: any) {
             console.error('Failed to upload image:', err);

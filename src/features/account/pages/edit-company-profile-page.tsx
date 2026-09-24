@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/auth-context';
 import { useCompanyProfile, useUpdateCompanyProfile } from '@/features/companies/hooks';
 import { toast } from 'sonner';
+import { toSmsSender, isValidSmsSender, SMS_SENDER_MAX } from '@/lib/sms-sender';
 import { HelpBanner } from '@/components/ui/help-banner';
 import { axiosClient } from '@/lib/axios-client';
 export const EditCompanyProfilePage: React.FC = () => {
@@ -75,7 +76,9 @@ export const EditCompanyProfilePage: React.FC = () => {
                 zipCode: profile.zipCode || '',
                 mobile: profile.mobile || '',
                 logoUrl: profile.logoUrl,
-                senderName: profile.senderName ? profile.senderName : (profile.businessName || ''),
+                // Don't pre-fill with the business name: names over 11 characters made
+                // every profile save fail. Empty means "use the business name".
+                senderName: profile.senderName || '',
             });
         }
     }, [profile]);
@@ -98,6 +101,14 @@ export const EditCompanyProfilePage: React.FC = () => {
             toast.error(t('companyProfile.error.cvrRequired'));
             return;
         }
+        // SMS sender names allow at most 11 characters: A-Z, digits and spaces.
+        // The server enforces the same limit; checking here gives a clear message
+        // instead of a failed save.
+        const senderName = formData.senderName.trim();
+        if (senderName && !isValidSmsSender(senderName)) {
+            toast.error(t('companyProfile.error.senderNameInvalid'));
+            return;
+        }
 
         try {
             await updateMutation.mutateAsync({
@@ -109,7 +120,7 @@ export const EditCompanyProfilePage: React.FC = () => {
                     town: formData.town.trim(),
                     zipCode: formData.zipCode.trim(),
                     mobile: formData.mobile.trim(),
-                    senderName: formData.senderName.trim(),
+                    senderName,
                     ...(logoFid !== null ? { logoFid } : {}),
                 },
             });
@@ -119,6 +130,11 @@ export const EditCompanyProfilePage: React.FC = () => {
             toast.error(errorMessage);
         }
     };
+
+    // What recipients see as the SMS sender when the field is left empty.
+    const defaultSender = toSmsSender(formData.businessName) || 'CompanyFlow';
+    const trimmedSender = formData.senderName.trim();
+    const senderInvalid = trimmedSender !== '' && !isValidSmsSender(trimmedSender);
 
     const renderField = (labelKey: string, id: keyof typeof formData, value: string, disabled = false, noteKey?: string) => (
         <div key={id} className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-4 items-center">
@@ -335,11 +351,20 @@ export const EditCompanyProfilePage: React.FC = () => {
                                             id="senderName"
                                             value={formData.senderName}
                                             onChange={(e) => setFormData({ ...formData, senderName: e.target.value })}
-                                            maxLength={30}
-                                            className="h-[42px] bg-white border-[#e5e7eb] rounded-[6px] text-[#0d0e0e]"
+                                            maxLength={SMS_SENDER_MAX}
+                                            placeholder={defaultSender}
+                                            aria-invalid={senderInvalid}
+                                            className={`h-[42px] bg-white rounded-[6px] text-[#0d0e0e] ${senderInvalid ? 'border-[#d5384b]' : 'border-[#e5e7eb]'}`}
                                             disabled={isLoading}
                                         />
-                                        <p className="text-xs text-gray-500 mt-1.5 italic">{t('companyProfile.senderNameNote')}</p>
+                                        <div className="flex items-start justify-between gap-3 mt-1.5">
+                                            <p className={`text-xs italic ${senderInvalid ? 'text-[#d5384b]' : 'text-gray-500'}`}>
+                                                {senderInvalid
+                                                    ? t('companyProfile.error.senderNameInvalid')
+                                                    : t('companyProfile.senderNameNote', { sender: defaultSender })}
+                                            </p>
+                                            <span className="text-xs text-gray-400 tabular-nums shrink-0">{formData.senderName.length}/{SMS_SENDER_MAX}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -10,6 +10,7 @@ import { useSubscription } from '../hooks';
 import { accountApi } from '../api';
 import type { SubscriptionData } from '../api';
 import { toast } from 'sonner';
+import { marketingLinks } from '@/lib/marketing-links';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -167,7 +168,7 @@ const AddLanguagesModal: React.FC<AddLanguagesModalProps> = ({ open, onClose, cu
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer')}
+                        onClick={() => window.open(marketingLinks.contact, '_blank', 'noopener,noreferrer')}
                         className="px-5 py-2 h-auto text-sm rounded-lg"
                     >
                         {t('subscription.languages.modal.contactUs')}
@@ -271,7 +272,7 @@ const AddLicensesModal: React.FC<AddLicensesModalProps> = ({ open, onClose, onAd
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer')}
+                        onClick={() => window.open(marketingLinks.contact, '_blank', 'noopener,noreferrer')}
                         className="px-5 py-2 h-auto text-sm rounded-lg"
                     >
                         {t('subscription.licenses.modal.contactUs')}
@@ -375,7 +376,7 @@ const AddSmsCreditsModal: React.FC<AddSmsCreditsModalProps> = ({ open, onClose, 
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer')}
+                        onClick={() => window.open(marketingLinks.contact, '_blank', 'noopener,noreferrer')}
                         className="px-5 py-2 h-auto text-sm rounded-lg"
                     >
                         {t('subscription.sms.modal.contactUs')}
@@ -529,7 +530,7 @@ export const SubscriptionPage: React.FC = () => {
                             : t('subscription.request.manuals'),
                         onClick: () => handleRequestProduct('manuals'),
                     },
-                    { label: t('subscription.action.readMore'), onClick: () => window.open('https://companyflow.digibida.com/extra-handbook/', '_blank', 'noopener,noreferrer') },
+                    { label: t('subscription.action.readMore'), onClick: () => window.open(marketingLinks.extraHandbook, '_blank', 'noopener,noreferrer') },
                 ],
             },
             {
@@ -548,7 +549,7 @@ export const SubscriptionPage: React.FC = () => {
                                 : t('subscription.whistleblower.request'),
                             onClick: handleRequestWhistleblower,
                         }]),
-                    { label: t('subscription.action.readMore'), onClick: () => window.open('https://companyflow.digibida.com/whistleblowerordning/', '_blank', 'noopener,noreferrer') },
+                    { label: t('subscription.action.readMore'), onClick: () => window.open(marketingLinks.whistleblower, '_blank', 'noopener,noreferrer') },
                 ],
             },
             {

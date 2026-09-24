@@ -1476,7 +1476,7 @@ export const AdminEditCompanyPage: React.FC = () => {
                 <li key={d.fid} className="flex items-center justify-between px-3 py-2 text-sm">
                   {d.url ? (
                     <a
-                      href={d.url}
+                      href={resolveBackendUrl(d.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-gray-800 hover:underline truncate"

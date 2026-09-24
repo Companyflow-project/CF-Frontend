@@ -9,7 +9,7 @@ import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { useViewAsEmployee } from '@/context/view-as-employee-context';
-import { isAdminRole } from '@/lib/utils';
+import { isAdminRole, resolveBackendUrl } from '@/lib/utils';
 import type { HandbookResourceDocument } from '@/types/models';
 
 export const HandbookDocumentsPage: React.FC = () => {
@@ -161,7 +161,7 @@ export const HandbookDocumentsPage: React.FC = () => {
                                                             <div className="space-y-1">
                                                                 {doc.fileUrl ? (
                                                                     <a
-                                                                        href={doc.fileUrl}
+                                                                        href={resolveBackendUrl(doc.fileUrl)}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="text-[#3d997d] hover:underline inline-flex items-center gap-2 text-sm font-medium"

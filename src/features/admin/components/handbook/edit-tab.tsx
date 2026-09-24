@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { resolveBackendUrl } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -587,7 +588,7 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
                     )}
                   </div>
                   {heroImageUrl && (
-                    <img src={heroImageUrl} alt="" className="mt-2 max-h-32 rounded-md border border-gray-200" />
+                    <img src={resolveBackendUrl(heroImageUrl)} alt="" className="mt-2 max-h-32 rounded-md border border-gray-200" />
                   )}
                 </div>
 

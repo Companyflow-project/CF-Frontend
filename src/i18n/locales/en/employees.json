@@ -332,5 +332,6 @@
   "rolesModal.noEmployees": "No employees found",
   "form.sendSmsInvite": "Also send the invite as an SMS",
   "form.sendSmsInviteHint": "The employee gets a login link on their mobile number. Uses one SMS credit.",
-  "form.sendSmsInviteNoNumber": "Enter a mobile number to be able to send an SMS invite."
+  "form.sendSmsInviteNoNumber": "Enter a mobile number to be able to send an SMS invite.",
+  "followUp.defaultSms": "Hi [recipient name]! You now have access to the staff handbook at [company name]. Log in here: [login]"
 }

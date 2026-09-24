@@ -18,6 +18,7 @@ import { accountRoutes } from '../routes';
 import { AddEmploymentTypeDialog } from '@/features/employment-types/pages';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole } from '@/lib/utils';
+import { marketingLinks } from '@/lib/marketing-links';
 
 interface AccountAction {
   label: string;
@@ -120,7 +121,7 @@ export const AccountPage: React.FC = () => {
         {
           label: t('card.subscriptions.upgrade'),
           onClick: () =>
-            window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer'),
+            window.open(marketingLinks.contact, '_blank', 'noopener,noreferrer'),
           variant: 'primary',
           adminOnly: true,
         },
@@ -131,7 +132,7 @@ export const AccountPage: React.FC = () => {
         {
           label: t('card.subscriptions.moreLicenses'),
           onClick: () =>
-            window.open('https://companyflow.digibida.com/contact-us/', '_blank', 'noopener,noreferrer'),
+            window.open(marketingLinks.contact, '_blank', 'noopener,noreferrer'),
           adminOnly: true,
         },
       ],

@@ -28,8 +28,6 @@ const DEFAULT_EMAIL_BODY = `<p>Hello [recipient name],</p>
 <p>[login]</p>
 <p>Greetings,<br/>[company name]</p>`;
 
-const DEFAULT_SMS_BODY = `[recipient name], you now have access to the [title] handbook!\n\n- Greetings from [company name]`;
-
 export const FollowUpPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -47,7 +45,9 @@ export const FollowUpPage: React.FC = () => {
 
   const [emailSubject, setEmailSubject] = useState('Your Staff Handbook');
   const [emailBody, setEmailBody] = useState(DEFAULT_EMAIL_BODY);
-  const [smsBody, setSmsBody] = useState(DEFAULT_SMS_BODY);
+  // Default text follows the admin's language and includes the login link. The
+  // old one had no link, was English-only and read "Staff Handbook handbook".
+  const [smsBody, setSmsBody] = useState(() => t('followUp.defaultSms'));
   const [sending, setSending] = useState(false);
 
   const [emailEnabled, setEmailEnabled] = useState(true);

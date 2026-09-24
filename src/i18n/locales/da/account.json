@@ -84,7 +84,7 @@
   "companyProfile.field.zipCode": "Postnummer",
   "companyProfile.field.mobile": "Mobil",
   "companyProfile.field.senderName": "Afsendernavn",
-  "companyProfile.senderNameNote": "Standard er dit virksomhedsnavn. Maks 30 tegn.",
+  "companyProfile.senderNameNote": "Vises som afsender på SMS'er. Maks 11 tegn: bogstaverne A–Z (ikke æ, ø, å), tal og mellemrum. Lad feltet stå tomt for at bruge „{{sender}}“.",
   "companyProfile.logo.upload": "Klik for at uploade virksomhedslogo",
   "companyProfile.logo.uploading": "Uploader...",
   "companyProfile.logo.allowedFormats": "Upload kun: jpg, jpeg, gif, png",
@@ -307,5 +307,6 @@
   "subscription.request.sop": "Anmod om SOP",
   "subscription.request.requesting": "Sender…",
   "subscription.request.requested": "Tak! Vi har modtaget din anmodning og kontakter dig snarest.",
-  "subscription.request.requestError": "Anmodningen kunne ikke sendes. Prøv venligst igen."
+  "subscription.request.requestError": "Anmodningen kunne ikke sendes. Prøv venligst igen.",
+  "companyProfile.error.senderNameInvalid": "Afsendernavnet må højst være 11 tegn og kun indeholde bogstaverne A–Z, tal og mellemrum."
 }

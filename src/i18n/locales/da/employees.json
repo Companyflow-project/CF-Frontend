@@ -332,5 +332,6 @@
   "rolesModal.noEmployees": "Ingen medarbejdere fundet",
   "form.sendSmsInvite": "Send også invitationen som SMS",
   "form.sendSmsInviteHint": "Medarbejderen får et log ind-link på sit mobilnummer. Bruger én SMS-kredit.",
-  "form.sendSmsInviteNoNumber": "Indtast et mobilnummer for at kunne sende en SMS-invitation."
+  "form.sendSmsInviteNoNumber": "Indtast et mobilnummer for at kunne sende en SMS-invitation.",
+  "followUp.defaultSms": "Hej [recipient name]! Du har nu adgang til personalehåndbogen hos [company name]. Log ind her: [login]"
 }
