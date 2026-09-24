@@ -4,7 +4,7 @@ import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { useHandbookTree } from '../hooks';
-import { handbookApi } from '../api';
+import { handbookApi, type HandbookVersionInfo } from '../api';
 import { useAppearance } from '@/context/appearance-context';
 import { resolveHtmlUrls, resolveBackendUrl } from '@/lib/utils';
 import { useHandbookLang } from '../components/language-toggle';
@@ -16,7 +16,17 @@ export const HandbookPrintPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [storedLang] = useHandbookLang();
   const lang = searchParams.get('lang') || storedLang;
-  const { data: tree, loading: treeLoading, error: treeError } = useHandbookTree(lang);
+  const { data: tree, loading: treeLoading, error: treeError, bid } = useHandbookTree(lang);
+  const [version, setVersion] = useState<HandbookVersionInfo | null>(null);
+  useEffect(() => {
+    if (!bid) return;
+    let cancelled = false;
+    handbookApi.getHandbookVersion(bid).then((v) => { if (!cancelled) setVersion(v); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [bid]);
+  const publishedDate = version?.publishedAt
+    ? new Date(version.publishedAt).toLocaleDateString(lang === 'da' ? 'da-DK' : 'en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
+    : null;
   const [bodies, setBodies] = useState<Map<number, string>>(new Map());
   const [pageImages, setPageImages] = useState<Map<number, { url: string; name: string; placement: string }>>(new Map());
   const [bodiesLoading, setBodiesLoading] = useState(false);
@@ -167,6 +177,17 @@ export const HandbookPrintPage: React.FC = () => {
         </div>
 
         <div ref={printRef} className="handbook-print-content">
+          {/* Name and version — part of the printed handbook, so NOT print:hidden. */}
+          <div className="handbook-print-header mb-8 pb-4 border-b border-[#e5e7eb]">
+            <h1 className="text-2xl font-bold" style={{ color: getColor('headlines') }}>
+              {version?.title || t('print.handbookTitle')}
+            </h1>
+            <p className="text-sm text-[#6b7280] mt-1">
+              {version && version.version > 0
+                ? `${t('print.version', { version: version.version })}${publishedDate ? ` · ${t('print.publishedOn', { date: publishedDate })}` : ''}`
+                : t('print.draft')}
+            </p>
+          </div>
           {readyHandbookData.length === 0 ? (
             <p className="text-[#6b7280] py-8">{t('print.noPages')}</p>
           ) : (

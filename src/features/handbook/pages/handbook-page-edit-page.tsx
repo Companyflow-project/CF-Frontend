@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, History } from 'lucide-react';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { useHandbookLang } from '../components/language-toggle';
 import { useTranslation } from 'react-i18next';
+import { PageHistoryPanel } from '../components/page-history-panel';
 import { handbookRoutes } from '../routes';
 import { handbookApi } from '../api';
 
@@ -16,6 +17,9 @@ export const HandbookPageEditPage: React.FC = () => {
   const [pageTitle, setPageTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [lang] = useHandbookLang();
+  const [historyOpen, setHistoryOpen] = useState(false);
+  // Bumped after a restore so the editor reloads the restored text.
+  const [editorKey, setEditorKey] = useState(0);
 
   const pageId = id ? Number.parseInt(id, 10) : NaN;
 
@@ -81,9 +85,27 @@ export const HandbookPageEditPage: React.FC = () => {
             )}
           </h1>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setHistoryOpen(true)}
+          className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
+        >
+          <History className="h-4 w-4" />
+          {t('history.button')}
+        </Button>
       </div>
 
+      <PageHistoryPanel
+        nid={pageId}
+        lang={lang}
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        onRestored={() => { setHistoryOpen(false); setEditorKey((k) => k + 1); }}
+      />
+
       <HandbookPageEditor
+        key={editorKey}
         pageId={pageId}
         lang={lang}
         onSave={() => navigate(handbookRoutes.pages)}

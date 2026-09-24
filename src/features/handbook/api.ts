@@ -78,6 +78,29 @@ export interface HandbookViewerPageMeta {
 export const COMPANY_FLOW_CONTENT_NID = 20134;
 
 /** Single page in handbook print response (book order). */
+export interface PageRevisionSummary {
+  vid: number;
+  title: string;
+  /** Unix timestamp (seconds). */
+  changed: number;
+  authorName: string;
+  logMessage: string;
+  isCurrent: boolean;
+  /** False for revisions made before text was kept per version. */
+  hasBody: boolean;
+}
+
+export interface PageRevisionContent extends PageRevisionSummary {
+  body: string;
+}
+
+export interface HandbookVersionInfo {
+  version: number;
+  publishedAt: string | null;
+  publishedBy: string | null;
+  title: string;
+}
+
 export interface HandbookPrintPageItem {
   title: string;
   body: string;
@@ -269,6 +292,32 @@ export const handbookApi = {
    * Get page details for editing
    * GET /api/handbook/pages/:id?lang=en
    */
+  /** GET /handbook/pages/:nid/history — every saved version of a page, newest first. */
+  async getPageHistory(nid: number, lang: string = 'da'): Promise<PageRevisionSummary[]> {
+    const response = await axiosClient.get<PageRevisionSummary[]>(`/handbook/pages/${nid}/history`, { params: { lang } });
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  /** GET /handbook/pages/:nid/history/:vid — the text of one version. */
+  async getPageRevision(nid: number, vid: number, lang: string = 'da'): Promise<PageRevisionContent> {
+    const response = await axiosClient.get<PageRevisionContent>(`/handbook/pages/${nid}/history/${vid}`, { params: { lang } });
+    return response.data;
+  },
+
+  /** POST /handbook/pages/:nid/history/:vid/restore — the current text stays in history. */
+  async restorePageRevision(nid: number, vid: number, lang: string = 'da'): Promise<{ success: boolean; vid: number }> {
+    const response = await axiosClient.post<{ success: boolean; vid: number }>(
+      `/handbook/pages/${nid}/history/${vid}/restore`, undefined, { params: { lang } },
+    );
+    return response.data;
+  },
+
+  /** GET /handbook/version/:bid — version number bumped on every Publish; shown on the printed handbook. */
+  async getHandbookVersion(bid: number): Promise<HandbookVersionInfo> {
+    const response = await axiosClient.get<HandbookVersionInfo>(`/handbook/version/${bid}`);
+    return response.data;
+  },
+
   async getPageDetail(pageId: number, lang: string = 'da'): Promise<HandbookPageDetail | null> {
     try {
       const response = await axiosClient.get<HandbookPageDetail>(
