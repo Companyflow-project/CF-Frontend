@@ -126,11 +126,11 @@ export const EmployeesPage: React.FC = () => {
     let filtered = [...employees];
 
     if (isStrictAdmin) {
-      // "Show inactive" unticked → hide inactive employees (show active only).
-      // Ticked → show everyone (active + inactive).
-      if (!showInactive) {
-        filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.status !== 'INACTIVE');
-      }
+      // "Show inactive" unticked → active employees only (plus yourself).
+      // Ticked → inactive employees only.
+      filtered = showInactive
+        ? filtered.filter((emp) => emp.status === 'INACTIVE')
+        : filtered.filter((emp) => isCurrentUser(emp) || emp.status !== 'INACTIVE');
       // "Public only" ticked → only show public employees
       if (publicOnly) {
         filtered = filtered.filter((emp) => isCurrentUser(emp) || emp.isPublic);
