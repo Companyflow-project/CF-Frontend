@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -13,6 +14,7 @@ export const HelpBanner: React.FC<HelpBannerProps> = ({
     children,
     onUserManualClick
 }) => {
+    const { t } = useTranslation('common');
     return (
         <div className={cn(
             "relative bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 overflow-hidden",
@@ -22,7 +24,7 @@ export const HelpBanner: React.FC<HelpBannerProps> = ({
             <div className="absolute left-0 top-0 bottom-0 w-[6px] bg-[#f59e0b]" />
 
             <div className="flex-1 pl-3 text-sm text-[#0d0e0e] leading-relaxed">
-                <span className="font-bold mr-1">Help.</span>
+                <span className="font-bold mr-1">{t('help')}</span>
                 {children}
             </div>
 
@@ -32,7 +34,7 @@ export const HelpBanner: React.FC<HelpBannerProps> = ({
                 className="shrink-0 h-8 text-xs font-medium text-gray-700 bg-white border-gray-200 hover:bg-gray-50 rounded-md shadow-sm"
                 onClick={onUserManualClick}
             >
-                User manual
+                {t('userManual')}
             </Button>
         </div>
     );

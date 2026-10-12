@@ -46,5 +46,6 @@
   "sort.employment": "Employment",
   "password.show": "Show password",
   "password.hide": "Hide password",
-  "errors.forbidden": "You do not have permission to do this. Contact your administrator if you think this is a mistake."
+  "errors.forbidden": "You do not have permission to do this. Contact your administrator if you think this is a mistake.",
+  "helpBanner.defaultDescription": "Need assistance? Contact our support team for help."
 }
