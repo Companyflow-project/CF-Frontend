@@ -195,7 +195,7 @@ export const EmployeeStatsAllPage: React.FC = () => {
       </div>
 
           <HelpBanner
-        title="Help."
+        title={t('help', { ns: 'common' })}
         description={t('stats.helpAll')}
       />
 

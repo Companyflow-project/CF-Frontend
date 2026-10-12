@@ -325,7 +325,7 @@ export const FollowUpPage: React.FC = () => {
       {/* Help banner */}
       <div className="mb-5 bg-[#fff9f0] rounded-[12px] border border-[#f59e0b] border-l-[5px] px-4 py-3">
         <p className="text-[13px] text-[#0d0e0e]">
-          <span className="font-bold">Help.</span>{' '}
+          <span className="font-bold">{t('help', { ns: 'common' })}</span>{' '}
           {t('followUp.helpDesc')}
         </p>
       </div>

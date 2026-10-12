@@ -149,9 +149,9 @@ export const AddEmployeePage: React.FC = () => {
         </div>
 
         <HelpBanner
-          title="Help."
-          description="Create, edit, and remove employees. Send a message with a handbook link, and re-send when needed. Choose which profiles are Public (visible in the info list) per employee or use the bulk visibility buttons. Use work email@phones where possible so notifications arrive reliably."
-          linkText="User manual"
+          title={tCommon('help')}
+          description={t('manage.helpLine1')}
+          linkText={tCommon('userManual')}
           linkHref="#"
         />
 

@@ -105,13 +105,13 @@ export const AssignEmploymentTypePage: React.FC = () => {
                 {/* Help Banner */}
                 <div className="mb-6 bg-[#fff9f0] rounded-lg border-l-4 border-[#f59e0b] p-4 flex items-start justify-between">
                     <p className="text-sm text-[#0d0e0e]">
-                        <span className="font-bold">Help.</span> Here you can view all employees and assign them these employment type.
+                        <span className="font-bold">{t('help', { ns: 'common' })}</span> {t('infoList.helpDesc')}
                     </p>
                     <Button
                         variant="link"
                         className="text-[#0d0e0e] underline whitespace-nowrap"
                     >
-                        User manual
+                        {t('userManual', { ns: 'common' })}
                     </Button>
                 </div>
 
