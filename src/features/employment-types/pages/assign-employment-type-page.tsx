@@ -18,6 +18,7 @@ import { useAuth } from '@/context/auth-context';
 import { useAssignEmploymentType } from '@/features/employment-types/hooks';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { openUserManual } from '@/features/user-manual/topics';
 
 export const AssignEmploymentTypePage: React.FC = () => {
   const { t } = useTranslation('employees');
@@ -110,6 +111,7 @@ export const AssignEmploymentTypePage: React.FC = () => {
                     <Button
                         variant="link"
                         className="text-[#0d0e0e] underline whitespace-nowrap"
+                        onClick={() => openUserManual('assign-employment-type')}
                     >
                         {t('userManual', { ns: 'common' })}
                     </Button>

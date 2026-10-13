@@ -20,6 +20,7 @@ import { usePublicContacts } from '../hooks';
 import { contactsRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole } from '@/lib/utils';
+import { openUserManual } from '@/features/user-manual/topics';
 
 export const PublicContactsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -131,6 +132,7 @@ export const PublicContactsPage: React.FC = () => {
             variant="outline"
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
+            onClick={() => openUserManual('contacts-info-list')}
           >
             {tCommon('userManual')}
           </Button>

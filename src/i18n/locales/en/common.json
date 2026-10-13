@@ -25,6 +25,15 @@
   "next": "Next",
   "previous": "Previous",
   "userManual": "User manual",
+  "userManualPage": {
+    "search": "Search…",
+    "backToApp": "Back to CompanyFlow",
+    "empty": "No content available yet.",
+    "loadError": "The user manual could not be loaded.",
+    "sectionError": "Could not load this page",
+    "selectTitle": "Select a topic",
+    "selectHint": "Choose a topic from the menu on the left to get started."
+  },
   "help": "Help.",
   "saving": "Saving...",
   "close": "Close",

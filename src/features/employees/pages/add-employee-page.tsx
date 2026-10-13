@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { employeesApi } from '../api';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { userManualRoutes } from '@/features/user-manual/routes';
 
 export const AddEmployeePage: React.FC = () => {
   const { t } = useTranslation('employees');
@@ -152,7 +153,7 @@ export const AddEmployeePage: React.FC = () => {
           title={tCommon('help')}
           description={t('manage.helpLine1')}
           linkText={tCommon('userManual')}
-          linkHref="#"
+          linkHref={userManualRoutes.section('employee-add')}
         />
 
 

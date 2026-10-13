@@ -12,6 +12,7 @@ import { handbookRoutes } from '../routes';
 import { employeesRoutes } from '@/features/employees/routes';
 import { useHandbookTree } from '../hooks';
 import { toast } from 'sonner';
+import { openUserManual } from '@/features/user-manual/topics';
 
 type MessageType = 'none' | 'standard' | 'custom';
 
@@ -194,6 +195,7 @@ export const PublishHandbookPage: React.FC = () => {
             variant="outline"
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
+            onClick={() => openUserManual('handbook-publish')}
           >
             {t('publish.readFullGuide')}
           </Button>

@@ -22,6 +22,7 @@ import { isAdminRole } from '@/lib/utils';
 import { resolveRbacRole } from '@/lib/rbac';
 import type { Employee } from '@/types/models';
 import { useTranslation } from 'react-i18next';
+import { userManualRoutes } from '@/features/user-manual/routes';
 
 function employeeToFormData(emp: Employee): EmployeeFormData {
   return {
@@ -386,7 +387,7 @@ export const EditEmployeePage: React.FC = () => {
           title={t('edit.helpTitle')}
           description={t('edit.helpDesc')}
           linkText={t('edit.userManual')}
-          linkHref="#"
+          linkHref={userManualRoutes.section('employee-edit')}
         />
 
         {successMessage && (

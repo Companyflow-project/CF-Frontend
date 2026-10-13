@@ -1,16 +1,20 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { BookOpen, ChevronRight, ChevronDown, Search, AlertCircle } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft, BookOpen, ChevronRight, ChevronDown, Search, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { userManualApi, ManualNavItem, ManualSection } from '../api';
 import { userManualRoutes } from '../routes';
+
+/** URL of a manual page: by its topic key when it has one (e.g. /user-manual/employees). */
+const linkFor = (item: ManualNavItem) => userManualRoutes.section(item.key ?? item.nid);
 
 // ─── Sidebar nav item (recursive) ───────────────────────────────────────────
 
 const NavItem: React.FC<{
     item: ManualNavItem;
     activeNid: number | null;
-    onSelect: (nid: number) => void;
+    onSelect: (item: ManualNavItem) => void;
     searchQuery: string;
 }> = ({ item, activeNid, onSelect, searchQuery }) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -44,7 +48,7 @@ const NavItem: React.FC<{
                     : 'text-[#374151] hover:bg-[#f6fbf9] hover:text-[#1a5948]'
                     }`}
                 onClick={() => {
-                    onSelect(item.nid);
+                    onSelect(item);
                     if (hasChildren) setOpen((p) => !p);
                 }}
             >
@@ -111,11 +115,24 @@ function flattenTree(items: ManualNavItem[]): ManualNavItem[] {
     return items.flatMap((item) => [item, ...(item.children ? flattenTree(item.children) : [])]);
 }
 
+function findParent(items: ManualNavItem[], nid: number): ManualNavItem | null {
+    for (const item of items) {
+        if (item.children?.some((c) => c.nid === nid)) return item;
+        const found = item.children ? findParent(item.children, nid) : null;
+        if (found) return found;
+    }
+    return null;
+}
+
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export const UserManualPage: React.FC = () => {
     const navigate = useNavigate();
-    const { nid: nidParam } = useParams<{ nid?: string }>();
+    const { t, i18n } = useTranslation('common');
+    // The manual is written in Danish and English.
+    const lang = i18n.language?.startsWith('en') ? 'en' : 'da';
+    // A page is addressed by its topic key (/user-manual/employees) or by its node id.
+    const { nid: pageParam } = useParams<{ nid?: string }>();
 
     const [tree, setTree] = useState<ManualNavItem[]>([]);
     const [treeLoading, setTreeLoading] = useState(true);
@@ -125,63 +142,77 @@ export const UserManualPage: React.FC = () => {
     const [sectionLoading, setSectionLoading] = useState(false);
     const [sectionError, setSectionError] = useState<string | null>(null);
 
-    const [activeNid, setActiveNid] = useState<number | null>(null);
     const [search, setSearch] = useState('');
 
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // ── Load tree once ──────────────────────────────────────────────────────
+    const flat = flattenTree(tree);
+    const activeNid = !pageParam
+        ? null
+        : /^\d+$/.test(pageParam)
+            ? Number(pageParam)
+            : flat.find((item) => item.key === pageParam)?.nid ?? null;
+
+    // ── Load tree (again when the language changes) ─────────────────────────
     useEffect(() => {
         setTreeLoading(true);
         userManualApi
-            .getTree()
+            .getTree(lang)
             .then((data) => {
                 setTree(data);
                 setTreeError(null);
-                // If no NID in URL, auto-select first item
-                if (!nidParam) {
-                    const flat = flattenTree(data);
-                    if (flat.length > 0) {
-                        navigate(userManualRoutes.section(flat[0].nid), { replace: true });
-                    }
-                }
             })
-            .catch((err) => setTreeError(err.message || 'Failed to load manual'))
+            .catch((err) => setTreeError(err.message || t('userManualPage.loadError')))
             .finally(() => setTreeLoading(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [lang]);
 
-    // ── Load section when NID param changes ─────────────────────────────────
+    // ── Open the first page when no page (or an unknown topic) is in the URL ─
     useEffect(() => {
-        if (!nidParam) return;
-        const nid = Number(nidParam);
-        setActiveNid(nid);
+        if (treeLoading || treeError || activeNid != null || flat.length === 0) return;
+        navigate(linkFor(flat[0]), { replace: true });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [treeLoading, treeError, activeNid, tree]);
+
+    // ── Load section when the page or language changes ──────────────────────
+    useEffect(() => {
+        if (activeNid == null) return;
         setSectionLoading(true);
         setSectionError(null);
         setSection(null);
         userManualApi
-            .getSection(nid)
+            .getSection(activeNid, lang)
             .then((data) => {
                 setSection(data);
                 // Scroll content area to top
                 if (contentRef.current) contentRef.current.scrollTop = 0;
             })
-            .catch((err) => setSectionError(err.message || 'Failed to load section'))
+            .catch((err) => setSectionError(err.message || t('userManualPage.loadError')))
             .finally(() => setSectionLoading(false));
-    }, [nidParam]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeNid, lang]);
 
     const handleSelect = useCallback(
-        (nid: number) => {
-            navigate(userManualRoutes.section(nid));
+        (item: ManualNavItem) => {
+            navigate(linkFor(item));
         },
         [navigate],
     );
 
+    // Links between manual pages stay inside the app instead of reloading the page.
+    const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        const href = (e.target as HTMLElement).closest('a')?.getAttribute('href');
+        if (href?.startsWith(`${userManualRoutes.root}/`)) {
+            e.preventDefault();
+            navigate(href);
+        }
+    };
+
     // ── Prev / Next ─────────────────────────────────────────────────────────
-    const flat = flattenTree(tree);
     const currentIndex = flat.findIndex((item) => item.nid === activeNid);
     const prevItem = currentIndex > 0 ? flat[currentIndex - 1] : null;
-    const nextItem = currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null;
+    const nextItem = currentIndex >= 0 && currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null;
+    const parentItem = activeNid != null ? findParent(tree, activeNid) : null;
 
     return (
         <div className="bg-[#f7faf9] min-h-screen flex flex-col">
@@ -190,7 +221,14 @@ export const UserManualPage: React.FC = () => {
                 <div className="h-8 w-8 rounded-[9px] bg-[#d4f4e6] flex items-center justify-center">
                     <BookOpen className="h-4 w-4 text-[#1a5948]" />
                 </div>
-                <h1 className="text-lg font-bold text-[#0d0e0e]">User Manual</h1>
+                <h1 className="text-lg font-bold text-[#0d0e0e]">{t('userManual')}</h1>
+                <Link
+                    to="/"
+                    className="ml-auto flex items-center gap-1.5 text-sm text-[#3d997d] hover:text-[#1a5948] font-medium"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    {t('userManualPage.backToApp')}
+                </Link>
             </div>
 
             <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 57px)' }}>
@@ -201,7 +239,7 @@ export const UserManualPage: React.FC = () => {
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9ca3af]" />
                             <Input
-                                placeholder="Search…"
+                                placeholder={t('userManualPage.search')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="pl-9 h-9 rounded-[8px] border-[#e5e7eb] text-sm bg-[#f9fafb] placeholder:text-[#9ca3af]"
@@ -216,7 +254,7 @@ export const UserManualPage: React.FC = () => {
                             <p className="text-xs text-red-500 mt-3 px-2">{treeError}</p>
                         )}
                         {!treeLoading && !treeError && tree.length === 0 && (
-                            <p className="text-xs text-[#9ca3af] mt-3 px-2">No content available.</p>
+                            <p className="text-xs text-[#9ca3af] mt-3 px-2">{t('userManualPage.empty')}</p>
                         )}
                         {!treeLoading && !treeError && tree.length > 0 && (
                             <ul className="space-y-0.5">
@@ -246,29 +284,29 @@ export const UserManualPage: React.FC = () => {
                                 <div className="h-12 w-12 rounded-[14px] bg-red-50 flex items-center justify-center">
                                     <AlertCircle className="h-6 w-6 text-red-400" />
                                 </div>
-                                <p className="text-sm font-medium text-[#0d0e0e]">Could not load section</p>
+                                <p className="text-sm font-medium text-[#0d0e0e]">{t('userManualPage.sectionError')}</p>
                                 <p className="text-xs text-[#9ca3af]">{sectionError}</p>
                             </div>
                         )}
 
                         {/* Empty / no selection */}
-                        {!sectionLoading && !sectionError && !section && !nidParam && !treeLoading && (
+                        {!sectionLoading && !sectionError && !section && !pageParam && !treeLoading && (
                             <div className="flex flex-col items-center justify-center py-24 gap-3">
                                 <div className="h-14 w-14 rounded-[16px] bg-[#d4f4e6] flex items-center justify-center">
                                     <BookOpen className="h-7 w-7 text-[#1a5948]" />
                                 </div>
-                                <p className="text-base font-semibold text-[#0d0e0e]">Select a section</p>
-                                <p className="text-sm text-[#9ca3af]">Choose a topic from the sidebar to get started.</p>
+                                <p className="text-base font-semibold text-[#0d0e0e]">{t('userManualPage.selectTitle')}</p>
+                                <p className="text-sm text-[#9ca3af]">{t('userManualPage.selectHint')}</p>
                             </div>
                         )}
 
                         {/* Section content */}
                         {!sectionLoading && !sectionError && section && (
                             <>
-                                {/* Breadcrumb-style depth indicator */}
-                                {activeNid && (
+                                {/* Chapter the page belongs to */}
+                                {parentItem && (
                                     <p className="text-xs text-[#9ca3af] font-medium uppercase tracking-wider mb-3">
-                                        Section #{section.nid}
+                                        {parentItem.title}
                                     </p>
                                 )}
 
@@ -277,10 +315,12 @@ export const UserManualPage: React.FC = () => {
                                 </h1>
 
                                 <div
+                                    onClick={handleContentClick}
                                     className="prose prose-sm max-w-none
                                         prose-headings:font-bold prose-headings:text-[#0d0e0e]
                                         prose-h2:text-xl prose-h3:text-lg
                                         prose-p:text-[#374151] prose-p:leading-relaxed
+                                        prose-lead:text-base prose-lead:text-[#374151]
                                         prose-a:text-[#3d997d] prose-a:no-underline hover:prose-a:underline
                                         prose-li:text-[#374151]
                                         prose-strong:text-[#0d0e0e]
@@ -288,6 +328,11 @@ export const UserManualPage: React.FC = () => {
                                         prose-pre:bg-[#f0f5f3] prose-pre:border prose-pre:border-[#e5efea] prose-pre:rounded-[10px]
                                         prose-blockquote:border-l-[#3d997d] prose-blockquote:text-[#6b7280]
                                         prose-hr:border-[#e5efea]
+                                        prose-img:my-0 prose-img:rounded-[12px] prose-img:border prose-img:border-[#e5efea] prose-img:shadow-sm prose-img:cursor-zoom-in
+                                        prose-figcaption:text-xs prose-figcaption:text-[#6b7280]
+                                        prose-dt:text-[#0d0e0e] prose-dd:text-[#374151]
+                                        [&_.ui]:inline-block [&_.ui]:rounded-md [&_.ui]:border [&_.ui]:border-[#d6e8e1] [&_.ui]:bg-[#f0f7f5]
+                                        [&_.ui]:px-1.5 [&_.ui]:text-[0.92em] [&_.ui]:font-medium [&_.ui]:leading-snug [&_.ui]:text-[#1a5948]
                                     "
                                     dangerouslySetInnerHTML={{ __html: section.body }}
                                 />
@@ -297,7 +342,7 @@ export const UserManualPage: React.FC = () => {
                                     <div className="mt-12 pt-6 border-t border-[#e5efea] flex items-center justify-between gap-4">
                                         {prevItem ? (
                                             <button
-                                                onClick={() => handleSelect(prevItem.nid)}
+                                                onClick={() => handleSelect(prevItem)}
                                                 className="flex items-center gap-2 text-sm text-[#3d997d] hover:text-[#1a5948] font-medium transition-colors"
                                             >
                                                 <ChevronRight className="h-4 w-4 rotate-180" />
@@ -306,7 +351,7 @@ export const UserManualPage: React.FC = () => {
                                         ) : <span />}
                                         {nextItem && (
                                             <button
-                                                onClick={() => handleSelect(nextItem.nid)}
+                                                onClick={() => handleSelect(nextItem)}
                                                 className="flex items-center gap-2 text-sm text-[#3d997d] hover:text-[#1a5948] font-medium transition-colors ml-auto"
                                             >
                                                 <span className="truncate max-w-[220px]">{nextItem.title}</span>

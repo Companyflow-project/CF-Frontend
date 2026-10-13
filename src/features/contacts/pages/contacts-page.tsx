@@ -35,6 +35,7 @@ import type { Contact } from '@/types/models';
 import { ArrowDownWideNarrow, ArrowUpDown, Search, Download } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTranslation } from 'react-i18next';
+import { openUserManual } from '@/features/user-manual/topics';
 
 export const ContactsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -699,6 +700,7 @@ export const ContactsPage: React.FC = () => {
             variant="outline"
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-4 py-2 h-auto whitespace-nowrap"
+            onClick={() => openUserManual('contacts')}
           >
             {t('manage.userManual')}
           </Button>
@@ -954,12 +956,13 @@ export const ContactsPage: React.FC = () => {
                   <span className="text-base text-[#0d0e0e]">⇢</span>
                 </button>
                 {[
-                  { key: 'manage.helpGuides.editProfiles' },
-                  { key: 'manage.helpGuides.addRelatives' },
-                  { key: 'manage.helpGuides.importContacts' },
+                  { key: 'manage.helpGuides.editProfiles', topic: 'guide-edit-profiles' },
+                  { key: 'manage.helpGuides.addRelatives', topic: 'guide-add-relatives' },
+                  { key: 'manage.helpGuides.importContacts', topic: 'guide-import-contacts' },
                 ].map((item) => (
                   <button
                     key={item.key}
+                    onClick={() => openUserManual(item.topic)}
                     className="w-full flex items-center justify-between px-4 py-3 rounded-[12px] border border-[#cce3da] bg-white text-sm text-[#0d0e0e] hover:bg-[#f0f7f5] text-left"
                   >
                     <span>{t(item.key)}</span>

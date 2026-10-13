@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { employeesRoutes } from '../routes';
+import { openUserManual } from '@/features/user-manual/topics';
 
 
 
@@ -143,6 +144,7 @@ export const InformationListLinksPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
+                        onClick={() => openUserManual()}
                     >
                         {t('infoListLinks.readFullGuide')}
                     </Button>

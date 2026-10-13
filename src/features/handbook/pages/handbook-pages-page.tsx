@@ -25,6 +25,7 @@ import { useAuth } from '@/context/auth-context';
 import { isAdminRole, canViewAllPagesRole } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { openUserManual } from '@/features/user-manual/topics';
 
 export const HandbookPagesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -554,6 +555,7 @@ export const HandbookPagesPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm whitespace-nowrap"
+                        onClick={() => openUserManual('handbook-pages')}
                     >
                         {t('pages.readFullGuide')}
                     </Button>

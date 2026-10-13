@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole, isAdminEmployeeRole } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { openUserManual } from '@/features/user-manual/topics';
 
 export const EmployeesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -402,6 +403,7 @@ export const EmployeesPage: React.FC = () => {
             variant="outline"
             size="sm"
             className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
+            onClick={() => openUserManual('employees')}
           >
             {t('manage.userManual')}
           </Button>

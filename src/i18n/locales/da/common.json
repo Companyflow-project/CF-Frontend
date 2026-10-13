@@ -25,6 +25,15 @@
   "next": "Næste",
   "previous": "Forrige",
   "userManual": "Brugermanual",
+  "userManualPage": {
+    "search": "Søg…",
+    "backToApp": "Tilbage til CompanyFlow",
+    "empty": "Der er intet indhold endnu.",
+    "loadError": "Brugermanualen kunne ikke indlæses.",
+    "sectionError": "Siden kunne ikke indlæses",
+    "selectTitle": "Vælg et emne",
+    "selectHint": "Vælg et emne i menuen til venstre for at komme i gang."
+  },
   "help": "Hjælp.",
   "saving": "Gemmer...",
   "close": "Luk",

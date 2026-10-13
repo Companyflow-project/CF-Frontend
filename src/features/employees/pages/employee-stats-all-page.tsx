@@ -16,6 +16,7 @@ import { employeesApi } from '../api';
 import { useEmployees } from '../hooks';
 import { companiesApi, type LicenseUsage } from '@/features/companies/api';
 import { useAuth } from '@/context/auth-context';
+import { userManualRoutes } from '@/features/user-manual/routes';
 
 export const EmployeeStatsAllPage: React.FC = () => {
   const navigate = useNavigate();
@@ -197,6 +198,8 @@ export const EmployeeStatsAllPage: React.FC = () => {
           <HelpBanner
         title={t('help', { ns: 'common' })}
         description={t('stats.helpAll')}
+        linkText={t('userManual', { ns: 'common' })}
+        linkHref={userManualRoutes.section('employee-statistics')}
       />
 
           <Card className="bg-white border border-[#e5efea] rounded-[22px] shadow-[0_18px_45px_rgba(14,51,38,0.08)] mb-6">
