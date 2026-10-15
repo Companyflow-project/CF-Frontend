@@ -13,18 +13,50 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAuth } from '@/features/auth/hooks';
 import { useAdminUsers, useUpdateAdminUser } from '../hooks';
-import type { AdminUserListParams } from '../types';
+import type { AdminUser, AdminUserListParams } from '../types';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SortableTableHead, toggleSort, type SortDirection } from '../components/sortable-table-head';
 
-const ROLES = ['all', 'admin', 'company_admin', 'employee'] as const;
-const STATUSES = ['all', 'active', 'blocked'] as const;
+/** Real Drupal roles, highest first (same order the backend picks a user's
+ *  displayed role by). 'EMPLOYEE' = no role. Labels: users.roles.<value>. */
+const CONSOLE_ROLES = ['administrator', 'platform_admin', 'staff_user', 'crm_user'];
+const COMPANY_ROLES = ['account_owner', 'company_admin', 'senior_employee'];
+const ROLES = [...CONSOLE_ROLES, ...COMPANY_ROLES, 'EMPLOYEE'];
+
+/** Roles a change to `role` replaces — mirrors rolesReplacedBy in the backend
+ *  (admin/users/users.service.ts). Every other role the user holds is kept. */
+const rolesReplacedBy = (role: string): string[] =>
+  CONSOLE_ROLES.includes(role) ? CONSOLE_ROLES : [...CONSOLE_ROLES, ...COMPANY_ROLES];
+
+/** The list endpoint also returns every role the user holds. */
+type UserRow = AdminUser & { roles?: string[] };
+
+/** Role shown in the picker: the highest role this page manages that the user
+ *  holds, else their other role (e.g. ceo), else 'EMPLOYEE'. */
+const shownRole = (user: UserRow): string =>
+  user.roles && user.roles.length > 0 ? ROLES.find((r) => user.roles!.includes(r)) ?? user.roles[0] : user.role;
+
+/** UI value -> users.status value the API filters on. */
+const STATUSES = [
+  { key: 'active', value: '1' },
+  { key: 'blocked', value: '0' },
+] as const;
 const PAGE_SIZE = 20;
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation('admin');
+  const { user: viewer } = useAuth();
+  // Only a Superadmin may grant the Superadmin role.
+  const assignableRoles = viewer?.role === 'administrator' ? ROLES : ROLES.filter((r) => r !== 'administrator');
+  const roleLabel = (role: string) =>
+    ROLES.includes(role)
+      ? t(`users.roles.${role}`)
+      : t('users.roles.other', { role: t(`users.otherRoles.${role}`, { defaultValue: role }) });
+  const [confirmChange, setConfirmChange] = useState<{ user: UserRow; role: string; removed: string[] } | null>(null);
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -104,6 +136,19 @@ export const AdminUsersPage: React.FC = () => {
     );
   };
 
+  /** Confirm first when the change takes away roles other than the shown one. */
+  const requestRoleChange = (user: UserRow, newRole: string) => {
+    const current = shownRole(user);
+    if (newRole === current) return;
+    const replaced = rolesReplacedBy(newRole);
+    const removed = (user.roles ?? [current]).filter((r) => r !== newRole && r !== current && replaced.includes(r));
+    if (removed.length > 0) {
+      setConfirmChange({ user, role: newRole, removed });
+    } else {
+      handleRoleChange(user.uid, newRole);
+    }
+  };
+
   const handleToggleStatus = (userId: number, currentStatus: number) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
     updateUser.mutate(
@@ -162,9 +207,9 @@ export const AdminUsersPage: React.FC = () => {
               className="w-full sm:w-44"
             >
               <option value="all">{t('users.allRoles', 'All roles')}</option>
-              {ROLES.filter((r) => r !== 'all').map((role) => (
+              {ROLES.map((role) => (
                 <option key={role} value={role}>
-                  {t(`users.roles.${role}`)}
+                  {roleLabel(role)}
                 </option>
               ))}
             </Select>
@@ -177,9 +222,9 @@ export const AdminUsersPage: React.FC = () => {
               className="w-full sm:w-40"
             >
               <option value="all">{t('users.allStatuses', 'All statuses')}</option>
-              {STATUSES.filter((s) => s !== 'all').map((status) => (
-                <option key={status} value={status}>
-                  {t(`users.statuses.${status}`)}
+              {STATUSES.map((status) => (
+                <option key={status.key} value={status.value}>
+                  {t(`users.statuses.${status.key}`)}
                 </option>
               ))}
             </Select>
@@ -221,22 +266,34 @@ export const AdminUsersPage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedUsers.map((user) => (
+                  {sortedUsers.map((user: UserRow) => (
                     <TableRow key={user.uid}>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell className="text-gray-500">{user.mail}</TableCell>
                       <TableCell>
                         <Select
-                          value={user.role}
+                          value={shownRole(user)}
                           onChange={(e) =>
-                            handleRoleChange(user.uid, e.target.value)
+                            requestRoleChange(user, e.target.value)
                           }
-                          className="w-40 h-8 text-xs"
-                          disabled={updateUser.isPending}
+                          className="w-48 h-8 text-xs"
+                          disabled={
+                            updateUser.isPending ||
+                            // your own role (the API refuses it) and, for Admins, a Superadmin
+                            String(user.uid) === String(viewer?.id) ||
+                            (shownRole(user) === 'administrator' && !assignableRoles.includes('administrator'))
+                          }
+                          title={(user.roles ?? []).map(roleLabel).join(', ')}
                         >
-                          {ROLES.filter((r) => r !== 'all').map((role) => (
+                          {/* A role this page doesn't assign (e.g. ceo) is shown, not offered. */}
+                          {!assignableRoles.includes(shownRole(user)) && (
+                            <option value={shownRole(user)} disabled>
+                              {roleLabel(shownRole(user))}
+                            </option>
+                          )}
+                          {assignableRoles.map((role) => (
                             <option key={role} value={role}>
-                              {t(`users.roles.${role}`)}
+                              {roleLabel(role)}
                             </option>
                           ))}
                         </Select>
@@ -312,6 +369,35 @@ export const AdminUsersPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirm a role change that takes away other roles the user holds */}
+      <Dialog open={!!confirmChange} onOpenChange={(o) => { if (!o) setConfirmChange(null); }}>
+        <DialogContent className="sm:max-w-md p-6 space-y-4">
+          <h2 className="text-lg font-bold text-[#0d0e0e]">{t('users.confirmRole.title')}</h2>
+          <p className="text-sm text-gray-600">
+            {t('users.confirmRole.body', {
+              name: confirmChange?.user.name || confirmChange?.user.mail || '',
+              role: confirmChange ? roleLabel(confirmChange.role) : '',
+              removed: confirmChange ? confirmChange.removed.map(roleLabel).join(', ') : '',
+            })}
+          </p>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="outline" onClick={() => setConfirmChange(null)}>
+              {t('users.confirmRole.cancel')}
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={updateUser.isPending}
+              onClick={() => {
+                if (confirmChange) handleRoleChange(confirmChange.user.uid, confirmChange.role);
+                setConfirmChange(null);
+              }}
+            >
+              {t('users.confirmRole.confirm')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

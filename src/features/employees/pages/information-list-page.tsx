@@ -15,7 +15,7 @@ import { useEmployees, useCompany, useCompanyInfoListLinks } from '@/lib/api-hoo
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { employeesRoutes } from '../routes';
 import { handbookRoutes } from '@/features/handbook/routes';
-import { adminRoutes } from '@/features/admin/routes';
+import { useInfoListLinks } from '../hooks';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole } from '@/lib/utils';
@@ -29,6 +29,9 @@ export const InformationListPage: React.FC = () => {
 
     const { data: company } = useCompany(companyId);
     const { data: companyLinks } = useCompanyInfoListLinks(companyId);
+    // The company's own "Andre links" (edited on the Links page).
+    const { data: infoListLinks } = useInfoListLinks();
+    const otherLinks = infoListLinks?.otherLinks ?? [];
     const { data: apiEmployees, loading: employeesLoading, error: employeesError } = useEmployees({ limit: 1000 });
 
     // Flatten the saved company links into rows for the General links table.
@@ -53,9 +56,9 @@ export const InformationListPage: React.FC = () => {
 
     const handleEditLinks = () => {
         if (!companyId) return;
-        // Land on the admin edit page anchored to the Links section. The
-        // page's existing location.hash effect scrolls it into view.
-        navigate(`${adminRoutes.companyEdit.replace(':id', companyId)}#links-section`);
+        // The company admins' own Links page (the staff Edit Company page is
+        // only reachable by CompanyFlow staff).
+        navigate(employeesRoutes.informationListLinks);
     };
 
     const handleEditEmployees = () => {
@@ -133,6 +136,27 @@ export const InformationListPage: React.FC = () => {
                                     </li>
                                 ))}
                             </ul>
+                            {otherLinks.length > 0 && (
+                                <>
+                                    <div className="bg-gray-50 px-5 sm:px-6 py-3 text-sm font-semibold text-[#0d0e0e] border-t border-gray-100">
+                                        {t('infoListLinks.otherLinks', 'Other links')}
+                                    </div>
+                                    <ul className="divide-y divide-gray-100">
+                                        {otherLinks.map((link, i) => (
+                                            <li key={`${i}-${link.url}`} className="px-5 sm:px-6 py-3 text-sm">
+                                                <a
+                                                    href={link.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline break-words"
+                                                >
+                                                    {link.title || link.url}
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
                             {companyLinks?.additionalInfo && (
                                 <div className="px-5 sm:px-6 py-3 text-sm text-gray-700 border-t border-gray-100 whitespace-pre-line">
                                     {companyLinks.additionalInfo}

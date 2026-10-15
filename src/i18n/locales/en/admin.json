@@ -238,6 +238,30 @@
     "statuses": {
       "active": "Active",
       "blocked": "Blocked"
+    },
+    "roles": {
+      "administrator": "Superadmin",
+      "platform_admin": "Admin",
+      "staff_user": "User (CompanyFlow)",
+      "crm_user": "CRM user only",
+      "account_owner": "Account owner",
+      "company_admin": "Company administrator",
+      "senior_employee": "Senior employee",
+      "EMPLOYEE": "Employee (no role)",
+      "other": "Other role: {{role}}"
+    },
+    "otherRoles": {
+      "seller": "Seller",
+      "ceo": "CEO",
+      "management": "Management",
+      "editor": "Editor",
+      "newsletter_recipient": "Newsletter recipient"
+    },
+    "confirmRole": {
+      "title": "Remove other roles?",
+      "body": "Giving {{name}} the role {{role}} also removes these roles: {{removed}}. Continue?",
+      "confirm": "Yes, change role",
+      "cancel": "Cancel"
     }
   },
   "subscriptions": {
@@ -2028,9 +2052,9 @@
     },
     "confirmRole": {
       "title": "Change this customer’s role?",
-      "body": "{{name}} currently has customer access. Assigning an admin-console role removes their customer / user-console access and converts them to staff. Continue?",
+      "body": "{{name}} currently has customer access. With an admin-console role they also get access to the admin console and keep their access to the company. Choosing \"No access\" removes all access. Continue?",
       "confirm": "Yes, change role",
-      "editWarning": "This user currently has customer access. Changing their role removes their customer / user-console access."
+      "editWarning": "This user currently has customer access. It is kept with an admin-console role, but removed with \"No access\"."
     },
     "tabs": {
       "adminPanel": "Admin panel",

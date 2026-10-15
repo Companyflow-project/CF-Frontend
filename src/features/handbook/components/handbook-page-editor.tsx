@@ -303,13 +303,24 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 departmentIds,
             };
 
-            await handbookApi.updatePage(pageId, payload, lang);
+            const saved = (await handbookApi.updatePage(pageId, payload, lang)) as {
+                notification?: { emailsSent: number; pagePublished: boolean; failed?: boolean } | null;
+            };
 
             if (mode !== 'company') {
                 await handbookApi.saveHandbookContent(pageId, customText, lang);
             }
 
             toast.success(t('editor.pageSaved'));
+            // "Notify employees" is a one-off action: report what happened and untick it
+            // so the next save does not email everyone again.
+            const notification = saved?.notification;
+            if (notifyEmployees && notification) {
+                if (notification.failed) toast.error(t('editor.notifyFailed'));
+                else if (!notification.pagePublished) toast.info(t('editor.notifyNotPublished'));
+                else toast.success(t('editor.notifySent', { count: notification.emailsSent }));
+                setNotifyEmployees(false);
+            }
             onSave?.();
         } catch (err: any) {
             console.error('Failed to save page:', err);

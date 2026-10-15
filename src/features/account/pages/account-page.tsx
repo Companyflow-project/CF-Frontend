@@ -130,9 +130,10 @@ export const AccountPage: React.FC = () => {
           onClick: () => navigate(accountRoutes.subscription),
         },
         {
+          // Same action as "Tilføj flere licenser" on the subscription page:
+          // land there with the licence dialog open (it confirms before buying).
           label: t('card.subscriptions.moreLicenses'),
-          onClick: () =>
-            window.open(marketingLinks.contact, '_blank', 'noopener,noreferrer'),
+          onClick: () => navigate(`${accountRoutes.subscription}?add=licenses`),
           adminOnly: true,
         },
       ],

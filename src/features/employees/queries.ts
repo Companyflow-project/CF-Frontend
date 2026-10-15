@@ -10,5 +10,7 @@ export const employeesQueries = {
     [...employeesQueries.all, 'page-views', employeeId] as const,
   messageLogs: (params?: { employeeId?: string; page?: number }) =>
     [...employeesQueries.all, 'message-logs', params] as const,
+  infoListLinks: (companyId?: string | number | null) =>
+    [...employeesQueries.all, 'info-list-links', companyId ?? null] as const,
 } as const;
 

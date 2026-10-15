@@ -93,8 +93,16 @@ export const PublishHandbookPage: React.FC = () => {
       return;
     }
 
-    const effectiveChannels: Array<'email' | 'sms'> =
-      channels.length > 0 ? channels : ['email'];
+    // Channels are sent exactly as ticked: with none ticked, no message is sent.
+    const sendEmail = messageType !== 'none' && channels.includes('email');
+    const sendSms = messageType !== 'none' && channels.includes('sms');
+
+    // A custom message that will be sent needs text. Checked before anything is
+    // published (the backend rejects it too, before any change).
+    if (messageType === 'custom' && (sendEmail || sendSms) && customMessage.trim() === '') {
+      toast.error(t('publish.error.customMessageRequired'));
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -102,19 +110,42 @@ export const PublishHandbookPage: React.FC = () => {
       const response = await handbookApi.publishHandbook({
         handbookId,
         messageType,
-        channels: effectiveChannels,
+        channels,
         customSubject: messageType === 'custom' && customSubject.trim() ? customSubject.trim() : undefined,
         customMessage: messageType === 'custom' ? customMessage || undefined : undefined,
       });
 
-      toast.success(t('publish.success', { count: response.count }));
+      // Real counts of messages sent, not the number of employees.
+      const result = response;
+      const emailsSent = result.emailsSent ?? 0;
+      const smsSent = result.smsSent ?? 0;
+      toast.success(
+        sendEmail && sendSms
+          ? t('publish.successEmailsAndSms', { emails: emailsSent, sms: smsSent })
+          : sendEmail
+            ? t('publish.successEmails', { count: emailsSent })
+            : sendSms
+              ? t('publish.successSms', { count: smsSent })
+              : t('publish.successNoMessages'),
+      );
+      if (result.smsNoCredits && result.smsNoCredits > 0) {
+        toast.error(t('publish.smsNoCredits', { count: result.smsNoCredits }), { duration: 8000 });
+      }
       if (response.smsErrors && response.smsErrors.length > 0) {
         toast.error(t('publish.smsFailed', { list: response.smsErrors.join('\n') }), { duration: 8000 });
       }
       navigate(handbookRoutes.manage);
     } catch (err: any) {
       console.error('Failed to publish handbook:', err);
-      toast.error(err?.message || t('publish.error.failed'));
+      const status: number | undefined = err?.response?.status;
+      const apiMessage = String(err?.response?.data?.error?.message ?? '');
+      toast.error(
+        status === 400 && apiMessage.includes('customMessage')
+          ? t('publish.error.customMessageRequired')
+          : status && status !== 429
+            ? t('publish.error.failed')
+            : err?.message || t('publish.error.failed'),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -293,7 +324,12 @@ export const PublishHandbookPage: React.FC = () => {
             <CardContent className="p-0">
               <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}>
                 <span className="text-sm font-semibold">
-                  {t('publish.defaultMessage')}
+                  {/* "The default message is sent automatically" only when it really will be. */}
+                  {noMessage
+                    ? t('publish.previewTitle')
+                    : messageType === 'standard'
+                      ? t('publish.defaultMessage')
+                      : t('publish.customMessageHeader')}
                 </span>
                 <div className="hidden sm:flex items-center gap-1 text-xs">
                   <Check className="h-4 w-4" />

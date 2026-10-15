@@ -353,5 +353,44 @@ export const employeesApi = {
     if (!url) throw new Error('Failed to generate magic link');
     return url;
   },
+
+  /** The caller's company Info List links (fixed links + other links). */
+  async getInfoListLinks(): Promise<InfoListLinks> {
+    const response = await axiosClient.get<ApiResponse<InfoListLinks>>('/company/info-list-links');
+    return normalizeInfoListLinks(response.data?.data);
+  },
+
+  /** Save the caller's company Info List links (company admins only). */
+  async saveInfoListLinks(payload: SaveInfoListLinksPayload): Promise<InfoListLinks> {
+    const response = await axiosClient.put<ApiResponse<InfoListLinks>>('/company/info-list-links', payload);
+    return normalizeInfoListLinks(response.data?.data);
+  },
 };
+
+/** Fixed Info List links — the same set, in the same order, the Info List shows. */
+export const INFO_LIST_FIXED_LINK_KEYS = ['homepage', 'drivesheet', 'firePlan', 'gdpr', 'intranet', 'timesheet'] as const;
+export type InfoListFixedLinkKey = (typeof INFO_LIST_FIXED_LINK_KEYS)[number];
+
+export interface InfoListOtherLink {
+  title: string;
+  url: string;
+}
+
+export type InfoListLinks = Record<InfoListFixedLinkKey, string> & { otherLinks: InfoListOtherLink[] };
+
+export type SaveInfoListLinksPayload = Partial<Record<InfoListFixedLinkKey, string>> & {
+  otherLinks?: InfoListOtherLink[];
+};
+
+function normalizeInfoListLinks(data: Partial<InfoListLinks> | null | undefined): InfoListLinks {
+  const fixed = Object.fromEntries(
+    INFO_LIST_FIXED_LINK_KEYS.map((key) => [key, typeof data?.[key] === 'string' ? data[key] : '']),
+  ) as Record<InfoListFixedLinkKey, string>;
+  return {
+    ...fixed,
+    otherLinks: Array.isArray(data?.otherLinks)
+      ? data.otherLinks.map((l) => ({ title: l?.title ?? '', url: l?.url ?? '' }))
+      : [],
+  };
+}
 

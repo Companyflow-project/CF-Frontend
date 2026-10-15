@@ -20,6 +20,7 @@ const PAGE_TOPICS: Array<[pattern: string, topic: string]> = [
   ['/employees/:id/edit', 'employee-edit'],
   ['/employees/statistics', 'employee-statistics'],
   ['/employees/assign-employment-type', 'assign-employment-type'],
+  ['/employees/information-list/links', 'info-list-links'],
   ['/handbook/pages', 'handbook-pages'],
   ['/handbook/pages/:id/edit', 'handbook-page-edit'],
   ['/handbook/add-theme', 'handbook-themes'],

@@ -28,7 +28,10 @@ interface PublishHandbookResponse {
   success: boolean;
   count: number;
   version?: number;
+  /** Messages actually sent (emails / SMS), and SMS skipped because the company had no credits left. */
+  emailsSent?: number;
   smsSent?: number;
+  smsNoCredits?: number;
   smsErrors?: string[];
 }
 
@@ -75,6 +78,16 @@ export interface HandbookViewerPageMeta {
   /** Optional top-level mirrors of trackingStatus (backend may return either shape). */
   viewedAt?: string | number | null;
   signedAt?: string | number | null;
+}
+
+/** A theme (chapter) of the company's own handbook, as returned by GET/PATCH /handbook/chapters/:id. */
+export interface HandbookChapterInfo {
+  id: number;
+  bid: number;
+  /** null when the chapter has no row in that language (the handbook then shows the Danish title). */
+  titles: { da: string | null; en: string | null };
+  /** False for CompanyFlow's premade themes — only the company's own themes can be renamed. */
+  renamable: boolean;
 }
 
 /** Fixed NID for CompanyFlow template content when in CompanyFlow mode */
@@ -546,6 +559,27 @@ export const handbookApi = {
 
       throw new Error(apiMessage || 'Failed to delete handbook chapter.');
     }
+  },
+
+  /**
+   * A theme (chapter) of the company's own handbook with its Danish and English titles.
+   * GET /api/handbook/chapters/:id — `renamable` is false for CompanyFlow's premade themes.
+   */
+  async getChapter(id: number): Promise<HandbookChapterInfo> {
+    requireValidNid(id);
+    const response = await axiosClient.get<HandbookChapterInfo>(`/handbook/chapters/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Rename a theme (chapter) of the company's own handbook.
+   * PATCH /api/handbook/chapters/:id — body { titles: { da?, en? } }
+   */
+  async renameChapter(id: number, titles: Partial<Record<'da' | 'en', string>>): Promise<HandbookChapterInfo> {
+    requireValidNid(id);
+    // Errors are rethrown as-is (403 = premade theme, 404 = not in this company's handbook).
+    const response = await axiosClient.patch<HandbookChapterInfo>(`/handbook/chapters/${id}`, { titles });
+    return response.data;
   },
 
   /**

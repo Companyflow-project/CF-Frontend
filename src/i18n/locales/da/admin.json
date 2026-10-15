@@ -238,6 +238,30 @@
     "statuses": {
       "active": "Aktiv",
       "blocked": "Blokeret"
+    },
+    "roles": {
+      "administrator": "Superadmin",
+      "platform_admin": "Admin",
+      "staff_user": "Bruger (CompanyFlow)",
+      "crm_user": "Kun CRM-bruger",
+      "account_owner": "Kontoejer",
+      "company_admin": "Virksomhedsadministrator",
+      "senior_employee": "Seniormedarbejder",
+      "EMPLOYEE": "Medarbejder (ingen rolle)",
+      "other": "Anden rolle: {{role}}"
+    },
+    "otherRoles": {
+      "seller": "Sælger",
+      "ceo": "Direktør",
+      "management": "Ledelse",
+      "editor": "Redaktør",
+      "newsletter_recipient": "Nyhedsbrevsmodtager"
+    },
+    "confirmRole": {
+      "title": "Fjern andre roller?",
+      "body": "Hvis {{name}} får rollen {{role}}, fjernes også disse roller: {{removed}}. Fortsæt?",
+      "confirm": "Ja, skift rolle",
+      "cancel": "Annuller"
     }
   },
   "subscriptions": {
@@ -2028,9 +2052,9 @@
     },
     "confirmRole": {
       "title": "Skift denne kundes rolle?",
-      "body": "{{name}} har i øjeblikket kundeadgang. Tildeling af en admin-konsolrolle fjerner deres kunde-/brugerkonsoladgang og konverterer dem til medarbejder. Fortsæt?",
+      "body": "{{name}} har i øjeblikket kundeadgang. Med en admin-konsolrolle får brugeren også adgang til admin-konsollen og beholder sin adgang til virksomheden. Vælger du \"Ingen adgang\", fjernes al adgang. Fortsæt?",
       "confirm": "Ja, skift rolle",
-      "editWarning": "Denne bruger har i øjeblikket kundeadgang. Ændring af deres rolle fjerner deres kunde-/brugerkonsoladgang."
+      "editWarning": "Denne bruger har i øjeblikket kundeadgang. Den beholdes ved en admin-konsolrolle, men fjernes ved \"Ingen adgang\"."
     },
     "tabs": {
       "adminPanel": "Adminpanel",

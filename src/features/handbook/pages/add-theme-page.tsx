@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { handbookApi } from '../api';
 
 export const AddThemePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('handbook');
   const [chapterName, setChapterName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ export const AddThemePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chapterName.trim()) {
-      setError('Please enter a theme / chapter name.');
+      setError(t('addTheme.errorNoName'));
       return;
     }
 
@@ -34,7 +36,7 @@ export const AddThemePage: React.FC = () => {
       navigate(handbookRoutes.editPage(response.id));
     } catch (err: any) {
       console.error('Failed to create theme:', err);
-      setError(err?.message || 'Failed to create theme. Please try again.');
+      setError(t('addTheme.errorFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -43,7 +45,7 @@ export const AddThemePage: React.FC = () => {
   return (
     <PageShell>
       <PageHeader
-        title="Add theme"
+        title={t('addTheme.title')}
         actions={
           <Button
             variant="outline"
@@ -52,7 +54,7 @@ export const AddThemePage: React.FC = () => {
             className="gap-2 rounded-[8px]"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('common:back')}
           </Button>
         }
       />
@@ -61,7 +63,7 @@ export const AddThemePage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="theme-name" className="text-sm font-medium text-[#0d0e0e]">
-              Theme / Chapter name
+              {t('addTheme.nameLabel')}
             </Label>
             <Input
               id="theme-name"
@@ -71,13 +73,13 @@ export const AddThemePage: React.FC = () => {
                 setChapterName(e.target.value);
                 setError(null);
               }}
-              placeholder="e.g., Company Policies"
+              placeholder={t('addTheme.namePlaceholder')}
               className="h-10 rounded-[8px] border-[#e5e7eb]"
               disabled={isSubmitting}
               autoFocus
             />
             <p className="text-xs text-[#7b8a85]">
-              A new theme will be created with this name. You can rename its pages later.
+              {t('addTheme.description')}
             </p>
           </div>
 
@@ -95,7 +97,7 @@ export const AddThemePage: React.FC = () => {
               disabled={isSubmitting}
               className="rounded-[8px]"
             >
-              Cancel
+              {t('common:cancel')}
             </Button>
             <Button
               type="submit"
@@ -103,7 +105,7 @@ export const AddThemePage: React.FC = () => {
               className="rounded-[8px]"
               style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
             >
-              {isSubmitting ? 'Creating…' : 'Create theme'}
+              {isSubmitting ? t('addTheme.creating') : t('addTheme.create')}
             </Button>
           </div>
         </form>

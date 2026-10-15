@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Employee } from '@/types/models';
-import { employeesApi } from './api';
+import { employeesApi, type SaveInfoListLinksPayload } from './api';
+import { employeesQueries } from './queries';
 import { useAuth } from '@/context/auth-context';
 
 export const useEmployees = (params?: {
@@ -64,3 +66,27 @@ export const useEmployees = (params?: {
   };
 };
 
+/** The caller's company Info List links (fixed links + other links). */
+export const useInfoListLinks = () => {
+  const { user } = useAuth();
+  const companyId = user?.companyId ?? null;
+  return useQuery({
+    queryKey: employeesQueries.infoListLinks(companyId),
+    queryFn: () => employeesApi.getInfoListLinks(),
+    enabled: companyId != null,
+    staleTime: 30_000,
+  });
+};
+
+/** Save the caller's company Info List links (company admins only). */
+export const useSaveInfoListLinks = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const companyId = user?.companyId ?? null;
+  return useMutation({
+    mutationFn: (payload: SaveInfoListLinksPayload) => employeesApi.saveInfoListLinks(payload),
+    onSuccess: (saved) => {
+      queryClient.setQueryData(employeesQueries.infoListLinks(companyId), saved);
+    },
+  });
+};

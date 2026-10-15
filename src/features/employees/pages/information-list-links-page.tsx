@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
@@ -8,9 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { employeesRoutes } from '../routes';
 import { openUserManual } from '@/features/user-manual/topics';
-
-
-
+import { INFO_LIST_FIXED_LINK_KEYS, type InfoListFixedLinkKey, type InfoListLinks } from '../api';
+import { useInfoListLinks, useSaveInfoListLinks } from '../hooks';
 
 interface OtherLink {
     id: number;
@@ -20,14 +19,44 @@ interface OtherLink {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PREDEFINED_KEYS = [
-    { key: 'travelAllowance', placeholder: 'https://example.com/travel-allowance' },
-    { key: 'firePlan', placeholder: 'https://example.com/fire-plan' },
-    { key: 'gdpr', placeholder: 'https://example.com/gdpr' },
-    { key: 'intranet', placeholder: 'https://example.com/intranet' },
-    { key: 'worksheets', placeholder: 'https://example.com/worksheet' },
-    { key: 'homepage', placeholder: 'https://example.com' },
-] as const;
+/** Same labels the Info List itself uses for these links (infoList.link*). */
+const FIXED_LINK_LABEL_KEYS: Record<InfoListFixedLinkKey, string> = {
+    homepage: 'infoList.linkHomepage',
+    drivesheet: 'infoList.linkDrivesheet',
+    firePlan: 'infoList.linkFirePlan',
+    gdpr: 'infoList.linkGdpr',
+    intranet: 'infoList.linkIntranet',
+    timesheet: 'infoList.linkTimesheet',
+};
+
+const FIXED_LINK_PLACEHOLDER = 'https://www.example.dk';
+
+let nextRowId = 1;
+const emptyRow = (): OtherLink => ({ id: nextRowId++, text: '', url: '' });
+
+/**
+ * "www.example.dk" -> "https://www.example.dk". Returns null for anything that
+ * is not a usable web/mail/phone link (the backend applies the same rule).
+ */
+function normalizeUrl(raw: string): string | null {
+    const value = raw.trim();
+    if (!value) return '';
+    if (/^(mailto|tel):\S+$/i.test(value)) return value;
+    if (!/^https?:\/\//i.test(value) && /^[a-z][a-z0-9+-]*:(?!\d)/i.test(value)) return null;
+    const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value.replace(/^\/+/, '')}`;
+    try {
+        const url = new URL(withScheme);
+        if (!url.hostname || /\s/.test(withScheme)) return null;
+    } catch {
+        return null;
+    }
+    return withScheme;
+}
+
+const toRows = (links: InfoListLinks): OtherLink[] =>
+    links.otherLinks.length > 0
+        ? links.otherLinks.map((l) => ({ id: nextRowId++, text: l.title, url: l.url }))
+        : [emptyRow()];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -36,28 +65,38 @@ export const InformationListLinksPage: React.FC = () => {
     const { t } = useTranslation('employees');
     const { t: tCommon } = useTranslation('common');
 
+    const { data: savedLinks, isLoading, error: loadError } = useInfoListLinks();
+    const saveLinks = useSaveInfoListLinks();
+
     // Build translated labels using useMemo so they update on language change
     const predefinedLabels = useMemo(
         () =>
-            PREDEFINED_KEYS.map(({ key, placeholder }) => ({
-                label: t(`infoListLinks.${key}`),
+            INFO_LIST_FIXED_LINK_KEYS.map((key) => ({
+                label: t(FIXED_LINK_LABEL_KEYS[key]),
                 key,
-                placeholder,
+                placeholder: FIXED_LINK_PLACEHOLDER,
             })),
         [t],
     );
 
     // Predefined links: keyed by slug, value is the URL string
     const [predefined, setPredefined] = useState<Record<string, string>>(
-        Object.fromEntries(PREDEFINED_KEYS.map((l) => [l.key, '']))
+        Object.fromEntries(INFO_LIST_FIXED_LINK_KEYS.map((key) => [key, '']))
     );
 
     // Other / custom links
-    const [otherLinks, setOtherLinks] = useState<OtherLink[]>([
-        { id: 1, text: '', url: '' },
-    ]);
+    const [otherLinks, setOtherLinks] = useState<OtherLink[]>(() => [emptyRow()]);
 
-    const [saving, setSaving] = useState(false);
+    // Fill the form once the company's saved links have loaded.
+    const [loaded, setLoaded] = useState(false);
+    useEffect(() => {
+        if (!savedLinks || loaded) return;
+        setPredefined(Object.fromEntries(INFO_LIST_FIXED_LINK_KEYS.map((key) => [key, savedLinks[key]])));
+        setOtherLinks(toRows(savedLinks));
+        setLoaded(true);
+    }, [savedLinks, loaded]);
+
+    const saving = saveLinks.isPending;
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -76,10 +115,7 @@ export const InformationListLinksPage: React.FC = () => {
     };
 
     const handleAddOtherLink = () => {
-        setOtherLinks((prev) => [
-            ...prev,
-            { id: Date.now(), text: '', url: '' },
-        ]);
+        setOtherLinks((prev) => [...prev, emptyRow()]);
     };
 
     const handleRemoveOtherLink = (id: number) => {
@@ -88,31 +124,59 @@ export const InformationListLinksPage: React.FC = () => {
 
     // ── Save logic ────────────────────────────────────────────────────────────
 
-    const buildPayload = () => ({
-        predefinedLinks: predefined,
-        otherLinks: otherLinks.filter((l) => l.text.trim() || l.url.trim()),
-    });
+    /** Validated payload, or null after showing what needs fixing. */
+    const buildPayload = () => {
+        const invalid: string[] = [];
+        const fixed: Record<string, string> = {};
+        for (const { key, label } of predefinedLabels) {
+            const url = normalizeUrl(predefined[key] ?? '');
+            if (url === null) invalid.push(label);
+            else fixed[key] = url;
+        }
+        const others: { title: string; url: string }[] = [];
+        for (const link of otherLinks) {
+            const title = link.text.trim();
+            if (!title && !link.url.trim()) continue; // emptied row = deleted link
+            const url = normalizeUrl(link.url);
+            if (!url) {
+                invalid.push(title || link.url.trim());
+                continue;
+            }
+            others.push({ title, url });
+        }
+        if (invalid.length > 0) {
+            setErrorMessage(t('infoListLinks.invalidLinks', { links: invalid.join(', ') }));
+            return null;
+        }
+        return { ...fixed, otherLinks: others };
+    };
 
-    const handleSave = async () => {
-        setSaving(true);
+    const handleSave = async (): Promise<boolean> => {
         setSuccessMessage(null);
         setErrorMessage(null);
+        const payload = buildPayload();
+        if (!payload) return false;
         try {
-            // TODO: wire to real API endpoint when available
-            // await employeesApi.saveInfoListLinks(buildPayload());
-            console.log('Saving info list links:', buildPayload());
+            const saved = await saveLinks.mutateAsync(payload);
+            // Show what was stored (e.g. "https://" added, emptied rows gone).
+            setPredefined(Object.fromEntries(INFO_LIST_FIXED_LINK_KEYS.map((key) => [key, saved[key]])));
+            setOtherLinks(toRows(saved));
             setSuccessMessage(t('infoListLinks.linksSaved'));
-        } catch (err) {
-            setErrorMessage(err instanceof Error ? err.message : t('infoListLinks.failedToSave'));
-        } finally {
-            setSaving(false);
+            return true;
+        } catch {
+            setErrorMessage(t('infoListLinks.failedToSave'));
+            return false;
         }
     };
 
     const handleSaveAndAdd = async () => {
-        await handleSave();
-        // Append a fresh empty row after saving
-        setOtherLinks((prev) => [...prev, { id: Date.now(), text: '', url: '' }]);
+        // Append a fresh empty row after saving (unless the last row is already empty)
+        if (await handleSave()) {
+            setOtherLinks((prev) => {
+                const last = prev[prev.length - 1];
+                return last && !last.text && !last.url ? prev : [...prev, emptyRow()];
+            });
+        }
     };
 
     // ── Render ────────────────────────────────────────────────────────────────
@@ -144,7 +208,7 @@ export const InformationListLinksPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         className="border-[rgba(15,23,42,0.08)] text-[#0d0e0e] hover:bg-[#f0f7f5] rounded-[10px] px-[11px] py-[9px] h-auto whitespace-nowrap self-start sm:self-auto"
-                        onClick={() => openUserManual()}
+                        onClick={() => openUserManual('info-list-links')}
                     >
                         {t('infoListLinks.readFullGuide')}
                     </Button>
@@ -157,6 +221,14 @@ export const InformationListLinksPage: React.FC = () => {
             </p>
 
             {/* Success / error banners */}
+            {isLoading && (
+                <div className="mb-4 text-sm text-[#6b7280]">{t('infoListLinks.loading')}</div>
+            )}
+            {loadError && !loaded && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+                    {t('infoListLinks.failedToLoad')}
+                </div>
+            )}
             {successMessage && (
                 <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
                     {successMessage}
@@ -235,7 +307,7 @@ export const InformationListLinksPage: React.FC = () => {
                                             variant="ghost"
                                             size="icon"
                                             className="h-8 w-8 text-[#9ca3af] hover:text-red-500 hover:bg-red-50 rounded-md flex-shrink-0"
-                                            aria-label="Remove link"
+                                            aria-label={t('infoListLinks.removeLink')}
                                             onClick={() => handleRemoveOtherLink(link.id)}
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
@@ -268,15 +340,15 @@ export const InformationListLinksPage: React.FC = () => {
                     <div className="pt-5 flex items-center justify-end gap-3">
                         <Button
                             variant="outline"
-                            onClick={handleSave}
-                            disabled={saving}
+                            onClick={() => void handleSave()}
+                            disabled={saving || !loaded}
                             className="border-[rgba(15,23,42,0.15)] text-[#0d0e0e] rounded-[999px] px-6 h-10 text-[13.3px] bg-white hover:bg-gray-50"
                         >
                             {saving ? tCommon('saving') : tCommon('save')}
                         </Button>
                         <Button
                             onClick={handleSaveAndAdd}
-                            disabled={saving}
+                            disabled={saving || !loaded}
                             className="rounded-[999px] px-6 h-10 text-[13.3px] shadow-[0_8px_20px_rgba(23,102,79,0.32)]"
                             style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                         >
