@@ -644,7 +644,7 @@
       "saveFailed": "Kunne ikke gemme siden",
       "deleted": "Side slettet",
       "deleteFailed": "Kunne ikke slette siden",
-      "bodyText": "Brødtekst",
+      "bodyText": "Standardtekst (CompanyFlow tekst)",
       "notesHint": "Indtast eventuelle noter, som virksomheden kan vælge mellem for denne side.",
       "companyNotes": "Noter til virksomheden",
       "choiceSection": "Valg",
@@ -719,7 +719,8 @@
       "singleValueOnly": "Kun én værdi understøttet",
       "addAnother": "Tilføj et til element",
       "addAnotherText": "Tilføj endnu en tekst",
-      "removeText": "Fjern tekst"
+      "removeText": "Fjern tekst",
+      "bodyTextHint": "Den tekst, virksomhederne ser som CompanyFlow tekst – på det sprog, du redigerer."
     },
     "lix": {
       "title": "Lix-tæller",
@@ -1062,7 +1063,8 @@
       },
       "invalidId": "Ugyldigt side-id",
       "editing": "Redigerer: {{title}}"
-    }
+    },
+    "editingLanguage": "Sprog"
   },
   "common": {
     "loading": "Indlæser…",

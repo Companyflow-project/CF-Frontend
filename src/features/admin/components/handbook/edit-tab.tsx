@@ -236,6 +236,7 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
       await updatePage.mutateAsync({
         nid,
         payload: {
+          langcode: langcode ?? 'da',
           title,
           body,
           bodyFormat,
@@ -306,7 +307,7 @@ export const AdminHandbookEditTab: React.FC<Props> = ({ nid, langcode }) => {
 
         {/* Body */}
         <div>
-          <FieldLabel>{t('handbook.edit.bodyText', 'Body text (Body text)')}</FieldLabel>
+          <FieldLabel hint={t('handbook.edit.bodyTextHint', 'The text companies see as the CompanyFlow text, in the language you are editing.')}>{t('handbook.edit.bodyText', 'Standard text (CompanyFlow text)')}</FieldLabel>
           <div className="border border-gray-200 rounded-lg overflow-hidden mt-1">
             <RichTextEditor content={body} onChange={setBody} className="min-h-[200px]" />
           </div>

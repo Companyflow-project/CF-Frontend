@@ -99,6 +99,8 @@ export interface AdminHandbookTranslationMeta {
 }
 
 export interface UpdateAdminHandbookPagePayload {
+  /** Language being edited; title and text are saved for this language only. */
+  langcode?: string;
   title?: string;
   body?: string;
   bodyFormat?: string;

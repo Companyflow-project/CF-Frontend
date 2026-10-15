@@ -60,7 +60,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     React.useEffect(() => {
         if (editor) {
-            editor.setEditable(isEditable);
+            // No update event: it would report the editor's (still empty) content as a change and
+            // overwrite text the form has just loaded.
+            editor.setEditable(isEditable, false);
         }
     }, [isEditable, editor]);
 

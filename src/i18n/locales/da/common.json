@@ -2,6 +2,7 @@
   "nav.console": "Konsol",
   "nav.employees": "Medarbejdere",
   "nav.manageHandbook": "Administrer håndbog",
+  "nav.managementHandbook": "Ledelseshåndbog",
   "nav.contacts": "Kontakter",
   "nav.account": "Konto",
   "nav.openMenu": "Åbn navigationsmenu",
@@ -28,8 +29,9 @@
   "userManualPage": {
     "search": "Søg…",
     "backToApp": "Tilbage til CompanyFlow",
+    "contents": "Indhold",
     "empty": "Der er intet indhold endnu.",
-    "loadError": "Brugermanualen kunne ikke indlæses.",
+    "loadError": "Indholdet kunne ikke indlæses.",
     "sectionError": "Siden kunne ikke indlæses",
     "selectTitle": "Vælg et emne",
     "selectHint": "Vælg et emne i menuen til venstre for at komme i gang."

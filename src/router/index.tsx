@@ -12,6 +12,7 @@ import { contactsRoutes } from '@/features/contacts/routes';
 import { accountRoutes } from '@/features/account/routes';
 import { companiesRoutes } from '@/features/companies/routes';
 import { userManualRoutes } from '@/features/user-manual/routes';
+import { managementHandbookRoutes } from '@/features/management-handbook/routes';
 import { adminRoutes } from '@/features/admin/routes';
 import { AdminLayout } from '@/features/admin/layouts/admin-layout';
 import { resolveRbacRole, canAccessAdminConsole, canAccessAccountDashboard } from '@/lib/rbac';
@@ -107,6 +108,7 @@ const AssignEmploymentTypePage = lazy(() => import('@/features/employment-types/
 const CompaniesPage = lazy(() => import('@/features/companies/pages/companies-page').then((m) => ({ default: m.CompaniesPage })));
 const CompanyDetailPage = lazy(() => import('@/features/companies/pages/company-detail-page').then((m) => ({ default: m.CompanyDetailPage })));
 const UserManualPage = lazy(() => import('@/features/user-manual/pages/user-manual-page').then((m) => ({ default: m.UserManualPage })));
+const ManagementHandbookPage = lazy(() => import('@/features/management-handbook/pages/management-handbook-page').then((m) => ({ default: m.ManagementHandbookPage })));
 
 const PageFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -548,6 +550,30 @@ export const AppRouter: React.FC = () => {
                     <InformationListLinksPage />
                   </AppLayout>
                 </RequireAdminRole>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={managementHandbookRoutes.root}
+            element={
+              <RequireAuth>
+                <RequireSeniorRole>
+                  <AppLayout>
+                    <ManagementHandbookPage />
+                  </AppLayout>
+                </RequireSeniorRole>
+              </RequireAuth>
+            }
+          />
+          <Route
+            path={`${managementHandbookRoutes.root}/:nid`}
+            element={
+              <RequireAuth>
+                <RequireSeniorRole>
+                  <AppLayout>
+                    <ManagementHandbookPage />
+                  </AppLayout>
+                </RequireSeniorRole>
               </RequireAuth>
             }
           />

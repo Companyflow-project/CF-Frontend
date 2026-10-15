@@ -77,6 +77,7 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
       return [
         { path: '/', label: t('nav.console') },
         { path: '/handbook', label: t('nav.manageHandbook') },
+        { path: '/management-handbook', label: t('nav.managementHandbook') },
       ];
     }
     // administrator / company_admin — full nav
@@ -84,6 +85,7 @@ export const TopNav: React.FC<TopNavProps> = ({ companyLogoUrl, companyName }) =
       { path: '/', label: t('nav.console') },
       { path: '/employees', label: t('nav.employees') },
       { path: '/handbook', label: t('nav.manageHandbook') },
+      { path: '/management-handbook', label: t('nav.managementHandbook') },
       { path: '/contacts', label: t('nav.contacts') },
       { path: '/account', label: t('nav.account') },
     ];

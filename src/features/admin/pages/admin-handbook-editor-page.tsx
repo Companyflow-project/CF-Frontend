@@ -30,7 +30,8 @@ export const AdminHandbookEditorPage: React.FC = () => {
   const renderTab = () => {
     switch (tab) {
       case 'preview': return <AdminHandbookPreviewTab nid={nid} langcode={langcode} />;
-      case 'edit': return <AdminHandbookEditTab nid={nid} langcode={langcode} />;
+      // Keyed by language so the form starts over with that language's text.
+      case 'edit': return <AdminHandbookEditTab key={langcode} nid={nid} langcode={langcode} />;
       case 'lix': return <AdminHandbookLixTab nid={nid} langcode={langcode} />;
       case 'toc': return <AdminHandbookTocTab nid={nid} langcode={langcode} />;
       case 'versions': return <AdminHandbookVersionsTab nid={nid} />;

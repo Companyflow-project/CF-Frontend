@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { adminRoutes } from '../../routes';
 import { useAdminHandbookBooks, useAdminHandbookPage } from '../../handbook-hooks';
@@ -36,8 +36,10 @@ const TAB_DEFAULT: Record<HandbookTab, string> = {
 
 export const AdminHandbookPageEditorLayout: React.FC<Props> = ({ nid, bookTitle, activeTab, langcode, children }) => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { t } = useTranslation('admin');
   const langSuffix = langcode && langcode !== 'da' ? `?lang=${langcode}` : '';
+  const currentLang = langcode ?? 'da';
 
   const { data: page } = useAdminHandbookPage(nid, langcode);
   const { data: books = [] } = useAdminHandbookBooks();
@@ -67,9 +69,28 @@ export const AdminHandbookPageEditorLayout: React.FC<Props> = ({ nid, bookTitle,
           {' › '}
           <span className="text-gray-700">{t(`handbook.tabs.${activeTab}`, TAB_DEFAULT[activeTab])}</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e] mt-1">
-          {pageTitle || t('handbook.title', 'Management Handbook')}
-        </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#0d0e0e]">
+            {pageTitle || t('handbook.title', 'Management Handbook')}
+          </h1>
+          {/* Which language is being edited — title and text are saved per language. */}
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-500">{t('handbook.editingLanguage', 'Language')}</span>
+            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5">
+              {(['da', 'en'] as const).map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => navigate(`${pathname}${l === 'da' ? '' : `?lang=${l}`}`)}
+                  aria-pressed={currentLang === l}
+                  className={`px-3 py-1 rounded-md font-medium ${currentLang === l ? 'bg-[#1a5948] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       <nav className="border border-gray-200 rounded-xl bg-white px-3 py-2 overflow-x-auto">

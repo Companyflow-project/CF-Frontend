@@ -2,6 +2,7 @@
   "nav.console": "Console",
   "nav.employees": "Employees",
   "nav.manageHandbook": "Manage Handbook",
+  "nav.managementHandbook": "Management handbook",
   "nav.contacts": "Contacts",
   "nav.account": "Account",
   "nav.openMenu": "Open navigation menu",
@@ -28,8 +29,9 @@
   "userManualPage": {
     "search": "Search…",
     "backToApp": "Back to CompanyFlow",
+    "contents": "Contents",
     "empty": "No content available yet.",
-    "loadError": "The user manual could not be loaded.",
+    "loadError": "The content could not be loaded.",
     "sectionError": "Could not load this page",
     "selectTitle": "Select a topic",
     "selectHint": "Choose a topic from the menu on the left to get started."

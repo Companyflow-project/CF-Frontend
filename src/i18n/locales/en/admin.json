@@ -644,7 +644,7 @@
       "saveFailed": "Failed to save page",
       "deleted": "Page deleted",
       "deleteFailed": "Failed to delete page",
-      "bodyText": "Body text (Body text)",
+      "bodyText": "Standard text (CompanyFlow text)",
       "notesHint": "Enter any notes that the company can choose from for this page.",
       "companyNotes": "Notes for company",
       "choiceSection": "Choice",
@@ -719,7 +719,8 @@
       "singleValueOnly": "Only one value supported",
       "addAnother": "Add Another Item",
       "addAnotherText": "Add another text",
-      "removeText": "Remove text"
+      "removeText": "Remove text",
+      "bodyTextHint": "The text companies see as the CompanyFlow text, in the language you are editing."
     },
     "lix": {
       "title": "Lix counter",
@@ -1062,7 +1063,8 @@
       },
       "invalidId": "Invalid page id",
       "editing": "Editing: {{title}}"
-    }
+    },
+    "editingLanguage": "Language"
   },
   "common": {
     "loading": "Loading…",
