@@ -21,6 +21,8 @@ export const HandbookTableOfContentsPage: React.FC = () => {
     const { viewAsEmployee } = useViewAsEmployee();
     const canEditHandbook = !viewAsEmployee && isAdminRole(user?.role);
     const canViewAllPages = !viewAsEmployee && canViewAllPagesRole(user?.role);
+    // Employees just read: chapters and page titles, no statuses or editing details.
+    const readerView = !canViewAllPages;
 
     const { t } = useTranslation('handbook');
     const [lang] = useHandbookLang();
@@ -187,7 +189,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate(handbookRoutes.manage)}
+                        onClick={() => navigate(readerView ? '/' : handbookRoutes.manage)}
                         className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -195,19 +197,21 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     </Button>
                     <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('toc.title')}</h1>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(handbookRoutes.pages)}
-                    className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
-                >
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    {t('toc.viewAllPages')}
-                </Button>
+                {!readerView && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(handbookRoutes.pages)}
+                        className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
+                    >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        {t('toc.viewAllPages')}
+                    </Button>
+                )}
             </div>
 
             {/* Stats bar */}
-            {!loading && !error && chapters.length > 0 && (
+            {!readerView && !loading && !error && chapters.length > 0 && (
                 <div className="mb-6 grid grid-cols-3 gap-4">
                     <div className="bg-white border border-[#e5efea] rounded-[14px] px-5 py-4 flex items-center gap-4 shadow-[0_2px_8px_rgba(14,51,38,0.05)]">
                         <div className="h-10 w-10 rounded-[10px] bg-[#d4f4e6] flex items-center justify-center flex-shrink-0">
@@ -242,7 +246,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             {/* Search */}
             {!loading && !error && chapters.length > 0 && (
                 <div className="mb-5">
-                    <div className="relative w-[320px]">
+                    <div className="relative w-full sm:w-[320px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
                             placeholder={t('toc.searchPlaceholder')}
@@ -295,7 +299,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
             )}
 
             {/* Empty state */}
-            {!loading && !error && chapters.length === 0 && (
+            {!loading && !error && visibleChapters.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 gap-4">
                     <div className="h-16 w-16 rounded-[18px] bg-[#d4f4e6] flex items-center justify-center">
                         <BookOpen className="h-8 w-8 text-[#1a5948]" />
@@ -304,13 +308,15 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                     <p className="text-sm text-[#6b7475] max-w-sm text-center">
                         {t('toc.noChaptersDesc')}
                     </p>
-                    <Button
-                        onClick={() => navigate(handbookRoutes.pages)}
-                        className="rounded-[999px] px-6 py-2 h-auto text-sm mt-2"
-                        style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
-                    >
-                        {t('toc.goToPages')}
-                    </Button>
+                    {!readerView && (
+                        <Button
+                            onClick={() => navigate(handbookRoutes.pages)}
+                            className="rounded-[999px] px-6 py-2 h-auto text-sm mt-2"
+                            style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
+                        >
+                            {t('toc.goToPages')}
+                        </Button>
+                    )}
                 </div>
             )}
 
@@ -338,7 +344,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => toggleChapter(chapter.id)}
-                                    className="w-full flex items-center gap-4 px-6 py-4 hover:bg-[#f6fbf9] transition-colors text-left group"
+                                    className="w-full flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-4 hover:bg-[#f6fbf9] transition-colors text-left group"
                                     onDragOver={(e) => {
                                         if (!canEditHandbook || draggingChapterId == null) return;
                                         e.preventDefault();
@@ -380,7 +386,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                     </div>
 
                                     {/* Progress pills */}
-                                    <div className="hidden sm:flex items-center gap-2 mr-2">
+                                    <div className={readerView ? 'hidden' : 'hidden sm:flex items-center gap-2 mr-2'}>
                                         {(() => {
                                             const ready = chapterPages.filter((p) => (p.status as string) === 'ready').length;
                                             const notReady = chapterPages.filter((p) => (p.status as string) === 'not_ready').length;
@@ -434,7 +440,7 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                 return (
                                                     <div
                                                         key={page.id}
-                                                        className={`flex items-center gap-4 px-6 py-3.5 hover:bg-[#f6fbf9] transition-colors ${!isLast ? 'border-b border-[#f0f5f3]' : ''}`}
+                                                        className={`flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-3.5 hover:bg-[#f6fbf9] transition-colors ${!isLast ? 'border-b border-[#f0f5f3]' : ''}`}
                                                     >
                                                         {/* Page number */}
                                                         <div className="flex-shrink-0 w-8 text-right">
@@ -446,52 +452,60 @@ export const HandbookTableOfContentsPage: React.FC = () => {
                                                         {/* Dot leader visual */}
                                                         <div className="flex-shrink-0 h-1.5 w-1.5 rounded-full bg-[#d4f4e6]" />
 
-                                                        {/* Title */}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => openSneakPeek(page.id, page.title)}
-                                                            className="flex-1 text-left text-sm font-medium text-[#0d0e0e] hover:text-[#3d997d] transition-colors truncate"
-                                                        >
-                                                            {page.title}
-                                                        </button>
-
-                                                        {/* Content indicators */}
-                                                        {(() => {
-                                                            const tags: string[] = [];
-                                                            if (page.badge === 'custom') tags.push(t('tag.customPage'));
-                                                            if (page.hasCustomBody) tags.push(t('tag.addedText'));
-                                                            if (!page.hasCustomBody && (!page.hasSelectableTexts || page.badge === 'custom')) tags.push(t('tag.noText'));
-                                                            if (page.hasReceipt) tags.push(t('tag.receipt'));
-                                                            if (page.hasNote) tags.push(t('tag.notes'));
-                                                            if (page.hasDocuments) tags.push(t('tag.documents'));
-                                                            if (page.hasLinks) tags.push(t('tag.links'));
-                                                            if (page.hasImage) tags.push(t('tag.image'));
-                                                            return (
-                                                                <span className="flex-shrink-0 text-[11px] text-[#6b7475] italic truncate max-w-[260px]">
-                                                                    ({tags.join(', ')})
-                                                                </span>
-                                                            );
-                                                        })()}
-
-                                                        {/* Badge */}
-                                                        {page.badge === 'premade' && (page.hasSelectableTexts || page.hasCustomBody) && (
-                                                            <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
-                                                                {t('badge.premade')}
-                                                            </span>
-                                                        )}
-                                                        {page.badge === 'custom' && (
-                                                            <span className="flex-shrink-0 text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
-                                                                {t('badge.custom')}
-                                                            </span>
-                                                        )}
-
-                                                        {/* Status */}
-                                                        <div className="flex-shrink-0 flex items-center gap-1.5">
-                                                            {getStatusIcon(status)}
-                                                            <span className="text-[11px] text-[#6b7475] hidden sm:inline">
-                                                                {getStatusLabel(status)}
-                                                            </span>
+                                                        {/* Title — for admins also what the page contains and its badge, on a line of its own so the title keeps its room on phones */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => (readerView
+                                                                    ? navigate(`/handbooks/${handbookBid ?? 0}/viewer?page=${page.id}`)
+                                                                    : openSneakPeek(page.id, page.title))}
+                                                                className="text-left text-sm font-medium text-[#0d0e0e] hover:text-[#3d997d] transition-colors break-words"
+                                                            >
+                                                                {page.title}
+                                                            </button>
+                                                            {!readerView && (() => {
+                                                                const tags: string[] = [];
+                                                                if (page.badge === 'custom') tags.push(t('tag.customPage'));
+                                                                if (page.hasCustomBody) tags.push(t('tag.addedText'));
+                                                                if (!page.hasCustomBody && (!page.hasSelectableTexts || page.badge === 'custom')) tags.push(t('tag.noText'));
+                                                                if (page.hasReceipt) tags.push(t('tag.receipt'));
+                                                                if (page.hasNote) tags.push(t('tag.notes'));
+                                                                if (page.hasDocuments) tags.push(t('tag.documents'));
+                                                                if (page.hasLinks) tags.push(t('tag.links'));
+                                                                if (page.hasImage) tags.push(t('tag.image'));
+                                                                const showPremade = page.badge === 'premade' && (page.hasSelectableTexts || page.hasCustomBody);
+                                                                if (!tags.length && !showPremade && page.badge !== 'custom') return null;
+                                                                return (
+                                                                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                                                                        {showPremade && (
+                                                                            <span className="text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
+                                                                                {t('badge.premade')}
+                                                                            </span>
+                                                                        )}
+                                                                        {page.badge === 'custom' && (
+                                                                            <span className="text-[11px] font-medium text-[#1a5948] bg-[#f0faf6] border border-[#cde9dc] rounded-full px-2 py-0.5">
+                                                                                {t('badge.custom')}
+                                                                            </span>
+                                                                        )}
+                                                                        {tags.length > 0 && (
+                                                                            <span className="text-[11px] text-[#6b7475] italic">({tags.join(', ')})</span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })()}
                                                         </div>
+
+                                                        {/* Status (admins) / open arrow (employees) */}
+                                                        {readerView ? (
+                                                            <ChevronRight className="h-4 w-4 flex-shrink-0 text-[#c4cec9]" />
+                                                        ) : (
+                                                            <div className="flex-shrink-0 flex items-center gap-1.5">
+                                                                {getStatusIcon(status)}
+                                                                <span className="text-[11px] text-[#6b7475] hidden sm:inline">
+                                                                    {getStatusLabel(status)}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 );
                                             })

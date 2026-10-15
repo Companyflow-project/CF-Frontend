@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState } from '@/components/common/empty-state';
@@ -23,6 +23,9 @@ interface FlatPage {
 
 export const HandbookViewerPage: React.FC = () => {
   const navigate = useNavigate();
+  // ?page=<nid> opens that page (e.g. from the table of contents).
+  const [searchParams] = useSearchParams();
+  const requestedPageId = Number(searchParams.get('page')) || null;
   const { t, i18n } = useTranslation('handbook');
   const { t: tCommon } = useTranslation('common');
   const { getColor } = useAppearance();
@@ -82,6 +85,8 @@ export const HandbookViewerPage: React.FC = () => {
         );
 
         setFlatPages(results);
+        const requestedIndex = requestedPageId != null ? results.findIndex((p) => p.id === requestedPageId) : -1;
+        if (requestedIndex >= 0) setCurrentPage(requestedIndex + 1);
       } catch (err: any) {
         setError(err.message || 'Failed to load handbook');
       } finally {
@@ -89,7 +94,8 @@ export const HandbookViewerPage: React.FC = () => {
       }
     };
     fetchAll();
-  }, [i18n.language]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language, requestedPageId]);
 
   const totalPages = flatPages.length;
   const currentPageData = flatPages[currentPage - 1] ?? null;
@@ -280,7 +286,7 @@ export const HandbookViewerPage: React.FC = () => {
         className="mb-6 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2 w-fit"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back
+        {tCommon('back')}
       </Button>
 
       {/* Content card */}
@@ -290,11 +296,15 @@ export const HandbookViewerPage: React.FC = () => {
       >
         {currentPageData && (
           <>
+            {/* Chapter above the page title, so readers see which page they are on */}
+            <p className="text-xs font-medium uppercase tracking-wider text-[#6b7280] mb-1">
+              {currentPageData.chapterTitle}
+            </p>
             <h2
               className="text-xl font-bold mb-1"
               style={{ color: getColor('headlines') }}
             >
-              {currentPageData.chapterTitle}
+              {currentPageData.title}
             </h2>
 
             {!metaLoading && (effectiveViewedAt || effectiveSignedAt) && (
