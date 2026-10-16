@@ -155,7 +155,7 @@
   "editTheme.loading": "Indlæser tema...",
   "editTheme.invalidId": "Ugyldigt tema-id.",
   "editTheme.notFound": "Temaet blev ikke fundet i jeres håndbog.",
-  "editTheme.notRenamable": "Dette er et af CompanyFlows temaer, og det kan ikke omdøbes. Kun temaer, I selv har oprettet, kan omdøbes.",
+  "editTheme.notRenamable": "Dette tema kan ikke omdøbes. Kontakt CompanyFlow, hvis det skal have et andet navn.",
   "editTheme.nameDa": "Navn på dansk",
   "editTheme.nameEn": "Navn på engelsk",
   "editTheme.description": "Navnet vises på temaets fane under \"Vis alle sider\" og som kapiteloverskrift i håndbogen. Bruger man CompanyFlow på engelsk, ser man det engelske navn.",

@@ -155,7 +155,7 @@
   "editTheme.loading": "Loading theme...",
   "editTheme.invalidId": "Invalid theme id.",
   "editTheme.notFound": "The theme was not found in your handbook.",
-  "editTheme.notRenamable": "This is one of CompanyFlow's themes and it can't be renamed. Only themes you have created yourselves can be renamed.",
+  "editTheme.notRenamable": "This theme can't be renamed. Please contact CompanyFlow if it needs a different name.",
   "editTheme.nameDa": "Name in Danish",
   "editTheme.nameEn": "Name in English",
   "editTheme.description": "The name is shown on the theme's tab in \"View All Pages\" and as the chapter heading in the handbook. People who use CompanyFlow in English see the English name.",

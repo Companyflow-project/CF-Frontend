@@ -1089,8 +1089,8 @@ export const HandbookPagesPage: React.FC = () => {
                                 )}
                                 {(() => {
                                     const activeChapter = chapters.find((ch) => ch.id === activeChapterId);
-                                    // Only the company's own themes: premade themes are matched by title, so renaming one would hide it.
-                                    return activeChapter?.badge === 'custom' && canEditHandbook ? (
+                                    // Own themes and CompanyFlow themes alike; the edit page explains if a theme can't be renamed.
+                                    return activeChapter && canEditHandbook ? (
                                         <Button
                                             variant="outline"
                                             onClick={() => navigate(handbookRoutes.editTheme(String(activeChapter.id)))}
