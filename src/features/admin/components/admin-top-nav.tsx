@@ -223,7 +223,7 @@ export const AdminTopNav: React.FC = () => {
                     </button>
                     <div className="my-1 border-t border-gray-100" />
                     <Link
-                      to={adminRoutes.bookEditOrder.replace(':bid', '206')}
+                      to={adminRoutes.books}
                       onClick={() => setIsSwitchOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
