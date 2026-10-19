@@ -37,6 +37,12 @@
     "selectHint": "Vælg et emne i menuen til venstre for at komme i gang."
   },
   "help": "Hjælp.",
+  "appError": {
+    "title": "Noget gik galt",
+    "text": "Siden kunne ikke vises. Genindlæs siden for at prøve igen.",
+    "reload": "Genindlæs siden",
+    "home": "Gå til forsiden"
+  },
   "saving": "Gemmer...",
   "close": "Luk",
   "accessRestricted.title": "Adgang begrænset",

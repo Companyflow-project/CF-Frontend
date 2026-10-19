@@ -37,6 +37,12 @@
     "selectHint": "Choose a topic from the menu on the left to get started."
   },
   "help": "Help.",
+  "appError": {
+    "title": "Something went wrong",
+    "text": "The page could not be shown. Please reload the page to try again.",
+    "reload": "Reload the page",
+    "home": "Go to the front page"
+  },
   "saving": "Saving...",
   "close": "Close",
   "accessRestricted.title": "Access Restricted",
