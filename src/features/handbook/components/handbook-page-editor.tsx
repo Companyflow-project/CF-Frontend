@@ -362,7 +362,10 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
         );
     }
 
-    const premadeContent = pageDetail?.versions?.premade || pageDetail?.content || '';
+    // The CompanyFlow template text. A company's own page has none — its content is its own text.
+    const premadeContent = pageDetail?.versions?.premade
+        || (pageDetail?.sourceMode === 'own' ? '' : pageDetail?.content)
+        || '';
 
     return (
         <div className="space-y-6">
