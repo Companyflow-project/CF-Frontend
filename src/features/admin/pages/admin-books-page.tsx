@@ -170,14 +170,16 @@ export const AdminBooksPage: React.FC = () => {
                           {t('books.editOrderAndTitles', 'Edit order and titles')}
                         </Link>
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                        onClick={() => setDeleteTarget({ bid: book.nid, title: book.title ?? '' })}
-                      >
-                        {t('books.delete.action', 'Delete')}
-                      </Button>
+                      {book.deletable !== false && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => setDeleteTarget({ bid: book.nid, title: book.title ?? '' })}
+                        >
+                          {t('books.delete.action', 'Delete')}
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -4,6 +4,8 @@ export interface AdminHandbookBook {
   status: number;
   created: number;
   changed: number;
+  /** False for the books the platform runs on (template, management handbook, user manual). */
+  deletable?: boolean;
 }
 
 export interface AdminHandbookTreeNode {
