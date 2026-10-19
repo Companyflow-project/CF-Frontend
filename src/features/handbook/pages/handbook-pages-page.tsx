@@ -11,7 +11,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { Search, ArrowLeft, GripVertical, AlertTriangle, Loader2 } from 'lucide-react';
+import { Search, ArrowLeft, GripVertical, AlertTriangle, Loader2, Trash2 } from 'lucide-react';
 import { useHandbookLang } from '../components/language-toggle';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
@@ -285,13 +285,6 @@ export const HandbookPagesPage: React.FC = () => {
             return true;
         });
     }, [pages, search, statusFilter, showCustomOnly, user?.id, canViewAllPages]);
-
-    // "Slet side" deletes the page you clicked on (highlighted row). It no longer uses the ticks:
-    // a tick means "included in the handbook", and most pages are ticked.
-    const focusedDeletablePage = useMemo(
-        () => filteredPages.find((p) => p.id === focusedPageId && p.isDeletable !== false) ?? null,
-        [filteredPages, focusedPageId]
-    );
 
     // Preview: with unsaved ticks, show what employees will see once they are saved (ready + ticked).
     // [0] matches no page, so unticking everything previews an empty handbook rather than all of it.
@@ -1034,6 +1027,22 @@ export const HandbookPagesPage: React.FC = () => {
                                                 >
                                                     {t('pages.sneakPeek')}
                                                 </Button>
+                                                {/* Only the company's own pages can be deleted; CompanyFlow pages are opted out instead. */}
+                                                {canEditHandbook && page.isDeletable !== false && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        title={t('pages.deletePage')}
+                                                        aria-label={`${t('pages.deletePage')}: ${page.title}`}
+                                                        onClick={() => {
+                                                            setPendingDelete({ ids: [page.id], names: [page.title] });
+                                                            setDeleteConfirmOpen(true);
+                                                        }}
+                                                        className="border-[#fca5a5] text-[#b91c1c] bg-[#fef2f2] hover:bg-[#fee2e2] rounded-[8px] px-2.5 py-1.5 h-auto"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
 
@@ -1071,22 +1080,6 @@ export const HandbookPagesPage: React.FC = () => {
 
                             {/* Add / Delete Page Actions */}
                             <div className="flex justify-end pt-2 gap-2">
-                                {canEditHandbook && (
-                                    <span title={focusedDeletablePage ? undefined : t('pages.deletePageHint')}>
-                                        <Button
-                                            variant="outline"
-                                            disabled={!focusedDeletablePage}
-                                            onClick={() => {
-                                                if (!focusedDeletablePage) return;
-                                                setPendingDelete({ ids: [focusedDeletablePage.id], names: [focusedDeletablePage.title] });
-                                                setDeleteConfirmOpen(true);
-                                            }}
-                                            className="border-[#fca5a5] text-[#b91c1c] rounded-[8px] px-4 py-2 h-auto text-sm bg-[#fef2f2] hover:bg-[#fee2e2] disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {t('pages.deletePage')}
-                                        </Button>
-                                    </span>
-                                )}
                                 {(() => {
                                     const activeChapter = chapters.find((ch) => ch.id === activeChapterId);
                                     // Own themes and CompanyFlow themes alike; the edit page explains if a theme can't be renamed.
