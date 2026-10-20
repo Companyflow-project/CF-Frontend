@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/layouts/app-layout';
 import { AuthLayout } from '@/layouts/auth-layout';
-import { authRoutes } from '@/features/auth/routes';
+import { authRoutes, pathAfterLogin } from '@/features/auth/routes';
 import { useAuth } from '@/context/auth-context';
 import { ViewAsEmployeeProvider, useViewAsEmployee } from '@/context/view-as-employee-context';
 import { employeesRoutes } from '@/features/employees/routes';
@@ -224,8 +224,9 @@ const RequireAccountDashboard: React.FC<{ children: React.ReactNode }> = ({ chil
 
 const RedirectIfAuth: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
   if (loading) return null;
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isAuthenticated) return <Navigate to={pathAfterLogin(location.state)} replace />;
   return <>{children}</>;
 };
 

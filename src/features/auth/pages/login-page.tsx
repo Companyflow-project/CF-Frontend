@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '../hooks';
-import { authRoutes } from '../routes';
+import { authRoutes, pathAfterLogin } from '../routes';
 import { toast } from 'sonner';
 import loginLogoUrl from '/assets/Login-Logo.svg';
 
@@ -37,6 +37,7 @@ export const LoginPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +46,8 @@ export const LoginPage: React.FC = () => {
     setSubmitting(true);
     try {
       await login(email, password);
-      navigate('/');
+      // Back to the bookmarked or linked page that asked for the login.
+      navigate(pathAfterLogin(location.state), { replace: true });
     } catch (err) {
       const raw = err instanceof Error ? err.message : t('errors.loginFailedRaw');
       const friendly = friendlyLoginError(raw, t);
