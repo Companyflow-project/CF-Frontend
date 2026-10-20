@@ -81,7 +81,7 @@ function normalizeRole(role?: string): User['role'] {
   return role as User['role'];
 }
 
-function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number; preferredLangcode?: string; companyLanguages?: string[]; employeeLanguages?: string[] }): User {
+function toUser(raw: { uid?: number; id?: string; name?: string; email?: string; role?: string; companyId?: string | number; preferredLangcode?: string; companyLanguages?: string[]; employeeLanguages?: string[]; hasPassword?: boolean }): User {
   const id = raw.id ?? String(raw.uid ?? '');
   const companyId = raw.companyId != null ? String(raw.companyId) : undefined;
   return {
@@ -94,6 +94,7 @@ function toUser(raw: { uid?: number; id?: string; name?: string; email?: string;
     preferredLangcode: raw.preferredLangcode ?? 'da',
     companyLanguages: raw.companyLanguages ?? ['da'],
     employeeLanguages: raw.employeeLanguages ?? ['da'],
+    hasPassword: raw.hasPassword,
   };
 }
 
@@ -225,7 +226,7 @@ export const authApi = {
       return null;
     }
     try {
-      const response = await axiosClient.get<{ data: { uid: number; name: string; email?: string; role?: string; companyId?: string | number } }>('/auth/me');
+      const response = await axiosClient.get<{ data: { uid: number; name: string; email?: string; role?: string; companyId?: string | number; hasPassword?: boolean } }>('/auth/me');
       const raw = response.data?.data;
       if (!raw) return null;
       const user = toUser(raw);

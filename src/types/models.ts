@@ -10,6 +10,8 @@ export interface User {
   preferredLangcode?: string;
   companyLanguages?: string[];
   employeeLanguages?: string[];
+  /** False for someone who has never set a password (e.g. signed in by magic link). */
+  hasPassword?: boolean;
 }
 
 export interface Account {

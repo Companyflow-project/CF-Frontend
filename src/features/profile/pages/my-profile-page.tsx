@@ -24,6 +24,13 @@ export const MyProfilePage: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  // Someone who signed in by magic link may have no password yet; they choose one without a
+  // current password. Asked fresh, as the magic-link sign-in doesn't report it.
+  const [hasPassword, setHasPassword] = useState(true);
+
+  useEffect(() => {
+    authApi.me().then((me) => { if (me?.hasPassword === false) setHasPassword(false); }).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,13 +87,14 @@ export const MyProfilePage: React.FC = () => {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentPassword.trim() || !newPassword.trim()) return;
+    if ((hasPassword && !currentPassword.trim()) || !newPassword.trim()) return;
     setPasswordSubmitting(true);
     try {
-      await profileApi.changePassword(currentPassword, newPassword);
-      toast.success(t('myProfile.passwordChanged'));
+      await profileApi.changePassword(hasPassword ? currentPassword : undefined, newPassword);
+      toast.success(t(hasPassword ? 'myProfile.passwordChanged' : 'myProfile.passwordCreated'));
       setCurrentPassword('');
       setNewPassword('');
+      setHasPassword(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('myProfile.passwordChangeError'));
     } finally {
@@ -168,16 +176,20 @@ export const MyProfilePage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handlePasswordChange} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="currentPassword">{t('myProfile.currentPassword')}</Label>
-                <PasswordInput
-                  id="currentPassword"
-                  autoComplete="current-password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className={inputCls}
-                />
-              </div>
+              {hasPassword ? (
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="currentPassword">{t('myProfile.currentPassword')}</Label>
+                  <PasswordInput
+                    id="currentPassword"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-[#374151]">{t('myProfile.noPasswordYet')}</p>
+              )}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="newPassword">{t('myProfile.newPassword')}</Label>
                 <PasswordInput
@@ -192,10 +204,10 @@ export const MyProfilePage: React.FC = () => {
               <div>
                 <Button
                   type="submit"
-                  disabled={passwordSubmitting || !currentPassword.trim() || !newPassword.trim()}
+                  disabled={passwordSubmitting || (hasPassword && !currentPassword.trim()) || !newPassword.trim()}
                   className="bg-[#1a5948] hover:bg-[#143e33] text-white font-medium rounded-[12px] px-6 py-2.5 h-auto disabled:opacity-40"
                 >
-                  {t('myProfile.changePassword')}
+                  {hasPassword ? t('myProfile.changePassword') : t('myProfile.createPassword')}
                 </Button>
               </div>
             </form>

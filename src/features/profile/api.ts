@@ -47,10 +47,11 @@ export const profileApi = {
    * Change your own password. Changing it revokes every other session, so the
    * server issues a fresh token — store it or this tab logs itself out.
    */
-  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  /** Without a current password when the user has none yet (first password after a magic link). */
+  async changePassword(currentPassword: string | undefined, newPassword: string): Promise<void> {
     const response = await axiosClient.post<ApiResponse<{ message: string; token?: string }>>(
       '/auth/change-password',
-      { currentPassword, newPassword },
+      { ...(currentPassword ? { currentPassword } : {}), newPassword },
     );
     const token = response.data?.data?.token;
     if (token) localStorage.setItem('token', token);
