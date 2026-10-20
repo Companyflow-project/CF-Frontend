@@ -29,6 +29,8 @@ export function reloadOnceForNewVersion(): boolean {
 export async function reloadIfOutdatedBuild(): Promise<void> {
   const running = document.querySelector('script[type="module"][src*="/assets/index-"]')?.getAttribute('src');
   if (!running) return; // dev server
+  // Without sessionStorage the once-only marker can't be kept, and a reload could repeat.
+  try { sessionStorage.setItem('cf-storage-check', '1'); sessionStorage.removeItem('cf-storage-check'); } catch { return; }
   try {
     const res = await fetch(window.location.pathname, { cache: 'no-cache', credentials: 'same-origin' });
     if (!res.ok) return;
