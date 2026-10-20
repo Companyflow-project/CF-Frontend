@@ -21,6 +21,24 @@ export function reloadOnceForNewVersion(): boolean {
   return true;
 }
 
+/**
+ * index.html is served without Cache-Control, so a browser may start a cached copy (an older
+ * build) for an address it has opened before. Ask the server which build is current and reload
+ * once if this page started another one.
+ */
+export async function reloadIfOutdatedBuild(): Promise<void> {
+  const running = document.querySelector('script[type="module"][src*="/assets/index-"]')?.getAttribute('src');
+  if (!running) return; // dev server
+  try {
+    const res = await fetch(window.location.pathname, { cache: 'no-cache', credentials: 'same-origin' });
+    if (!res.ok) return;
+    const latest = (await res.text()).match(/\/assets\/index-[A-Za-z0-9_-]+\.js/)?.[0];
+    if (latest && latest !== running) reloadOnceForNewVersion();
+  } catch {
+    // offline or blocked: keep running the build we have
+  }
+}
+
 /** Called once the app has run for a while, so a later deploy can trigger the reload again. */
 export function clearReloadMarker(): void {
   try { sessionStorage.removeItem(RELOAD_KEY); } catch { /* storage blocked */ }
