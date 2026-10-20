@@ -20,6 +20,7 @@ import { employeesRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole } from '@/lib/utils';
 import { resolveRbacRole } from '@/lib/rbac';
+import { isImpersonating } from '@/features/admin/impersonation';
 import type { Employee } from '@/types/models';
 import { useTranslation } from 'react-i18next';
 import { userManualRoutes } from '@/features/user-manual/routes';
@@ -87,8 +88,11 @@ export const EditEmployeePage: React.FC = () => {
     });
   }, []);
 
-  // True when the employee being edited is the currently logged-in user
-  const isSelf = !!(employee && authUser && (
+  // True when the employee being edited is the currently logged-in user. Not while a superadmin
+  // views a company ("Gå til virksomhed" signs them in as its owner): the owner's profile isn't
+  // theirs, and they need its options, e.g. to send the owner's welcome email.
+  const viewingCompanyAsStaff = isImpersonating() && isAdminRole(authUser?.role);
+  const isSelf = !viewingCompanyAsStaff && !!(employee && authUser && (
     String(employee.id) === String(authUser.id) ||
     employee.email.toLowerCase() === (authUser.email ?? '').toLowerCase()
   ));
