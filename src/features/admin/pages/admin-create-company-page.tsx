@@ -161,7 +161,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
     setCvrLoading(true);
     setCvrExisting(null);
     try {
-      const { existing, registry } = await adminApi.lookupCvr(form.cvr);
+      const { existing, registry, registryUnavailable } = await adminApi.lookupCvr(form.cvr);
 
       if (existing) {
         // Already registered in CompanyFlow — surface it so the admin can update
@@ -176,6 +176,8 @@ export const AdminCreateCompanyPage: React.FC = () => {
         if (registry.email) set('email', registry.email);
         if (registry.phone) set('phone', registry.phone);
         toast.success(t('createCompany.cvrFound'));
+      } else if (registryUnavailable) {
+        toast.error(t('createCompany.cvrUnavailable', "The CVR lookup isn't available right now. Please fill in the company details manually."));
       } else {
         toast.error(t('createCompany.cvrNotFound'));
       }

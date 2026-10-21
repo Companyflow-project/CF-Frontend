@@ -107,7 +107,8 @@
     "sort": {
       "name": "Navn",
       "created": "Oprettet",
-      "customerNumber": "Kundenr."
+      "customerNumber": "Kundenr.",
+      "label": "Sortér"
     },
     "filter": "Filter",
     "filterCategory": "Filter",
@@ -137,7 +138,15 @@
       "licenses": "Licenser",
       "sms": "SMS",
       "sender": "Afsender",
-      "whistleblower": "Whistleblower"
+      "whistleblower": "Whistleblower",
+      "smss": "SMS'er",
+      "employmentTypes": "Ansættelsestyper",
+      "extraHandbooks": "Ekstra håndbøger",
+      "optionalDesign": "Valgfrit grafisk design",
+      "sop": "SOP",
+      "languages": "Sprog",
+      "activity": "Aktivitet",
+      "fup": "FUP"
     },
     "subscription": "Abonnement",
     "quickLinks": "Genveje",
@@ -184,7 +193,33 @@
     "previous": "Forrige",
     "next": "Næste",
     "perPage": "pr. side",
-    "comingSoon": "Kommer snart"
+    "comingSoon": "Kommer snart",
+    "delete": {
+      "success": "Virksomheden er slettet.",
+      "error": "Kunne ikke slette virksomheden."
+    },
+    "col": {
+      "business": "Virksomhed",
+      "subscription": "Abonnement",
+      "quickLinks": "Genveje",
+      "actions": "Handlinger"
+    },
+    "unlimited": "ubegrænset",
+    "none": "Ingen",
+    "yes": "Ja",
+    "no": "Nej",
+    "view": "Vis",
+    "resetNotEnabled": "Nulstilling er ikke slået til for denne virksomhed. Slå \"Tillad nulstilling\" til under Rediger → Administrator.",
+    "show": "Vis",
+    "resetConfirmTitle": "Nulstil {{name}}?",
+    "resetConfirmBody": "Alle virksomhedens data nulstilles undtagen virksomhedens navn, kundekategori og e-mail. Det kan ikke fortrydes.",
+    "cancel": "Annullér",
+    "resetSuccess": "Virksomheden er nulstillet.",
+    "resetError": "Kunne ikke nulstille virksomheden.",
+    "resetting": "Nulstiller…",
+    "filterNone": "Ingen",
+    "whistleblowerActive": "Aktiv",
+    "whistleblowerNo": "Nej"
   },
   "companyDetail": {
     "back": "← Tilbage til Virksomheder",
@@ -388,7 +423,36 @@
       "emailRequired": "Virksomhedsemail er påkrævet",
       "emailInvalid": "Indtast en gyldig virksomhedsemail",
       "nameRequired": "Virksomhedsnavn er påkrævet"
-    }
+    },
+    "cvrLookupDescription": "Udfyld virksomhedens oplysninger automatisk fra CVR-registret.",
+    "cvrPlaceholder": "f.eks. 12345678",
+    "companyNamePlaceholder": "Virksomhedsnavn",
+    "companyEmailPlaceholder": "firma@eksempel.dk",
+    "telephonePlaceholder": "+45 00 00 00 00",
+    "categoryDescription": "Vælg kundekategori for virksomheden.",
+    "primaryContactDescription": "Skriv brugerens rigtige navn i Kontaktnavn. Det interne navn udfyldes automatisk og skal normalt ikke ændres.",
+    "contactNamePlaceholder": "Fulde navn",
+    "internalNamePlaceholder": "Oprettes automatisk",
+    "internalNameHint": "Det interne brugernavn oprettes automatisk",
+    "contactEmailPlaceholder": "kontakt@eksempel.dk",
+    "contactMobilePlaceholder": "+45 00 00 00 00",
+    "submitHint": "Bemærk, at det kan tage et par minutter at oprette en virksomhed.",
+    "products": {
+      "free_sample": "Gratis prøve",
+      "free_sample_not_used": "Gratis prøve (ikke brugt)",
+      "the_staff_handbook": "Personalehåndbogen"
+    },
+    "sources": {
+      "none": "— Intet valgt —",
+      "website": "Hjemmeside",
+      "referral": "Henvisning",
+      "linkedin": "LinkedIn",
+      "google": "Google Ads",
+      "cold_call": "Opsøgende opkald",
+      "event": "Arrangement",
+      "other": "Andet"
+    },
+    "cvrUnavailable": "CVR-opslag er ikke tilgængeligt lige nu. Udfyld virksomhedens oplysninger manuelt."
   },
   "impersonate": {
     "title": "Skift brugervisning",
@@ -1375,7 +1439,14 @@
       "unpublished": "Ikke udgivet",
       "active": "Aktiv",
       "inactive": "Inaktiv"
-    }
+    },
+    "allCompanies": "Alle virksomheder",
+    "categoryUpdated": "Kategori sat til {{name}}",
+    "categoryUpdateFailed": "Kunne ikke opdatere kategorien.",
+    "noCategory": "Vælg kategori",
+    "changeCategory": "Skift kundekategori",
+    "categoryNoneCurrent": "Ingen kategori valgt",
+    "categoryPickerError": "Kunne ikke hente kategorier."
   },
   "crm": {
     "allUsers": "Alle brugere",
@@ -1602,7 +1673,11 @@
       "addNew": "Tilføj tilbud",
       "allowed": "Tilladte filtyper: pdf, doc, docx, xls, xlsx, png, jpg, jpeg, gif, txt",
       "dragHere": "Træk tilbud hertil",
-      "title": "Tilbud"
+      "title": "Tilbud",
+      "badType": "{{name}}: filtypen er ikke tilladt",
+      "uploaded": "{{count}} fil(er) uploadet",
+      "uploadFailed": "Upload mislykkedes: {{message}}",
+      "uploading": "Uploader…"
     },
     "save": "Gem",
     "saveFailed": "Kunne ikke gemme ændringer",
@@ -1669,6 +1744,26 @@
       "enable": "Aktiver whistleblower",
       "title": "Whistleblower",
       "type": "Type"
+    },
+    "delete": {
+      "success": "Virksomheden er sat i kø til sletning",
+      "failed": "Sletning mislykkedes: {{message}}",
+      "title": "Slet denne virksomhed",
+      "warning": "Sletning af virksomheden er permanent for brugerne. Den markeres som slettet og gemmes i 30 dage, hvorefter den ikke kan gendannes.",
+      "confirmLabel": "Skriv virksomhedens navn for at bekræfte",
+      "deleting": "Sletter…",
+      "confirmButton": "Slet virksomhed"
+    },
+    "toc": {
+      "empty": "Virksomheden har endnu ingen håndbog.",
+      "title": "Indholdsfortegnelse",
+      "noPages": "Håndbogen har endnu ingen sider."
+    },
+    "versions": {
+      "empty": "Ingen håndbog – ingen versioner at vise.",
+      "title": "Versioner",
+      "none": "Ingen versioner endnu.",
+      "current": "Nuværende"
     }
   },
   "invoices": {

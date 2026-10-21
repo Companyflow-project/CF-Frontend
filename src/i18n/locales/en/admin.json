@@ -107,7 +107,8 @@
     "sort": {
       "name": "Name",
       "created": "Created",
-      "customerNumber": "Customer #"
+      "customerNumber": "Customer #",
+      "label": "Sort"
     },
     "filter": "Filter",
     "filterCategory": "Filter",
@@ -137,7 +138,15 @@
       "licenses": "Licenses",
       "sms": "SMS",
       "sender": "Sender",
-      "whistleblower": "Whistleblower"
+      "whistleblower": "Whistleblower",
+      "smss": "SMSs",
+      "employmentTypes": "Employment types",
+      "extraHandbooks": "Extra handbooks",
+      "optionalDesign": "Optional design",
+      "sop": "SOP",
+      "languages": "Languages",
+      "activity": "Activity",
+      "fup": "FUP"
     },
     "subscription": "Subscription",
     "quickLinks": "Quick Links",
@@ -184,7 +193,33 @@
     "previous": "Previous",
     "next": "Next",
     "perPage": "per page",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "delete": {
+      "success": "Business has been deleted.",
+      "error": "Failed to delete business."
+    },
+    "col": {
+      "business": "Business",
+      "subscription": "Subscription",
+      "quickLinks": "Quick Links",
+      "actions": "Actions"
+    },
+    "unlimited": "unlimited",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "view": "View",
+    "resetNotEnabled": "Reset is not enabled for this company. Enable it in Administrative Settings.",
+    "show": "Show",
+    "resetConfirmTitle": "Reset {{name}}?",
+    "resetConfirmBody": "This will reset all company data except the company name, customer category, and company email. This action cannot be undone.",
+    "cancel": "Cancel",
+    "resetSuccess": "Company has been reset.",
+    "resetError": "Failed to reset company.",
+    "resetting": "Resetting…",
+    "filterNone": "None",
+    "whistleblowerActive": "Active",
+    "whistleblowerNo": "No"
   },
   "companyDetail": {
     "back": "← Back to Companies",
@@ -388,7 +423,36 @@
       "emailRequired": "Business email is required",
       "emailInvalid": "Enter a valid company email address",
       "nameRequired": "Business name is required"
-    }
+    },
+    "cvrLookupDescription": "Autofill business details from the Danish CVR registry.",
+    "cvrPlaceholder": "e.g. 12345678",
+    "companyNamePlaceholder": "Company name",
+    "companyEmailPlaceholder": "company@example.com",
+    "telephonePlaceholder": "+45 00 00 00 00",
+    "categoryDescription": "Select the customer category for this business.",
+    "primaryContactDescription": "Fill in the Name field with the user's real name. The Internal name is filled in automatically and does not normally need to be edited.",
+    "contactNamePlaceholder": "Full name",
+    "internalNamePlaceholder": "Auto-generated",
+    "internalNameHint": "The internal username is created automatically",
+    "contactEmailPlaceholder": "contact@example.com",
+    "contactMobilePlaceholder": "+45 00 00 00 00",
+    "submitHint": "Please note that it may take a few minutes to create a business.",
+    "products": {
+      "free_sample": "Free Sample",
+      "free_sample_not_used": "Free Sample Not used",
+      "the_staff_handbook": "The staff handbook"
+    },
+    "sources": {
+      "none": "— Nothing selected —",
+      "website": "Website",
+      "referral": "Referral",
+      "linkedin": "LinkedIn",
+      "google": "Google Ads",
+      "cold_call": "Cold call",
+      "event": "Event",
+      "other": "Other"
+    },
+    "cvrUnavailable": "The CVR lookup isn't available right now. Please fill in the company details manually."
   },
   "impersonate": {
     "title": "Change user view",
@@ -1375,7 +1439,14 @@
       "unpublished": "Unpublished",
       "active": "Active",
       "inactive": "Inactive"
-    }
+    },
+    "allCompanies": "All Companies",
+    "categoryUpdated": "Category set to {{name}}",
+    "categoryUpdateFailed": "Failed to update category.",
+    "noCategory": "Set category",
+    "changeCategory": "Change customer category",
+    "categoryNoneCurrent": "No category set",
+    "categoryPickerError": "Failed to load categories."
   },
   "crm": {
     "allUsers": "All Users",
@@ -1602,7 +1673,11 @@
       "addNew": "Add a new file",
       "allowed": "Allowed extensions: pdf, doc, docx, xls, xlsx, png, jpg, jpeg, gif, txt",
       "dragHere": "Drag and drop files here, or click to browse",
-      "title": "Offers, Documents"
+      "title": "Offers, Documents",
+      "badType": "{{name}}: file type not allowed",
+      "uploaded": "{{count}} file(s) uploaded",
+      "uploadFailed": "Upload failed: {{message}}",
+      "uploading": "Uploading…"
     },
     "save": "Save",
     "saveFailed": "Failed to save changes",
@@ -1669,6 +1744,26 @@
       "enable": "Enable",
       "title": "Whistleblower Scheme",
       "type": "Type"
+    },
+    "delete": {
+      "success": "Company queued for deletion",
+      "failed": "Delete failed: {{message}}",
+      "title": "Delete this company",
+      "warning": "Deleting this company is permanent for end users. The record is soft-deleted and will be retained for 30 days, after which it cannot be recovered.",
+      "confirmLabel": "Type the company name to confirm",
+      "deleting": "Deleting…",
+      "confirmButton": "Delete company"
+    },
+    "toc": {
+      "empty": "This company has no handbook assigned yet.",
+      "title": "Table of Contents",
+      "noPages": "This handbook has no pages yet."
+    },
+    "versions": {
+      "empty": "No handbook assigned — no versions to show.",
+      "title": "Versions",
+      "none": "No versions recorded yet.",
+      "current": "Current"
     }
   },
   "invoices": {

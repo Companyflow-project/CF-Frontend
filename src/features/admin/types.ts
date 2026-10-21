@@ -631,6 +631,8 @@ export interface CvrLookupResult {
   existing: ExistingCompanySummary | null;
   /** Data pulled from the Danish CVR registry (cvrapi.dk), if found. */
   registry: { name: string; email: string | null; phone: string | null } | null;
+  /** True when the registry couldn't be asked (refused, down, timed out) — not the same as "no such CVR". */
+  registryUnavailable?: boolean;
 }
 
 // --- Create Company (Phase 4) ---

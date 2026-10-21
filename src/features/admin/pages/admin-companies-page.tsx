@@ -325,7 +325,7 @@ export const AdminCompaniesPage: React.FC = () => {
               onChange={(e) => { setCategory(e.target.value); setPage(1); }}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <option value="All">{t('companies.filter.none', 'None')}</option>
+              <option value="All">{t('companies.filterNone', 'None')}</option>
               {CATEGORY_FILTER_OPTIONS.map((name) => (
                 <option key={name} value={name}>
                   {t(`taxonomy.term.customer_category.${name}`, { defaultValue: name })}
@@ -426,8 +426,8 @@ export const AdminCompaniesPage: React.FC = () => {
                       <dt className="inline text-gray-500">{t('companies.field.whistleblower', 'Whistleblower')}: </dt>
                       <dd className="inline text-gray-700">
                         {company.whistleblowerAccess
-                          ? t('companies.whistleblower.active', 'Active')
-                          : t('companies.whistleblower.no', 'No')}
+                          ? t('companies.whistleblowerActive', 'Active')
+                          : t('companies.whistleblowerNo', 'No')}
                       </dd>
                     </div>
                     <div>

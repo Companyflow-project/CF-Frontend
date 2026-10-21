@@ -113,7 +113,9 @@ interface SectionLabelProps {
   editHref?: string;
   right?: React.ReactNode;
 }
-const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref, right }) => (
+const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref, right }) => {
+  const { t } = useTranslation('admin');
+  return (
   <div className="flex items-center justify-between gap-2 px-4 sm:px-5 pt-4 pb-2">
     <div className="text-[11px] font-semibold tracking-wider text-gray-500 uppercase">
       {children}
@@ -125,12 +127,13 @@ const SectionLabel: React.FC<SectionLabelProps> = ({ children, editHref, right }
           to={editHref}
           className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#0d0e0e]"
         >
-          Edit
+          {t('companyView.actionEdit', 'Edit')}
         </Link>
       )}
     </div>
   </div>
-);
+  );
+};
 
 /** Full-width stacked button used in the Actions / Quick Links column. */
 const StackedButton: React.FC<{
@@ -166,8 +169,9 @@ const PlainValue: React.FC<{ value: React.ReactNode }> = ({ value }) =>
   value === '' || value == null ? <span className="text-gray-400">—</span> : <>{value}</>;
 
 const YesNo: React.FC<{ value: boolean | null | undefined }> = ({ value }) => {
+  const { t } = useTranslation('admin');
   if (value == null) return <span className="text-gray-400">—</span>;
-  return <span className="text-gray-900">{value ? 'Yes' : 'No'}</span>;
+  return <span className="text-gray-900">{value ? t('companyView.yes', 'Yes') : t('companyView.no', 'No')}</span>;
 };
 
 export const AdminCompanyDetailPage: React.FC = () => {
