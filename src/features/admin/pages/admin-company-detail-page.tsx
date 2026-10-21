@@ -245,8 +245,9 @@ export const AdminCompanyDetailPage: React.FC = () => {
         returnTo: adminRoutes.companyDetail.replace(':id', id),
       });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : t('companyView.viewAsError', 'Could not open this company’s console.');
-      toast.error(msg);
+      // The server's own explanation, not axios' "Request failed with status code …".
+      const apiMsg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      toast.error(apiMsg || t('companyView.viewAsError', 'Could not open this company’s console.'));
       setEnteringConsole(false);
     }
   };

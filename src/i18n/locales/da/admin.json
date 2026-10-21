@@ -379,7 +379,7 @@
     "internalNameDesc": "Det interne brugernavn oprettes automatisk",
     "mobilePhone": "Mobiltelefon",
     "sendEmail": "Send loginoplysninger til kontaktens e-mail",
-    "sendEmailHint": "Opretter en konsolkonto for kontaktens e-mail og sender et link til at oprette en adgangskode.",
+    "sendEmailHint": "Sender kontakten et link til at oprette en adgangskode. Uden flueben oprettes kontoen alligevel, og du kan sende velkomstmailen senere under Medarbejdere.",
     "subscription": "Abonnement",
     "product": "Produkt",
     "licenses": "Licenser",

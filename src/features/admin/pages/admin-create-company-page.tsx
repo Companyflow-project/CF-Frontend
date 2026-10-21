@@ -622,7 +622,7 @@ export const AdminCreateCompanyPage: React.FC = () => {
                   <span className="text-sm text-gray-700">
                     {t('createCompany.sendEmail', 'Send login credentials to the contact email')}
                     <span className="block text-xs text-gray-400">
-                      {t('createCompany.sendEmailHint', 'Creates a console account for the contact email and emails a link to set a password.')}
+                      {t('createCompany.sendEmailHint', 'Emails the contact a link to set a password. Without it, the account is still created and you can send the welcome email later under Employees.')}
                     </span>
                   </span>
                 </label>

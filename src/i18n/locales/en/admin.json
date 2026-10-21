@@ -379,7 +379,7 @@
     "internalNameDesc": "The internal username is created automatically",
     "mobilePhone": "Mobile phone",
     "sendEmail": "Send login credentials to the contact email",
-    "sendEmailHint": "Creates a console account for the contact email and emails a link to set a password.",
+    "sendEmailHint": "Emails the contact a link to set a password. Without it, the account is still created and you can send the welcome email later under Employees.",
     "subscription": "Subscription",
     "product": "Product",
     "licenses": "Licenses",
