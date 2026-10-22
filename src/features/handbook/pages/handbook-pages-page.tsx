@@ -219,6 +219,35 @@ export const HandbookPagesPage: React.FC = () => {
 
     const unsavedCount = pendingInclusion.size;
 
+    // Unsaved ticks also survive leaving the list inside CompanyFlow (e.g. opening a page and
+    // coming back): kept for this browser session, per handbook, until saved.
+    const pendingKey = handbookBid != null ? `cf-pending-ticks:${handbookBid}` : null;
+    const restoredPendingFor = useRef<string | null>(null);
+    useEffect(() => {
+        if (!pendingKey || loading || restoredPendingFor.current === pendingKey) return;
+        restoredPendingFor.current = pendingKey;
+        let stored: Array<[number, boolean]> = [];
+        try { stored = JSON.parse(sessionStorage.getItem(pendingKey) ?? '[]'); } catch { /* storage blocked */ }
+        if (!Array.isArray(stored) || stored.length === 0) return;
+        const byId = new Map(allPages.map((page) => [page.id, page]));
+        setPendingInclusion((prev) => {
+            const next = new Map(prev);
+            for (const [id, included] of stored) {
+                const page = byId.get(Number(id));
+                // Skip pages that are gone or already saved this way (e.g. in the page editor).
+                if (page && !next.has(page.id) && (page.status !== 'opted_out') !== Boolean(included)) next.set(page.id, Boolean(included));
+            }
+            return next;
+        });
+    }, [pendingKey, loading, allPages]);
+    useEffect(() => {
+        if (!pendingKey || restoredPendingFor.current !== pendingKey) return;
+        try {
+            if (pendingInclusion.size === 0) sessionStorage.removeItem(pendingKey);
+            else sessionStorage.setItem(pendingKey, JSON.stringify([...pendingInclusion]));
+        } catch { /* storage blocked: ticks stay until the page is left */ }
+    }, [pendingKey, pendingInclusion]);
+
     // Keep the open theme's tab in view (e.g. a theme far right, opened via ?theme=).
     useEffect(() => {
         if (activeChapterId == null || loading) return;
@@ -1247,6 +1276,13 @@ export const HandbookPagesPage: React.FC = () => {
                     onClose={() => setSneakPeekOpen(false)}
                     onEditPage={() => {
                         setSneakPeekOpen(false);
+                        // As with the inline editor: the page editor saves "Inkluder i håndbog" itself.
+                        setPendingInclusion((prev) => {
+                            if (!prev.has(sneakPeekPage.id)) return prev;
+                            const next = new Map(prev);
+                            next.delete(sneakPeekPage.id);
+                            return next;
+                        });
                         navigate(handbookRoutes.editPage(sneakPeekPage.id));
                     }}
                     pageId={sneakPeekPage.id}
