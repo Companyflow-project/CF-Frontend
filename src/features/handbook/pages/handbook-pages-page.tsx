@@ -38,9 +38,9 @@ export const HandbookPagesPage: React.FC = () => {
     const [showCustomOnly, setShowCustomOnly] = useState(false);
     const [expandedPageId, setExpandedPageId] = useState<number | null>(null);
     // A tick means "this page is included in the handbook" (not opted out). Ticks come from the
-    // saved state; this map only holds the pages whose tick the user changed and hasn't saved yet
-    // (page id -> wanted "included" state). "Gem fremgang" saves exactly these pages, and they
-    // survive the list reloading (after saving a page, a bulk action, a reorder, ...).
+    // saved state; this map only holds the ticks the user just changed that are still being saved
+    // (page id -> wanted "included" state), so the list shows them at once and they survive the
+    // list reloading.
     const [pendingInclusion, setPendingInclusion] = useState<Map<number, boolean>>(new Map());
     // Page whose "we recommend including this page" popover is currently shown
     // (opened when a page that has CompanyFlow text is left out / unchecked).
@@ -48,7 +48,6 @@ export const HandbookPagesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [provisioning, setProvisioning] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
     const [isAddPageModalOpen, setIsAddPageModalOpen] = useState(false);
     const [lang] = useHandbookLang();
@@ -219,35 +218,6 @@ export const HandbookPagesPage: React.FC = () => {
 
     const unsavedCount = pendingInclusion.size;
 
-    // Unsaved ticks also survive leaving the list inside CompanyFlow (e.g. opening a page and
-    // coming back): kept for this browser session, per handbook, until saved.
-    const pendingKey = handbookBid != null ? `cf-pending-ticks:${handbookBid}` : null;
-    const restoredPendingFor = useRef<string | null>(null);
-    useEffect(() => {
-        if (!pendingKey || loading || restoredPendingFor.current === pendingKey) return;
-        restoredPendingFor.current = pendingKey;
-        let stored: Array<[number, boolean]> = [];
-        try { stored = JSON.parse(sessionStorage.getItem(pendingKey) ?? '[]'); } catch { /* storage blocked */ }
-        if (!Array.isArray(stored) || stored.length === 0) return;
-        const byId = new Map(allPages.map((page) => [page.id, page]));
-        setPendingInclusion((prev) => {
-            const next = new Map(prev);
-            for (const [id, included] of stored) {
-                const page = byId.get(Number(id));
-                // Skip pages that are gone or already saved this way (e.g. in the page editor).
-                if (page && !next.has(page.id) && (page.status !== 'opted_out') !== Boolean(included)) next.set(page.id, Boolean(included));
-            }
-            return next;
-        });
-    }, [pendingKey, loading, allPages]);
-    useEffect(() => {
-        if (!pendingKey || restoredPendingFor.current !== pendingKey) return;
-        try {
-            if (pendingInclusion.size === 0) sessionStorage.removeItem(pendingKey);
-            else sessionStorage.setItem(pendingKey, JSON.stringify([...pendingInclusion]));
-        } catch { /* storage blocked: ticks stay until the page is left */ }
-    }, [pendingKey, pendingInclusion]);
-
     // Keep the open theme's tab in view (e.g. a theme far right, opened via ?theme=).
     useEffect(() => {
         if (activeChapterId == null || loading) return;
@@ -277,6 +247,7 @@ export const HandbookPagesPage: React.FC = () => {
             else next.set(page.id, included);
             return next;
         });
+        saveTick(page.id, included);
         // Warn only when a page Degoan marks as recommended is left out.
         if (!included && page.isRecommended) setRecommendPageId(page.id);
         if (included && recommendPageId === page.id) setRecommendPageId(null);
@@ -357,40 +328,27 @@ export const HandbookPagesPage: React.FC = () => {
     };
 
     /**
-     * Saves only the ticks the user changed: an unticked page becomes "Fravalgt", a ticked
-     * "Fravalgt" page is included again with its ready flag as it was. Pages the user didn't
-     * touch, and every page's Klar / Ikke klar flag, are left alone (the old version posted every
-     * page with selected = tick and ready = status, opting out every unticked page).
-     * Returns the reloaded tree, or null when saving failed.
+     * A tick is saved as soon as it is clicked: an unticked page becomes "Fravalgt", a ticked
+     * "Fravalgt" page is included again with its Klar flag as it was. Saves run one at a time in
+     * click order; a failed save puts the tick back.
      */
-    const savePendingInclusion = async (): Promise<HandbookNode[] | null> => {
-        const toOptOut: number[] = [];
-        const toInclude: number[] = [];
-        pendingInclusion.forEach((included, id) => (included ? toInclude : toOptOut).push(id));
-        if (toOptOut.length === 0 && toInclude.length === 0) return handbookTree;
-
-        try {
-            setIsSaving(true);
-            if (toOptOut.length > 0) await handbookApi.bulkAction({ pageIds: toOptOut, action: 'opt_out' });
-            if (toInclude.length > 0) await handbookApi.bulkAction({ pageIds: toInclude, action: 'include' });
-            toast.success(t('pages.progressSaved'));
-        } catch (err: any) {
-            console.error('Failed to save progress:', err);
-            toast.error(err.message || t('pages.failedToSave'));
-            await refreshHandbookTree(); // keeps the ticks that did not get saved
-            return null;
-        } finally {
-            setIsSaving(false);
-        }
-        return refreshHandbookTree();
-    };
-
-    const handleSaveProgress = async () => {
-        if (unsavedCount === 0) {
-            toast.info(t('pages.nothingToSave'));
-            return;
-        }
-        await savePendingInclusion();
+    const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
+    const saveTick = (pageId: number, included: boolean) => {
+        saveQueue.current = saveQueue.current.then(async () => {
+            try {
+                await handbookApi.bulkAction({ pageIds: [pageId], action: included ? 'include' : 'opt_out' });
+            } catch (err: any) {
+                console.error('Failed to save tick:', err);
+                toast.error(err?.message || t('pages.failedToSave'));
+                setPendingInclusion((prev) => {
+                    if (!prev.has(pageId)) return prev;
+                    const next = new Map(prev);
+                    next.delete(pageId);
+                    return next;
+                });
+            }
+            await refreshHandbookTree({ quiet: true });
+        });
     };
 
     const handlePublishHandbook = async () => {
@@ -400,9 +358,9 @@ export const HandbookPagesPage: React.FC = () => {
             return;
         }
 
-        // Save unsaved ticks first, so unticked pages are not published.
-        const tree = unsavedCount > 0 ? await savePendingInclusion() : handbookTree;
-        if (!tree) return;
+        // Wait for ticks still being saved, so unticked pages are not published.
+        await saveQueue.current;
+        const tree = (await refreshHandbookTree({ quiet: true })) ?? handbookTree;
 
         // Any theme counts, not just the open one. Publishing publishes every ready page
         // that is not opted out, so the publish screen gets no page filter.
@@ -416,9 +374,9 @@ export const HandbookPagesPage: React.FC = () => {
         navigate(handbookRoutes.publish(bid));
     };
 
-    const refreshHandbookTree = async (): Promise<HandbookNode[] | null> => {
+    const refreshHandbookTree = async (opts?: { quiet?: boolean }): Promise<HandbookNode[] | null> => {
         try {
-            setLoading(true);
+            if (!opts?.quiet) setLoading(true);
             setError(null);
             const { bid, chapters: tree } = await handbookApi.getHandbookTree(lang);
 
@@ -1016,11 +974,6 @@ export const HandbookPagesPage: React.FC = () => {
 
                                             {/* Status Badge */}
                                             <div className="flex-shrink-0 flex items-center gap-2">
-                                                {pendingInclusion.has(page.id) && (
-                                                    <span className="text-xs italic text-[#a16207] whitespace-nowrap">
-                                                        {pendingInclusion.get(page.id) ? t('pages.unsavedInclude') : t('pages.unsavedOptOut')}
-                                                    </span>
-                                                )}
                                                 <span className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${
                                                     status === 'ready' ? 'bg-[#10b981]' :
                                                     status === 'not_ready' ? 'bg-[#f59e0b]' :
@@ -1225,25 +1178,13 @@ export const HandbookPagesPage: React.FC = () => {
                                     <Button
                                         size="sm"
                                         onClick={handlePublishHandbook}
-                                        disabled={!canEditHandbook || isSaving || isBulkUpdating}
+                                        disabled={!canEditHandbook || isBulkUpdating}
                                         className="w-full rounded-[8px] h-9"
                                         style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                                     >
                                         {t('pages.publishHandbook')}
                                     </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleSaveProgress}
-                                        disabled={!canEditHandbook || isSaving || isBulkUpdating}
-                                        className="w-full border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] h-9"
-                                    >
-                                        {isSaving ? t('common:saving') : unsavedCount > 0 ? `${t('pages.saveProgress')} (${unsavedCount})` : t('pages.saveProgress')}
-                                    </Button>
                                 </div>
-                                <p className={`text-xs mt-2 ${unsavedCount > 0 ? 'text-[#a16207]' : 'text-gray-500'}`}>
-                                    {unsavedCount > 0 ? t('pages.unsavedChanges', { count: unsavedCount }) : t('pages.saveProgressHint')}
-                                </p>
                             </div>
                         </CardContent>
                     </Card>
@@ -1276,13 +1217,6 @@ export const HandbookPagesPage: React.FC = () => {
                     onClose={() => setSneakPeekOpen(false)}
                     onEditPage={() => {
                         setSneakPeekOpen(false);
-                        // As with the inline editor: the page editor saves "Inkluder i håndbog" itself.
-                        setPendingInclusion((prev) => {
-                            if (!prev.has(sneakPeekPage.id)) return prev;
-                            const next = new Map(prev);
-                            next.delete(sneakPeekPage.id);
-                            return next;
-                        });
                         navigate(handbookRoutes.editPage(sneakPeekPage.id));
                     }}
                     pageId={sneakPeekPage.id}

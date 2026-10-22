@@ -274,7 +274,7 @@
   "pages.deleteThemeConfirm": "Du er ved at slette temaet \"{{name}}\" og alle dets sider. Dette kan ikke fortrydes.",
   "pages.themeDeleted": "Tema slettet",
   "pages.failedToDeleteTheme": "Kunne ikke slette tema. Prøv venligst igen.",
-  "pages.helpBanner": "Sæt flueben ved de sider, der skal med i håndbogen, og fjern fluebenet ved dem, I ikke vil have med. Skriv eller rediger sidernes indhold, og markér dem som Klar. Kun sider med flueben, der er markeret Klar, bliver udgivet. Ændrede flueben gemmes, når du klikker på \"Gem fremgang\". Du kan også oprette jeres egne sider og temaer.",
+  "pages.helpBanner": "Sæt flueben ved de sider, der skal med i håndbogen, og fjern fluebenet ved dem, I ikke vil have med. Skriv eller rediger sidernes indhold, og markér dem som Klar. Kun sider med flueben, der er markeret Klar, bliver udgivet. Flueben gemmes med det samme. Du kan også oprette jeres egne sider og temaer.",
   "pages.saveProgressHint": "Gemmer kun de flueben, du har ændret. Andre sider og deres Klar-status røres ikke.",
   "pages.unsavedChanges_one": "{{count}} ændret flueben er ikke gemt endnu.",
   "pages.unsavedChanges_other": "{{count}} ændrede flueben er ikke gemt endnu.",

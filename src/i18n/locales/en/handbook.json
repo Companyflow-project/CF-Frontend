@@ -274,7 +274,7 @@
   "pages.deleteThemeConfirm": "You are about to delete the theme \"{{name}}\" and all its pages. This cannot be undone.",
   "pages.themeDeleted": "Theme deleted",
   "pages.failedToDeleteTheme": "Failed to delete theme. Please try again.",
-  "pages.helpBanner": "Tick the pages that belong in the handbook and untick the ones you want to leave out. Write or edit the pages' content and mark them Ready. Only ticked pages marked Ready are published. Changed ticks are saved when you click \"Save progress\". You can also create your own pages and themes.",
+  "pages.helpBanner": "Tick the pages that belong in the handbook and untick the ones you want to leave out. Write or edit the pages' content and mark them Ready. Only ticked pages marked Ready are published. Ticks are saved straight away. You can also create your own pages and themes.",
   "pages.saveProgressHint": "Saves only the ticks you changed. Other pages and their Ready status are left alone.",
   "pages.unsavedChanges_one": "{{count}} changed tick is not saved yet.",
   "pages.unsavedChanges_other": "{{count}} changed ticks are not saved yet.",
