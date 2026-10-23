@@ -1,12 +1,12 @@
 /**
- * Pages on the public CompanyFlow website that the app links to. These used to
- * point at companyflow.digibida.com, a staging copy that is no longer
- * reachable; companyflow.dk serves the same pages at the same paths.
+ * Pages on the public CompanyFlow website that the app links to. companyflow.dk uses
+ * Danish paths (/kontakt/, /ekstra-haandboger/); the English ones from the old staging
+ * site (/contact-us/, /extra-handbook/) don't exist there.
  */
 const SITE = 'https://companyflow.dk';
 
 export const marketingLinks = {
-  contact: `${SITE}/contact-us/`,
-  extraHandbook: `${SITE}/extra-handbook/`,
+  contact: `${SITE}/kontakt/`,
+  extraHandbook: `${SITE}/ekstra-haandboger/`,
   whistleblower: `${SITE}/whistleblowerordning/`,
 } as const;
