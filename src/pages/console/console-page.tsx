@@ -117,12 +117,13 @@ export const ConsolePage: React.FC = () => {
   }
 
   const daysRemaining = getDaysRemaining(subscription?.subscriptionEnd);
-  // Show the trial banner only when we have an end date (and it hasn't fully expired beyond 0)
-  const showTrialBanner = subscription !== undefined && subscription.subscriptionEnd !== null;
+  // Only companies on a free trial see the trial banner (the backend calls a subscription of
+  // 21 days or less "Free Trial", as on the subscription page); paying customers don't.
+  const showTrialBanner = subscription?.productName === 'Free Trial' && subscription.subscriptionEnd !== null;
 
   return (
     <PageShell>
-      {/* Trial Banner — only shown when the subscription has an end date */}
+      {/* Trial Banner — only shown during a free trial */}
       {showTrialBanner && (
         <div className="mb-8 bg-white border border-[#e5efea] rounded-[18px] shadow-[0_4px_12px_rgba(15,23,42,0.06)] px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
