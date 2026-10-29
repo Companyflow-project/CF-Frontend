@@ -737,7 +737,7 @@ export const ContactsPage: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       className="h-9 w-9 text-[#707677] rounded-full bg-white shadow-[0_6px_14px_rgba(15,23,42,0.08)]"
-                      aria-label="Toggle sort direction"
+                      aria-label={t('manage.sort.toggleDirection')}
                       onClick={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
                     >
                       <ArrowUpDown className={`h-4 w-4 ${sortDirection === 'desc' ? 'rotate-180' : ''}`} />
@@ -751,7 +751,7 @@ export const ContactsPage: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       className="h-9 w-9 text-[#1a5948] rounded-full bg-white shadow-[0_6px_14px_rgba(28,91,72,0.25)]"
-                      aria-label="Reset sort"
+                      aria-label={t('manage.sort.reset')}
                       onClick={() => {
                         setSortField('name');
                         setSortDirection('asc');

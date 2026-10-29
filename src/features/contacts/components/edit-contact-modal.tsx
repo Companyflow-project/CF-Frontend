@@ -157,7 +157,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
           {loading ? (
             <div className="flex items-center justify-center py-8 text-[#6b7280]">
               <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              Loading…
+              {t('field.loading')}
             </div>
           ) : displayError && !contact ? (
             <p className="text-sm text-red-600 py-2">{displayError}</p>
@@ -201,7 +201,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() => setEmailTouched(true)}
-                  placeholder="email@example.com"
+                  placeholder={t('field.emailPlaceholder')}
                   className={`h-11 rounded-[10px] text-sm ${emailEmpty && emailTouched ? 'border-[#d5384b]' : 'border-[#e5e7eb]'}`}
                 />
                 {emailEmpty && emailTouched && (
@@ -269,7 +269,7 @@ export const EditContactModal: React.FC<EditContactModalProps> = ({
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving…
+                  {t('field.saving')}
                 </>
               ) : (
                 'Save changes'

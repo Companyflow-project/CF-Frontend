@@ -128,7 +128,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
       await deleteAreaMutation.mutateAsync(areaId);
       // Also deselect it if currently chosen
       setSelectedAreaIds((prev) => prev.filter((id) => id !== areaId));
-      toast.success('Area deleted');
+      toast.success(t('area.deleted'));
     } catch (err: unknown) {
       const status =
         err && typeof err === 'object' && 'response' in err
@@ -142,11 +142,11 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
       if (status === 403) {
         toast.error(
           serverMsg?.includes('Default') || serverMsg?.includes('default')
-            ? 'Built-in areas cannot be removed. Only custom areas you created can be deleted.'
-            : 'You don\'t have permission to delete this area.',
+            ? t('area.builtInCannotDelete')
+            : t('area.noPermission'),
         );
       } else {
-        toast.error(serverMsg ?? 'Failed to delete area');
+        toast.error(serverMsg ?? t('area.deleteFailed'));
       }
     }
   };
@@ -191,12 +191,12 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
             </div>
             <div>
               <DialogTitle className="text-lg font-bold text-[#0d0e0e]">
-                {isEditMode ? 'Edit employee contact' : 'Add existing employee'}
+                {isEditMode ? t('employeeModal.titleEdit') : t('employeeModal.titleAdd')}
               </DialogTitle>
               <p className="text-xs text-[#6b7280] mt-0.5">
                 {isEditMode
-                  ? 'Update details and areas of responsibility'
-                  : 'Confirm details and areas of responsibility'}
+                  ? t('employeeModal.subtitleEdit')
+                  : t('employeeModal.subtitleAdd')}
               </p>
             </div>
           </div>
@@ -232,7 +232,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
             {/* Telephone */}
             <div className="flex-1 min-w-0">
               <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
-                Telephone
+                {t('field.phone')}
                 {phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
               </label>
               <Input
@@ -318,9 +318,9 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                           e.stopPropagation();
                           setPendingDeleteAreaId(area.id);
                         }}
-                        title="Delete this custom area"
+                        title={t('area.deleteTooltip')}
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
-                        aria-label={`Delete ${area.name}`}
+                        aria-label={t('area.deleteAria', { name: area.name })}
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -368,9 +368,9 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                     <button
                       type="button"
                       onClick={() => handleRemoveCustomArea(index)}
-                      title="Remove this area"
+                      title={t('area.removeTooltip')}
                       className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
-                      aria-label={`Remove ${area}`}
+                      aria-label={t('area.removeAria', { name: area })}
                     >
                       <Trash2 className="h-3 w-3" />
                     </button>
@@ -400,7 +400,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                   onClick={handleConfirmCustomArea}
                   className="h-10 px-4 rounded-[10px] bg-[#3d997d] text-white hover:bg-[#3d997d]/90"
                 >
-                  Add
+                  {t('field.add')}
                 </Button>
                 <button
                   type="button"
@@ -429,7 +429,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
             onClick={handleSubmit}
             className="h-10 px-5 rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white text-sm shadow-[0_4px_12px_rgba(23,102,79,0.3)]"
           >
-            {isEditMode ? 'Save' : 'Add'}
+            {isEditMode ? t('field.save') : t('field.add')}
           </Button>
         </div>
       </DialogContent>
@@ -446,17 +446,16 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
                 <Trash2 className="h-4 w-4 text-[#d5384b]" />
               </div>
               <DialogTitle className="text-base font-bold text-[#0d0e0e]">
-                Delete custom area?
+                {t('area.deleteTitle')}
               </DialogTitle>
             </div>
           </DialogHeader>
           <div className="px-5 py-4 bg-white space-y-3">
             <p className="text-sm text-[#374151]">
-              <span className="font-semibold">&ldquo;{pendingDeleteArea?.name}&rdquo;</span> will be
-              permanently removed and will no longer be available to assign to any contact.
+              <span className="font-semibold">&ldquo;{pendingDeleteArea?.name}&rdquo;</span> {t('area.deleteBody')}
             </p>
             <p className="text-xs text-[#6b7280] bg-[#f9fafb] rounded-[8px] px-3 py-2 border border-[#e5e7eb]">
-              Only custom areas you created can be deleted. Built-in default areas cannot be removed.
+              {t('area.deleteNote')}
             </p>
           </div>
           <div className="px-5 py-3 border-t border-[#f3f4f6] bg-[#f9fafb] flex justify-end gap-2">
@@ -472,7 +471,7 @@ export const AddEmployeeAsContactModal: React.FC<AddEmployeeAsContactModalProps>
               onClick={handleConfirmDeletePersistedArea}
               className="rounded-[8px] bg-[#d5384b] hover:bg-[#d5384b]/90 text-white text-sm"
             >
-              {deleteAreaMutation.isPending ? 'Deleting…' : 'Delete area'}
+              {deleteAreaMutation.isPending ? t('area.deleting') : t('area.delete')}
             </Button>
           </div>
         </DialogContent>

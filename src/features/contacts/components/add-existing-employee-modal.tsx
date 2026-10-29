@@ -12,6 +12,7 @@ import { useEmployees } from '@/lib/api-hooks';
 import { transformEmployee, type BackendEmployeeLike } from '@/lib/api-transformers';
 import { UserCheck, ChevronDown, Loader2, Plus, X, Search, Check, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export interface AddExistingEmployeeContactPayload {
   uid: number;
@@ -38,6 +39,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
   onOpenChange,
   onConfirm,
 }) => {
+  const { t } = useTranslation('contacts');
   const { data: areasData } = useContactAreas();
   const { data: rawEmployees, loading: loadingEmployees } = useEmployees({ limit: 1000 });
   const deleteAreaMutation = useDeleteContactArea();
@@ -171,7 +173,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
     try {
       await deleteAreaMutation.mutateAsync(areaId);
       setSelectedAreaIds((prev) => prev.filter((id) => id !== areaId));
-      toast.success('Area deleted');
+      toast.success(t('area.deleted'));
     } catch (err: unknown) {
       const status =
         err && typeof err === 'object' && 'response' in err
@@ -184,11 +186,11 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
       if (status === 403) {
         toast.error(
           serverMsg?.toLowerCase().includes('default')
-            ? 'Built-in areas cannot be removed. Only custom areas you created can be deleted.'
-            : "You don't have permission to delete this area.",
+            ? t('area.builtInCannotDelete')
+            : t('area.noPermission'),
         );
       } else {
-        toast.error(serverMsg ?? 'Failed to delete area');
+        toast.error(serverMsg ?? t('area.deleteFailed'));
       }
     }
   };
@@ -226,8 +228,8 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                 <UserCheck className="h-5 w-5 text-[#1a5948]" />
               </div>
               <div>
-                <DialogTitle className="text-lg font-bold text-[#0d0e0e]">Add existing employee</DialogTitle>
-                <p className="text-xs text-[#6b7280] mt-0.5">Select an employee and confirm their details</p>
+                <DialogTitle className="text-lg font-bold text-[#0d0e0e]">{t('employeeModal.titleAdd')}</DialogTitle>
+                <p className="text-xs text-[#6b7280] mt-0.5">{t('employeeModal.subtitleSelect')}</p>
               </div>
             </div>
           </DialogHeader>
@@ -238,7 +240,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
             {/* ── Custom employee dropdown ── */}
             <div>
               <label className="text-xs font-medium text-[#0d0e0e] mb-1.5 block">
-                Employee <span className="text-[#d5384b]">*</span>
+                {t('employeeModal.employee')} <span className="text-[#d5384b]">*</span>
               </label>
               <div className="relative" ref={dropdownRef}>
                 {/* Trigger */}
@@ -266,7 +268,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                     </>
                   ) : (
                     <span className="text-[#9ca3af]">
-                      {loadingEmployees ? 'Loading employees…' : 'Select an employee…'}
+                      {loadingEmployees ? t('employeeModal.loadingEmployees') : t('employeeModal.selectEmployee')}
                     </span>
                   )}
                   {loadingEmployees
@@ -285,7 +287,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                         <input
                           ref={searchRef}
                           type="text"
-                          placeholder="Search by name or email…"
+                          placeholder={t('employeeModal.search')}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="w-full h-9 pl-8 pr-3 text-sm bg-[#f9fafb] rounded-[8px] border border-[#f3f4f6] focus:outline-none focus:ring-2 focus:ring-[#3d997d]/20 focus:border-[#3d997d] placeholder:text-[#9ca3af]"
@@ -296,7 +298,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                     {/* Employee list */}
                     <ul className="max-h-[220px] overflow-y-auto py-1">
                       {filteredEmployees.length === 0 ? (
-                        <li className="px-4 py-3 text-sm text-[#9ca3af] text-center">No employees found</li>
+                        <li className="px-4 py-3 text-sm text-[#9ca3af] text-center">{t('employeeModal.noEmployees')}</li>
                       ) : (
                         filteredEmployees.map((emp) => {
                           const isSelected = emp.uid === selectedUid;
@@ -327,7 +329,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                                 </span>
                                 {emp.status === 'INACTIVE' && (
                                   <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9ca3af] bg-[#f3f4f6] rounded-full px-2 py-0.5 flex-shrink-0">
-                                    Inactive
+                                    {t('employeeModal.inactive')}
                                   </span>
                                 )}
                                 {isSelected && <Check className="h-4 w-4 text-[#3d997d] flex-shrink-0" />}
@@ -347,7 +349,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
               <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end">
                 {/* Name — read-only */}
                 <div className="flex-1 min-w-0">
-                  <label className="text-xs font-medium text-[#6b7280] mb-1 block">Name</label>
+                  <label className="text-xs font-medium text-[#6b7280] mb-1 block">{t('field.name')}</label>
                   <Input
                     readOnly tabIndex={-1}
                     value={selectedEmployee.name}
@@ -357,7 +359,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
 
                 {/* Email — read-only */}
                 <div className="flex-1 min-w-0">
-                  <label className="text-xs font-medium text-[#6b7280] mb-1 block">Email</label>
+                  <label className="text-xs font-medium text-[#6b7280] mb-1 block">{t('field.email')}</label>
                   <Input
                     readOnly tabIndex={-1}
                     value={selectedEmployee.email ?? ''}
@@ -368,10 +370,10 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                 {/* Telephone */}
                 <div className="flex-1 min-w-0">
                   <label className="text-xs font-medium text-[#0d0e0e] mb-1 block">
-                    Telephone{phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
+                    {t('field.phone')}{phoneEmpty && <span className="ml-1 text-[#d5384b]">*</span>}
                   </label>
                   <Input
-                    placeholder="Phone number"
+                    placeholder={t('field.phonePlaceholder')}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     onBlur={() => setPhoneTouched(true)}
@@ -381,7 +383,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                       }`}
                   />
                   {showPhoneError && (
-                    <p className="text-xs text-[#d5384b] mt-1">Phone number is required</p>
+                    <p className="text-xs text-[#d5384b] mt-1">{t('field.phoneNumberRequired')}</p>
                   )}
                 </div>
               </div>
@@ -391,7 +393,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
             <div className="space-y-2 pt-1 border-t border-[#f0f4f2]">
               <div className="flex items-center justify-between pt-3">
                 <label className="text-sm font-semibold text-[#0d0e0e]">
-                  Areas of responsibility <span className="text-[#d5384b]">*</span>
+                  {t('field.areas')} <span className="text-[#d5384b]">*</span>
                 </label>
                 {!isAddingCustomArea && (
                   <Button
@@ -399,7 +401,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                     onClick={() => setIsAddingCustomArea(true)}
                     className="h-8 gap-1.5 text-xs text-[#1a5948] hover:bg-[#f0f7f5] rounded-[8px] px-3"
                   >
-                    <Plus className="h-3.5 w-3.5" /> Create new
+                    <Plus className="h-3.5 w-3.5" /> {t('field.createNew')}
                   </Button>
                 )}
               </div>
@@ -436,9 +438,9 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); setPendingDeleteAreaId(area.id); }}
-                          title="Delete this custom area"
+                          title={t('area.deleteTooltip')}
                           className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
-                          aria-label={`Delete ${area.name}`}
+                          aria-label={t('area.deleteAria', { name: area.name })}
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
@@ -475,7 +477,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                         type="button"
                         onClick={() => handleRemoveCustomArea(index)}
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-[#9ca3af] hover:text-[#d5384b] hover:bg-[#ffecef] transition-all"
-                        aria-label={`Remove ${area}`}
+                        aria-label={t('area.removeAria', { name: area })}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -489,20 +491,20 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                 <div className="flex items-center gap-2 pt-2">
                   <Input
                     autoFocus
-                    placeholder="New area of responsibility…"
+                    placeholder={t('field.newAreaPlaceholder')}
                     value={newCustomArea}
                     onChange={(e) => setNewCustomArea(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleConfirmCustomArea(); } }}
                     className="h-10 rounded-[10px] border-[#3d997d]/50 text-sm placeholder:text-[#9ca3af] focus:ring-2 focus:ring-[#3d997d]/30 focus:border-[#3d997d]"
                   />
                   <Button type="button" onClick={handleConfirmCustomArea} className="h-10 px-4 rounded-[10px] bg-[#3d997d] text-white hover:bg-[#3d997d]/90">
-                    Add
+                    {t('field.add')}
                   </Button>
                   <button
                     type="button"
                     onClick={() => { setIsAddingCustomArea(false); setNewCustomArea(''); }}
                     className="h-10 w-10 flex items-center justify-center rounded-[10px] hover:bg-[#ffecef] text-[#9ca3af] hover:text-[#d5384b] transition-colors flex-shrink-0"
-                    aria-label="Cancel"
+                    aria-label={t('field.cancel')}
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -518,14 +520,14 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
               onClick={() => onOpenChange(false)}
               className="h-10 px-5 rounded-[10px] border-[#e5e7eb] text-[#374151] text-sm hover:bg-[#f9fafb]"
             >
-              Cancel
+              {t('field.cancel')}
             </Button>
             {selectedEmployee && (
               <Button
                 onClick={handleSubmit}
                 className="h-10 px-5 rounded-[10px] bg-[#3d997d] hover:bg-[#3d997d]/90 text-white text-sm shadow-[0_4px_12px_rgba(23,102,79,0.3)]"
               >
-                Add
+                {t('field.add')}
               </Button>
             )}
           </div>
@@ -547,17 +549,16 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                     <Trash2 className="h-4 w-4 text-[#d5384b]" />
                   </div>
                   <DialogTitle className="text-base font-bold text-[#0d0e0e]">
-                    Delete custom area?
+                    {t('area.deleteTitle')}
                   </DialogTitle>
                 </div>
               </DialogHeader>
               <div className="px-5 py-4 bg-white space-y-3">
                 <p className="text-sm text-[#374151]">
-                  <span className="font-semibold">&ldquo;{pendingArea?.name}&rdquo;</span> will be
-                  permanently removed and will no longer be available to assign to any contact.
+                  <span className="font-semibold">&ldquo;{pendingArea?.name}&rdquo;</span> {t('area.deleteBody')}
                 </p>
                 <p className="text-xs text-[#6b7280] bg-[#f9fafb] rounded-[8px] px-3 py-2 border border-[#e5e7eb]">
-                  Only custom areas you created can be deleted. Built-in default areas cannot be removed.
+                  {t('area.deleteNote')}
                 </p>
               </div>
               <div className="px-5 py-3 border-t border-[#f3f4f6] bg-[#f9fafb] flex justify-end gap-2">
@@ -566,7 +567,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                   onClick={() => setPendingDeleteAreaId(null)}
                   className="rounded-[8px] border-[#e5e7eb] text-[#374151] text-sm"
                 >
-                  Cancel
+                  {t('field.cancel')}
                 </Button>
                 <Button
                   size="sm"
@@ -574,7 +575,7 @@ export const AddExistingEmployeeModal: React.FC<AddExistingEmployeeModalProps> =
                   onClick={handleConfirmDeletePersistedArea}
                   className="rounded-[8px] bg-[#d5384b] hover:bg-[#d5384b]/90 text-white text-sm"
                 >
-                  {deleteAreaMutation.isPending ? 'Deleting…' : 'Delete area'}
+                  {deleteAreaMutation.isPending ? t('area.deleting') : t('area.delete')}
                 </Button>
               </div>
             </DialogContent>

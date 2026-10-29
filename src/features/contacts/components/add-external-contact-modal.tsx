@@ -155,7 +155,7 @@ export const AddExternalContactModal: React.FC<AddExternalContactModalProps> = (
               </label>
               <Input
                 type="email"
-                placeholder="email@example.com"
+                placeholder={t('field.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setEmailTouched(true)}

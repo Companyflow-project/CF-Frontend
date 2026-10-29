@@ -202,7 +202,7 @@ export const AddSelfAsContactModal: React.FC<AddSelfAsContactModalProps> = ({
                   className="h-10 rounded-[10px] border-[#3d997d]/50 text-sm"
                 />
                 <Button type="button" onClick={handleConfirmCustomArea} className="h-10 px-4 rounded-[10px] bg-[#3d997d] text-white hover:bg-[#3d997d]/90">
-                  Add
+                  {t('field.add')}
                 </Button>
                 <button
                   type="button"
