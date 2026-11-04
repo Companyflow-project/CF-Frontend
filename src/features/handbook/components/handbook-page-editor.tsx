@@ -15,9 +15,11 @@ import {
     Loader2,
     Eye,
     EyeOff,
+    QrCode,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { handbookApi } from '../api';
+import { PageQrDialog } from './page-qr-dialog';
 import { useEmployees } from '@/features/employees/hooks';
 import { useAuth } from '@/context/auth-context';
 import type { HandbookPageDetail, UpdatePagePayload } from '@/types/models';
@@ -83,6 +85,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
     const [isReady, setIsReady] = useState(false);
     const [includeInHandbook, setIncludeInHandbook] = useState(false);
     const [notifyEmployees, setNotifyEmployees] = useState(false);
+    const [qrOpen, setQrOpen] = useState(false);
 
     // Visibility filtering
     const [employmentTypeIds, setEmploymentTypeIds] = useState<number[]>([]);
@@ -774,9 +777,34 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                 </span>
                             </span>
                         </label>
+
+                        {pageId ? (
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setQrOpen(true)}
+                                    className="border-[#cde9dc] text-[#1a5948] hover:bg-[#f0faf6]"
+                                >
+                                    <QrCode className="h-4 w-4 mr-1.5" />
+                                    {t('qr.button')}
+                                </Button>
+                                <span className="text-sm text-[#7b8a85]">({t('qr.buttonDesc')})</span>
+                            </div>
+                        ) : null}
                     </div>
                 )}
             </div>
+            {pageId ? (
+                <PageQrDialog
+                    open={qrOpen}
+                    onClose={() => setQrOpen(false)}
+                    pageId={pageId}
+                    pageTitle={heading || pageDetail?.title || ''}
+                    visibleToEmployees={pageDetail?.settings?.isReady ?? true}
+                />
+            ) : null}
 
             {/* Responsible Section */}
             <div className="border border-[#e5efea] rounded-[12px]">
@@ -798,7 +826,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                             {employeesLoading ? (
                                 <div className="flex items-center gap-2 text-sm text-[#7b8a85] py-2">
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Loading employees...
+                                    {t('editor.loadingEmployees')}
                                 </div>
                             ) : employees && employees.length > 0 ? (
                                 <div className="space-y-2">

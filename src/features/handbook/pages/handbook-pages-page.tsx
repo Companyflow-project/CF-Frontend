@@ -11,12 +11,13 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import { Search, ArrowLeft, GripVertical, AlertTriangle, Loader2, Trash2 } from 'lucide-react';
+import { Search, ArrowLeft, GripVertical, AlertTriangle, Loader2, Trash2, QrCode } from 'lucide-react';
 import { useHandbookLang } from '../components/language-toggle';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { AddPageModal } from '../components/add-page-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
+import { PageQrDialog } from '../components/page-qr-dialog';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
 import { handbookApi } from '../api';
 import { handbookRoutes } from '../routes';
@@ -80,6 +81,7 @@ export const HandbookPagesPage: React.FC = () => {
     const [sneakPeekOpen, setSneakPeekOpen] = useState(false);
     const [previewModalOpen, setPreviewModalOpen] = useState(false);
     const [sneakPeekPage, setSneakPeekPage] = useState<{ id: number; title: string } | null>(null);
+    const [qrPage, setQrPage] = useState<{ id: number; title: string; published: boolean } | null>(null);
 
     // Delete confirmation modal
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -1009,6 +1011,19 @@ export const HandbookPagesPage: React.FC = () => {
                                                 >
                                                     {t('pages.sneakPeek')}
                                                 </Button>
+                                                {/* Not on phones: the row has no room left there; the editor has the same button. */}
+                                                {canEditHandbook && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        title={t('qr.button')}
+                                                        aria-label={t('qr.iconLabel', { title: page.title })}
+                                                        onClick={() => setQrPage({ id: page.id, title: page.title, published: !!page.isPublished })}
+                                                        className="hidden sm:inline-flex border-[#e5e7eb] text-[#1a5948] hover:bg-[#f0faf6] rounded-[8px] px-2.5 py-1.5 h-auto"
+                                                    >
+                                                        <QrCode className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                                 {/* Only the company's own pages can be deleted; CompanyFlow pages are opted out instead. */}
                                                 {canEditHandbook && page.isDeletable !== false && (
                                                     <Button
@@ -1225,6 +1240,17 @@ export const HandbookPagesPage: React.FC = () => {
                     canEdit={canEditHandbook}
                     canViewNotes={canViewAllPages}
                     handbookBid={handbookBid}
+                />
+            )}
+
+            {qrPage && (
+                <PageQrDialog
+                    open
+                    onClose={() => setQrPage(null)}
+                    pageId={qrPage.id}
+                    pageTitle={qrPage.title}
+                    handbookBid={handbookBid}
+                    visibleToEmployees={qrPage.published}
                 />
             )}
 
