@@ -85,6 +85,13 @@ const statusToEmployeeStatus = (status: number): EmployeeStatus => {
 };
 
 // Transform backend employee to frontend employee (handles both uid/mail and id/email shapes)
+/**
+ * The employee list sends "N/A" for a missing phone number or employment type. Treat it as empty,
+ * so screens show their own "-" and forms don't pre-fill the text "N/A".
+ */
+const withoutPlaceholder = (value: string | null | undefined): string | undefined =>
+  value == null || value === 'N/A' ? undefined : value;
+
 export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
   const id = backend.id != null ? String(backend.id) : backend.uid != null ? String(backend.uid) : '';
   const email = backend.email ?? backend.mail ?? '';
@@ -107,10 +114,10 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
     name: backend.name ?? '',
     email: String(email ?? ''),
     role: backend.role ?? undefined,
-    mobileNumber: backend.mobileNumber ?? undefined,
+    mobileNumber: withoutPlaceholder(backend.mobileNumber),
     alternateNumber: backend.alternateNumber ?? undefined,
     telephone: backend.telephone ?? undefined,
-    employmentType: backend.employmentType ?? undefined,
+    employmentType: withoutPlaceholder(backend.employmentType),
     employmentTypeId: backend.employmentTypeId != null ? Number(backend.employmentTypeId) : null,
     employmentTitle: backend.employmentTitle ?? undefined,
     recentVisitAt: backend.recentVisits ?? undefined,
