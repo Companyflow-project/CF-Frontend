@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { useAuth } from '@/context/auth-context';
-import { isAdminRole, resolveBackendUrl, resolveHtmlUrls } from '@/lib/utils';
+import { isAdminRole, resolveBackendUrl, resolveHtmlUrls, linkHref } from '@/lib/utils';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
@@ -294,13 +294,21 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                                             {t('preview.links')}
                                                         </h4>
                                                         <div className="space-y-1">
-                                                            {detail.links.map((link, i) => (
-                                                                <div key={i}>
-                                                                    <a href={link.uri || link.url} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: getColor('links') }}>
-                                                                        {link.title || link.uri || link.url}
-                                                                    </a>
-                                                                </div>
-                                                            ))}
+                                                            {detail.links.map((link, i) => {
+                                                                const href = linkHref(link.uri || link.url);
+                                                                const label = link.title || link.uri || link.url;
+                                                                return (
+                                                                    <div key={i}>
+                                                                        {href ? (
+                                                                            <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm underline" style={{ color: getColor('links') }}>
+                                                                                {label}
+                                                                            </a>
+                                                                        ) : (
+                                                                            <span className="text-sm text-[#0d0e0e]">{label}</span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                 )}

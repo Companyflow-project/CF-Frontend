@@ -80,6 +80,20 @@ export function resolveBackendUrl(uri: string | null | undefined): string {
 }
 
 /**
+ * Where a link on a handbook page should point, or null when it can't be opened from here.
+ * Web, mail and phone links are used as they are; "www.example.dk" gets https://. Drupal's own
+ * link types (internal:/…, entity:node/…) point into Degoan, not CompanyFlow, and anything else
+ * (javascript: and the like) is never made clickable.
+ */
+export function linkHref(raw: string | null | undefined): string | null {
+  const value = (raw ?? '').trim();
+  if (!value) return null;
+  if (/^(https?:\/\/|mailto:|tel:)/i.test(value)) return value;
+  if (/^[a-z0-9][a-z0-9-]*(\.[a-z0-9-]+)+(\/\S*)?$/i.test(value)) return `https://${value}`;
+  return null;
+}
+
+/**
  * Rewrite relative src/href attributes inside an HTML string so images and
  * links served from the backend (e.g. /sites/default/files/...) load correctly.
  */

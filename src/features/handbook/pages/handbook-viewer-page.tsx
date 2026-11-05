@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { SignaturePad } from '@/components/common/signature-pad';
 import { PageQuiz } from '@/features/quizzes/components/page-quiz';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
-import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText, Link2 } from 'lucide-react';
 import { useAppearance } from '@/context/appearance-context';
-import { resolveHtmlUrls, resolveBackendUrl } from '@/lib/utils';
+import { resolveHtmlUrls, resolveBackendUrl, linkHref } from '@/lib/utils';
 
 interface FlatPage {
   id: number;
@@ -19,6 +19,8 @@ interface FlatPage {
   imageUrl?: string | null;
   imageName?: string;
   imagePlacement?: string | null;
+  documents: Array<{ name: string; url?: string | null }>;
+  links: Array<{ title: string; url?: string | null }>;
 }
 
 export const HandbookViewerPage: React.FC = () => {
@@ -77,9 +79,11 @@ export const HandbookViewerPage: React.FC = () => {
                 imageUrl: firstPic?.url || null,
                 imageName: firstPic?.name || 'Image',
                 imagePlacement: detail?.imagePlacement || null,
+                documents: (detail?.documents ?? []).map((d) => ({ name: d.name, url: d.url })),
+                links: (detail?.links ?? []).map((l) => ({ title: l.title, url: l.url ?? l.uri })),
               };
             } catch {
-              return { ...page, html: '' };
+              return { ...page, html: '', documents: [], links: [] };
             }
           })
         );
@@ -326,6 +330,7 @@ export const HandbookViewerPage: React.FC = () => {
               const imageUrl = currentPageData.imageUrl;
               const hasImage = imageUrl && placement !== 'none';
               const hasHtml = currentPageData.html.trim().length > 0;
+              const hasResources = currentPageData.documents.length > 0 || currentPageData.links.length > 0;
 
               const imageEl = hasImage ? (
                 <img
@@ -340,7 +345,7 @@ export const HandbookViewerPage: React.FC = () => {
                   className="prose max-w-none handbook-content handbook-themed-content"
                   dangerouslySetInnerHTML={{ __html: resolveHtmlUrls(currentPageData.html) }}
                 />
-              ) : (
+              ) : hasResources ? null : (
                 <p className="text-sm text-[#9ca3af] italic">
                   {t('viewer.emptyContent')}
                 </p>
@@ -386,6 +391,58 @@ export const HandbookViewerPage: React.FC = () => {
 
               return <div className="mt-4">{htmlEl}</div>;
             })()}
+
+            {/* The page's documents and links, as in the admins' preview */}
+            {(currentPageData.documents.length > 0 || currentPageData.links.length > 0) && (
+              <div className="mt-8 pt-4 border-t space-y-5" style={{ borderColor: getColor('frameColor') }}>
+                {currentPageData.documents.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: getColor('headlines') }}>
+                      <FileText className="h-4 w-4 shrink-0" />
+                      {t('preview.documents')}
+                    </h3>
+                    <ul className="space-y-1.5">
+                      {currentPageData.documents.map((doc, i) => (
+                        <li key={i} className="text-sm break-words">
+                          {doc.url ? (
+                            <a href={resolveBackendUrl(doc.url)} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: getColor('links') }}>
+                              {doc.name}
+                            </a>
+                          ) : (
+                            <span className="text-[#0d0e0e]">{doc.name}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {currentPageData.links.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: getColor('headlines') }}>
+                      <Link2 className="h-4 w-4 shrink-0" />
+                      {t('preview.links')}
+                    </h3>
+                    <ul className="space-y-1.5">
+                      {currentPageData.links.map((link, i) => {
+                        const href = linkHref(link.url);
+                        const label = link.title || link.url || '';
+                        return (
+                          <li key={i} className="text-sm break-words">
+                            {href ? (
+                              <a href={href} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: getColor('links') }}>
+                                {label}
+                              </a>
+                            ) : (
+                              <span className="text-[#0d0e0e]">{label}</span>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
 
             {sop?.hasSop && (
               <div className="mt-8 pt-4 border-t" style={{ borderColor: getColor('frameColor') }}>

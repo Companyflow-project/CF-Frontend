@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { handbookRoutes } from '../routes';
 import { useAppearance } from '@/context/appearance-context';
-import { resolveBackendUrl, resolveHtmlUrls } from '@/lib/utils';
+import { resolveBackendUrl, resolveHtmlUrls, linkHref } from '@/lib/utils';
 
 interface SneakPeekModalProps {
     isOpen: boolean;
@@ -200,19 +200,27 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
                                         {t('sneakPeek.links')}
                                     </h4>
                                     <div className="space-y-1">
-                                        {pageDetail.links.map((link, index) => (
-                                            <div key={index}>
-                                                <a
-                                                    href={link.uri || link.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-sm underline"
-                                                    style={{ color: getColor('links') }}
-                                                >
-                                                    {link.title || link.uri || link.url}
-                                                </a>
-                                            </div>
-                                        ))}
+                                        {pageDetail.links.map((link, index) => {
+                                            const href = linkHref(link.uri || link.url);
+                                            const label = link.title || link.uri || link.url;
+                                            return (
+                                                <div key={index}>
+                                                    {href ? (
+                                                        <a
+                                                            href={href}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-sm underline"
+                                                            style={{ color: getColor('links') }}
+                                                        >
+                                                            {label}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-sm text-[#0d0e0e]">{label}</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
