@@ -43,5 +43,7 @@
   "employeeDashboard.handbookInfo.title": "Handbook Information",
   "employeeDashboard.handbookInfo.desc": "See handbook documents and links.",
   "employeeDashboard.handbookInfo.viewLinks": "View links",
-  "employeeDashboard.handbookInfo.viewDocuments": "View documents"
+  "employeeDashboard.handbookInfo.viewDocuments": "View documents",
+  "employeeDashboard.extraHandbooks.title": "More handbooks",
+  "employeeDashboard.extraHandbooks.desc": "Handbooks your company has written for you – in addition to the staff handbook."
 }

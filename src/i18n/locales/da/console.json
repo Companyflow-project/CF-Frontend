@@ -43,5 +43,7 @@
   "employeeDashboard.handbookInfo.title": "Håndbogsinfo",
   "employeeDashboard.handbookInfo.desc": "Se håndbogens dokumenter og links.",
   "employeeDashboard.handbookInfo.viewLinks": "Se links",
-  "employeeDashboard.handbookInfo.viewDocuments": "Se dokumenter"
+  "employeeDashboard.handbookInfo.viewDocuments": "Se dokumenter",
+  "employeeDashboard.extraHandbooks.title": "Flere håndbøger",
+  "employeeDashboard.extraHandbooks.desc": "Håndbøger, din virksomhed har skrevet til dig – ud over personalehåndbogen."
 }

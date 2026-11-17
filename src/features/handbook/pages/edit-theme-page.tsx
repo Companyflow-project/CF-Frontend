@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/common/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { handbookRoutes } from '../routes';
+import { handbookRoutes, bookFromSearch } from '../routes';
 import { handbookApi, type HandbookChapterInfo } from '../api';
 
 type Lang = 'da' | 'en';
@@ -17,6 +17,8 @@ type Lang = 'da' | 'en';
 export const EditThemePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const bookBid = bookFromSearch(searchParams);
   const { t, i18n } = useTranslation('handbook');
   const chapterId = Number(id);
   const validId = Number.isInteger(chapterId) && chapterId > 0;
@@ -52,8 +54,8 @@ export const EditThemePage: React.FC = () => {
     };
   }, [chapterId, validId, t]);
 
-  // Back to "Vis alle sider" with this theme open.
-  const backToPages = () => navigate(validId ? `${handbookRoutes.pages}?theme=${chapterId}` : handbookRoutes.pages);
+  // Back to "Vis alle sider" with this theme open (in its extra handbook when ?book= says so).
+  const backToPages = () => navigate(handbookRoutes.pagesOf(bookBid, validId ? { theme: String(chapterId) } : {}));
 
   // Only languages the theme has a name in (without an English name the handbook shows the Danish one),
   // the current UI language first.

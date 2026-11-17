@@ -39,6 +39,54 @@ interface CreatePagePayload {
   title: string;
   parentId?: number;
   newChapterName?: string;
+  /** Book to create the theme/page in (an extra handbook). Omitted = the company's main handbook. */
+  bid?: number;
+}
+
+/** The company's main handbook or one of its extra (self-written) handbooks. */
+export type HandbookKind = 'main' | 'extra';
+
+export interface HandbookTreeResult {
+  bid: number | null;
+  isPublished: boolean;
+  chapters: HandbookNode[];
+  kind: HandbookKind;
+  /** The handbook's own title ('' when the backend has none: show the default handbook name). */
+  title: string;
+}
+
+/** An extra handbook the company writes itself, limited to employment types / departments (none = everyone). */
+export interface ExtraHandbook {
+  bid: number;
+  title: string;
+  isPublished: boolean;
+  employmentTypeIds: number[];
+  departmentIds: number[];
+  /** Themes and pages in the handbook; it can only be deleted when 0. */
+  entryCount: number;
+}
+
+export interface HandbookBooks {
+  main: { bid: number | null; title: string; isPublished: boolean };
+  extras: ExtraHandbook[];
+  /** allowed = the company's extra-handbook limit (0 = no extra handbooks), used = extras that exist. */
+  quota: { allowed: number; used: number };
+  canManage: boolean;
+}
+
+export interface ExtraHandbookInput {
+  title?: string;
+  employmentTypeIds?: number[];
+  departmentIds?: number[];
+  isPublished?: boolean;
+}
+
+/** The message of an API error (backend shapes: { message }, { error: string }, { error: { message } }). */
+function apiErrorMessage(error: any, fallback: string): string {
+  const data = error?.response?.data;
+  const raw = data?.error;
+  const message = data?.message || (typeof raw === 'string' ? raw : raw?.message);
+  return typeof message === 'string' && message ? message : fallback;
 }
 
 interface CreatePageResponse {
@@ -277,15 +325,24 @@ export const handbookApi = {
    * - 403: "Handbook not yet published" (for employees)
    * - 403: "User not assigned to a company"
    */
-  async getHandbookTree(lang: string = 'da'): Promise<{ bid: number | null; isPublished: boolean; chapters: HandbookNode[] }> {
+  async getHandbookTree(lang: string = 'da', bookBid?: number | null): Promise<HandbookTreeResult> {
     try {
-      const response = await axiosClient.get<{ bid?: number; isPublished?: boolean; chapters?: HandbookNode[] }>('/handbook', {
-        params: { lang },
+      const response = await axiosClient.get<{
+        bid?: number; isPublished?: boolean; chapters?: HandbookNode[]; kind?: HandbookKind; title?: string;
+      }>('/handbook', {
+        // bid selects an extra handbook; the backend answers with the main handbook for any other id.
+        params: bookBid != null && bookBid > 0 ? { lang, bid: bookBid } : { lang },
       });
       const chapters = response.data?.chapters;
       const bid = response.data?.bid ?? null;
       const isPublished = response.data?.isPublished ?? false;
-      return { bid: bid ?? null, isPublished, chapters: Array.isArray(chapters) ? chapters : [] };
+      return {
+        bid: bid ?? null,
+        isPublished,
+        chapters: Array.isArray(chapters) ? chapters : [],
+        kind: response.data?.kind === 'extra' ? 'extra' : 'main',
+        title: response.data?.title ?? '',
+      };
     } catch (error: any) {
       if (error.response?.status === 403) {
         const rawError = error.response?.data?.error;
@@ -301,6 +358,62 @@ export const handbookApi = {
       }
       console.error('Error fetching handbook tree:', error);
       throw error;
+    }
+  },
+
+  /**
+   * GET /handbook/books — the company's main handbook, the extra handbooks the user may see
+   * (admins: all of them) and the company's extra-handbook limit.
+   */
+  async listBooks(lang: string = 'da'): Promise<HandbookBooks> {
+    const response = await axiosClient.get<Partial<HandbookBooks>>('/handbook/books', { params: { lang } });
+    const data = response.data ?? {};
+    return {
+      main: {
+        bid: data.main?.bid ?? null,
+        title: data.main?.title ?? '',
+        isPublished: !!data.main?.isPublished,
+      },
+      extras: Array.isArray(data.extras)
+        ? data.extras.map((x) => ({
+          bid: Number(x.bid),
+          title: x.title ?? '',
+          isPublished: !!x.isPublished,
+          employmentTypeIds: Array.isArray(x.employmentTypeIds) ? x.employmentTypeIds.map(Number) : [],
+          departmentIds: Array.isArray(x.departmentIds) ? x.departmentIds.map(Number) : [],
+          entryCount: Number(x.entryCount ?? 0),
+        }))
+        : [],
+      quota: { allowed: Number(data.quota?.allowed ?? 0), used: Number(data.quota?.used ?? 0) },
+      canManage: !!data.canManage,
+    };
+  },
+
+  /** POST /handbook/books — create an extra handbook (admins, within the company's limit). */
+  async createBook(input: { title: string; employmentTypeIds?: number[]; departmentIds?: number[] }): Promise<{ bid: number }> {
+    try {
+      const response = await axiosClient.post<{ bid: number }>('/handbook/books', input);
+      return { bid: Number(response.data.bid) };
+    } catch (error: any) {
+      throw new Error(apiErrorMessage(error, 'Failed to create handbook'));
+    }
+  },
+
+  /** PATCH /handbook/books/:bid — rename, change who sees it, or (un)publish an extra handbook. */
+  async updateBook(bid: number, input: ExtraHandbookInput): Promise<void> {
+    try {
+      await axiosClient.patch(`/handbook/books/${bid}`, input);
+    } catch (error: any) {
+      throw new Error(apiErrorMessage(error, 'Failed to update handbook'));
+    }
+  },
+
+  /** DELETE /handbook/books/:bid — only an extra handbook without themes or pages. */
+  async deleteBook(bid: number): Promise<void> {
+    try {
+      await axiosClient.delete(`/handbook/books/${bid}`);
+    } catch (error: any) {
+      throw new Error(apiErrorMessage(error, 'Failed to delete handbook'));
     }
   },
 

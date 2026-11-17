@@ -19,8 +19,9 @@ import { AddPageModal } from '../components/add-page-modal';
 import { SneakPeekModal } from '../components/sneak-peek-modal';
 import { PageQrDialog } from '../components/page-qr-dialog';
 import { PreviewHandbookModal } from '../components/preview-handbook-modal';
-import { handbookApi } from '../api';
-import { handbookRoutes } from '../routes';
+import { ExtraHandbooksBar } from '../components/extra-handbooks-bar';
+import { handbookApi, type HandbookBooks, type HandbookKind } from '../api';
+import { handbookRoutes, bookFromSearch } from '../routes';
 import type { HandbookNode } from '@/types/models';
 import { useAuth } from '@/context/auth-context';
 import { isAdminRole, canViewAllPagesRole } from '@/lib/utils';
@@ -62,8 +63,39 @@ export const HandbookPagesPage: React.FC = () => {
 
     // The actual bid comes from the API — it differs per company and must NOT be hardcoded to 21.
     const [handbookBid, setHandbookBid] = useState<number | null>(null);
+    // ?book=<bid> shows one of the company's extra handbooks; without it, the main handbook.
+    const requestedBookBid = bookFromSearch(searchParams);
+    const [treeKind, setTreeKind] = useState<HandbookKind>('main');
+    // The extra handbook on screen (null = the main handbook): links and new themes/pages go to it.
+    const extraBid = treeKind === 'extra' ? handbookBid : null;
+    const [books, setBooks] = useState<HandbookBooks | null>(null);
     // ?theme=<id> opens that theme (e.g. coming back from "Rediger tema").
     const requestedThemeRef = useRef<number | null>(Number(searchParams.get('theme')) || null);
+
+    const loadBooks = useCallback(async () => {
+        try {
+            setBooks(await handbookApi.listBooks(lang));
+        } catch (err) {
+            console.error('Failed to load the company handbooks:', err);
+            setBooks(null);
+        }
+    }, [lang]);
+
+    useEffect(() => {
+        void loadBooks();
+    }, [loadBooks]);
+
+    // Show another handbook (null = the main handbook); the open theme belongs to the old one.
+    const selectBook = useCallback((bookBid: number | null) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (bookBid) next.set('book', String(bookBid));
+            else next.delete('book');
+            next.delete('theme');
+            return next;
+        }, { replace: true });
+        setExpandedPageId(null);
+    }, [setSearchParams]);
 
     useEffect(() => {
         const open = searchParams.get('open');
@@ -106,7 +138,7 @@ export const HandbookPagesPage: React.FC = () => {
                 setLoading(true);
                 setError(null);
             }
-            const { bid, chapters: tree } = await handbookApi.getHandbookTree(lang);
+            const { bid, chapters: tree, kind } = await handbookApi.getHandbookTree(lang, requestedBookBid);
 
             // Deduplicate the entire tree by node ID to prevent duplicate key warnings
             const uniqueTree = Array.from(
@@ -115,8 +147,18 @@ export const HandbookPagesPage: React.FC = () => {
 
             setHandbookTree(uniqueTree);
             setHandbookBid(bid);
+            // kind 'main' also when ?book= named the main handbook (e.g. back from editing one of its themes).
+            setTreeKind(kind);
 
-            if (uniqueTree.length > 0) {
+            // A new extra handbook has no themes yet: that is not the main handbook being set up.
+            if (kind === 'extra' && uniqueTree.length === 0) {
+                setProvisioning(false);
+                if (pollRef.current) {
+                    clearInterval(pollRef.current);
+                    pollRef.current = null;
+                }
+                setActiveChapterId(null);
+            } else if (uniqueTree.length > 0) {
                 setProvisioning(false);
                 if (pollRef.current) {
                     clearInterval(pollRef.current);
@@ -138,6 +180,12 @@ export const HandbookPagesPage: React.FC = () => {
             }
         } catch (err: any) {
             console.error('Failed to fetch handbook tree:', err);
+            if (!isPolling && requestedBookBid) {
+                // The extra handbook is gone (deleted, or no longer allowed): show the main handbook.
+                toast.error(t('books.notFound'));
+                selectBook(null);
+                return;
+            }
             if (!isPolling) {
                 // Check if this is a "not found" style error during provisioning
                 const msg = err.message || '';
@@ -151,7 +199,7 @@ export const HandbookPagesPage: React.FC = () => {
         } finally {
             if (!isPolling) setLoading(false);
         }
-    }, [lang]);
+    }, [lang, requestedBookBid, selectBook, t]);
 
     useEffect(() => {
         fetchHandbookTree();
@@ -380,7 +428,7 @@ export const HandbookPagesPage: React.FC = () => {
         try {
             if (!opts?.quiet) setLoading(true);
             setError(null);
-            const { bid, chapters: tree } = await handbookApi.getHandbookTree(lang);
+            const { bid, chapters: tree, kind } = await handbookApi.getHandbookTree(lang, requestedBookBid);
 
             const uniqueTree = Array.from(
                 new Map(tree.map(node => [node.id, node])).values()
@@ -388,6 +436,9 @@ export const HandbookPagesPage: React.FC = () => {
 
             setHandbookTree(uniqueTree);
             setHandbookBid(bid);
+            setTreeKind(kind);
+            // Its themes and pages may have changed (count decides whether it can be deleted).
+            if (kind === 'extra') void loadBooks();
 
             // Only set active chapter if none is selected or current one no longer exists
             const chapterIds = new Set(uniqueTree.filter(n => n.type === 'chapter').map(n => n.id));
@@ -590,13 +641,27 @@ export const HandbookPagesPage: React.FC = () => {
                                 toast.error(t('pages.noPermissionCreateTheme'));
                                 return;
                             }
-                            navigate(handbookRoutes.addTheme);
+                            navigate(handbookRoutes.addThemeOf(extraBid));
                         }}
                     >
                         {t('pages.addTheme')}
                     </Button>
                 </div>
             </div>
+
+            {/* The company's extra handbooks (shown once the company may have some, or has some) */}
+            {books && (books.extras.length > 0 || (books.canManage && books.quota.allowed > 0)) && (
+                <ExtraHandbooksBar
+                    books={books}
+                    selectedBid={extraBid ?? requestedBookBid}
+                    onSelect={selectBook}
+                    onChanged={(createdBid, deletedBid) => {
+                        void loadBooks();
+                        if (createdBid) selectBook(createdBid);
+                        else if (deletedBid && deletedBid === requestedBookBid) selectBook(null);
+                    }}
+                />
+            )}
 
             {/* Help Banner */}
             <div className="mb-6 bg-[#fffbf0] rounded-[8px] border-l-4 border-[#f59e0b] px-5 py-4">
@@ -765,7 +830,24 @@ export const HandbookPagesPage: React.FC = () => {
                         <div className="text-center py-12 text-red-500">{error}</div>
                     )}
 
-                    {!loading && !error && !provisioning && (
+                    {/* A new extra handbook: no themes yet */}
+                    {!loading && !error && !provisioning && treeKind === 'extra' && chapters.length === 0 && (
+                        <div className="flex flex-col items-center gap-3 rounded-[8px] border border-dashed border-[#d4f4e6] bg-[#f6fbf9] px-6 py-12 text-center">
+                            <p className="text-base font-semibold text-[#0d0e0e]">{t('books.emptyTitle')}</p>
+                            <p className="max-w-md text-sm text-gray-600">{t('books.emptyDesc')}</p>
+                            {canEditHandbook && (
+                                <Button
+                                    className="mt-1 rounded-[8px] px-6 py-2 h-auto text-sm"
+                                    style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
+                                    onClick={() => navigate(handbookRoutes.addThemeOf(extraBid))}
+                                >
+                                    {t('pages.addTheme')}
+                                </Button>
+                            )}
+                        </div>
+                    )}
+
+                    {!loading && !error && !provisioning && !(treeKind === 'extra' && chapters.length === 0) && (
                         <div className="space-y-3 pt-2">
                             {filteredPages.map((page) => {
                                 const isExpanded = expandedPageId === page.id;
@@ -1083,7 +1165,7 @@ export const HandbookPagesPage: React.FC = () => {
                                     return activeChapter && canEditHandbook ? (
                                         <Button
                                             variant="outline"
-                                            onClick={() => navigate(handbookRoutes.editTheme(String(activeChapter.id)))}
+                                            onClick={() => navigate(handbookRoutes.editThemeOf(activeChapter.id, extraBid))}
                                             className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-4 py-2 h-auto text-sm bg-white"
                                         >
                                             {t('pages.editTheme')}
@@ -1232,7 +1314,7 @@ export const HandbookPagesPage: React.FC = () => {
                     onClose={() => setSneakPeekOpen(false)}
                     onEditPage={() => {
                         setSneakPeekOpen(false);
-                        navigate(handbookRoutes.editPage(sneakPeekPage.id));
+                        navigate(handbookRoutes.editPageOf(sneakPeekPage.id, extraBid));
                     }}
                     pageId={sneakPeekPage.id}
                     pageTitle={sneakPeekPage.title}
@@ -1250,7 +1332,9 @@ export const HandbookPagesPage: React.FC = () => {
                     pageId={qrPage.id}
                     pageTitle={qrPage.title}
                     handbookBid={handbookBid}
-                    visibleToEmployees={qrPage.published}
+                    // An extra handbook's pages are only seen once that handbook is published too.
+                    visibleToEmployees={qrPage.published
+                        && (extraBid == null || !!books?.extras.find((b) => b.bid === extraBid)?.isPublished)}
                 />
             )}
 
@@ -1260,6 +1344,7 @@ export const HandbookPagesPage: React.FC = () => {
                 onClose={() => setPreviewModalOpen(false)}
                 tree={handbookTree}
                 selectedPageIds={previewPageIds}
+                bookBid={extraBid}
             />
 
             {/* Add Page Modal */}
@@ -1268,9 +1353,10 @@ export const HandbookPagesPage: React.FC = () => {
                 onClose={() => setIsAddPageModalOpen(false)}
                 chapters={chapters}
                 defaultChapterId={activeChapterId || undefined}
+                bookBid={extraBid}
                 onSuccess={(newPageId: number) => {
                     // Navigate to the edit page for the newly created page
-                    navigate(handbookRoutes.editPage(newPageId));
+                    navigate(handbookRoutes.editPageOf(newPageId, extraBid));
                 }}
             />
 

@@ -30,7 +30,17 @@ export const PublishHandbookPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [summaryExpanded, setSummaryExpanded] = useState(true);
 
-  const { data: tree, bid: treeBid, loading: treeLoading } = useHandbookTree();
+  // The route id is the handbook to publish: an extra handbook's bid loads that handbook;
+  // the backend answers with the main handbook for any other id.
+  const routeBid = id ? Number.parseInt(id, 10) : NaN;
+  const { data: tree, bid: treeBid, loading: treeLoading, kind: treeKind, title: treeTitle } = useHandbookTree(
+    undefined,
+    Number.isInteger(routeBid) && routeBid > 0 ? routeBid : null,
+  );
+  const isExtra = treeKind === 'extra';
+  // Back to where the handbook is managed: an extra handbook's pages, or the handbook hub.
+  const backPath = isExtra ? handbookRoutes.pagesOf(treeBid) : handbookRoutes.manage;
+  const pagesPath = handbookRoutes.pagesOf(isExtra ? treeBid : null);
 
   // Parse selected page IDs from URL (passed from the pages screen)
   const selectedPageIds = useMemo(() => {
@@ -134,7 +144,7 @@ export const PublishHandbookPage: React.FC = () => {
       if (response.smsErrors && response.smsErrors.length > 0) {
         toast.error(t('publish.smsFailed', { list: response.smsErrors.join('\n') }), { duration: 8000 });
       }
-      navigate(handbookRoutes.manage);
+      navigate(backPath);
     } catch (err: any) {
       console.error('Failed to publish handbook:', err);
       const status: number | undefined = err?.response?.status;
@@ -190,13 +200,16 @@ export const PublishHandbookPage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(handbookRoutes.manage)}
+            onClick={() => navigate(backPath)}
             className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             {tCommon('back')}
           </Button>
-          <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('publish.title')}</h1>
+          <h1 className="text-2xl font-bold text-[#0d0e0e]">
+            {t('publish.title')}
+            {isExtra && treeTitle ? <span className="font-normal text-[#6b7280]">: {treeTitle}</span> : null}
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -231,6 +244,9 @@ export const PublishHandbookPage: React.FC = () => {
             {t('publish.readFullGuide')}
           </Button>
         </div>
+        {isExtra && (
+          <p className="mt-3 text-sm text-[#0d0e0e]">{t('books.publishAudience')}</p>
+        )}
       </div>
 
       {/* Ready pages summary */}
@@ -279,7 +295,7 @@ export const PublishHandbookPage: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => navigate(handbookRoutes.pages)}
+                    onClick={() => navigate(pagesPath)}
                     className="mt-2 rounded-[999px] text-xs"
                   >
                     {t('publish.goToPages')}
@@ -525,7 +541,7 @@ export const PublishHandbookPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(handbookRoutes.pages)}
+                  onClick={() => navigate(pagesPath)}
                   className="w-full justify-between border-[#e5e7eb] text-[#0d0e0e] rounded-[999px] h-9 text-sm"
                 >
                   <span>{t('publish.editHandbook')}</span>

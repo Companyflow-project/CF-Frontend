@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PageShell } from '@/components/layout/page-shell';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, History } from 'lucide-react';
@@ -7,13 +7,16 @@ import { HandbookPageEditor } from '../components/handbook-page-editor';
 import { useHandbookLang } from '../components/language-toggle';
 import { useTranslation } from 'react-i18next';
 import { PageHistoryPanel } from '../components/page-history-panel';
-import { handbookRoutes } from '../routes';
+import { handbookRoutes, bookFromSearch } from '../routes';
 import { handbookApi } from '../api';
 
 export const HandbookPageEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('handbook');
   const { id } = useParams<{ id: string }>();
+  // ?book=<bid>: the page sits in that extra handbook, so "back" returns to it.
+  const [searchParams] = useSearchParams();
+  const pagesPath = handbookRoutes.pagesOf(bookFromSearch(searchParams));
   const [pageTitle, setPageTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [lang] = useHandbookLang();
@@ -51,7 +54,7 @@ export const HandbookPageEditPage: React.FC = () => {
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => navigate(handbookRoutes.pages)}
+            onClick={() => navigate(pagesPath)}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('editPage.backToPages')}
@@ -68,7 +71,7 @@ export const HandbookPageEditPage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(handbookRoutes.pages)}
+            onClick={() => navigate(pagesPath)}
             className="border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -108,8 +111,8 @@ export const HandbookPageEditPage: React.FC = () => {
         key={editorKey}
         pageId={pageId}
         lang={lang}
-        onSave={() => navigate(handbookRoutes.pages)}
-        onCancel={() => navigate(handbookRoutes.pages)}
+        onSave={() => navigate(pagesPath)}
+        onCancel={() => navigate(pagesPath)}
       />
     </PageShell>
   );

@@ -1692,7 +1692,8 @@
     },
     "subscription": {
       "accessToCourses": "Adgang til kurser",
-      "additionalManuals": "Yderligere manualer",
+      "additionalManuals": "Ekstra håndbøger",
+      "additionalManualsHint": "Højeste antal ekstra håndbøger, kunden selv kan oprette. 0 lukker for adgang til ekstra håndbøger – også eksisterende.",
       "annual": "Årligt",
       "collapseLists": "Fold lister sammen",
       "end": "Slutdato",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState } from '@/components/common/empty-state';
@@ -28,6 +28,12 @@ export const HandbookViewerPage: React.FC = () => {
   // ?page=<nid> opens that page (e.g. from the table of contents).
   const [searchParams] = useSearchParams();
   const requestedPageId = Number(searchParams.get('page')) || null;
+  // The handbook in the URL: an extra handbook's bid opens that handbook; any other id
+  // (the main handbook's bid, 0 in older QR codes) opens the company's main handbook.
+  const { handbookId } = useParams<{ handbookId: string }>();
+  const routeBid = Number(handbookId);
+  const bookBid = Number.isInteger(routeBid) && routeBid > 0 ? routeBid : null;
+  const [bookTitle, setBookTitle] = useState('');
   const { t, i18n } = useTranslation('handbook');
   const { t: tCommon } = useTranslation('common');
   const { getColor } = useAppearance();
@@ -50,7 +56,9 @@ export const HandbookViewerPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const { chapters } = await handbookApi.getHandbookTree(i18n.language);
+        const { chapters, kind, title } = await handbookApi.getHandbookTree(i18n.language, bookBid);
+        // Only an extra handbook gets its name above the pages; the main handbook looks as before.
+        setBookTitle(kind === 'extra' ? title : '');
 
         // Collect all ready pages from chapters
         const candidates: { id: number; title: string; chapterTitle: string }[] = [];
@@ -69,7 +77,8 @@ export const HandbookViewerPage: React.FC = () => {
           candidates.map(async (page) => {
             try {
               const [html, detail] = await Promise.all([
-                handbookApi.getHandbookContent(page.id).catch(() => ''),
+                // In the reader's language when the page has text in it, otherwise the Danish text.
+                handbookApi.getHandbookContent(page.id, i18n.language).catch(() => ''),
                 handbookApi.getPageDetail(page.id, i18n.language).catch(() => null),
               ]);
               const firstPic = detail?.pictures?.[0];
@@ -92,14 +101,16 @@ export const HandbookViewerPage: React.FC = () => {
         const requestedIndex = requestedPageId != null ? results.findIndex((p) => p.id === requestedPageId) : -1;
         if (requestedIndex >= 0) setCurrentPage(requestedIndex + 1);
       } catch (err: any) {
-        setError(err.message || 'Failed to load handbook');
+        // An extra handbook the reader isn't meant to see (or that no longer exists).
+        if (bookBid && err?.response?.status === 404) setError('BOOK_NOT_AVAILABLE');
+        else setError(err.message || 'Failed to load handbook');
       } finally {
         setLoading(false);
       }
     };
     fetchAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [i18n.language, requestedPageId]);
+  }, [i18n.language, requestedPageId, bookBid]);
 
   const totalPages = flatPages.length;
   const currentPageData = flatPages[currentPage - 1] ?? null;
@@ -240,6 +251,23 @@ export const HandbookViewerPage: React.FC = () => {
     );
   }
 
+  if (error === 'BOOK_NOT_AVAILABLE') {
+    return (
+      <PageShell>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="mb-6 border-[#e5e7eb] text-[#0d0e0e] rounded-[8px] px-3 py-2 h-auto gap-2 w-fit"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {t('common:back')}
+        </Button>
+        <EmptyState title={t('books.notAvailable')} description={t('books.notAvailableDesc')} />
+      </PageShell>
+    );
+  }
+
   if (error) {
     return (
       <PageShell>
@@ -292,6 +320,10 @@ export const HandbookViewerPage: React.FC = () => {
         <ArrowLeft className="h-4 w-4" />
         {tCommon('back')}
       </Button>
+
+      {bookTitle && (
+        <h1 className="mb-4 text-xl font-bold" style={{ color: getColor('headlines') }}>{bookTitle}</h1>
+      )}
 
       {/* Content card */}
       <div

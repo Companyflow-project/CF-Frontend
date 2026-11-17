@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { ArrowRight } from 'lucide-react';
 import { handbookRoutes } from '@/features/handbook/routes';
-import { handbookApi } from '@/features/handbook/api';
+import { handbookApi, type ExtraHandbook } from '@/features/handbook/api';
 import { employeesRoutes } from '@/features/employees/routes';
 import { contactsRoutes } from '@/features/contacts/routes';
 
@@ -59,9 +59,14 @@ export const EmployeeDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('console');
   const [handbookBid, setHandbookBid] = useState<number | null>(null);
+  // Extra handbooks the company wrote for this employee (published, and meant for them).
+  const [extraHandbooks, setExtraHandbooks] = useState<ExtraHandbook[]>([]);
 
   useEffect(() => {
     handbookApi.getHandbookTree(i18n.language).then(({ bid }) => setHandbookBid(bid)).catch(() => {});
+    handbookApi.listBooks(i18n.language)
+      .then(({ extras }) => setExtraHandbooks(extras.filter((book) => book.isPublished)))
+      .catch(() => setExtraHandbooks([]));
   }, [i18n.language]);
 
   return (
@@ -96,6 +101,17 @@ export const EmployeeDashboardPage: React.FC = () => {
             { label: t('employeeDashboard.handbookInfo.viewDocuments'), onClick: () => navigate(handbookRoutes.documents) },
           ]}
         />
+        {extraHandbooks.length > 0 && (
+          <EmployeeCard
+            title={t('employeeDashboard.extraHandbooks.title')}
+            description={t('employeeDashboard.extraHandbooks.desc')}
+            actions={extraHandbooks.map((book, index) => ({
+              label: book.title,
+              onClick: () => navigate(`/handbooks/${book.bid}/viewer`),
+              variant: index === 0 ? ('primary' as const) : ('outline' as const),
+            }))}
+          />
+        )}
       </div>
     </PageShell>
   );

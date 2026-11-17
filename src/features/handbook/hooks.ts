@@ -1,21 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
-import { handbookApi } from './api';
+import { handbookApi, type HandbookKind } from './api';
 
 const POLL_INTERVAL_MS = 5000;
 
 /**
  * Hook to fetch the handbook tree (chapters and pages).
- * When the tree comes back empty (no chapters) it auto-polls every 5s
+ * When the main handbook comes back empty (no chapters) it auto-polls every 5s
  * until chapters appear — handles handbook provisioning after new signup.
+ * bookBid selects an extra handbook (omitted = the main handbook); an empty extra
+ * handbook simply has no themes yet and is never polled.
  */
-export const useHandbookTree = (lang?: string) => {
+export const useHandbookTree = (lang?: string, bookBid?: number | null) => {
   const { i18n } = useTranslation();
   const resolvedLang = lang ?? i18n.language;
   const [data, setData] = useState<HandbookNode[]>([]);
   const [bid, setBid] = useState<number | null>(null);
   const [isPublished, setIsPublished] = useState(false);
+  const [kind, setKind] = useState<HandbookKind>('main');
+  const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [provisioning, setProvisioning] = useState(false);
@@ -32,12 +36,14 @@ export const useHandbookTree = (lang?: string) => {
     try {
       if (!isPolling) setLoading(true);
       setError(null);
-      const result = await handbookApi.getHandbookTree(resolvedLang);
+      const result = await handbookApi.getHandbookTree(resolvedLang, bookBid);
       setData(result.chapters);
       setBid(result.bid);
       setIsPublished(result.isPublished);
+      setKind(result.kind);
+      setTitle(result.title);
 
-      if (result.chapters.length > 0) {
+      if (result.chapters.length > 0 || result.kind === 'extra') {
         setProvisioning(false);
         stopPolling();
       } else if (!isPolling) {
@@ -52,7 +58,7 @@ export const useHandbookTree = (lang?: string) => {
     } finally {
       if (!isPolling) setLoading(false);
     }
-  }, [resolvedLang, stopPolling]);
+  }, [resolvedLang, bookBid, stopPolling]);
 
   useEffect(() => {
     fetchTree();
@@ -68,7 +74,7 @@ export const useHandbookTree = (lang?: string) => {
     return stopPolling;
   }, [provisioning, fetchTree, stopPolling]);
 
-  return { data, bid, isPublished, loading, error, provisioning, refetch: () => fetchTree() };
+  return { data, bid, isPublished, kind, title, loading, error, provisioning, refetch: () => fetchTree() };
 };
 
 /**

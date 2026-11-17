@@ -451,6 +451,7 @@ export const AdminEditCompanyPage: React.FC = () => {
       subscriptionStart: formatDateForInput(company.subscriptionStart),
       subscriptionEnd: formatDateForInput(company.subscriptionEnd),
       nextInvoice: formatDateForInput(company.nextInvoice),
+      additionalManuals: String(company.extended?.numOwnHandbooks ?? 0),
     }));
     setAdminForm({ allowReset: !!company.extended?.allowReset });
     setStatusForm({
@@ -566,7 +567,13 @@ export const AdminEditCompanyPage: React.FC = () => {
   };
 
   const handleSaveSubscription = () => {
+    // How many extra handbooks the customer may write itself (0 closes access to them).
+    // Sent only when changed, so a save never resets a limit the form didn't load.
+    const extraHandbooks = parseInt(subscriptionForm.additionalManuals, 10);
+    const extraHandbooksChanged = Number.isFinite(extraHandbooks) && extraHandbooks >= 0
+      && extraHandbooks !== Number(company?.extended?.numOwnHandbooks ?? 0);
     const payload: UpdateCompanyPayload = {
+      numOwnHandbooks: extraHandbooksChanged ? extraHandbooks : undefined,
       licensesTotal: subscriptionForm.licensesTotal ? parseInt(subscriptionForm.licensesTotal, 10) : undefined,
       smsCreditsTotal: subscriptionForm.smsCreditsTotal ? parseInt(subscriptionForm.smsCreditsTotal, 10) : undefined,
       subscriptionStart: subscriptionForm.subscriptionStart || undefined,
@@ -620,8 +627,9 @@ export const AdminEditCompanyPage: React.FC = () => {
   };
 
   const handleSaveLyrics = () => {
+    // No sop here: the description box is never filled from the company, so sending it
+    // blanked the company's SOP setting on every save.
     void saveSection('lyrics', {
-      sop: lyricsForm.description,
       customTerms: lyricsForm.customTerms,
     });
   };
@@ -1013,16 +1021,20 @@ export const AdminEditCompanyPage: React.FC = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="sub-manuals">
-                {t('editCompany.subscription.additionalManuals', 'Additional manuals')}
+                {t('editCompany.subscription.additionalManuals', 'Extra handbooks')}
               </Label>
               <Input
                 id="sub-manuals"
                 type="number"
+                min={0}
+                step={1}
                 value={subscriptionForm.additionalManuals}
-                readOnly
-                disabled
-                className="bg-gray-50 text-gray-500"
+                onChange={(e) => setSubscriptionForm((p) => ({ ...p, additionalManuals: e.target.value }))}
+                aria-describedby="sub-manuals-hint"
               />
+              <p id="sub-manuals-hint" className="text-xs text-gray-500">
+                {t('editCompany.subscription.additionalManualsHint')}
+              </p>
             </div>
           </div>
 

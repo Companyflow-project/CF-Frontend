@@ -1692,7 +1692,8 @@
     },
     "subscription": {
       "accessToCourses": "Give access to courses",
-      "additionalManuals": "Additional manuals",
+      "additionalManuals": "Extra handbooks",
+      "additionalManualsHint": "The highest number of extra handbooks the customer can create. 0 closes access to extra handbooks – existing ones too.",
       "annual": "Annual",
       "collapseLists": "Collapse lists in the info list",
       "end": "Subscription end",

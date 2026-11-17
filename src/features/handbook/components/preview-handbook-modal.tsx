@@ -25,6 +25,8 @@ interface PreviewHandbookModalProps {
     selectedPageIds?: number[] | null;
     /** Pass the parent's already-fetched tree to avoid a stale re-fetch inside the modal. */
     tree?: HandbookNode[];
+    /** The extra handbook previewed (null/omitted = the company's main handbook). */
+    bookBid?: number | null;
 }
 
 export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
@@ -32,10 +34,11 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
     onClose,
     selectedPageIds = null,
     tree: treeProp,
+    bookBid = null,
 }) => {
     const { t, i18n } = useTranslation('handbook');
     const { getColor } = useAppearance();
-    const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree();
+    const { data: treeFromHook, loading: treeLoading, error: treeError } = useHandbookTree(undefined, bookBid);
     const tree = treeProp ?? treeFromHook;
     // When the parent provides the tree directly, we don't need to wait for the hook's fetch.
     const [bodies, setBodies] = useState<Map<number, string>>(new Map());
@@ -133,7 +136,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
 
     const handlePrint = () => {
         onClose();
-        navigate(handbookRoutes.printView());
+        navigate(handbookRoutes.printView(bookBid ? { bid: bookBid } : undefined));
     };
 
     const isFiltered = !!selectedSet;
@@ -182,7 +185,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                 <Button
                                     onClick={() => {
                                         onClose();
-                                        navigate(handbookRoutes.pages);
+                                        navigate(handbookRoutes.pagesOf(bookBid));
                                     }}
                                     className="mt-4 rounded-[999px]"
                                     style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}

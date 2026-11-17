@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/layout/page-shell';
 import { PageHeader } from '@/components/common/page-header';
@@ -7,12 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
-import { handbookRoutes } from '../routes';
+import { handbookRoutes, bookFromSearch } from '../routes';
 import { handbookApi } from '../api';
 
 export const AddThemePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('handbook');
+  // ?book=<bid>: the theme goes into that extra handbook (none = the main handbook).
+  const [searchParams] = useSearchParams();
+  const bookBid = bookFromSearch(searchParams);
   const [chapterName, setChapterName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +35,9 @@ export const AddThemePage: React.FC = () => {
       const response = await handbookApi.createPage({
         title: name,
         newChapterName: name,
+        ...(bookBid ? { bid: bookBid } : {}),
       });
-      navigate(handbookRoutes.editPage(response.id));
+      navigate(handbookRoutes.editPageOf(response.id, bookBid));
     } catch (err: any) {
       console.error('Failed to create theme:', err);
       setError(t('addTheme.errorFailed'));
@@ -50,7 +54,7 @@ export const AddThemePage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(handbookRoutes.pages)}
+            onClick={() => navigate(handbookRoutes.pagesOf(bookBid))}
             className="gap-2 rounded-[8px]"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -93,7 +97,7 @@ export const AddThemePage: React.FC = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate(handbookRoutes.pages)}
+              onClick={() => navigate(handbookRoutes.pagesOf(bookBid))}
               disabled={isSubmitting}
               className="rounded-[8px]"
             >

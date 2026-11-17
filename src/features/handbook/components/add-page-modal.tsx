@@ -28,6 +28,8 @@ interface AddPageModalProps {
     onSuccess: (newPageId: number) => void;
     /** How the modal was opened: adding a page to current chapter (default) or creating a new theme/chapter. */
     initialMode?: 'page' | 'chapter';
+    /** The extra handbook to add to (null/omitted = the company's main handbook). */
+    bookBid?: number | null;
 }
 
 export const AddPageModal: React.FC<AddPageModalProps> = ({
@@ -37,6 +39,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
     defaultChapterId,
     onSuccess,
     initialMode = 'page',
+    bookBid = null,
 }) => {
     const { t } = useTranslation('handbook');
     const getDefaultSelectedChapterId = (): number | 'new' => {
@@ -98,6 +101,7 @@ export const AddPageModal: React.FC<AddPageModalProps> = ({
                 title: title.trim(),
                 parentId: selectedChapterId === 'new' ? undefined : selectedChapterId,
                 newChapterName: selectedChapterId === 'new' ? newChapterName.trim() : undefined,
+                ...(bookBid ? { bid: bookBid } : {}),
             });
 
             // On Success: Call onSuccess with the new page ID and close modal

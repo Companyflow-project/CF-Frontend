@@ -16,7 +16,12 @@ export const HandbookPrintPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [storedLang] = useHandbookLang();
   const lang = searchParams.get('lang') || storedLang;
-  const { data: tree, loading: treeLoading, error: treeError, bid } = useHandbookTree(lang);
+  // ?bid= prints an extra handbook; the backend answers with the main handbook for any other id.
+  const bidParam = Number(searchParams.get('bid'));
+  const { data: tree, loading: treeLoading, error: treeError, bid } = useHandbookTree(
+    lang,
+    Number.isInteger(bidParam) && bidParam > 0 ? bidParam : null,
+  );
   const [version, setVersion] = useState<HandbookVersionInfo | null>(null);
   useEffect(() => {
     if (!bid) return;
