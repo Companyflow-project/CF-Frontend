@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, Loader2 } from 'lucide-react';
 import { useHandbookTree } from '../hooks';
 import { handbookApi, type HandbookVersionInfo } from '../api';
+import { pagePicture } from '../page-picture';
 import { useAppearance } from '@/context/appearance-context';
 import { resolveHtmlUrls, resolveBackendUrl } from '@/lib/utils';
 import { useHandbookLang } from '../components/language-toggle';
@@ -71,7 +72,7 @@ export const HandbookPrintPage: React.FC = () => {
           handbookApi.getHandbookContent(id, lang).catch(() => ''),
           handbookApi.getPageDetail(id, lang).catch(() => null),
         ]);
-        const pic = detail?.pictures?.[0];
+        const pic = pagePicture(detail);
         return {
           id,
           html,

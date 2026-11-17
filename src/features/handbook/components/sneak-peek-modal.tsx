@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { BookOpen, FileText, Link2 } from 'lucide-react';
 import { handbookApi } from '../api';
+import { pagePicture } from '../page-picture';
 import type { HandbookPageDetail } from '@/types/models';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -73,9 +74,7 @@ export const SneakPeekModal: React.FC<SneakPeekModalProps> = ({
         }
     }, [isOpen, pageId, lang]);
 
-    const firstPicture = pageDetail?.pictures && pageDetail.pictures.length > 0
-        ? pageDetail.pictures[0]
-        : undefined;
+    const firstPicture = pagePicture(pageDetail);
     const placement = pageDetail?.imagePlacement || 'none';
     const showImage = !!(firstPicture?.url && placement !== 'none');
 

@@ -353,6 +353,8 @@
   "editor.allowedImageTypes": "Tilladt: jpg, jpeg, png",
   "editor.uploadingImage": "Uploader billede...",
   "editor.removeImage": "Fjern billede",
+  "editor.standardPicture": "Standardbillede",
+  "editor.standardPictureHint": "CompanyFlows billede til denne tekst (valgt under Udseende). Upload dit eget billede for at bruge det i stedet, eller vælg Ingen for at skjule det.",
   "editor.imagePlacement": "Billedplacering:",
   "editor.placementBefore": "Før",
   "editor.placementLeft": "Venstre",

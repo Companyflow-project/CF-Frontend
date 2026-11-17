@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { SignaturePad } from '@/components/common/signature-pad';
 import { PageQuiz } from '@/features/quizzes/components/page-quiz';
 import { handbookApi, type HandbookViewerPageMeta } from '../api';
+import { pagePicture } from '../page-picture';
 import { ArrowLeft, Check, Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileText, Link2 } from 'lucide-react';
 import { useAppearance } from '@/context/appearance-context';
 import { resolveHtmlUrls, resolveBackendUrl, linkHref } from '@/lib/utils';
@@ -81,7 +82,7 @@ export const HandbookViewerPage: React.FC = () => {
                 handbookApi.getHandbookContent(page.id, i18n.language).catch(() => ''),
                 handbookApi.getPageDetail(page.id, i18n.language).catch(() => null),
               ]);
-              const firstPic = detail?.pictures?.[0];
+              const firstPic = pagePicture(detail);
               return {
                 ...page,
                 html: html || '',

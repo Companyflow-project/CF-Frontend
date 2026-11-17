@@ -15,6 +15,7 @@ import { useAuth } from '@/context/auth-context';
 import { isAdminRole, resolveBackendUrl, resolveHtmlUrls, linkHref } from '@/lib/utils';
 import { useHandbookTree } from '../hooks';
 import { handbookApi } from '../api';
+import { pagePicture } from '../page-picture';
 import type { HandbookNode, HandbookPageDetail } from '@/types/models';
 import { useAppearance } from '@/context/appearance-context';
 
@@ -207,7 +208,7 @@ export const PreviewHandbookModal: React.FC<PreviewHandbookModalProps> = ({
                                     <div className="space-y-6">
                                         {chapter.pages?.map((page: any) => {
                                             const detail = pageDetails.get(page.id);
-                                            const firstPicture = detail?.pictures && detail.pictures.length > 0 ? detail.pictures[0] : undefined;
+                                            const firstPicture = pagePicture(detail);
                                             const placement = detail?.imagePlacement || 'none';
                                             const showImage = firstPicture?.url && placement !== 'none';
 

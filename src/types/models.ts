@@ -184,6 +184,11 @@ export interface HandbookPageDetail {
     url: string;
     name: string;
   }>;
+  /**
+   * CompanyFlow's picture for this text (the kind the company chose under Appearance: small
+   * picture or photograph). Shown when the page has no own picture.
+   */
+  standardPicture?: { url: string | null; name: string } | null;
   imageId: number | null;
   imagePlacement: string | null;
   documents: HandbookDocument[];

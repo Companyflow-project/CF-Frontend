@@ -97,6 +97,11 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
     const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadingDocuments, setUploadingDocuments] = useState(false);
 
+    // CompanyFlow's picture for this text, shown to readers when the page has no own picture.
+    const standardPictureUrl = pageDetail?.standardPicture?.url
+        ? resolveBackendUrl(pageDetail.standardPicture.url) || null
+        : null;
+
     // Load page data on mount
     useEffect(() => {
         if (!pageId) return;
@@ -284,7 +289,8 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 customText: effectiveCustomText,
                 notes,
                 imageId,
-                imagePlacement,
+                // "None" must be saved when a standard picture exists — no placement means its default.
+                imagePlacement: imagePlacement ?? (standardPictureUrl ? 'none' : null),
                 documents: documents
                     .filter((d) => typeof d.id === 'number' && d.id > 0)
                     .map((d) => ({
@@ -338,6 +344,7 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
         notes,
         imageId,
         imagePlacement,
+        standardPictureUrl,
         documents,
         links,
         owners,
@@ -480,6 +487,19 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                 </button>
                 {isSectionExpanded('pictures') && (
                     <div className="px-4 pb-4 space-y-3">
+                        {!imageUrl && standardPictureUrl && (
+                            <div className="flex items-start gap-3 rounded-[10px] border border-[#e5efea] p-3">
+                                <img
+                                    src={standardPictureUrl}
+                                    alt={pageDetail?.standardPicture?.name || t('editor.standardPicture')}
+                                    className="h-20 w-28 shrink-0 rounded-md object-cover"
+                                />
+                                <div>
+                                    <p className="text-sm font-medium text-[#0d0e0e]">{t('editor.standardPicture')}</p>
+                                    <p className="text-xs text-[#7b8a85]">{t('editor.standardPictureHint')}</p>
+                                </div>
+                            </div>
+                        )}
                         <div className="border-2 border-dashed border-[#c8d8d3] rounded-[10px] p-6 text-center">
                             <label
                                 htmlFor="handbook-page-image-upload"
@@ -513,7 +533,8 @@ export const HandbookPageEditor: React.FC<HandbookPageEditorProps> = ({
                                                 setImageId(null);
                                                 setImageUrl(null);
                                                 setImageName(null);
-                                                setImagePlacement(null);
+                                                // Without an own picture the standard picture shows again.
+                                                setImagePlacement(standardPictureUrl ? (imagePlacement ?? 'right') : null);
                                             }}
                                             className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 px-2 text-xs gap-1"
                                         >
