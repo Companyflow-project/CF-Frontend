@@ -22,6 +22,14 @@ import { employeesApi } from '../api';
 import { useEmployees } from '../hooks';
 import type { EmployeeMessageLog } from '@/types/models';
 
+/** The API's "dd-mm-yyyy hh:mmAM" as "yyyymmddHHmm", so dates sort in time order (not by day of month). */
+const dateSortKey = (date: string | undefined): string => {
+  const m = /^(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})\s*([AP]M)$/i.exec((date ?? '').trim());
+  if (!m) return date ?? '';
+  const hour = (Number(m[4]) % 12) + (m[6].toUpperCase() === 'PM' ? 12 : 0);
+  return `${m[3]}${m[2]}${m[1]}${String(hour).padStart(2, '0')}${m[5]}`;
+};
+
 export const EmployeeMessageLogsAllPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('employees');
@@ -87,7 +95,7 @@ export const EmployeeMessageLogsAllPage: React.FC = () => {
       let cmp = 0;
       if (sortField === 'name') cmp = (a.name ?? '').localeCompare(b.name ?? '');
       else if (sortField === 'email') cmp = (a.email ?? '').localeCompare(b.email ?? '');
-      else cmp = (a.date ?? '').localeCompare(b.date ?? '');
+      else cmp = dateSortKey(a.date).localeCompare(dateSortKey(b.date));
       return sortDirection === 'asc' ? cmp : -cmp;
     });
   }, [filteredLogs, sortField, sortDirection]);
