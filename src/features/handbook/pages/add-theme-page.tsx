@@ -31,13 +31,13 @@ export const AddThemePage: React.FC = () => {
     setError(null);
 
     try {
-      const name = chapterName.trim();
+      // Only the theme: it opens empty, and the pages are added (and named) with "Tilføj side".
       const response = await handbookApi.createPage({
-        title: name,
-        newChapterName: name,
+        newChapterName: chapterName.trim(),
+        themeOnly: true,
         ...(bookBid ? { bid: bookBid } : {}),
       });
-      navigate(handbookRoutes.editPageOf(response.id, bookBid));
+      navigate(handbookRoutes.pagesOf(bookBid, { theme: String(response.id) }));
     } catch (err: any) {
       console.error('Failed to create theme:', err);
       setError(t('addTheme.errorFailed'));

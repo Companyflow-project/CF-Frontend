@@ -36,9 +36,11 @@ interface PublishHandbookResponse {
 }
 
 interface CreatePagePayload {
-  title: string;
+  title?: string;
   parentId?: number;
   newChapterName?: string;
+  /** With newChapterName: create only the theme, without a first page (the response id is the theme). */
+  themeOnly?: boolean;
   /** Book to create the theme/page in (an extra handbook). Omitted = the company's main handbook. */
   bid?: number;
 }

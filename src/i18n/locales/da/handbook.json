@@ -145,7 +145,7 @@
   "addTheme.title": "Tilføj nyt tema",
   "addTheme.nameLabel": "Tema- / kapitelnavn",
   "addTheme.namePlaceholder": "f.eks. Virksomhedspolitikker",
-  "addTheme.description": "Et nyt tema oprettes med dette navn. Du kan omdøbe siderne senere.",
+  "addTheme.description": "Et nyt, tomt tema oprettes med dette navn. Tilføj derefter siderne med \"Tilføj side\".",
   "addTheme.errorNoName": "Indtast venligst et tema- / kapitelnavn.",
   "addTheme.errorFailed": "Kunne ikke oprette tema. Prøv venligst igen.",
   "addTheme.creating": "Opretter...",

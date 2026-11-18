@@ -145,7 +145,7 @@
   "addTheme.title": "Add New Theme",
   "addTheme.nameLabel": "Theme / Chapter Name",
   "addTheme.namePlaceholder": "e.g., Company Policies",
-  "addTheme.description": "A new theme will be created with this name. You can rename its pages later.",
+  "addTheme.description": "A new, empty theme will be created with this name. Then add its pages with \"Add Page\".",
   "addTheme.errorNoName": "Please enter a theme / chapter name.",
   "addTheme.errorFailed": "Failed to create theme. Please try again.",
   "addTheme.creating": "Creating...",
