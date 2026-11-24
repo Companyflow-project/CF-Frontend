@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/select';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import { useDepartment, useUpdateDepartment, useDeleteDepartment, useDepartments } from '@/features/departments/hooks';
 import type { Department } from '@/features/departments/api';
@@ -18,6 +19,8 @@ import { axiosClient } from '@/lib/axios-client';
 
 export const EditDepartmentPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation('account');
+    const { t: tCommon } = useTranslation('common');
     const { id } = useParams<{ id: string }>();
     const location = useLocation() as { state?: { department?: Department } };
 
@@ -39,7 +42,7 @@ export const EditDepartmentPage: React.FC = () => {
         if (!file) return;
         const allowed = ['image/jpeg', 'image/jpg', 'image/gif', 'image/png'];
         if (!allowed.includes(file.type)) {
-            toast.error('Only jpg, jpeg, gif, png files are allowed');
+            toast.error(t('addDepartment.logo.invalidFormat'));
             return;
         }
         setUploadingLogo(true);
@@ -52,9 +55,9 @@ export const EditDepartmentPage: React.FC = () => {
             setLogoFid(res.data.fid);
             const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
             setLogoPreview(`${baseUrl}${res.data.uri}`);
-            toast.success('Photo uploaded');
+            toast.success(t('addDepartment.logo.uploaded'));
         } catch {
-            toast.error('Failed to upload photo');
+            toast.error(t('addDepartment.logo.uploadFailed'));
         } finally {
             setUploadingLogo(false);
             if (logoInputRef.current) logoInputRef.current.value = '';
@@ -102,7 +105,7 @@ export const EditDepartmentPage: React.FC = () => {
         e.preventDefault();
 
         if (!id) {
-            toast.error('Department ID is missing');
+            toast.error(t('editDepartment.error.missingId'));
             return;
         }
 
@@ -121,11 +124,11 @@ export const EditDepartmentPage: React.FC = () => {
                 },
             });
 
-            toast.success('Department updated successfully');
+            toast.success(t('editDepartment.success'));
             navigate('/account/departments');
         } catch (error) {
             console.error('Failed to update department:', error);
-            toast.error('Failed to update department. Please try again.');
+            toast.error(t('editDepartment.error.update'));
         }
     };
 
@@ -133,9 +136,9 @@ export const EditDepartmentPage: React.FC = () => {
         return (
             <PageShell>
                 <div className="p-8 text-center">
-                    <p className="text-red-500 mb-4">Invalid department.</p>
+                    <p className="text-red-500 mb-4">{t('editDepartment.invalid')}</p>
                     <Button variant="outline" onClick={() => navigate('/account/departments')}>
-                        Back to departments
+                        {t('editDepartment.backToList')}
                     </Button>
                 </div>
             </PageShell>
@@ -143,24 +146,24 @@ export const EditDepartmentPage: React.FC = () => {
     }
 
     if (isLoading && !department) {
-        return <PageShell><div className="p-8 text-center bg-[#fff9f0]">Loading department...</div></PageShell>;
+        return <PageShell><div className="p-8 text-center bg-[#fff9f0]">{t('editDepartment.loading')}</div></PageShell>;
     }
 
     if (!department) {
-        return <PageShell><div className="p-8 text-center text-red-500">Department not found</div></PageShell>;
+        return <PageShell><div className="p-8 text-center text-red-500">{t('editDepartment.notFound')}</div></PageShell>;
     }
 
     const handleDelete = async () => {
         if (!id) return;
 
-        if (window.confirm('Are you sure you want to remove this department?')) {
+        if (window.confirm(t('editDepartment.confirmRemove'))) {
             try {
                 await deleteMutation.mutateAsync(id);
-                toast.success('Department deleted successfully');
+                toast.success(t('editDepartment.removed'));
                 navigate('/account/departments');
             } catch (error) {
                 console.error('Failed to delete department:', error);
-                toast.error('Failed to delete department. Please try again.');
+                toast.error(t('editDepartment.error.remove'));
             }
         }
     };
@@ -177,22 +180,22 @@ export const EditDepartmentPage: React.FC = () => {
                             className="h-9 px-3"
                         >
                             <ArrowLeft className="h-4 w-4 mr-1" />
-                            Back
+                            {tCommon('back')}
                         </Button>
-                        <h1 className="text-2xl font-bold text-[#0d0e0e]">Departments - Update Departments</h1>
+                        <h1 className="text-2xl font-bold text-[#0d0e0e]">{t('editDepartment.title')}</h1>
                     </div>
                     <Button
                         variant="link"
                         onClick={() => navigate('/account/departments')}
                         className="text-[#0d0e0e] underline"
                     >
-                        View all departments
+                        {t('addDepartment.viewAll')}
                     </Button>
                 </div>
 
                 {/* Help Banner */}
                 <HelpBanner className="mb-6">
-                    Here you can edit an existing department. Update the department name, description, contact information, and assign a manager as needed.
+                    {t('editDepartment.helpBanner')}
                 </HelpBanner>
 
                 <div className="flex justify-end gap-3 mb-4">
@@ -201,14 +204,14 @@ export const EditDepartmentPage: React.FC = () => {
                         onClick={handleDelete}
                         className="border-red-500 text-red-500 hover:bg-red-50 px-6"
                     >
-                        Remove department
+                        {t('editDepartment.remove')}
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         className="px-6"
                         style={{ backgroundColor: 'var(--cf-primary-btn, #3d997d)', color: 'var(--cf-primary-btn-text, #ffffff)' }}
                     >
-                        Update department
+                        {t('editDepartment.submit')}
                     </Button>
                 </div>
             </div>
@@ -217,7 +220,7 @@ export const EditDepartmentPage: React.FC = () => {
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="mb-4 pb-4 border-b">
                         <p className="text-sm text-gray-600">
-                            The primary contact can only be changed by CompanyFlow.
+                            {t('companyProfile.primaryContactNote')}
                         </p>
                     </div>
 
@@ -236,10 +239,10 @@ export const EditDepartmentPage: React.FC = () => {
                                 onClick={() => logoInputRef.current?.click()}
                             >
                                 {uploadingLogo ? (
-                                    <span className="text-sm text-gray-500">Uploading...</span>
+                                    <span className="text-sm text-gray-500">{t('addDepartment.logo.uploading')}</span>
                                 ) : logoPreview ? (
                                     <>
-                                        <img src={logoPreview} alt="Department logo" className="w-full h-full object-contain rounded-full p-2" />
+                                        <img src={logoPreview} alt={t('addDepartment.logo.alt')} className="w-full h-full object-contain rounded-full p-2" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
                                             <Upload className="h-6 w-6 text-white" />
                                         </div>
@@ -247,18 +250,18 @@ export const EditDepartmentPage: React.FC = () => {
                                 ) : (
                                     <>
                                         <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                                        <span className="text-sm text-gray-600">Click to upload photo</span>
+                                        <span className="text-sm text-gray-600">{t('addDepartment.logo.upload')}</span>
                                     </>
                                 )}
                             </div>
-                            <p className="text-xs text-gray-500 mt-2">Only upload: jpg, jpeg, gif, png</p>
+                            <p className="text-xs text-gray-500 mt-2">{t('addDepartment.logo.formats')}</p>
                         </div>
 
                         {/* Form Fields */}
                         <div className="space-y-4">
                             <div>
                                 <Label htmlFor="departmentName" className="text-sm font-medium text-[#0d0e0e]">
-                                    Department name
+                                    {t('addDepartment.field.name')}
                                 </Label>
                                 <Input
                                     id="departmentName"
@@ -271,7 +274,7 @@ export const EditDepartmentPage: React.FC = () => {
 
                             <div>
                                 <Label htmlFor="description" className="text-sm font-medium text-[#0d0e0e]">
-                                    Description
+                                    {t('addDepartment.field.description')}
                                 </Label>
                                 <Textarea
                                     id="description"
@@ -283,7 +286,7 @@ export const EditDepartmentPage: React.FC = () => {
 
                             <div>
                                 <Label htmlFor="email" className="text-sm font-medium text-[#0d0e0e]">
-                                    Email
+                                    {t('addDepartment.field.email')}
                                 </Label>
                                 <Input
                                     id="email"
@@ -296,7 +299,7 @@ export const EditDepartmentPage: React.FC = () => {
 
                             <div>
                                 <Label htmlFor="telephone" className="text-sm font-medium text-[#0d0e0e]">
-                                    Telephone
+                                    {t('addDepartment.field.telephone')}
                                 </Label>
                                 <Input
                                     id="telephone"
@@ -309,7 +312,7 @@ export const EditDepartmentPage: React.FC = () => {
 
                             <div>
                                 <Label htmlFor="manager" className="text-sm font-medium text-[#0d0e0e]">
-                                    Manager
+                                    {t('addDepartment.field.manager')}
                                 </Label>
                                 <Select
                                     id="manager"
@@ -325,7 +328,7 @@ export const EditDepartmentPage: React.FC = () => {
                                     }}
                                     className="mt-1"
                                 >
-                                    <option value="">Select a manager...</option>
+                                    <option value="">{t('addDepartment.field.selectManager')}</option>
                                     {employees?.map(employee => (
                                         <option key={employee.id} value={employee.id}>
                                             {employee.name}
@@ -336,7 +339,7 @@ export const EditDepartmentPage: React.FC = () => {
 
                             <div>
                                 <Label htmlFor="parent" className="text-sm font-medium text-[#0d0e0e]">
-                                    Parent department
+                                    {t('addDepartment.field.parent')}
                                 </Label>
                                 <Select
                                     id="parent"
@@ -347,7 +350,7 @@ export const EditDepartmentPage: React.FC = () => {
                                     }}
                                     className="mt-1"
                                 >
-                                    <option value="">None (top-level department)</option>
+                                    <option value="">{t('addDepartment.field.parentNone')}</option>
                                     {departments
                                         ?.filter((dept) => String(dept.id) !== String(id))
                                         .map((dept) => (
@@ -357,7 +360,7 @@ export const EditDepartmentPage: React.FC = () => {
                                         ))}
                                 </Select>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Place this department under another to create a subdepartment.
+                                    {t('addDepartment.field.parentHint')}
                                 </p>
                             </div>
                         </div>
