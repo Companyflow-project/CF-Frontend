@@ -180,6 +180,7 @@ export const AddDepartmentPage: React.FC = () => {
                                 )}
                             </div>
                             <p className="text-xs text-gray-500 mt-2">{t('addDepartment.logo.formats')}</p>
+                            <p className="text-xs text-gray-500 mt-1 max-w-[16rem] text-center">{t('addDepartment.logo.hint')}</p>
                         </div>
 
                         {/* Form Fields */}

@@ -45,12 +45,14 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
   const { data: companyProfile } = useCompanyProfile(companyId);
   const companyName = companyProfile?.businessName || 'CompanyFlow';
 
-  // Build full logo URL from company profile
+  // The logo in the top bar: the user's department logo when their department has one (as in
+  // Degoan), otherwise the company's.
   const companyLogoUrl = (() => {
-    if (!companyProfile?.logoUrl) return null;
-    if (companyProfile.logoUrl.startsWith('http')) return companyProfile.logoUrl;
+    const logo = companyProfile?.departmentLogoUrl || companyProfile?.logoUrl;
+    if (!logo) return null;
+    if (logo.startsWith('http')) return logo;
     const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '');
-    return `${baseUrl}${companyProfile.logoUrl}`;
+    return `${baseUrl}${logo}`;
   })();
 
   return (

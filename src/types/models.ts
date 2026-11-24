@@ -257,6 +257,8 @@ export interface CompanyProfile {
   zipCode: string;
   mobile: string;
   logoUrl: string | null;
+  /** The signed-in user's department logo, shown instead of the company's (null = the company's). */
+  departmentLogoUrl?: string | null;
   senderName: string;
 }
 
