@@ -16,11 +16,11 @@ import { useAuth } from '@/context/auth-context';
 import type { Employee } from '@/types/models';
 
 const SHORT_CODES = [
-  { code: '[recipient name]', description: 'Employee\'s full name' },
-  { code: '[title]', description: 'Handbook title' },
-  { code: '[links]', description: 'Link to handbook' },
-  { code: '[company name]', description: 'Your company name' },
-  { code: '[login]', description: 'Magic login link' },
+  { code: '[recipient name]', descriptionKey: 'followUp.code.recipientName' },
+  { code: '[title]', descriptionKey: 'followUp.code.title' },
+  { code: '[links]', descriptionKey: 'followUp.code.links' },
+  { code: '[company name]', descriptionKey: 'followUp.code.companyName' },
+  { code: '[login]', descriptionKey: 'followUp.code.login' },
 ] as const;
 
 /** Compare texts ignoring markup and spacing (the rich-text editor may reformat HTML). */
@@ -146,7 +146,7 @@ export const FollowUpPage: React.FC = () => {
       // Show SMS errors if any
       if (result.smsErrors && result.smsErrors.length > 0) {
         const errorList = result.smsErrors.join('\n');
-        toast.error(`SMS failed for:\n${errorList}`, { duration: 8000 });
+        toast.error(t('followUp.toast.smsFailed', { list: errorList }), { duration: 8000 });
       }
 
       // Show success for what did go through
@@ -274,7 +274,7 @@ export const FollowUpPage: React.FC = () => {
                     <code className="text-[10px] font-mono bg-[#f0f7f5] text-[#1a5948] px-1 py-px rounded border border-[#cde3da] shrink-0">
                       {sc.code}
                     </code>
-                    <span className="text-[11px] text-[#6b7280]">{sc.description}</span>
+                    <span className="text-[11px] text-[#6b7280]">{t(sc.descriptionKey)}</span>
                   </div>
                 ))}
               </div>
