@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2, Upload, X, Plus } from 'lucide-react';
 import { useAuth } from '@/context/auth-context';
 import { useEmploymentTypes } from '@/features/employment-types/hooks';
+import { useDepartments } from '@/features/departments/hooks';
 import { accountRoutes } from '@/features/account/routes';
 import { employeesApi } from '../api';
 
@@ -32,6 +33,8 @@ export interface EmployeeFormData {
   emergencyMobile: string;
   makeEmergencyPublic: boolean;
   employmentType: string;
+  /** The employee's department id, or 'none'. */
+  departmentId: string;
   status: boolean;
   isSeniorEmployee: boolean;
   isBusinessAdmin: boolean;
@@ -102,6 +105,7 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
   const { user } = useAuth();
   const companyId = user?.companyId ? String(user.companyId) : undefined;
   const { data: employmentTypes, isLoading: employmentTypesLoading } = useEmploymentTypes(companyId);
+  const { data: departments } = useDepartments(companyId);
 
   const uniqueEmploymentTypes = React.useMemo(
     () => {
@@ -456,6 +460,29 @@ export const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ formData, onCh
                     </div>
                   )}
               </div>
+            </div>
+
+            {/* Department: decides the logo the employee sees and the pages limited to a department */}
+            <div>
+              <Label htmlFor="employee-department" className="text-sm font-medium">
+                {t('form.employment.department')}
+              </Label>
+              <select
+                id="employee-department"
+                value={formData.departmentId}
+                onChange={(e) => onChange({ ...formData, departmentId: e.target.value })}
+                className="mt-2 block w-full max-w-md h-10 rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d997d]"
+              >
+                <option value="none">{t('form.employment.noDepartment')}</option>
+                {(departments ?? []).map((dept) => (
+                  <option key={dept.id} value={String(dept.id)}>
+                    {dept.parentName ? `${dept.name} (${dept.parentName})` : dept.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                {(departments ?? []).length > 0 ? t('form.employment.departmentHint') : t('form.employment.noDepartments')}
+              </p>
             </div>
 
             {/* Status */}

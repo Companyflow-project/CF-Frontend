@@ -37,6 +37,7 @@ function employeeToFormData(emp: Employee): EmployeeFormData {
     emergencyMobile: emp.emergencyContactMobile ?? '',
     makeEmergencyPublic: emp.isEmergencyPublic ?? false,
     employmentType: emp.employmentTypeId != null ? String(emp.employmentTypeId) : 'none',
+    departmentId: emp.departmentId != null ? String(emp.departmentId) : 'none',
     status: emp.status === 'ACTIVE',
     isSeniorEmployee: emp.isSeniorEmployee ?? false,
     isBusinessAdmin: emp.isBusinessAdmin ?? false,
@@ -185,6 +186,7 @@ export const EditEmployeePage: React.FC = () => {
         // Skip employment/permission fields when editing yourself
         ...(!isSelf && {
           employmentType: formData.employmentType,
+          departmentId: formData.departmentId === 'none' ? null : Number(formData.departmentId),
           status: formData.status,
           isSeniorEmployee: formData.isSeniorEmployee,
           isBusinessAdmin: formData.isBusinessAdmin,

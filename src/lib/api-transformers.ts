@@ -22,6 +22,8 @@ export type BackendEmployeeLike = {
   alternateNumber?: string | null;
   employmentType?: string | null;
   employmentTypeId?: number | string | null;
+  departmentId?: number | string | null;
+  departmentName?: string | null;
   employmentTitle?: string | null;
   role?: string | null;
   recentVisits?: string | null;
@@ -119,6 +121,8 @@ export const transformEmployee = (backend: BackendEmployeeLike): Employee => {
     telephone: backend.telephone ?? undefined,
     employmentType: withoutPlaceholder(backend.employmentType),
     employmentTypeId: backend.employmentTypeId != null ? Number(backend.employmentTypeId) : null,
+    departmentId: backend.departmentId != null ? Number(backend.departmentId) : null,
+    departmentName: backend.departmentName ?? null,
     employmentTitle: backend.employmentTitle ?? undefined,
     recentVisitAt: backend.recentVisits ?? undefined,
     messagesCount: backend.messageCount != null ? Number(backend.messageCount) : 0,

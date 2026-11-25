@@ -36,6 +36,9 @@ export interface Employee {
   employmentType?: string;
   /** Taxonomy term ID for the employment type */
   employmentTypeId?: number | null;
+  /** The employee's department ("Afdeling"); null = none */
+  departmentId?: number | null;
+  departmentName?: string | null;
   employmentTitle?: string;
   recentVisitAt?: string | null;
   messagesCount?: number;
